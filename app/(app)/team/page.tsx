@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getUnitManagerTeam } from "./data";
+import { getUnitManagerTeam, getGroupManagerLeague } from "./data";
 import { TeamRoster } from "./team-roster";
+import { TeamLeague } from "./team-league";
 
 export default async function TeamPage() {
   const profile = await getCurrentProfile();
@@ -13,10 +14,13 @@ export default async function TeamPage() {
     return <TeamRoster unitName={profile.unit_name} members={members} metrics={metrics} />;
   }
 
-  // group_manager / superadmin get the drill-down league view -- next screen.
+  const { leagues, leads, activities } = await getGroupManagerLeague(profile);
   return (
-    <div className="flex items-center justify-center px-8 py-20 text-center text-[13px] text-muted">
-      The Group Manager drill-down view is coming in the next screen of this batch.
-    </div>
+    <TeamLeague
+      groupLabel={profile.role === "superadmin" ? "All units" : `Group ${profile.full_name}`}
+      leagues={leagues}
+      leads={leads}
+      activities={activities}
+    />
   );
 }
