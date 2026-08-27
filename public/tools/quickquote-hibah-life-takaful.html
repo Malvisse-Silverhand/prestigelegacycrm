@@ -434,6 +434,7 @@
   var PABBLY_ENDPOINT = "https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY4MDYzNzA0MzE1MjZiNTUzNjUxMzEi_pc";
   var SOCIAL_ENDPOINT = "https://callbacks-api.one.store/v1/events/FXZR2TdcQoWGQpe0Ts8VFQ";
   var CAPTURE_QUOTATION_URL = "https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/capture-quotation"; // CRM fan-out
+  var MARK_SENT_URL = "https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/mark-quotation-sent"; // CRM fan-out
 
   /* ============ PLAN CATALOG ============
      hidden:true = kekal dalam sistem tapi tak dipapar dalam dropdown */
@@ -626,6 +627,9 @@
       if(e&&pe)e.value=pe;
     }
   })();
+  var capturedQuotationId=null; // set once capture-quotation's insert responds
+  var qqhWaEl=$('qqhWa');
+  if(qqhWaEl)qqhWaEl.addEventListener('click',function(){markQuotationSent();});
 
   /* ============ ANB ============ */
   function calcAnb(v){
@@ -1007,9 +1011,24 @@
         });
         var cqBody={lead_id:leadId,product:product,language:(L?"EN":"BM"),raw_payload:p,plans:cqPlans};
         fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(cqBody),keepalive:true});
+          body:JSON.stringify(cqBody),keepalive:true})
+          .then(function(res){return res.json();})
+          .then(function(json){if(json&&json.quotation_id)capturedQuotationId=json.quotation_id;})
+          .catch(function(err){});
       }catch(err){}
     }
+  }
+
+  /* CRM fan-out patch: marks the quotation 'sent' when the agent actually
+     clicks through to WhatsApp with it. Does not touch the deep-link itself
+     -- fires alongside #qqhWa's normal navigation, never blocks it. */
+  function markQuotationSent(){
+    if(!capturedQuotationId||!MARK_SENT_URL)return;
+    try{
+      fetch(MARK_SENT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({quotation_id:capturedQuotationId}),keepalive:true})
+        .catch(function(err){});
+    }catch(e){}
   }
 
   /* ============ SOCIAL NOTIFICATION WEBHOOK ============
