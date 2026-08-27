@@ -3,7 +3,13 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { Sidebar } from "@/components/sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   const profile = await getCurrentProfile();
 
   if (!profile) {
@@ -19,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <MobileNav />
         </div>
       </div>
+      {modal}
     </div>
   );
 }

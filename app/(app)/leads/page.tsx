@@ -7,6 +7,7 @@ import { AddLeadButton } from "./add-lead-button";
 import { ExportCsvButton } from "./export-csv-button";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon } from "@/components/icons";
+import { waLink } from "@/lib/whatsapp";
 
 function subtitleFor(role: string) {
   switch (role) {
@@ -38,12 +39,6 @@ function fmtFollowUp(dateStr: string | null) {
   if (dateStr < today) return { text: "Overdue", overdue: true };
   const d = new Date(dateStr);
   return { text: `${d.getDate()}/${d.getMonth() + 1}`, overdue: false };
-}
-
-function waLink(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  const withCountry = digits.startsWith("0") ? "60" + digits.slice(1) : digits;
-  return `https://wa.me/${withCountry}`;
 }
 
 export default async function LeadsPage({
@@ -138,7 +133,9 @@ export default async function LeadsPage({
                     key={lead.id}
                     className="grid grid-cols-[1.5fr_1fr_.9fr_.9fr_1fr_1fr_.8fr_1fr_.8fr_.7fr] items-center border-b border-sand-3 px-5 py-3.5 text-[12.5px] text-ink last:border-b-0"
                   >
-                    <div className="truncate font-bold text-navy">{lead.full_name}</div>
+                    <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
+                      {lead.full_name}
+                    </Link>
                     <div className="font-medium">{lead.phone}</div>
                     <div className="font-medium">{fmtDate(lead.date_of_birth)}</div>
                     <div className="truncate font-medium">{lead.state ?? "—"}</div>
