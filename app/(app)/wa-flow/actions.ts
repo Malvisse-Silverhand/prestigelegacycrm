@@ -39,11 +39,13 @@ export async function deleteTemplate(id: string) {
   return { error: null };
 }
 
-// Best-effort: `wa_templates` write access is manager-only under current
-// RLS ("managers manage templates" is the only INSERT/UPDATE/DELETE
-// policy), so this silently no-ops for agents rather than erroring out a
-// Copy/Send action over a non-critical usage counter.
-export async function bumpUsage(id: string, currentCount: number) {
+// `wa_templates` write access is manager-only for everything except the
+// usage counter -- title/category/body/language still require "managers
+// manage templates". Bumping usage_count goes through a SECURITY DEFINER
+// function instead of a raw UPDATE so any authenticated user (agents
+// included) can increment it on a template they can already see, without
+// opening a column-write hole on the table itself.
+export async function bumpUsage(id: string) {
   const supabase = await createClient();
-  await supabase.from("wa_templates").update({ usage_count: currentCount + 1 }).eq("id", id);
+  await supabase.rpc("increment_template_usage", { template_id: id });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { CATEGORIES, type WaTemplate, type LeadForFill } from "./types";
 import { deleteTemplate, bumpUsage } from "./actions";
@@ -36,6 +37,7 @@ export function WaFlowView({
   profile: CurrentProfile;
   lead: LeadForFill | null;
 }) {
+  const router = useRouter();
   const [category, setCategory] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<WaTemplate | null>(null);
@@ -71,14 +73,16 @@ export function WaFlowView({
     await navigator.clipboard.writeText(text.replace(/<br\s*\/?>/g, "\n"));
     setCopiedId(t.id);
     setTimeout(() => setCopiedId(null), 1500);
-    bumpUsage(t.id, t.usage_count);
+    await bumpUsage(t.id);
+    router.refresh();
   }
 
   async function handleSend(t: WaTemplate) {
     if (!lead) return;
     const text = fillTemplate(t.body, fillValues).replace(/<br\s*\/?>/g, "\n");
     window.open(waLink(lead.phone, text), "_blank");
-    bumpUsage(t.id, t.usage_count);
+    await bumpUsage(t.id);
+    router.refresh();
   }
 
   async function handleDelete(id: string) {

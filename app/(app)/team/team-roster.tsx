@@ -4,6 +4,7 @@ import type { AgentMetrics } from "./metrics";
 import { emptyMetrics } from "./metrics";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
+import { ActiveToggle } from "./active-toggle";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "no activity yet";
@@ -95,16 +96,8 @@ export function TeamRoster({
                     </div>
                   </div>
 
-                  <div className="mt-3.5 flex items-center gap-2.5">
-                    <span
-                      title="Active status is read-only for now -- there's no profiles UPDATE policy yet"
-                      className={`flex h-[21px] w-[38px] items-center rounded-full px-[3px] ${m.is_active ? "justify-end bg-green" : "justify-start bg-sand-2"}`}
-                    >
-                      <span className="h-[15px] w-[15px] rounded-full bg-white" />
-                    </span>
-                    <span className={`text-[12.5px] font-bold ${m.is_active ? "text-green" : "text-taupe-2"}`}>
-                      {m.is_active ? "Active" : "Inactive"}
-                    </span>
+                  <div className="mt-3.5">
+                    <ActiveToggle memberId={m.id} initialActive={m.is_active} />
                   </div>
 
                   <div className="mt-3.5 grid grid-cols-3 gap-2">

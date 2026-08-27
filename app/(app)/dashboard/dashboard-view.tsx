@@ -84,10 +84,16 @@ export function DashboardView({
             </div>
           </div>
           <ThemeToggle dark={dark} onChange={toggleTheme} />
-          <div className="flex items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-navy dark:border-white/10 dark:bg-[#12283f] dark:text-[#eef3f8]">
+          <div
+            title="Historical periods aren't wired up yet — showing the current year"
+            className="flex cursor-not-allowed items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-taupe opacity-60 dark:border-white/10 dark:bg-[#12283f] dark:text-[#7f93aa]"
+          >
             {now.getFullYear()}
           </div>
-          <div className="flex items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-navy dark:border-white/10 dark:bg-[#12283f] dark:text-[#eef3f8]">
+          <div
+            title="Historical periods aren't wired up yet — showing the current month"
+            className="flex cursor-not-allowed items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-taupe opacity-60 dark:border-white/10 dark:bg-[#12283f] dark:text-[#7f93aa]"
+          >
             {MONTH_NAMES[now.getMonth()]}
           </div>
         </div>
@@ -318,7 +324,10 @@ export function DashboardView({
                   Lead assignment
                 </div>
                 {stats.isManager && (
-                  <span className="cursor-default text-xs font-semibold text-green dark:text-[#2e8f68]">
+                  <span
+                    title="Coming soon — no rebalancing logic yet"
+                    className="cursor-not-allowed text-xs font-semibold text-taupe opacity-60 dark:text-[#7f93aa]"
+                  >
                     Rebalance
                   </span>
                 )}
