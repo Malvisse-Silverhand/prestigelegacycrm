@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Manual per-screen dark mode (Dashboard only) — toggled via a `.dark` ancestor
+   class, independent of OS color-scheme, per Section 2: only the Dashboard
+   content area switches themes, the sidebar stays navy in both. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #fdf9f3;
   --foreground: #0f2540;
