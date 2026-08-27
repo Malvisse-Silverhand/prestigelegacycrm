@@ -36,18 +36,23 @@ function daysAgoKey(n: number) {
   return d.toISOString().slice(0, 10);
 }
 
-export async function getDashboardStats(profile: CurrentProfile) {
+export type MonitorScope = { agentId?: string; unitId?: string };
+
+export async function getDashboardStats(profile: CurrentProfile, monitorScope?: MonitorScope) {
   const supabase = await createClient();
+
+  let leadsQuery = supabase
+    .from("leads")
+    .select(
+      "id, full_name, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles(full_name, avatar_initials)",
+    )
+    .order("created_at", { ascending: false });
+  if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
+  else if (monitorScope?.unitId) leadsQuery = leadsQuery.eq("unit_id", monitorScope.unitId);
 
   const [{ data: leads }, { data: quotations }, { data: targets }, { data: teamProfiles }] =
     await Promise.all([
-      supabase
-        .from("leads")
-        .select(
-          "id, full_name, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles(full_name, avatar_initials)",
-        )
-        .order("created_at", { ascending: false })
-        .returns<LeadRow[]>(),
+      leadsQuery.returns<LeadRow[]>(),
       supabase
         .from("quotations")
         .select("id, lead_id, quotation_plans(sort_order, monthly_contribution)"),

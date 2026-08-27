@@ -18,16 +18,23 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   } = await supabase.auth.getUser();
 
   if (!user) return null;
+  return getProfileById(user.id);
+}
 
-  // `units` has two FK paths to/from `profiles` (profiles.unit_id -> units.id,
-  // and units.group_manager_id -> profiles.id), so the embed must name the
-  // constraint explicitly — the bare `units(name)` shorthand is ambiguous.
+// `units` has two FK paths to/from `profiles` (profiles.unit_id -> units.id,
+// and units.group_manager_id -> profiles.id), so the embed must name the
+// constraint explicitly -- the bare `units(name)` shorthand is ambiguous.
+const PROFILE_SELECT =
+  "id, full_name, email, role, unit_id, avatar_initials, units!profiles_unit_id_fkey(name)";
+
+// RLS-scoped: returns null both when the id doesn't exist and when the
+// caller isn't allowed to see it -- callers can treat those the same way.
+export async function getProfileById(id: string): Promise<CurrentProfile | null> {
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select(
-      "id, full_name, email, role, unit_id, avatar_initials, units!profiles_unit_id_fkey(name)",
-    )
-    .eq("id", user.id)
+    .select(PROFILE_SELECT)
+    .eq("id", id)
     .single();
 
   if (!profile) return null;
