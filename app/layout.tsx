@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Takaful4Us CRM",
-  description: "Agent portal for Takaful4Us leads, quotations, and pipeline.",
+  title: "Prestige Legacy CRM",
+  description: "Agent portal for Prestige Legacy leads, quotations, and pipeline.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

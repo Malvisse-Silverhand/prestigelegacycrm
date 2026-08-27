@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -42,10 +43,15 @@ export default function LoginPage() {
       <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card bg-cream shadow-elevated">
         <div className="bg-navy px-10 pt-11 pb-13 text-white">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold text-base font-extrabold text-navy">
-              T4
-            </div>
-            <div className="text-[17px] font-bold">Takaful4Us</div>
+            <Image
+              src="/logo.jpeg"
+              alt="Prestige Legacy"
+              width={40}
+              height={40}
+              className="h-10 w-10 flex-none rounded-xl object-cover"
+              priority
+            />
+            <div className="text-[17px] font-bold">Prestige Legacy</div>
           </div>
           <div className="mt-7 text-[27px] leading-[1.25] font-extrabold tracking-[-0.02em]">
             Welcome back.
