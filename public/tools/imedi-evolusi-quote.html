@@ -1,0 +1,1039 @@
+<!-- ============================================================
+     QuickQuote · Kad Perubatan i-Medi Evolusi · Takaful4Us  (v5)
+     WordPress embed — paste dalam Custom HTML block.
+     Data: 206 quotation PDF rasmi GET (ANB 1-60)
+     TETAPAN: WEBHOOK_URL (Pabbly) & AGENT_WA (601118818316) — SUDAH DISET.
+     NOTA TEKNIKAL: semua "<\/" dalam JS sengaja di-escape supaya
+     WordPress tidak menamatkan blok script lebih awal. JANGAN ubah.
+     ============================================================ -->
+<section id="t4u-mediquote" aria-label="QuickQuote Kad Perubatan i-Medi Evolusi">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+#t4u-mediquote{
+  --navy:#0f2540;--navy-2:#1c3a5e;--navy-3:#22456e;
+  --gold:#fac748;--gold-deep:#e2a82c;--gold-soft:#fdedc4;
+  --green:#0f4c35;--cream:#fbf4e4;--cream-card:#fffdf8;--cream-warm:#f6ecd6;
+  --ink:#0f2540;--ink-2:#3a4a5e;--muted:#6f7a88;
+  --border:#ece0c6;--border-soft:#f3ebd8;
+  --tick:#0f7a45;--warn:#b7791f;--danger:#c53030;
+  --font-display:"Poppins",system-ui,sans-serif;--font-body:"Inter",system-ui,sans-serif;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-pill:9999px;
+  --ease:cubic-bezier(.2,.7,.2,1);--ring:0 0 0 3px rgba(250,199,72,.45);
+  --shadow:0 18px 44px rgba(15,37,64,.12);
+}
+#t4u-mediquote,#t4u-mediquote *{box-sizing:border-box}
+#t4u-mediquote{font-family:var(--font-body);color:var(--ink);background:var(--cream);
+  line-height:1.55;font-size:16px;-webkit-font-smoothing:antialiased;
+  max-width:940px;margin:0 auto;padding:26px 16px;border-radius:var(--r-lg)}
+@media(min-width:760px){#t4u-mediquote{padding:44px 28px}}
+#t4u-mediquote h1,#t4u-mediquote h2,#t4u-mediquote h3{font-family:var(--font-display);
+  line-height:1.1;letter-spacing:-.02em;margin:0;color:var(--navy);font-weight:700}
+#t4u-mediquote p{margin:0}
+#t4u-mediquote a{color:var(--green)}
+
+#t4u-mediquote .mq-langbar{display:flex;justify-content:flex-end;margin-bottom:6px}
+#t4u-mediquote .mq-lang{display:inline-flex;background:var(--cream-warm);border:1.5px solid var(--border);
+  border-radius:var(--r-pill);padding:3px;gap:2px}
+#t4u-mediquote .mq-lang button{font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--muted);
+  background:transparent;border:none;border-radius:var(--r-pill);padding:6px 14px;cursor:pointer;
+  transition:all .15s var(--ease);min-height:32px}
+#t4u-mediquote .mq-lang button[aria-pressed=true]{background:var(--navy);color:var(--gold)}
+#t4u-mediquote .mq-lang button:focus-visible{outline:none;box-shadow:var(--ring)}
+
+#t4u-mediquote .mq-head{text-align:center;display:flex;flex-direction:column;align-items:center;gap:13px}
+#t4u-mediquote .mq-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--navy);background:var(--gold);
+  padding:6px 14px;border-radius:var(--r-pill);box-shadow:0 4px 12px rgba(250,199,72,.4)}
+#t4u-mediquote .mq-eyebrow svg{width:15px;height:15px}
+#t4u-mediquote .mq-title{font-size:clamp(27px,5.8vw,40px);font-weight:800}
+#t4u-mediquote .mq-title em{font-style:normal;color:var(--gold-deep)}
+#t4u-mediquote .mq-sub{color:var(--ink-2);font-size:16px;max-width:50ch}
+
+#t4u-mediquote .mq-card{background:var(--cream-card);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:22px;margin-top:24px;box-shadow:var(--shadow)}
+@media(min-width:760px){#t4u-mediquote .mq-card{padding:30px}}
+#t4u-mediquote .mq-card.is-hidden{display:none}
+#t4u-mediquote .mq-sec-lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gold-deep);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+#t4u-mediquote .mq-sec-lbl::after{content:"";flex:1;height:1px;background:var(--border)}
+#t4u-mediquote .mq-grid{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:560px){#t4u-mediquote .mq-grid{grid-template-columns:1fr 1fr}}
+#t4u-mediquote .mq-field{display:flex;flex-direction:column;gap:7px}
+#t4u-mediquote .mq-field.full{grid-column:1/-1}
+#t4u-mediquote .mq-label{font-size:14px;font-weight:600;color:var(--ink)}
+#t4u-mediquote .mq-label .mq-req{color:var(--danger)}
+#t4u-mediquote .mq-hint{font-size:12px;color:var(--muted)}
+#t4u-mediquote input[type=text],#t4u-mediquote input[type=tel],#t4u-mediquote input[type=email],
+#t4u-mediquote input[type=date],#t4u-mediquote select,#t4u-mediquote textarea{
+  font-family:var(--font-body);font-size:16px;color:var(--ink);background:var(--cream-card);
+  border:1.5px solid var(--border);border-radius:var(--r-md);padding:12px 14px;width:100%;min-height:50px;
+  transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+#t4u-mediquote textarea{min-height:84px;resize:vertical;line-height:1.5}
+#t4u-mediquote input:focus-visible,#t4u-mediquote select:focus-visible,#t4u-mediquote textarea:focus-visible{
+  outline:none;border-color:var(--gold-deep);box-shadow:var(--ring)}
+#t4u-mediquote .mq-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--cream-warm);
+  border:1.5px solid var(--border);border-radius:var(--r-md);padding:5px}
+#t4u-mediquote .mq-seg button{font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--muted);
+  background:transparent;border:none;border-radius:var(--r-sm);padding:11px;min-height:42px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s var(--ease)}
+#t4u-mediquote .mq-seg button svg{width:16px;height:16px}
+#t4u-mediquote .mq-seg button[aria-pressed=true]{background:var(--navy);color:var(--gold);box-shadow:0 3px 8px rgba(15,37,64,.22)}
+#t4u-mediquote .mq-seg button:focus-visible{outline:none;box-shadow:var(--ring)}
+#t4u-mediquote .mq-illbox{display:none;grid-column:1/-1}
+#t4u-mediquote .mq-illbox.is-on{display:flex;flex-direction:column;gap:7px;animation:mqfade .3s var(--ease)}
+#t4u-mediquote .mq-cta{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--navy);
+  background:var(--gold);border:none;border-radius:var(--r-md);padding:16px 24px;min-height:56px;width:100%;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;
+  box-shadow:0 8px 20px rgba(250,199,72,.42);transition:transform .12s var(--ease),box-shadow .15s var(--ease),background .15s var(--ease)}
+#t4u-mediquote .mq-cta:hover{background:var(--gold-deep);transform:translateY(-1px);box-shadow:0 12px 26px rgba(226,168,44,.5)}
+#t4u-mediquote .mq-cta:active{transform:translateY(0)}
+#t4u-mediquote .mq-cta:disabled{opacity:.6;cursor:wait}
+#t4u-mediquote .mq-cta:focus-visible{outline:none;box-shadow:var(--ring),0 8px 20px rgba(250,199,72,.42)}
+#t4u-mediquote .mq-cta svg{width:18px;height:18px}
+#t4u-mediquote .mq-err{color:var(--danger);font-size:14px;margin-top:13px;display:none}
+#t4u-mediquote .mq-err.is-on{display:block}
+#t4u-mediquote .mq-privacy{font-size:11.5px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5}
+
+#t4u-mediquote .mq-result{display:none;margin-top:24px}
+#t4u-mediquote .mq-result.is-on{display:block;animation:mqfade .45s var(--ease)}
+@keyframes mqfade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+#t4u-mediquote .mq-profile{background:var(--cream-card);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--shadow);animation:mqpop .5s var(--ease) both;margin-bottom:20px}
+#t4u-mediquote .mq-profile-h{background:var(--gold);color:var(--navy);font-family:var(--font-display);
+  font-weight:700;font-size:14px;text-align:center;padding:11px 16px}
+#t4u-mediquote .mq-profile-name{font-family:var(--font-display);font-weight:800;font-size:clamp(21px,4.6vw,27px);
+  color:var(--navy);text-align:center;padding:18px 16px 4px}
+#t4u-mediquote .mq-profile-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:0 16px 16px}
+#t4u-mediquote .mq-ptag{font-size:12px;font-weight:600;color:var(--navy);background:var(--gold-soft);
+  border:1px solid var(--gold);border-radius:var(--r-pill);padding:4px 11px}
+#t4u-mediquote .mq-ptable{display:grid;grid-template-columns:1fr}
+@media(min-width:560px){#t4u-mediquote .mq-ptable{grid-template-columns:1fr 1fr}}
+#t4u-mediquote .mq-prow{display:grid;grid-template-columns:104px 1fr;gap:10px;padding:9px 16px;
+  border-top:1px solid var(--border-soft);font-size:13.5px}
+#t4u-mediquote .mq-pk{color:var(--muted);font-weight:600;font-size:12px}
+#t4u-mediquote .mq-pv{color:var(--ink);font-weight:600;word-break:break-word}
+#t4u-mediquote .mq-regen{display:flex;justify-content:center;margin-top:14px}
+#t4u-mediquote .mq-regen button{font-family:var(--font-body);font-size:13.5px;font-weight:600;color:var(--ink-2);
+  background:var(--cream-card);border:1.5px solid var(--border);border-radius:var(--r-pill);padding:9px 18px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:7px;min-height:42px;transition:all .15s var(--ease)}
+#t4u-mediquote .mq-regen button:hover{border-color:var(--gold-deep);color:var(--navy)}
+#t4u-mediquote .mq-regen button:focus-visible{outline:none;box-shadow:var(--ring)}
+#t4u-mediquote .mq-regen svg{width:15px;height:15px}
+
+#t4u-mediquote .mq-rhead{text-align:center;margin:0 0 16px}
+#t4u-mediquote .mq-rhead h2{font-size:21px;font-weight:800}
+#t4u-mediquote .mq-rhead p{font-size:13px;color:var(--muted);margin-top:5px}
+
+#t4u-mediquote .mq-plans{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
+@media(min-width:680px){#t4u-mediquote .mq-plans{grid-template-columns:1fr 44px 1fr;gap:0}}
+#t4u-mediquote .mq-div{display:flex;align-items:center;justify-content:center;position:relative;padding:8px 0}
+#t4u-mediquote .mq-div::before{content:"";position:absolute;background:var(--border);
+  left:50%;top:0;bottom:0;width:1.5px;transform:translateX(-50%)}
+@media(max-width:679px){#t4u-mediquote .mq-div::before{left:0;right:0;top:50%;bottom:auto;width:auto;height:1.5px;transform:translateY(-50%)}}
+#t4u-mediquote .mq-div span{position:relative;z-index:1;background:var(--cream);color:var(--muted);
+  font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 5px;border:1.5px solid var(--border);border-radius:var(--r-pill)}
+@media(max-width:679px){#t4u-mediquote .mq-div span{padding:5px 14px}}
+#t4u-mediquote .mq-plan{position:relative;overflow:hidden;background:var(--navy);border:1px solid var(--navy-3);
+  border-radius:var(--r-lg);padding:22px 19px;box-shadow:0 16px 40px rgba(15,37,64,.26);
+  animation:mqpop .5s var(--ease) both;animation-delay:calc(var(--d,0)*120ms)}
+@keyframes mqpop{0%{opacity:0;transform:scale(.93) translateY(12px)}60%{transform:scale(1.015)}100%{opacity:1;transform:none}}
+#t4u-mediquote .mq-plan::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 32%,rgba(250,199,72,.2) 50%,transparent 68%);
+  transform:translateX(-120%);animation:mqshine 2.4s var(--ease) .5s}
+@keyframes mqshine{to{transform:translateX(120%)}}
+#t4u-mediquote .mq-plan.is-pop{border-color:var(--gold);box-shadow:0 16px 44px rgba(226,168,44,.28),0 0 0 2px var(--gold)}
+#t4u-mediquote .mq-badge{position:absolute;top:0;right:0;background:var(--gold);color:var(--navy);
+  font-family:var(--font-display);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  padding:5px 12px;border-radius:0 0 0 10px}
+#t4u-mediquote .mq-plan-name{font-family:var(--font-display);font-weight:800;font-size:19px;color:#fffdf8}
+#t4u-mediquote .mq-plan-tag{font-size:12px;color:var(--gold);font-weight:600;margin-top:2px}
+#t4u-mediquote .mq-plan-amt{font-family:var(--font-display);font-weight:800;font-size:clamp(31px,7vw,40px);
+  color:var(--gold);line-height:1.05;margin:12px 0 2px;letter-spacing:-.02em}
+#t4u-mediquote .mq-plan-amt .mq-tilde{font-size:.55em;vertical-align:.14em;margin-right:2px}
+#t4u-mediquote .mq-plan-amt small{font-size:15px;font-weight:600;color:#dfe7f0}
+#t4u-mediquote .mq-plan-year{font-size:12px;color:#a9bacd}
+#t4u-mediquote .mq-plan-list{list-style:none;padding:0;margin:15px 0 0;border-top:1px solid var(--navy-3);padding-top:13px}
+#t4u-mediquote .mq-plan-list li{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#dfe7f0;padding:5px 0;line-height:1.45}
+#t4u-mediquote .mq-plan-list li svg{width:15px;height:15px;flex:0 0 auto;color:var(--gold);margin-top:2px}
+#t4u-mediquote .mq-plan-list b{color:#fffdf8;font-weight:600}
+
+/* lead-gate form */
+#t4u-mediquote .mq-gate{background:var(--cream-card);border:2px solid var(--gold);border-radius:var(--r-lg);
+  padding:22px;margin-top:22px;box-shadow:0 14px 36px rgba(226,168,44,.2);animation:mqpop .5s var(--ease) both}
+@media(min-width:760px){#t4u-mediquote .mq-gate{padding:28px}}
+#t4u-mediquote .mq-gate-h{display:flex;align-items:center;gap:10px;justify-content:center;
+  font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--navy);text-align:center}
+#t4u-mediquote .mq-gate-h svg{width:22px;height:22px;color:var(--gold-deep);flex:0 0 auto}
+#t4u-mediquote .mq-gate-sub{text-align:center;font-size:13.5px;color:var(--muted);margin:7px auto 18px;max-width:46ch}
+#t4u-mediquote .mq-gate-perks{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:20px}
+#t4u-mediquote .mq-perk{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  color:var(--navy);background:var(--gold-soft);border:1px solid var(--gold);border-radius:var(--r-pill);padding:5px 12px}
+#t4u-mediquote .mq-perk svg{width:13px;height:13px;color:var(--tick)}
+
+/* locked benefits */
+#t4u-mediquote .mq-lockwrap{position:relative}
+#t4u-mediquote .mq-lockwrap.is-locked .mq-lockable{filter:blur(6px);opacity:.55;pointer-events:none;user-select:none}
+#t4u-mediquote .mq-lockmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:10px;text-align:center;padding:20px;z-index:2}
+#t4u-mediquote .mq-lockmsg .mq-lockcard{background:var(--cream-card);border:2px solid var(--gold);
+  border-radius:var(--r-lg);padding:20px 24px;box-shadow:0 16px 40px rgba(15,37,64,.18);max-width:340px}
+#t4u-mediquote .mq-lockmsg svg{width:30px;height:30px;color:var(--gold-deep);margin-bottom:6px}
+#t4u-mediquote .mq-lockmsg .t{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--navy)}
+#t4u-mediquote .mq-lockmsg .d{font-size:13px;color:var(--muted);margin-top:5px}
+
+#t4u-mediquote .mq-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:22px}
+@media(min-width:560px){#t4u-mediquote .mq-actions{grid-template-columns:1fr 1fr}}
+#t4u-mediquote .mq-act{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--font-display);font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;
+  border-radius:var(--r-md);padding:15px 18px;min-height:54px;border:none;transition:filter .15s var(--ease),transform .12s var(--ease)}
+#t4u-mediquote .mq-act svg{width:17px;height:17px}
+#t4u-mediquote .mq-act:hover{filter:brightness(1.12);transform:translateY(-1px)}
+#t4u-mediquote .mq-act:active{transform:translateY(0)}
+#t4u-mediquote .mq-act:focus-visible{outline:none;box-shadow:var(--ring)}
+#t4u-mediquote .mq-act-wa{background:var(--green);color:var(--gold);box-shadow:0 10px 26px rgba(15,76,53,.3)}
+#t4u-mediquote .mq-act-pdf{background:var(--navy);color:var(--gold);box-shadow:0 10px 26px rgba(15,37,64,.24)}
+
+#t4u-mediquote .mq-disc{font-size:12px;color:var(--muted);line-height:1.65;margin-top:16px;
+  background:var(--cream-warm);border:1px solid var(--border-soft);border-radius:var(--r-md);padding:14px 16px}
+#t4u-mediquote .mq-disc strong{color:var(--ink-2)}
+
+#t4u-mediquote .mq-flags{display:grid;gap:11px;grid-template-columns:1fr;margin-top:16px}
+@media(min-width:560px){#t4u-mediquote .mq-flags{grid-template-columns:1fr 1fr}}
+#t4u-mediquote .mq-flag{display:flex;gap:11px;align-items:flex-start;background:var(--cream-card);
+  border:1px solid var(--border);border-radius:var(--r-md);padding:13px}
+#t4u-mediquote .mq-flag svg{width:19px;height:19px;flex:0 0 auto;color:var(--gold-deep);margin-top:1px}
+#t4u-mediquote .mq-flag .mq-flag-t{font-size:13.5px;font-weight:600;color:var(--ink)}
+#t4u-mediquote .mq-flag .mq-flag-d{font-size:12px;color:var(--muted);margin-top:2px}
+
+#t4u-mediquote .mq-ben{margin-top:28px}
+#t4u-mediquote .mq-ben-title{text-align:center;font-size:19px;font-weight:800;color:var(--navy);margin-bottom:4px}
+#t4u-mediquote .mq-ben-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px}
+#t4u-mediquote .mq-viewtog{display:flex;justify-content:center;margin-bottom:16px}
+#t4u-mediquote .mq-viewtog .mq-seg{display:inline-grid;grid-template-columns:auto auto;max-width:100%}
+#t4u-mediquote .mq-viewtog .mq-seg button{padding:10px 18px;white-space:nowrap}
+#t4u-mediquote .mq-bgroup{margin-top:13px;border:1px solid var(--border);border-radius:var(--r-md);
+  overflow:hidden;background:var(--cream-card)}
+#t4u-mediquote .mq-bgroup-h{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--gold);background:var(--navy);padding:10px 14px}
+#t4u-mediquote .mq-bhead{display:grid;grid-template-columns:1fr 88px 88px;gap:8px;padding:9px 14px;
+  background:var(--cream-warm);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+#t4u-mediquote .mq-bhead span:not(:first-child){text-align:center}
+#t4u-mediquote .mq-brow{display:grid;grid-template-columns:1fr 88px 88px;gap:8px;align-items:center;
+  padding:11px 14px;border-top:1px solid var(--border-soft);opacity:0;
+  animation:mqrow .42s var(--ease) forwards;animation-delay:calc(var(--i,0)*28ms + .1s)}
+@keyframes mqrow{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#t4u-mediquote .mq-bname{font-size:13.5px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#t4u-mediquote .mq-info{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--cream-card);color:var(--muted);font-size:11px;font-weight:700;line-height:1;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:0}
+#t4u-mediquote .mq-info:hover,#t4u-mediquote .mq-info:focus-visible{border-color:var(--gold-deep);color:var(--gold-deep);outline:none;box-shadow:var(--ring)}
+#t4u-mediquote .mq-bval{font-size:12.5px;font-weight:700;color:var(--navy);text-align:center;line-height:1.3}
+#t4u-mediquote .mq-bval.is-yes{color:var(--tick)}
+#t4u-mediquote .mq-bval.is-no{color:var(--muted);font-weight:500}
+#t4u-mediquote .mq-bval.is-agent{color:var(--gold-deep)}
+#t4u-mediquote .mq-bval .mq-yi{width:16px;height:16px}
+#t4u-mediquote .mq-bnote{display:block;font-size:10.5px;font-weight:700;color:var(--gold-deep);
+  background:var(--gold-soft);border:1px solid var(--gold);border-radius:var(--r-pill);
+  padding:1px 6px;margin-top:4px;white-space:nowrap}
+
+#t4u-mediquote .mq-na{background:var(--cream-warm);border:1.5px dashed var(--border);border-radius:var(--r-lg);padding:26px;text-align:center}
+#t4u-mediquote .mq-na h2{font-size:19px;margin-bottom:8px}
+#t4u-mediquote .mq-na p{font-size:14px;color:var(--muted);margin-bottom:18px}
+
+.t4u-mq-tip{position:fixed;z-index:2147483000;max-width:280px;background:#0f2540;color:#fffdf8;
+  font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.5;padding:10px 12px;border-radius:8px;
+  box-shadow:0 12px 32px rgba(15,37,64,.4);opacity:0;pointer-events:none;transform:translateY(4px);
+  transition:opacity .14s ease,transform .14s ease;border:1px solid #22456e}
+.t4u-mq-tip.is-on{opacity:1;transform:none}
+.t4u-mq-tip b{color:#fac748}
+@media(prefers-reduced-motion:reduce){#t4u-mediquote *,.t4u-mq-tip{animation:none!important;transition:none!important}
+  #t4u-mediquote .mq-brow,#t4u-mediquote .mq-plan,#t4u-mediquote .mq-profile,#t4u-mediquote .mq-gate{opacity:1!important}}
+</style>
+
+<div class="mq-langbar">
+  <div class="mq-lang" role="group" aria-label="Language">
+    <button type="button" data-lang="bm" aria-pressed="true">BM</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</div>
+
+<header class="mq-head">
+  <span class="mq-eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 12h6M12 9v6"/></svg>
+    <span data-i18n="eyebrow">Kad Perubatan i-Medi Evolusi</span>
+  </span>
+  <h1 class="mq-title"><span data-i18n="title1">QuickQuote</span> <em data-i18n="title2">Quotation Anda</em></h1>
+  <p class="mq-sub" data-i18n="sub">Isi maklumat ringkas untuk bandingkan dua pilihan pelan kad perubatan i-Medi Evolusi Great Eastern Takaful.</p>
+</header>
+
+<div class="mq-card" id="mq-form">
+  <div class="mq-sec-lbl" data-i18n="secQuote">Maklumat Sebut Harga</div>
+  <div class="mq-grid">
+    <div class="mq-field">
+      <label class="mq-label" for="mq-dob"><span data-i18n="fDob">Tarikh Lahir</span> <span class="mq-req">*</span></label>
+      <input type="date" id="mq-dob" autocomplete="bday">
+      <span class="mq-hint" id="mq-dob-hint" data-i18n="hDob">Umur hari lahir berikutnya 1–60 tahun.</span>
+    </div>
+    <div class="mq-field">
+      <span class="mq-label"><span data-i18n="fGender">Jantina</span> <span class="mq-req">*</span></span>
+      <div class="mq-seg" id="mq-gender" role="group">
+        <button type="button" data-v="male" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="14" r="6"/><path d="M19 5l-5 5M19 5h-5M19 5v5"/></svg><span data-i18n="male">Lelaki</span></button>
+        <button type="button" data-v="female" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="6"/><path d="M12 15v7M9 19h6"/></svg><span data-i18n="female">Perempuan</span></button>
+      </div>
+    </div>
+    <div class="mq-field">
+      <span class="mq-label"><span data-i18n="fSmoke">Merokok?</span> <span class="mq-req">*</span></span>
+      <div class="mq-seg" id="mq-smoke" role="group">
+        <button type="button" data-v="non" aria-pressed="true"><span data-i18n="no">Tidak</span></button>
+        <button type="button" data-v="smoke" aria-pressed="false"><span data-i18n="yes">Ya</span></button>
+      </div>
+    </div>
+    <div class="mq-field">
+      <label class="mq-label" for="mq-occ"><span data-i18n="fOcc">Kelas Pekerjaan</span> <span class="mq-req">*</span></label>
+      <select id="mq-occ">
+        <option value="1" data-i18n="occ1">Kelas 1 — Profesional</option>
+        <option value="2" data-i18n="occ2">Kelas 2 — Separuh manual</option>
+        <option value="3" data-i18n="occ3">Kelas 3 — Manual</option>
+        <option value="4" data-i18n="occ4">Kelas 4 — Risiko tinggi</option>
+      </select>
+      <span class="mq-hint"><span data-i18n="hOcc">Harga dipapar untuk Kelas 1/2. Tak pasti? Semak</span> <a href="https://velvety-peony-7d44ec.netlify.app/" target="_blank" rel="noopener" data-i18n="hOccLink">direktori pekerjaan</a>.</span>
+    </div>
+    <div class="mq-field full">
+      <span class="mq-label"><span data-i18n="fIllness">Ada sejarah sakit?</span> <span class="mq-req">*</span></span>
+      <div class="mq-seg" id="mq-ill" role="group">
+        <button type="button" data-v="no" aria-pressed="true"><span data-i18n="no">Tidak</span></button>
+        <button type="button" data-v="yes" aria-pressed="false"><span data-i18n="yes">Ya</span></button>
+      </div>
+    </div>
+    <div class="mq-illbox" id="mq-illbox">
+      <label class="mq-label" for="mq-illdetail" data-i18n="fIllDetail">Sila nyatakan sejarah sakit</label>
+      <textarea id="mq-illdetail" data-i18n-ph="phIll"></textarea>
+      <span class="mq-hint" data-i18n="hIll">Maklumat ini membantu ejen sediakan cadangan yang tepat.</span>
+    </div>
+  </div>
+
+  <p class="mq-err" id="mq-err"></p>
+  <button type="button" class="mq-cta" id="mq-go">
+    <span data-i18n="btnGo">Dapatkan Anggaran</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </button>
+</div>
+
+<div class="mq-result" id="mq-result" aria-live="polite"></div>
+</section>
+
+<script>
+(function(){
+  var root=document.getElementById('t4u-mediquote');
+  if(!root||root.dataset.init)return; root.dataset.init='1';
+
+  /* ================= TETAPAN ================= */
+  var WEBHOOK_URL='https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY4MDYzNzA0MzU1MjZjNTUzMzUxMzQi_pc';
+  var AGENT_WA='601118818316';               // Ejen Kamal Husaini
+  var SOCIAL_WEBHOOK_URL='https://callbacks-api.one.store/v1/events/FXZR2TdcQoWGQpe0Ts8VFQ';
+  /* =========================================== */
+
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var lang='bm';
+
+  var I={
+    eyebrow:['Kad Perubatan i-Medi Evolusi','i-Medi Evolusi Medical Card'],
+    title1:['QuickQuote','QuickQuote'], title2:['Quotation Anda','Your Quotation'],
+    sub:['Isi maklumat ringkas untuk bandingkan dua pilihan pelan kad perubatan i-Medi Evolusi Great Eastern Takaful.',
+         'Fill in a few details to compare two i-Medi Evolusi medical card options from Great Eastern Takaful.'],
+    secQuote:['Maklumat Sebut Harga','Quotation Details'],
+    fName:['Nama Penuh','Full Name'], phName:['Ali bin Abu','Ali bin Abu'],
+    fPhone:['Nombor Telefon','Phone Number'], phPhone:['012-3456789','012-3456789'],
+    fEmail:['Emel','Email'], phEmail:['nama@email.com','name@email.com'],
+    fDob:['Tarikh Lahir','Date of Birth'], hDob:['Umur hari lahir berikutnya 1–60 tahun.','Age next birthday 1–60 years.'],
+    dobAnb:['Umur hari lahir berikutnya: <b>%s tahun<\/b> (ANB).','Age next birthday: <b>%s years<\/b> (ANB).'],
+    dobAnbOor:['Umur hari lahir berikutnya: %s tahun — di luar julat sebut harga (1–60).','Age next birthday: %s years — outside quotation range (1–60).'],
+    fGender:['Jantina','Gender'], male:['Lelaki','Male'], female:['Perempuan','Female'],
+    fSmoke:['Merokok?','Smoker?'], yes:['Ya','Yes'], no:['Tidak','No'],
+    fOcc:['Kelas Pekerjaan','Occupation Class'],
+    occ1:['Kelas 1 — Profesional (akauntan, guru, eksekutif)','Class 1 — Professional (accountant, teacher, executive)'],
+    occ2:['Kelas 2 — Separuh manual (jururawat, penyelia)','Class 2 — Semi-manual (nurse, supervisor)'],
+    occ3:['Kelas 3 — Manual (mekanik, pemandu)','Class 3 — Manual (mechanic, driver)'],
+    occ4:['Kelas 4 — Risiko tinggi (offshore, binaan)','Class 4 — High risk (offshore, construction)'],
+    hOcc:['Harga dipapar untuk Kelas 1/2. Tak pasti? Semak','Prices shown for Class 1/2. Not sure? Check the'],
+    hOccLink:['direktori pekerjaan','occupation directory'],
+    fIllness:['Ada sejarah sakit?','Any medical history?'],
+    fIllDetail:['Sila nyatakan sejarah sakit','Please describe your medical history'],
+    phIll:['Contoh: darah tinggi sejak 2020, kencing manis, pembedahan lalu...','E.g. hypertension since 2020, diabetes, past surgery...'],
+    hIll:['Maklumat ini membantu ejen sediakan cadangan yang tepat. Sejarah sakit boleh menjejaskan pengunderaitan.',
+          'This helps your agent prepare an accurate recommendation. Medical history may affect underwriting.'],
+    btnGo:['Dapatkan Anggaran','Get My Quote'],
+    errName:['Sila isi nama penuh.','Please enter your full name.'],
+    errPhone:['Nombor telefon tak sah (minimum 9 digit).','Invalid phone number (minimum 9 digits).'],
+    errEmail:['Alamat emel tak sah.','Invalid email address.'],
+    errDob:['Sila isi tarikh lahir.','Please enter your date of birth.'],
+    errDobBad:['Tarikh lahir tak sah.','Invalid date of birth.'],
+    errIll:['Sila nyatakan sejarah sakit anda.','Please describe your medical history.'],
+    gateTitle:['Buka Manfaat Penuh Pelan Anda','Unlock Your Full Plan Details'],
+    gateSub:['Isi maklumat anda untuk lihat senarai penuh manfaat, muat turun PDF, dan dapatkan penerangan percuma dari ejen.',
+             'Enter your details to view the full benefit list, download the PDF, and get a free walkthrough from your agent.'],
+    perk1:['Senarai penuh 41 manfaat','Full list of 41 benefits'],
+    perk2:['Muat turun PDF','PDF download'],
+    perk3:['Konsultasi percuma','Free consultation'],
+    btnUnlock:['Buka Manfaat Penuh','Unlock Full Details'],
+    lockT:['Manfaat penuh dikunci','Full benefits locked'],
+    lockD:['Isi maklumat di atas untuk buka senarai penuh 41 manfaat dan muat turun PDF.',
+           'Fill in your details above to unlock all 41 benefits and the PDF download.'],
+    privacy:['Maklumat anda dihantar kepada ejen Takaful4Us untuk tujuan sebut harga sahaja.',
+             'Your details are sent to a Takaful4Us agent for quotation purposes only.'],
+    profileFor:['Quotation ini khas untuk','This quotation is specially for'],
+    pDob:['Tarikh Lahir','Date of Birth'], pAnb:['Umur Seterusnya','Age Next Birthday'],
+    pGender:['Jantina','Gender'], pSmoke:['Merokok','Smoker'], pOcc:['Kelas Pekerjaan','Occupation Class'],
+    pPhone:['Telefon','Phone'], pEmail:['Emel','Email'], pIll:['Sejarah Sakit','Medical History'],
+    pDate:['Tarikh Sebut Harga','Quotation Date'], pNone:['Tiada','None'],
+    yearsOld:['tahun','years'],
+    regen:['Tukar maklumat & jana semula','Edit details & regenerate'],
+    rhead:['Pilihan pelan untuk anda','Your plan options'],
+    rsub:['Dua pilihan, beza pada bilik hospital & had tahunan','Two options, differing in room rate & annual limit'],
+    opt1:['Option 1','Option 1'], opt2:['Option 2','Option 2'],
+    opt1tag:['Bilik RM150 · Had RM1.5 Juta','Room RM150 · Limit RM1.5 Mil'],
+    opt2tag:['Bilik RM200 · Had RM2.0 Juta','Room RM200 · Limit RM2.0 Mil'],
+    vs:['ATAU','OR'], popular:['Popular','Popular'],
+    perMonth:['/bulan','/month'], perYear:['setahun','per year'],
+    pl1:['Bilik hospital','Hospital room'], plDay:['hari','day'], plUnlim:['hari tanpa had','unlimited days'],
+    pl2:['Had tahunan','Annual limit'], pl3:['Hibah kematian/lumpuh','Death/TPD benefit'],
+    pl4:['Deduktibel','Deductible'], pl4v:['sekali setahun','once per year'],
+    pl5:['Had seumur hidup','Lifetime limit'], pl5v:['Tiada had','No limit'],
+    pl6:['Penjagaan Harian','Daily Guardian'],
+    benTitle:['Manfaat pelan anda','Your plan benefits'],
+    benSub:['Tap ikon <b>i<\/b> untuk definisi setiap manfaat','Tap the <b>i<\/b> icon for each benefit definition'],
+    viewSimple:['Ringkas','Simplified'], viewFull:['Penuh','Full'],
+    colBenefit:['Manfaat','Benefit'],
+    btnWa:['Hantar kepada Ejen','Send to Agent'], btnPdf:['Download PDF','Download PDF'],
+    flagCash:['Nilai Tunai (Simpanan)','Cash Value (Savings)'],
+    flagCashD:['Polisi ada simpanan terkumpul — anggaran selepas 10/15/20 tahun perlu dibincang dengan ejen.',
+               'The policy accumulates savings — projected values after 10/15/20 years to be discussed with your agent.'],
+    flagAdd:['Add-on Pilihan','Optional Add-ons'],
+    flagAddD:['Elaun wad RM100/hari + ICU RM200/hari (+RM14/bulan) · Pelepasan bayaran jika lumpuh atau sakit kritikal (dari +RM20/bulan).',
+              'Ward allowance RM100/day + ICU RM200/day (+RM14/mo) · Contribution waiver on TPD or critical illness (from +RM20/mo).'],
+    flagOcc:['Kelas pekerjaan','Occupation class'],
+    flagOccD:['Harga dipapar untuk Kelas 1/2. Untuk Kelas 3/4, kadar tertakluk underwriting — ejen akan sahkan.',
+              'Prices shown are for Class 1/2. For Class 3/4, rates are subject to underwriting — your agent will confirm.'],
+    flagIll:['Sejarah sakit direkodkan','Medical history noted'],
+    flagIllD:['Maklumat kesihatan anda mungkin menjejaskan pengunderaitan dan kadar akhir. Ejen akan semak.',
+              'Your health disclosure may affect underwriting and final rates. Your agent will review.'],
+    naTitle:['Sebut harga perlu semakan ejen','Quotation needs agent review'],
+    naOver:['Umur hari lahir berikutnya anda (%s) melebihi jadual sedia ada (sehingga 60). Isi maklumat di bawah dan ejen akan sediakan sebut harga tepat.',
+            'Your age next birthday (%s) exceeds our table (up to 60). Fill in your details below and your agent will prepare an accurate quote.'],
+    naSmoke:['Jadual perokok bermula dari umur hari lahir berikutnya 18. Sila semak status merokok, atau isi maklumat di bawah.',
+             'Smoker rates start from age next birthday 18. Please check your smoker status, or fill in your details below.'],
+    naGeneric:['Kombinasi umur %s tiada dalam jadual sedia ada. Isi maklumat di bawah dan ejen akan hubungi anda.',
+               'Age %s is not in our current table. Fill in your details below and your agent will contact you.'],
+    naGateTitle:['Hubungi Ejen untuk Sebut Harga','Contact Agent for a Quote'],
+    naBtnSend:['Hantar kepada Ejen','Send to Agent'],
+    sentT:['Terima kasih!','Thank you!'],
+    sentD:['Maklumat anda dah dihantar kepada ejen. Kami akan hubungi anda tak lama lagi.',
+           'Your details have been sent to the agent. We will contact you shortly.'],
+    disc:['<strong>Penafian:<\/strong> Angka di atas adalah anggaran caruman bulanan untuk pakej i-Great Evo + rider i-Medi Evolusi dan tertakluk kepada penilaian pengunderaitan, status kesihatan, dan terma sebenar Great Eastern Takaful. Bukan kontrak. Caruman &amp; manfaat sebenar tertakluk kepada Sijil Takaful dan Risalah Pemberitahuan Produk (PDS). Manfaat dilindungi PIDM sehingga had perlindungan. Disediakan oleh Takaful4Us — ejen berdaftar MTA1462134.',
+          '<strong>Disclaimer:<\/strong> The figures above are estimated monthly contributions for the i-Great Evo + i-Medi Evolusi rider package and are subject to underwriting assessment, health status, and the actual terms of Great Eastern Takaful. Not a contract. Actual contributions &amp; benefits are subject to the Takaful Certificate and Product Disclosure Sheet (PDS). Benefits are protected by PIDM up to limits. Provided by Takaful4Us — registered agent MTA1462134.'],
+    waIntro:['Salam, saya nak tanya pasal quotation Kad Perubatan i-Medi Evolusi ni.',
+             'Hi, I would like to enquire about this i-Medi Evolusi Medical Card quotation.']
+  };
+  function t(k){var v=I[k];return v?(lang==='bm'?v[0]:v[1]):k;}
+
+  var RAW={"male_non":"1:220.2:261.2|2:220.2:261.2|3:220.2:261.2|4:220.2:261.2|5:220.2:261.2|6:124.2:147.2|7:124.4:147.4|8:124.55:147.55|9:124.75:147.75|10:124.95:147.95|11:122.1:143.1|12:122.25:143.25|13:122.35:143.35|14:122.45:143.45|15:122.6:143.6|16:129.7:150.7|17:129.8:150.8|18:129.85:150.85|19:129.9:150.9|20:129.95:150.95|21:134.0:155.0|22:134.2:155.2|23:134.35:155.35|24:134.55:155.55|25:134.75:155.75|26:148.9:171.9|27:149.1:172.1|28:149.25:172.25|29:149.45:172.45|30:149.65:172.65|31:159.8:183.8|32:160.0:184.0|33:160.15:184.15|34:160.35:184.35|35:160.51:184.55|36:187.7:215.7|37:188.1:216.1|38:188.45:216.45|39:188.85:216.85|40:189.25:217.25|41:224.65:259.65|42:225.4:260.4|43:226.15:261.15|44:226.9:261.9|45:227.65:262.65|46:277.55:319.55|47:278.45:320.45|48:279.35:321.35|49:280.4:322.4|50:281.45:323.45|51:341.65:395.65|52:342.85:396.85|53:344.2:398.2|54:345.55:399.55|55:347.05:401.05|56:439.3:507.3|57:442.45:510.45|58:445.45:513.45|59:451.3:519.3|60:456.7:524.7","male_smoke":"18:130.9:151.9|19:131.2:152.2|20:131.5:152.5|21:135.8:156.8|22:136.25:157.25|23:136.7:157.7|24:137.15:158.15|25:137.6:158.6|26:152.05:175.05|27:152.65:175.65|28:153.25:176.25|29:153.85:176.85|30:154.45:177.45|31:165.2:189.2|32:165.95:189.95|33:166.7:190.7|34:167.45:191.45|35:168.35:192.35|36:196.25:224.25|37:197.15:225.15|38:198.2:226.2|39:199.25:227.25|40:200.45:228.45|41:236.65:271.65|42:237.85:272.85|43:239.2:274.2|44:240.7:275.7|45:242.2:277.2|46:292.85:334.85|47:294.5:336.5|48:296.3:338.3|49:298.25:340.25|50:300.2:342.2|51:361.45:415.45|52:363.7:417.7|53:366.1:420.1|54:368.65:422.65|55:372.1:426.1|56:467.2:535.2|57:472.9:540.9|58:478.9:546.9|59:489.85:557.85|60:499.75:567.75","female_non":"1:220.2:261.2|2:220.2:261.2|3:220.2:261.2|4:220.2:261.2|5:220.2:261.2|6:115.2:136.2|7:115.25:136.25|8:115.24:136.24|9:115.3:136.3|10:115.3:136.3|11:112.3:131.3|12:112.35:131.35|13:112.35:131.35|14:112.4:131.4|15:112.4:131.4|16:119.4:138.4|17:119.45:138.45|18:119.5:138.5|19:119.55:138.55|20:119.6:138.6|21:122.65:142.65|22:122.8:142.8|23:122.95:142.95|24:123.1:143.1|25:123.3:143.3|26:137.45:158.45|27:137.6:158.6|28:137.75:158.75|29:137.9:158.9|30:138.05:159.05|31:158.2:182.2|32:158.35:182.35|33:158.5:182.5|34:158.65:182.65|35:158.8:182.8|36:185.95:213.95|37:186.3:214.3|38:186.6:214.6|39:186.95:214.95|40:187.3:215.3|41:227.65:260.65|42:228.25:261.25|43:228.85:261.85|44:229.5:262.5|45:230.2:263.2|46:281.95:323.95|47:282.75:324.75|48:283.55:325.55|49:284.4:326.4|50:285.35:327.35|51:325.3:372.3|52:326.45:373.45|53:327.65:374.65|54:328.95:375.95|55:330.35:377.35|56:404.8:469.8|57:407.35:472.35|58:410.2:475.2|59:413.3:478.3|60:416.7:481.7","female_smoke":"18:120.45:139.45|19:120.7:139.7|20:120.95:139.95|21:124.2:144.2|22:124.55:144.55|23:124.95:144.95|24:125.3:145.3|25:125.7:145.7|26:140.1:161.1|27:140.6:161.6|28:141.1:162.1|29:141.65:162.65|30:142.2:163.2|31:162.8:186.8|32:163.4:187.4|33:164.1:188.1|34:164.75:188.75|35:165.5:189.5|36:193.25:221.25|37:194.1:222.1|38:194.95:222.95|39:195.85:223.85|40:196.85:224.85|41:237.85:270.85|42:238.95:271.95|43:240.1:273.1|44:241.3:274.3|45:242.6:275.6|46:294.95:336.95|47:296.4:338.4|48:297.95:339.95|49:299.6:341.6|50:301.3:343.3|51:342.1:389.1|52:344.45:391.45|53:346.95:393.95|54:349.65:396.65|55:352.45:399.45|56:428.5:493.5|57:433.4:498.4|58:438.8:503.8|59:444.7:509.7|60:451.2:516.2"};
+  var T={};for(var k in RAW){T[k]={};RAW[k].split('|').forEach(function(s){var p=s.split(':');T[k][+p[0]]=[parseFloat(p[1]),parseFloat(p[2])];});}
+
+  /* [bmName,enName,val1,val2,type,bmTip,enTip,simple,noteBM,noteEN] */
+  var GROUPS=[
+    ['Manfaat Asas','Basic Benefits',[
+      ['Manfaat Kematian (Hibah)','Death Benefit (Hibah)','RM15,000','RM15,000','plain',
+       'Jumlah Perlindungan Asas dibayar kepada waris apabila berlaku kematian.',
+       'Basic Sum Covered paid to your beneficiaries upon death.',1],
+      ['Manfaat Ihsan (Khairat)','Compassionate Benefit','RM2,000','RM2,000','plain',
+       'Khairat kematian dibayar dari Dana Tabarru sebagai tambahan kepada manfaat kematian.',
+       'Compassionate payout from the Tabarru Fund on top of the death benefit.',1],
+      ['Hilang Upaya Penuh & Kekal','Total &amp; Permanent Disability','RM15,000','RM15,000','plain',
+       'Pampasan jika berlaku HUPK (lumpuh) sebelum umur 70 tahun hari lahir berikutnya.',
+       'Payout on TPD before age 70 next birthday.',1],
+      ['Perlindungan Sehingga Umur','Coverage Until Age','70','70','plain',
+       'Kad perubatan melindungi anda sehingga umur 70 tahun hari lahir berikutnya.',
+       'Medical card covers you until age 70 next birthday.',1],
+      ['Nilai Tunai (Simpanan)','Cash Value (Savings)','Ada','Ada','agent',
+       'Polisi ada unsur simpanan terkumpul yang boleh dikeluarkan jika perlu. Anggaran selepas 10/15/20 tahun perlu dikira oleh ejen.',
+       'The policy accumulates savings which can be withdrawn if needed. Projections after 10/15/20 years to be calculated by your agent.',1]
+    ]],
+    ['Rider & Add-On','Riders &amp; Add-Ons',[
+      ['i-Provider Plus (Pelepasan Caruman)','i-Provider Plus (Payment Waiver)','Ada','Ada','yes',
+       'Jika pemilik polisi (diri sendiri) sakit kritikal atau lumpuh, caruman bulanan TAK PAYAH BAYAR — Great Eastern tolong bayarkan. Polisi jadi FREE.',
+       'If the policy owner suffers a critical illness or TPD, monthly contributions are waived — Great Eastern pays them. The policy becomes free.',1],
+      ['Elaun Wad + ICU','Ward + ICU Allowance','RM100/hari','RM100/hari','plain',
+       'Elaun tunai RM100/hari masuk wad dan RM200/hari di ICU, dibayar terus kepada anda. Add-on pilihan dengan tambahan RM14.00 sebulan.',
+       'RM100/day cash while warded and RM200/day in ICU, paid directly to you. Optional add-on for an extra RM14.00 per month.',1,'+RM14/bln','+RM14/mo'],
+      ['Pelepasan Bayaran Takaful (Payment Waiver)','Takaful Contribution Waiver (Payment Waiver)','Ya','Ya','yes',
+       'Pelepasan bayaran caruman jika anda lumpuh atau menghadapi Penyakit Kritikal. Add-on pilihan dari serendah RM20.00 sebulan.',
+       'Contribution waiver if you suffer TPD or a critical illness. Optional add-on from as low as RM20.00 per month.',1,'+RM20/bln','+RM20/mo'],
+      ['Pelepasan Bayaran (Ayah/Ibu)','Parent Contribution Waiver','Ya','Ya','yes',
+       'Pelepasan bayaran jika Ayah atau Ibu meninggal dunia, HUPK atau menghadapi Penyakit Kritikal. Add-on pilihan.',
+       'Contribution waiver if a parent passes away, suffers TPD or a critical illness. Optional add-on.',0,'Add-on','Add-on'],
+      ['Pendapat Kedua Eksekutif','Executive Second Opinion','Ada','Ada','yes',
+       'Pendapat kedua dari pakar perubatan untuk pengesahan diagnosis penyakit.',
+       'Second opinion from a medical specialist to confirm your diagnosis.',0],
+      ['Supreme Assist','Supreme Assist','Ada','Ada','yes',
+       'Khidmat Bantuan Perubatan Kecemasan ketika anda berada di luar negara.',
+       'Emergency medical assistance services while you are overseas.',0]
+    ]],
+    ['Manfaat Pesakit Dalam Hospital (Warded)','In-Patient Benefits (Warded)',[
+      ['Bilik & Penginapan Hospital','Hospital Room &amp; Board','RM150/hari','RM200/hari','plain',
+       'Had sehari untuk bilangan hari <b>tanpa had<\/b>. Naik 20% setiap 5 tahun sijil (sehingga RM300/RM400) tertakluk kepada tiada tuntutan.',
+       'Daily limit for an <b>unlimited<\/b> number of days. Increases 20% every 5 certificate years (up to RM300/RM400) subject to no claims.',1],
+      ['Unit Rawatan Rapi (ICU)','Intensive Care Unit (ICU)','RM300/hari','RM400/hari','plain',
+       'Had sehari untuk bilangan hari tanpa had, selepas kenaikan 20% setiap 5 tahun sijil tanpa tuntutan.',
+       'Daily limit for unlimited days, after the 20% no-claim increase every 5 certificate years.',1],
+      ['Bil Hospital (Cashless)','Hospital Bill (Cashless)','Penuh','Penuh','yes',
+       'Jumlah bil hospital ditanggung penuh oleh pengendali Takaful secara tanpa tunai di hospital panel.',
+       'Full hospital bill covered by the Takaful operator on a cashless basis at panel hospitals.',1],
+      ['Bekalan & Khidmat Hospital','Hospital Supplies &amp; Services','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan — bayaran penuh ditanggung.','As charged — fully covered.',0],
+      ['Bayaran Pembedahan','Surgical Fees','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan — bayaran penuh ditanggung.','As charged — fully covered.',0],
+      ['Dewan Bedah','Operating Theatre','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan — bayaran penuh ditanggung.','As charged — fully covered.',0],
+      ['Bayaran Pakar Bius','Anaesthetist Fees','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan — bayaran penuh ditanggung.','As charged — fully covered.',0],
+      ['Lawatan Pakar Dalam Hospital','In-Hospital Physician Visit','2×/hari','2×/hari','plain',
+       'Lawatan pakar perubatan semasa anda di wad, dua kali sehari.',
+       'Physician visits while you are warded, twice per day.',0],
+      ['Elaun Tunai Hospital Kerajaan','Government Hospital Cash Allowance','RM150/hari','RM200/hari','plain',
+       'Elaun tunai harian jika anda masuk Hospital Kerajaan Malaysia — hari tanpa had.',
+       'Daily cash allowance if you are admitted to a Malaysian Government Hospital — unlimited days.',0],
+      ['Penjagaan Harian (Guardian)','Daily Guardian','—','RM200','plain',
+       'Elaun penjagaan harian untuk penjaga — hanya tersedia untuk Option 2 (bilik RM200).',
+       'Daily guardian allowance — available on Option 2 (RM200 room) only.',0],
+      ['Bilangan Hari di Wad + ICU','Days in Hospital + ICU','Tanpa had','Tanpa had','plain',
+       'Jumlah hari anda boleh dimasukkan di dalam wad — tanpa had (365 hari).',
+       'Number of days you can be warded — unlimited (365 days).',0]
+    ]],
+    ['Manfaat Pesakit Luar Hospital (Outpatient)','Out-Patient Benefits',[
+      ['Rawatan Kanser Pesakit Luar','Outpatient Cancer Treatment','Penuh','Penuh','yes',
+       'Termasuk kos rundingan, ujian pemeriksaan dan ubat bawa pulang — tertakluk had tahunan keseluruhan.',
+       'Includes consultation, diagnostic tests and take-home medication — subject to the overall annual limit.',1],
+      ['Dialisis Buah Pinggang','Kidney Dialysis','Penuh','Penuh','yes',
+       'Rawatan dialisis buah pinggang pesakit luar, bayaran penuh ditanggung (Pay and Claim).',
+       'Outpatient kidney dialysis, fully covered (Pay and Claim).',1],
+      ['Rawatan Klinik 12 Penyakit','12 Illnesses Clinic Treatment','Ko-takaful','Ko-takaful','plain',
+       'Denggi, Zika, Chikungunya, Influenza A/B, HFMD, Bronkitis, Pneumonia, Gastroenteritis Akut, Bronkiolitis Akut, Sinusitis Akut, Tonsilitis Akut. 5% ko-takaful (sehingga RM500/tahun sijil) di klinik The Great Journey; 20% jika klinik luar senarai.',
+       'Dengue, Zika, Chikungunya, Influenza A/B, HFMD, Bronchitis, Pneumonia, Acute Gastroenteritis, Acute Bronchiolitis, Acute Sinusitis, Acute Tonsillitis. 5% co-takaful (up to RM500/certificate year) at The Great Journey clinics; 20% outside the list.',1],
+      ['Ujian Diagnosis Sebelum Masuk','Pre-Hospitalisation Diagnostic Tests','120 hari','120 hari','plain',
+       'Ujian diagnosis dalam tempoh 120 hari sebelum kemasukan hospital.',
+       'Diagnostic tests within 120 days before hospital admission.',0],
+      ['Rundingan Pakar Sebelum Masuk','Pre-Hospitalisation Specialist','120 hari','120 hari','plain',
+       'Rundingan pakar dalam tempoh 120 hari sebelum kemasukan hospital.',
+       'Specialist consultation within 120 days before hospital admission.',0],
+      ['Rawatan Selepas Keluar Hospital','Post-Hospitalisation Treatment','180 hari','180 hari','plain',
+       'Rawatan susulan dalam tempoh 180 hari selepas keluar hospital (Pay and Claim).',
+       'Follow-up treatment within 180 days after hospital discharge (Pay and Claim).',0],
+      ['Pembedahan Harian Pesakit Luar','Outpatient Day Surgery','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan, tertakluk pada Had Tahunan, terma dan syarat.',
+       'As charged, subject to the Annual Limit, terms and conditions.',0],
+      ['Rawatan Kemalangan Kecemasan','Emergency Accidental Treatment','RM5,000','RM5,000','plain',
+       'Rawatan kemalangan kecemasan pesakit luar sehingga RM5,000.',
+       'Outpatient emergency accidental treatment up to RM5,000.',0],
+      ['Yuran Ambulans','Ambulance Fees','Penuh','Penuh','yes',
+       'Seperti caj yang dikenakan, tertakluk pada Had Tahunan, terma dan syarat.',
+       'As charged, subject to the Annual Limit, terms and conditions.',0],
+      ['Pemindahan Organ','Organ Transplant','Penuh','Penuh','yes',
+       'Terhad sekali seumur hidup sebagai penerima — seperti caj yang dikenakan.',
+       'Limited to once per lifetime as recipient — as charged.',0],
+      ['Kanta Intraokular','Intraocular Lens','RM4,000/mata','RM4,000/mata','plain',
+       'Sehingga RM4,000 bagi sebelah mata, maksimum RM8,000 seumur hidup.',
+       'Up to RM4,000 per eye, maximum RM8,000 per lifetime.',0]
+    ]],
+    ['Had Keseluruhan & Info Tambahan','Overall Limits &amp; Extra Info',[
+      ['Had Tahunan Keseluruhan','Overall Annual Limit','RM1.5 Juta','RM2.0 Juta','plain',
+       'Jumlah maksimum tuntutan yang boleh digunakan dalam satu tahun sijil.',
+       'Maximum claimable amount within one certificate year.',1],
+      ['Had Seumur Hidup','Lifetime Limit','Tiada Had','Tiada Had','yes',
+       'Tiada had keseluruhan seumur hidup — tabarru sepanjang hayat.',
+       'No overall lifetime limit — tabarru for life.',1],
+      ['Deduktibel','Deductible','RM500/tahun','RM500/tahun','plain',
+       'Bayaran RM500 sekali setahun tanpa mengira bilangan kemasukan hospital. <b>Dikecualikan bagi kes KECEMASAN.<\/b>',
+       'RM500 paid once a year regardless of how many admissions. <b>Waived for EMERGENCY cases.<\/b>',1],
+      ['Bilangan Hospital Panel','Panel Hospitals','85','85','plain',
+       'Bilangan hospital panel Great Eastern Takaful di bawah The Great Journey.',
+       'Number of Great Eastern Takaful panel hospitals under The Great Journey.',0],
+      ['The Great Journey','The Great Journey','Klinik dahulu','Klinik dahulu','plain',
+       'Wajib pergi klinik panel dahulu sebelum hospital (kecuali kemalangan/kecemasan). Jika tidak ikut, 20% ko-takaful dikenakan.',
+       'You must visit a panel clinic before the hospital (except accidents/emergencies). If not followed, 20% co-takaful applies.',0],
+      ['Tempoh Menunggu','Waiting Period','30/120 hari','30/120 hari','plain',
+       '30 hari untuk penyakit biasa, 120 hari untuk penyakit tertentu, 2 tahun bagi keadaan tertentu. Kemalangan tiada tempoh menunggu.',
+       '30 days for general illness, 120 days for specified illnesses, 2 years for certain conditions. No waiting period for accidents.',0],
+      ['Pelepasan Cukai (eFiling)','Tax Relief (eFiling)','RM4,000','RM4,000','plain',
+       'Boleh dituntut sehingga RM4,000 (swasta) dan RM7,000 (kakitangan kerajaan) dalam eFiling.',
+       'Claimable up to RM4,000 (private) and RM7,000 (government servants) via eFiling.',0],
+      ['Perlindungan Pendapatan','Income Protection','—','—','no',
+       'Penggantian gaji tidak disertakan dalam pelan kad perubatan ini.',
+       'Salary replacement is not included in this medical card plan.',0]
+    ]]
+  ];
+
+  var state={gender:'male',smoke:'non',occ:'1',ill:'no'};
+  var current=null, view='simple', unlocked=false, naMode=false, naMsg='';
+  var lead={name:'',phone:'',email:''};
+  var $=function(id){return document.getElementById(id)};
+  var formEl=$('mq-form'),resEl=$('mq-result');
+
+  function applyLang(){
+    root.querySelectorAll('[data-i18n]').forEach(function(el){el.innerHTML=t(el.getAttribute('data-i18n'))});
+    root.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=plain(t(el.getAttribute('data-i18n-ph')))});
+    updateDobHint();
+    if(current||naMode)renderResult();
+  }
+
+  function anbOf(dob){var t2=new Date(),b=new Date(dob);var a=t2.getFullYear()-b.getFullYear();
+    var m=t2.getMonth()-b.getMonth();if(m<0||(m===0&&t2.getDate()<b.getDate()))a--;return a+1;}
+  function fmt(n){return n.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function fmtInt(n){return n.toLocaleString('en-MY')}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function plain(s){return String(s).replace(/<[^>]*>/g,'').replace(/&amp;/g,'&');}
+  function countUp(el,target){if(!el)return;if(reduce){el.textContent=fmt(target);return;}
+    var t0=null,dur=750;function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);
+      el.textContent=fmt(target*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);}
+  function dmy(d){var x=new Date(d);return ('0'+x.getDate()).slice(-2)+'/'+('0'+(x.getMonth()+1)).slice(-2)+'/'+x.getFullYear();}
+  function occShort(o){return plain(t('occ'+o)).split('—')[0].trim();}
+
+  function updateDobHint(){
+    var el=$('mq-dob-hint');if(!el)return;
+    var v=$('mq-dob').value;
+    if(!v){el.innerHTML=t('hDob');return;}
+    var dt=new Date(v);
+    if(isNaN(dt.getTime())||dt>new Date()){el.innerHTML=t('hDob');return;}
+    var anb=anbOf(v);
+    el.innerHTML=(anb>=1&&anb<=60?t('dobAnb'):t('dobAnbOor')).replace('%s',anb);
+  }
+  $('mq-dob').addEventListener('input',updateDobHint);
+  $('mq-dob').addEventListener('change',updateDobHint);
+
+  applyLang();
+
+  function bindSeg(id,key,cb){var box=$(id);
+    box.addEventListener('click',function(e){var b=e.target.closest('button[data-v]');if(!b)return;
+      [].forEach.call(box.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed','false')});
+      b.setAttribute('aria-pressed','true');state[key]=b.dataset.v;if(cb)cb(b.dataset.v);});}
+  bindSeg('mq-gender','gender');bindSeg('mq-smoke','smoke');
+  bindSeg('mq-ill','ill',function(v){$('mq-illbox').classList.toggle('is-on',v==='yes')});
+  $('mq-occ').addEventListener('change',function(e){state.occ=e.target.value});
+
+  var tick='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><\/svg>';
+  var iconYes='<svg class="mq-yi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><\/svg>';
+  var svgWa='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-1.7-.9-2.9-1.6-4-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.5.7.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/><\/svg>';
+  var svgPdf='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/><\/svg>';
+  var svgLock='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><\/svg>';
+
+  function actionsHTML(idSuffix){
+    return '<div class="mq-actions">'
+      +'<a class="mq-act mq-act-wa" href="'+waLink()+'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a>'
+      +'<button type="button" class="mq-act mq-act-pdf" data-pdf="1" id="mq-pdf'+idSuffix+'">'+svgPdf+t('btnPdf')+'<\/button>'
+      +'<\/div>';
+  }
+
+  function gateHTML(isNa){
+    return '<div class="mq-gate" id="mq-gate">'
+      +'<div class="mq-gate-h">'+svgLock+'<span>'+(isNa?t('naGateTitle'):t('gateTitle'))+'<\/span><\/div>'
+      +'<p class="mq-gate-sub">'+t('gateSub')+'<\/p>'
+      +(isNa?'':'<div class="mq-gate-perks">'
+        +'<span class="mq-perk">'+tick+t('perk1')+'<\/span>'
+        +'<span class="mq-perk">'+tick+t('perk2')+'<\/span>'
+        +'<span class="mq-perk">'+tick+t('perk3')+'<\/span>'
+      +'<\/div>')
+      +'<div class="mq-grid">'
+        +'<div class="mq-field"><label class="mq-label" for="mq-name">'+t('fName')+' <span class="mq-req">*<\/span><\/label>'
+          +'<input type="text" id="mq-name" autocomplete="name" placeholder="'+plain(t('phName'))+'" value="'+esc(lead.name)+'"><\/div>'
+        +'<div class="mq-field"><label class="mq-label" for="mq-phone">'+t('fPhone')+' <span class="mq-req">*<\/span><\/label>'
+          +'<input type="tel" id="mq-phone" autocomplete="tel" inputmode="tel" placeholder="'+plain(t('phPhone'))+'" value="'+esc(lead.phone)+'"><\/div>'
+        +'<div class="mq-field full"><label class="mq-label" for="mq-email">'+t('fEmail')+' <span class="mq-req">*<\/span><\/label>'
+          +'<input type="email" id="mq-email" autocomplete="email" inputmode="email" placeholder="'+plain(t('phEmail'))+'" value="'+esc(lead.email)+'"><\/div>'
+      +'<\/div>'
+      +'<p class="mq-err" id="mq-gerr"><\/p>'
+      +'<button type="button" class="mq-cta" id="mq-unlock">'+(isNa?t('naBtnSend'):t('btnUnlock'))
+        +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/><\/svg><\/button>'
+      +'<p class="mq-privacy">'+t('privacy')+'<\/p>'
+    +'<\/div>';
+  }
+
+  function benHTML(){
+    var i=0,L=lang==='bm'?0:1;
+    var html='<div class="mq-ben"><div class="mq-ben-title">'+t('benTitle')+'<\/div>'
+      +'<div class="mq-ben-sub">'+t('benSub')+'<\/div>'
+      +'<div class="mq-viewtog"><div class="mq-seg" role="group">'
+        +'<button type="button" data-view="simple" aria-pressed="'+(view==='simple')+'">'+t('viewSimple')+'<\/button>'
+        +'<button type="button" data-view="full" aria-pressed="'+(view==='full')+'">'+t('viewFull')+'<\/button>'
+      +'<\/div><\/div>';
+    GROUPS.forEach(function(g){
+      var rows=g[2].filter(function(r){return view==='full'||r[7]===1;});
+      if(!rows.length)return;
+      html+='<div class="mq-bgroup"><div class="mq-bgroup-h">'+(L?g[1]:g[0])+'<\/div>'
+        +'<div class="mq-bhead"><span>'+t('colBenefit')+'<\/span><span>'+t('opt1')+'<\/span><span>'+t('opt2')+'<\/span><\/div>';
+      rows.forEach(function(r){
+        var note=r[8]?(L?(r[9]||r[8]):r[8]):null;
+        function cell(v){
+          var inner;
+          if(r[4]==='yes') inner=(v==='Ya'||v==='Yes'||v==='Ada')?iconYes:esc(v);
+          else inner=esc(v);
+          var c=r[4]==='yes'?'is-yes':((r[4]==='no'||v==='—')?'is-no':(r[4]==='agent'?'is-agent':''));
+          return '<div class="mq-bval '+c+'">'+inner+(note?'<span class="mq-bnote">'+esc(note)+'<\/span>':'')+'<\/div>';
+        }
+        html+='<div class="mq-brow" style="--i:'+i+'"><div class="mq-bname">'+(L?r[1]:r[0])
+          +' <button type="button" class="mq-info" data-tip="'+String(L?r[6]:r[5]).replace(/"/g,'&quot;')+'" aria-label="info">i<\/button><\/div>'
+          +cell(r[2])+cell(r[3])+'<\/div>'; i++;
+      });
+      html+='<\/div>';
+    });
+    return html+'<\/div>';
+  }
+
+  function planCard(idx,name,tag,price,rb,limit,extra,pop){
+    return '<div class="mq-plan'+(pop?' is-pop':'')+'" style="--d:'+idx+'">'
+      +(pop?'<span class="mq-badge">'+t('popular')+'<\/span>':'')
+      +'<div class="mq-plan-name">'+name+'<\/div><div class="mq-plan-tag">'+tag+'<\/div>'
+      +'<div class="mq-plan-amt"><span class="mq-tilde">~<\/span><small>RM<\/small> <span id="mq-num'+idx+'">0.00<\/span><small> '+t('perMonth')+'<\/small><\/div>'
+      +'<div class="mq-plan-year">≈ RM '+fmtInt(Math.round(price*12))+' '+t('perYear')+'<\/div>'
+      +'<ul class="mq-plan-list">'
+        +'<li>'+tick+'<span>'+t('pl1')+' <b>'+rb+'<\/b>/'+t('plDay')+' · '+t('plUnlim')+'<\/span><\/li>'
+        +'<li>'+tick+'<span>'+t('pl2')+' <b>'+limit+'<\/b><\/span><\/li>'
+        +'<li>'+tick+'<span>'+t('pl3')+' <b>RM15,000<\/b><\/span><\/li>'
+        +'<li>'+tick+'<span>'+t('pl4')+' <b>RM500<\/b> '+t('pl4v')+'<\/span><\/li>'
+        +'<li>'+tick+'<span>'+t('pl5')+' <b>'+t('pl5v')+'<\/b><\/span><\/li>'
+        +extra
+      +'<\/ul><\/div>';
+  }
+
+  function profileHTML(){
+    var d=current.data;
+    function row(k,v){return '<div class="mq-prow"><span class="mq-pk">'+k+'<\/span><span class="mq-pv">'+esc(v)+'<\/span><\/div>';}
+    return '<div class="mq-profile">'
+      +'<div class="mq-profile-h">'+t('profileFor')+'<\/div>'
+      +'<div class="mq-profile-name">'+esc(lead.name)+'<\/div>'
+      +'<div class="mq-profile-tags">'
+        +'<span class="mq-ptag">'+(d.gender==='male'?t('male'):t('female'))+'<\/span>'
+        +'<span class="mq-ptag">'+current.anb+' '+t('yearsOld')+' (ANB)<\/span>'
+        +'<span class="mq-ptag">'+t('pSmoke')+': '+(d.smoke==='smoke'?t('yes'):t('no'))+'<\/span>'
+        +'<span class="mq-ptag">'+esc(occShort(d.occ))+'<\/span>'
+      +'<\/div>'
+      +'<div class="mq-ptable">'
+        +row(t('pDob'),dmy(d.dob))
+        +row(t('pPhone'),lead.phone)
+        +row(t('pEmail'),lead.email)
+        +row(t('pIll'),d.ill==='yes'?(d.illDetail||plain(t('yes'))):plain(t('pNone')))
+        +row(t('pOcc'),occShort(d.occ))
+        +row(t('pDate'),dmy(new Date()))
+      +'<\/div><\/div>';
+  }
+
+  function regenHTML(){
+    return '<div class="mq-regen"><button type="button" id="mq-regen">'
+      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/><\/svg>'
+      +t('regen')+'<\/button><\/div>';
+  }
+
+  function waLink(){
+    if(!current)return 'https://wa.me/'+AGENT_WA;
+    var d=current.data;
+    var msg=plain(t('waIntro'))+'\n\n'
+      +'*'+plain(t('profileFor'))+'*: '+(lead.name||'-')+'\n'
+      +plain(t('pPhone'))+': '+(lead.phone||'-')+'\n'
+      +plain(t('pEmail'))+': '+(lead.email||'-')+'\n'
+      +plain(t('pDob'))+': '+dmy(d.dob)+' (ANB '+current.anb+')\n'
+      +plain(t('pGender'))+': '+plain(d.gender==='male'?t('male'):t('female'))+'\n'
+      +plain(t('pSmoke'))+': '+plain(d.smoke==='smoke'?t('yes'):t('no'))+'\n'
+      +plain(t('pOcc'))+': '+occShort(d.occ)+'\n'
+      +plain(t('pIll'))+': '+(d.ill==='yes'?(d.illDetail||plain(t('yes'))):plain(t('pNone')))+'\n\n'
+      +'*'+plain(t('opt1'))+'* ('+plain(t('opt1tag'))+'): ~RM '+fmt(current.row[0])+plain(t('perMonth'))+'\n'
+      +'*'+plain(t('opt2'))+'* ('+plain(t('opt2tag'))+'): ~RM '+fmt(current.row[1])+plain(t('perMonth'));
+    return 'https://wa.me/'+AGENT_WA+'?text='+encodeURIComponent(msg);
+  }
+
+  function renderResult(){
+    if(naMode){
+      resEl.innerHTML='<div class="mq-na"><h2>'+t('naTitle')+'<\/h2><p>'+naMsg+'<\/p><\/div>'
+        + (unlocked ? '<div class="mq-gate"><div class="mq-gate-h">'+tick+'<span>'+t('sentT')+'<\/span><\/div>'
+              +'<p class="mq-gate-sub">'+t('sentD')+'<\/p>'
+              +'<div class="mq-actions" style="grid-template-columns:1fr"><a class="mq-act mq-act-wa" href="'+waLink()
+              +'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a><\/div><\/div>'
+            : gateHTML(true))
+        + regenHTML();
+      bindResult();return;
+    }
+    var p1=current.row[0],p2=current.row[1],d=current.data;
+    var flags='<div class="mq-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"/><circle cx="12" cy="11" r="2.5"/><\/svg>'
+      +'<div><div class="mq-flag-t">'+t('flagCash')+'<\/div><div class="mq-flag-d">'+t('flagCashD')+'<\/div><\/div><\/div>'
+      +'<div class="mq-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/><\/svg>'
+      +'<div><div class="mq-flag-t">'+t('flagAdd')+'<\/div><div class="mq-flag-d">'+t('flagAddD')+'<\/div><\/div><\/div>';
+    if(d.occ==='3'||d.occ==='4')flags+='<div class="mq-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><\/svg>'
+      +'<div><div class="mq-flag-t">'+t('flagOcc')+' '+d.occ+'<\/div><div class="mq-flag-d">'+t('flagOccD')+'<\/div><\/div><\/div>';
+    if(d.ill==='yes')flags+='<div class="mq-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 12h6M12 9v6"/><\/svg>'
+      +'<div><div class="mq-flag-t">'+t('flagIll')+'<\/div><div class="mq-flag-d">'+t('flagIllD')+'<\/div><\/div><\/div>';
+
+    var lockedBlock='<div class="mq-lockwrap'+(unlocked?'':' is-locked')+'">'
+      +'<div class="mq-lockable">'+benHTML()+'<\/div>'
+      +(unlocked?'':'<div class="mq-lockmsg"><div class="mq-lockcard">'+svgLock
+        +'<div class="t">'+t('lockT')+'<\/div><div class="d">'+t('lockD')+'<\/div><\/div><\/div>')
+      +'<\/div>';
+
+    resEl.innerHTML=
+      (unlocked?profileHTML():'')
+      +'<div class="mq-rhead"><h2>'+t('rhead')+'<\/h2><p>'+t('rsub')+'<\/p><\/div>'
+      +'<div class="mq-plans">'
+        +planCard(0,t('opt1'),t('opt1tag'),p1,'RM150','RM1.5 Juta','',false)
+        +'<div class="mq-div"><span>'+t('vs')+'<\/span><\/div>'
+        +planCard(1,t('opt2'),t('opt2tag'),p2,'RM200','RM2.0 Juta',
+            '<li>'+tick+'<span>'+t('pl6')+' <b>RM200<\/b><\/span><\/li>',true)
+      +'<\/div>'
+      +(unlocked?actionsHTML('-top'):gateHTML(false))
+      +'<div class="mq-disc">'+t('disc')+'<\/div>'
+      +'<div class="mq-flags">'+flags+'<\/div>'
+      +lockedBlock
+      +(unlocked?actionsHTML('-bot'):'')
+      +regenHTML();
+
+    countUp($('mq-num0'),p1);countUp($('mq-num1'),p2);
+    bindResult();
+  }
+
+  function bindResult(){
+    var rg=$('mq-regen');
+    if(rg)rg.addEventListener('click',function(){
+      resEl.classList.remove('is-on');resEl.innerHTML='';
+      current=null;unlocked=false;naMode=false;view='simple';
+      formEl.classList.remove('is-hidden');
+      formEl.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    [].forEach.call(resEl.querySelectorAll('[data-pdf]'),function(b){b.addEventListener('click',exportPDF);});
+    [].forEach.call(resEl.querySelectorAll('[data-view]'),function(b){
+      b.addEventListener('click',function(){view=b.dataset.view;renderResult();
+        var el=resEl.querySelector('.mq-ben');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});});
+    var un=$('mq-unlock');
+    if(un)un.addEventListener('click',doUnlock);
+    ['mq-name','mq-phone','mq-email'].forEach(function(id){
+      var el=$(id);if(!el)return;
+      el.addEventListener('input',function(){lead[id.replace('mq-','')]=el.value;});
+    });
+  }
+
+  function gfail(msg){var e=$('mq-gerr');if(e){e.textContent=plain(msg);e.classList.add('is-on');}return false;}
+  function doUnlock(){
+    var n=$('mq-name'),p=$('mq-phone'),m=$('mq-email');
+    lead.name=n?n.value.trim():'';lead.phone=p?p.value.trim():'';lead.email=m?m.value.trim():'';
+    var e=$('mq-gerr');if(e)e.classList.remove('is-on');
+    if(lead.name.length<2)return gfail(t('errName'));
+    if(lead.phone.replace(/\D/g,'').length<9)return gfail(t('errPhone'));
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lead.email))return gfail(t('errEmail'));
+    unlocked=true;
+    sendWebhook();
+    sendSocialWebhook();
+    renderResult();
+    var target=resEl.querySelector('.mq-ben')||resEl;
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function exportPDF(){
+    if(!unlocked||!current)return;
+    var d=current.data,p1=current.row[0],p2=current.row[1],L=lang==='bm'?0:1;
+    var rowsHTML='';
+    GROUPS.forEach(function(g){
+      rowsHTML+='<tr class="grp"><td colspan="3">'+(L?g[1]:g[0])+'<\/td><\/tr>';
+      g[2].forEach(function(r){
+        var note=r[8]?(L?(r[9]||r[8]):r[8]):null;
+        function v(x){
+          var base=(r[4]==='yes')?((x==='Ya'||x==='Yes'||x==='Ada')?'✓':x):(x==='—'?'–':esc(x));
+          return base+(note?'<br><span class="nt">'+esc(note)+'<\/span>':'');
+        }
+        rowsHTML+='<tr><td>'+(L?r[1]:r[0])+'<\/td><td class="c">'+v(r[2])+'<\/td><td class="c">'+v(r[3])+'<\/td><\/tr>';
+      });
+    });
+    var w=window.open('','_blank');
+    if(!w){alert(lang==='bm'?'Sila benarkan pop-up untuk muat turun PDF.':'Please allow pop-ups to download the PDF.');return;}
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>QuickQuote - '+esc(lead.name)+'<\/title><style>'
+      +'@page{size:A4;margin:14mm}'
+      +'*{box-sizing:border-box}body{font-family:Helvetica,Arial,sans-serif;color:#0f2540;margin:0;font-size:11px;line-height:1.45}'
+      +'h1{font-size:18px;margin:0 0 2px}.sub{color:#6f7a88;font-size:11px}'
+      +'.hd{border-bottom:3px solid #fac748;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end}'
+      +'.brand{font-weight:bold;font-size:12px;color:#0f4c35;text-align:right}'
+      +'.pf{background:#fbf4e4;border:1px solid #ece0c6;border-radius:8px;padding:10px 12px;margin-bottom:14px}'
+      +'.pf h2{font-size:13px;margin:0 0 7px}'
+      +'.pf table{width:100%;border-collapse:collapse}.pf td{padding:2px 4px;font-size:10.5px;vertical-align:top}'
+      +'.pf td.k{color:#6f7a88;width:88px}.pf td.v{font-weight:bold}'
+      +'.plans{display:flex;gap:10px;margin-bottom:14px}'
+      +'.pl{flex:1;background:#0f2540;color:#fff;border-radius:8px;padding:12px}'
+      +'.pl .n{font-size:13px;font-weight:bold}.pl .tg{font-size:9.5px;color:#fac748;margin-bottom:6px}'
+      +'.pl .am{font-size:21px;font-weight:bold;color:#fac748}.pl .yr{font-size:9.5px;color:#a9bacd}'
+      +'table.b{width:100%;border-collapse:collapse;margin-top:4px}'
+      +'table.b th{background:#0f2540;color:#fac748;font-size:9.5px;padding:6px;text-align:left;text-transform:uppercase}'
+      +'table.b th.c,table.b td.c{text-align:center;width:80px}'
+      +'table.b td{border-bottom:1px solid #f0e8d6;padding:5px 6px;font-size:10px}'
+      +'table.b tr.grp td{background:#f6ecd6;font-weight:bold;font-size:9.5px;text-transform:uppercase;padding:5px 6px}'
+      +'.nt{font-size:8px;color:#b7791f;font-weight:bold}'
+      +'.dc{margin-top:14px;font-size:8.5px;color:#6f7a88;line-height:1.5;border-top:1px solid #ece0c6;padding-top:8px}'
+      +'<\/style><\/head><body>'
+      +'<div class="hd"><div><h1>QuickQuote — '+(L?'i-Medi Evolusi Medical Card':'Kad Perubatan i-Medi Evolusi')+'<\/h1>'
+        +'<div class="sub">Great Eastern Takaful Berhad (916257-H)<\/div><\/div>'
+        +'<div class="brand">TAKAFUL4US<br><span style="font-weight:normal;color:#6f7a88">MTA1462134<\/span><\/div><\/div>'
+      +'<div class="pf"><h2>'+t('profileFor')+': '+esc(lead.name)+'<\/h2><table>'
+        +'<tr><td class="k">'+t('pDob')+'<\/td><td class="v">'+dmy(d.dob)+'<\/td>'
+          +'<td class="k">'+t('pAnb')+'<\/td><td class="v">'+current.anb+'<\/td><\/tr>'
+        +'<tr><td class="k">'+t('pGender')+'<\/td><td class="v">'+(d.gender==='male'?t('male'):t('female'))+'<\/td>'
+          +'<td class="k">'+t('pSmoke')+'<\/td><td class="v">'+(d.smoke==='smoke'?t('yes'):t('no'))+'<\/td><\/tr>'
+        +'<tr><td class="k">'+t('pPhone')+'<\/td><td class="v">'+esc(lead.phone)+'<\/td>'
+          +'<td class="k">'+t('pEmail')+'<\/td><td class="v">'+esc(lead.email)+'<\/td><\/tr>'
+        +'<tr><td class="k">'+t('pOcc')+'<\/td><td class="v">'+esc(occShort(d.occ))+'<\/td>'
+          +'<td class="k">'+t('pDate')+'<\/td><td class="v">'+dmy(new Date())+'<\/td><\/tr>'
+        +'<tr><td class="k">'+t('pIll')+'<\/td><td class="v" colspan="3">'+esc(d.ill==='yes'?(d.illDetail||plain(t('yes'))):plain(t('pNone')))+'<\/td><\/tr>'
+      +'<\/table><\/div>'
+      +'<div class="plans">'
+        +'<div class="pl"><div class="n">'+t('opt1')+'<\/div><div class="tg">'+t('opt1tag')+'<\/div>'
+          +'<div class="am">~RM '+fmt(p1)+'<\/div><div class="yr">'+t('perMonth')+' · ≈ RM '+fmtInt(Math.round(p1*12))+' '+t('perYear')+'<\/div><\/div>'
+        +'<div class="pl"><div class="n">'+t('opt2')+'<\/div><div class="tg">'+t('opt2tag')+'<\/div>'
+          +'<div class="am">~RM '+fmt(p2)+'<\/div><div class="yr">'+t('perMonth')+' · ≈ RM '+fmtInt(Math.round(p2*12))+' '+t('perYear')+'<\/div><\/div>'
+      +'<\/div>'
+      +'<table class="b"><thead><tr><th>'+t('colBenefit')+'<\/th><th class="c">'+t('opt1')+'<\/th><th class="c">'+t('opt2')+'<\/th><\/tr><\/thead><tbody>'
+      +rowsHTML+'<\/tbody><\/table>'
+      +'<div class="dc">'+t('disc')+'<\/div>'
+      +'<\/body><\/html>');
+    w.document.close();
+    setTimeout(function(){try{w.focus();w.print();}catch(e){}},450);
+  }
+
+  function sendWebhook(){
+    if(!WEBHOOK_URL||WEBHOOK_URL.indexOf('GANTI_DENGAN')>-1){console.warn('[QuickQuote] WEBHOOK_URL belum ditetapkan.');return;}
+    var d=current?current.data:state;
+    var row=current?current.row:[0,0];
+    var anb=current?current.anb:(d.dob?anbOf(d.dob):0);
+    var payload={
+      source:'QuickQuote i-Medi Evolusi (WordPress)',
+      submitted_at:new Date().toISOString(), language:lang,
+      nama:lead.name, nombor_telefon:lead.phone, email:lead.email,
+      tarikh_lahir:d.dob||'', umur_anb:anb,
+      jantina:d.gender==='male'?'Lelaki':'Perempuan',
+      merokok:d.smoke==='smoke'?'Ya':'Tidak',
+      kelas_pekerjaan:d.occ,
+      sejarah_sakit:d.ill==='yes'?'Ya':'Tidak',
+      sejarah_sakit_detail:d.ill==='yes'?(d.illDetail||''):'',
+      produk:'i-Medi Evolusi',
+      status_quote:naMode?'Di luar jadual - perlu semakan ejen':'Berjaya',
+      option1_room_board:'RM150', option1_annual_limit:'RM1,500,000',
+      option1_bulanan:row[0], option1_tahunan:Math.round(row[0]*12),
+      option2_room_board:'RM200', option2_annual_limit:'RM2,000,000',
+      option2_bulanan:row[1], option2_tahunan:Math.round(row[1]*12),
+      page_url:location.href
+    };
+    try{
+      fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload),mode:'no-cors',keepalive:true})
+        .catch(function(err){console.warn('[QuickQuote] webhook gagal:',err);});
+    }catch(e){console.warn('[QuickQuote] webhook error:',e);}
+  }
+
+  function uuidv4(){
+    if(window.crypto&&window.crypto.randomUUID)return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
+      var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
+  }
+  var socialSession=uuidv4();
+
+  /* NOTA MAPPING (medan schema ini asalnya dari funnel Hibah Takaful4Us):
+     - Diisi dengan yakin dari data QuickQuote: input_17 (DOB), input_18/32 (jantina),
+       input_19/33 (merokok), input_20 (kelas pekerjaan), input_23 (telefon),
+       input_1_3/1_6 (nama depan/belakang).
+     - input_22 (julat pelan Hibah) TIDAK BERKAITAN produk Kad Medikal — dihantar null.
+     - city/state/input_4_3 TIDAK DIKUTIP oleh borang ini — dihantar null.
+     - input_25, input_27, input_29 diandaikan (WhatsApp / Diri Saya) kerana borang
+       ini medical-card self-quote sahaja — SILA SAHKAN dengan ejen jika salah.
+     - session_token dijana client-side (UUID v4), BUKAN dari pixel tracking one.store
+       sebenar — jika automasi anda perlukan session dari SDK one.store sendiri,
+       beritahu saya untuk sambungkan skrip tracking rasmi mereka. */
+  function sendSocialWebhook(){
+    if(!SOCIAL_WEBHOOK_URL)return;
+    var d=current?current.data:state;
+    var nameParts=(lead.name||'').trim().split(/\s+/);
+    var firstName=nameParts.length?nameParts[0]:null;
+    var lastName=nameParts.length>1?nameParts.slice(1).join(' '):null;
+    var occText=d&&d.occ?occShort(d.occ):null;
+    var genderTxt=d&&d.gender?(d.gender==='male'?'Lelaki':'Perempuan'):null;
+    var smokeTxt=d&&d.smoke?(d.smoke==='smoke'?'Ya':'Tidak'):null;
+    var payload={
+      first_name:firstName||null,
+      city:null, state:null, country:'MY', country_code:'MY',
+      input_17:d&&d.dob?dmy(d.dob):null,
+      input_18:genderTxt,
+      input_19:smokeTxt,
+      input_20:occText,
+      input_22:null,
+      input_23:lead.phone||null,
+      input_25:'WhatsApp',
+      input_27:null,
+      input_29:'Diri Saya',
+      input_32:genderTxt,
+      input_33:smokeTxt,
+      input_1_3:firstName||null,
+      input_1_6:lastName||null,
+      input_4_3:null,
+      session_token:socialSession
+    };
+    try{
+      fetch(SOCIAL_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload),mode:'no-cors',keepalive:true})
+        .catch(function(err){console.warn('[QuickQuote] social webhook gagal:',err);});
+    }catch(e){console.warn('[QuickQuote] social webhook error:',e);}
+  }
+
+  function fail(msg){var e=$('mq-err');e.textContent=plain(msg);e.classList.add('is-on');return false;}
+  $('mq-go').addEventListener('click',function(){
+    $('mq-err').classList.remove('is-on');
+    var d={dob:$('mq-dob').value,gender:state.gender,smoke:state.smoke,occ:state.occ,
+           ill:state.ill,illDetail:$('mq-illdetail').value.trim()};
+    if(!d.dob)return fail(t('errDob'));
+    var dt=new Date(d.dob);if(isNaN(dt.getTime())||dt>new Date())return fail(t('errDobBad'));
+    if(d.ill==='yes'&&d.illDetail.length<3)return fail(t('errIll'));
+
+    var anb=anbOf(d.dob),tbl=T[d.gender+'_'+d.smoke],row=tbl?tbl[anb]:null;
+    unlocked=false;view='simple';
+
+    if(!row){
+      naMode=true;
+      naMsg = anb>60 ? t('naOver').replace('%s',anb)
+            : (d.smoke==='smoke'&&anb<18) ? t('naSmoke')
+            : t('naGeneric').replace('%s',anb);
+      current={row:[0,0],anb:anb,data:d};
+    }else{
+      naMode=false;current={row:row,anb:anb,data:d};
+    }
+    formEl.classList.add('is-hidden');
+    resEl.classList.remove('is-on');void resEl.offsetWidth;resEl.classList.add('is-on');
+    renderResult();
+    resEl.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+
+  root.querySelector('.mq-lang').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-lang]');if(!b)return;
+    lang=b.dataset.lang;
+    [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed',String(x===b))});
+    applyLang();
+  });
+
+  var tip=document.createElement('div');tip.className='t4u-mq-tip';tip.setAttribute('role','tooltip');
+  document.body.appendChild(tip);var ab=null;
+  function showTip(b){ab=b;tip.innerHTML=b.getAttribute('data-tip');tip.classList.add('is-on');
+    var r=b.getBoundingClientRect(),tw=Math.min(280,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+    var left=Math.max(12,Math.min(r.left+r.width/2-tw/2,window.innerWidth-tw-12));
+    var th=tip.offsetHeight,top=r.top-th-8;if(top<8)top=r.bottom+8;
+    tip.style.left=left+'px';tip.style.top=top+'px';}
+  function hideTip(){tip.classList.remove('is-on');ab=null;}
+  resEl.addEventListener('click',function(ev){var b=ev.target.closest('.mq-info');if(!b)return;
+    ev.stopPropagation();if(ab===b){hideTip();}else{showTip(b);}});
+  resEl.addEventListener('mouseover',function(ev){var b=ev.target.closest('.mq-info');if(b)showTip(b);});
+  resEl.addEventListener('mouseout',function(ev){var b=ev.target.closest('.mq-info');if(b&&ab===b)hideTip();});
+  document.addEventListener('click',function(ev){if(ab&&!ev.target.closest('.mq-info'))hideTip();});
+  window.addEventListener('scroll',hideTip,{passive:true});window.addEventListener('resize',hideTip);
+})();
+</script>
