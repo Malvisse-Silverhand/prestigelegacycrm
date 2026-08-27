@@ -8,7 +8,8 @@ import { STAGES, type PipelineStage } from "@/lib/pipeline-stages";
 import { type PipelineLead, primaryQuoteValue } from "./types";
 import { waLink } from "@/lib/whatsapp";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
-import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
+import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon, PipelineIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 function fmtRM(n: number) {
   return n >= 1000 ? `RM ${(n / 1000).toFixed(1)}k` : `RM ${n.toFixed(0)}`;
@@ -86,6 +87,22 @@ export function PipelineView({
           <AgentFilter agents={agents} currentAgent={currentAgent} />
         </div>
 
+        {totalLeads === 0 ? (
+          <div className="px-[26px] py-[18px]">
+            <EmptyState
+              icon={<PipelineIcon width={28} height={28} className="text-green" />}
+              title={currentAgent ? "No leads for this agent" : "Pipeline is empty"}
+              description={
+                currentAgent
+                  ? "Clear the agent filter to see the full board."
+                  : canManageStage
+                    ? "Leads land here as soon as they're created in Leads Manager."
+                    : "Leads assigned to you will show up here."
+              }
+              actions={currentAgent ? [{ label: "Clear filter", href: "/pipeline" }] : undefined}
+            />
+          </div>
+        ) : (
         <div className="flex items-start gap-3 overflow-x-auto px-[26px] py-[18px] pb-16">
           {STAGES.map((stage) => {
             const cards = columns[stage.value];
@@ -138,6 +155,7 @@ export function PipelineView({
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Mobile */}
