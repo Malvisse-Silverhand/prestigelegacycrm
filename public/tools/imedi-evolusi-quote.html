@@ -335,6 +335,7 @@
   var WEBHOOK_URL='https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY4MDYzNzA0MzU1MjZjNTUzMzUxMzQi_pc';
   var AGENT_WA='601118818316';               // Ejen Kamal Husaini
   var SOCIAL_WEBHOOK_URL='https://callbacks-api.one.store/v1/events/FXZR2TdcQoWGQpe0Ts8VFQ';
+  var CAPTURE_QUOTATION_URL='https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/capture-quotation'; // CRM fan-out
   /* =========================================== */
 
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -579,6 +580,17 @@
   var state={gender:'male',smoke:'non',occ:'1',ill:'no'};
   var current=null, view='simple', unlocked=false, naMode=false, naMsg='';
   var lead={name:'',phone:'',email:''};
+
+  /* CRM prefill patch: read ?lead_id=&name=&phone=&email= so the gate form
+     opens pre-populated when launched from a Lead Detail screen. */
+  var leadId='';
+  (function prefillFromUrl(){
+    var q=new URLSearchParams(location.search);
+    leadId=q.get('lead_id')||'';
+    if(q.get('name'))lead.name=q.get('name');
+    if(q.get('phone'))lead.phone=q.get('phone');
+    if(q.get('email'))lead.email=q.get('email');
+  })();
   var $=function(id){return document.getElementById(id)};
   var formEl=$('mq-form'),resEl=$('mq-result');
 
@@ -932,6 +944,28 @@
         body:JSON.stringify(payload),mode:'no-cors',keepalive:true})
         .catch(function(err){console.warn('[QuickQuote] webhook gagal:',err);});
     }catch(e){console.warn('[QuickQuote] webhook error:',e);}
+
+    /* CRM fan-out patch: additive, does not replace the Pabbly/social calls
+       above. Only fires when a real plan was generated (naMode has no plan
+       numbers to record) and a lead_id was supplied. */
+    if(leadId&&!naMode&&CAPTURE_QUOTATION_URL){
+      try{
+        var cqBody={
+          lead_id:leadId, product:'imedi_evolusi', language:lang, raw_payload:payload,
+          plans:[
+            {sort_order:0,plan_label:'Option 1 (RM150 R&B)',
+             monthly_contribution:row[0],annual_contribution:Math.round(row[0]*12),
+             coverage_detail:{room_and_board:'RM150',annual_limit:'RM1,500,000'}},
+            {sort_order:1,plan_label:'Option 2 (RM200 R&B)',
+             monthly_contribution:row[1],annual_contribution:Math.round(row[1]*12),
+             coverage_detail:{room_and_board:'RM200',annual_limit:'RM2,000,000'}}
+          ]
+        };
+        fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(cqBody),keepalive:true})
+          .catch(function(err){console.warn('[QuickQuote] capture-quotation gagal:',err);});
+      }catch(e){console.warn('[QuickQuote] capture-quotation error:',e);}
+    }
   }
 
   function uuidv4(){

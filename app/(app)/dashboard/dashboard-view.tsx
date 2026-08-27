@@ -168,7 +168,7 @@ export function DashboardView({
               value={stats.noQuotationCount}
               detail="contacted leads"
               cta="Build estimate"
-              href="/quotation"
+              href="/pipeline"
               solid
             />
           </div>

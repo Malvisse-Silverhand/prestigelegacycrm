@@ -28,7 +28,7 @@ export const SIDEBAR_NAV: NavItem[] = [
     icon: TeamIcon,
     roles: ["superadmin", "group_manager", "unit_manager"],
   },
-  { href: "/quotation", label: "Quotation", icon: QuotationIcon },
+  { href: "/quotations", label: "Quotation", icon: QuotationIcon },
   { href: "/wa-flow", label: "WA Flow", icon: WaFlowIcon },
   {
     href: "/statistics",
@@ -48,7 +48,7 @@ export const MOBILE_NAV = [
   { href: "/dashboard", label: "Home", icon: DashboardIcon },
   { href: "/leads", label: "Leads", icon: LeadsIcon },
   { href: "/pipeline", label: "Pipeline", icon: PipelineIcon },
-  { href: "/quotation", label: "Quote", icon: QuotationIcon },
+  { href: "/quotations", label: "Quote", icon: QuotationIcon },
   { href: "/me", label: "Me", icon: MeIcon },
 ];
 

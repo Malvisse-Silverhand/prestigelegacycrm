@@ -159,7 +159,7 @@ export default async function LeadsPage({
                         <WhatsAppIcon width={13} height={13} fill="#fff" />
                       </a>
                       <Link
-                        href={`/quotation?lead_id=${lead.id}`}
+                        href={`/leads/${lead.id}`}
                         className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 bg-cream"
                         aria-label="Quotation"
                       >

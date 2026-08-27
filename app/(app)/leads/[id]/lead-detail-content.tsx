@@ -1,14 +1,24 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import type { LeadDetail, ActivityRow } from "./data";
 import { waLink } from "@/lib/whatsapp";
-import { PhoneIcon, WaFlowIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
+import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
+
+function quoteLauncherUrl(tool: string, lead: LeadDetail) {
+  const params = new URLSearchParams({
+    lead_id: lead.id,
+    name: lead.full_name,
+    phone: lead.phone,
+    email: lead.email ?? "",
+  });
+  return `/tools/${tool}?${params.toString()}`;
+}
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -37,6 +47,8 @@ function activityIcon(type: string) {
       return { bg: "bg-warn-gold-bg", node: <ClockIcon width={14} height={14} className="text-warn-gold-text" /> };
     case "created":
       return { bg: "bg-sand-3", node: <span className="text-[14px] leading-none text-muted-2">+</span> };
+    case "quotation_created":
+      return { bg: "bg-info-blue-bg", node: <QuotationIcon width={14} height={14} className="text-info-blue-text" /> };
     default:
       return { bg: "bg-warn-gold-bg", node: <AlertIcon width={14} height={14} className="text-warn-gold-text" /> };
   }
@@ -66,6 +78,19 @@ export function LeadDetailContent({
   const canEditStage =
     profile.role === "unit_manager" || (profile.role === "agent" && lead.agent_id === profile.id);
   const canReassign = profile.role === "unit_manager";
+
+  // The quotation calculators open in a new tab (no CRM JS runs there) and
+  // fan out to capture-quotation on submit -- there's no in-app event to
+  // hook for "a quotation just landed." Refetching when this tab regains
+  // focus is the simplest way to pick that up, and doubles as a general
+  // safety net for any other change made elsewhere while this was open.
+  useEffect(() => {
+    function onFocus() {
+      router.refresh();
+    }
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [router]);
 
   function handleAddNote() {
     if (!note.trim()) return;
@@ -170,6 +195,27 @@ export function LeadDetailContent({
             </select>
           </div>
         )}
+      </div>
+
+      <div className="flex gap-2 border-b border-sand bg-cream px-4 py-3">
+        <a
+          href={quoteLauncherUrl("imedi-evolusi-quote.html", lead)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[10px] border border-sand-2 bg-white text-[12.5px] font-semibold text-navy"
+        >
+          <QuotationIcon width={14} height={14} className="text-green" />
+          Buat Quotation Medical Card
+        </a>
+        <a
+          href={quoteLauncherUrl("quickquote-hibah-life-takaful.html", lead)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[10px] border border-sand-2 bg-white text-[12.5px] font-semibold text-navy"
+        >
+          <QuotationIcon width={14} height={14} className="text-info-blue-text" />
+          Buat Quotation Hibah
+        </a>
       </div>
 
       <div className="grid grid-cols-[1fr_268px]">
@@ -306,6 +352,7 @@ function activityLabel(a: ActivityRow) {
     case "assigned": return a.content ?? "Reassigned";
     case "stage_change": return a.content ?? "Stage changed";
     case "created": return "Lead created";
+    case "quotation_created": return a.content ?? "Quotation created";
     default: return "Note added";
   }
 }

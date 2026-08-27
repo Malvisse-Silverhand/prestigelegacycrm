@@ -433,6 +433,7 @@
   var WA = "601118818316";
   var PABBLY_ENDPOINT = "https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY4MDYzNzA0MzE1MjZiNTUzNjUxMzEi_pc";
   var SOCIAL_ENDPOINT = "https://callbacks-api.one.store/v1/events/FXZR2TdcQoWGQpe0Ts8VFQ";
+  var CAPTURE_QUOTATION_URL = "https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/capture-quotation"; // CRM fan-out
 
   /* ============ PLAN CATALOG ============
      hidden:true = kekal dalam sistem tapi tak dipapar dalam dropdown */
@@ -607,6 +608,24 @@
   function fmt(n,d){d=d||0;return Number(n).toLocaleString('en-MY',{minimumFractionDigits:d,maximumFractionDigits:d});}
   function esc(s){return String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
   function byId(id){ for(var i=0;i<CATALOG.length;i++) if(CATALOG[i].id===id) return CATALOG[i]; return null; }
+
+  /* CRM prefill patch: read ?lead_id=&name=&phone=&email= so the gate form
+     opens pre-populated when launched from a Lead Detail screen. The gate
+     inputs are static markup (not template-rendered), so the value has to
+     be set on the DOM elements directly, not just on S.lead. */
+  var leadId='';
+  (function prefillFromUrl(){
+    var q=new URLSearchParams(location.search);
+    leadId=q.get('lead_id')||'';
+    var pn=q.get('name'),pp=q.get('phone'),pe=q.get('email');
+    if(pn||pp||pe){
+      S.lead={name:pn||'',phone:pp||'',email:pe||''};
+      var n=$('qqhLName'),p=$('qqhLPhone'),e=$('qqhLEmail');
+      if(n&&pn)n.value=pn;
+      if(p&&pp)p.value=pp;
+      if(e&&pe)e.value=pe;
+    }
+  })();
 
   /* ============ ANB ============ */
   function calcAnb(v){
@@ -970,6 +989,27 @@
       fetch(PABBLY_ENDPOINT,{method:'POST',mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)});
     }catch(err){}
+
+    /* CRM fan-out patch: additive, does not replace the Pabbly call above. */
+    if(leadId&&CAPTURE_QUOTATION_URL){
+      try{
+        var prods=c.map(function(x){return x.prod;});
+        var uniqueProds=prods.filter(function(v,i){return prods.indexOf(v)===i;});
+        var product=uniqueProds.length>1?'hibah_mixed':(uniqueProds[0]==='nova'?'hibah_nova':'hibah_chinta');
+        var cqPlans=c.map(function(x,i){
+          return {
+            sort_order:i,
+            plan_label:'Option '+(i+1)+' ('+x.prodName+')',
+            monthly_contribution:Number(x.monthly.toFixed(2)),
+            annual_contribution:Number((x.monthly*12).toFixed(2)),
+            coverage_detail:{product:x.prodName,sum_covered:x.sc,coverage_to_age:x.cov,payment_term:x.ct}
+          };
+        });
+        var cqBody={lead_id:leadId,product:product,language:(L?"EN":"BM"),raw_payload:p,plans:cqPlans};
+        fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(cqBody),keepalive:true});
+      }catch(err){}
+    }
   }
 
   /* ============ SOCIAL NOTIFICATION WEBHOOK ============

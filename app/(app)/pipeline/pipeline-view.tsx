@@ -225,7 +225,7 @@ export function PipelineView({
                   <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green">
                     <WhatsAppIcon width={16} height={16} fill="#fff" />
                   </a>
-                  <Link href={`/quotation?lead_id=${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg">
+                  <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg">
                     <QuotationIcon width={15} height={15} className="text-warn-gold-text" />
                   </Link>
                   {canManageStage ? (
@@ -349,7 +349,7 @@ function PipelineCard({
             <WhatsAppIcon width={14} height={14} className="text-green" />
             Send WA template
           </Link>
-          <Link href={`/quotation?lead_id=${lead.id}`} onClick={onToggle} className="flex items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-navy hover:bg-cream">
+          <Link href={`/leads/${lead.id}`} onClick={onToggle} className="flex items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-navy hover:bg-cream">
             <QuotationIcon width={14} height={14} />
             Quotation estimate
           </Link>
