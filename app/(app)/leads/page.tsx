@@ -6,7 +6,7 @@ import { StatusBadge } from "./status-badge";
 import { AddLeadButton } from "./add-lead-button";
 import { ExportCsvButton } from "./export-csv-button";
 import { EmptyState } from "@/components/empty-state";
-import { SearchIcon, LeadsIcon } from "@/components/icons";
+import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
 
 function subtitleFor(role: string) {
@@ -156,9 +156,7 @@ export default async function LeadsPage({
                         className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-green"
                         aria-label="Message on WhatsApp"
                       >
-                        <svg width={13} height={13} viewBox="0 0 24 24" fill="#fff">
-                          <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z" />
-                        </svg>
+                        <WhatsAppIcon width={13} height={13} fill="#fff" />
                       </a>
                       <Link
                         href={`/quotation?lead_id=${lead.id}`}

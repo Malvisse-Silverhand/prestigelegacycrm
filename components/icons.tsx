@@ -69,6 +69,15 @@ export const QuotationIcon = (p: IconProps) =>
     </>,
   );
 
+export const WhatsAppIcon = (p: IconProps) => {
+  const { width = 18, height = 18, fill = "currentColor", ...rest } = p;
+  return (
+    <svg width={width} height={height} viewBox="0 0 24 24" fill={fill} {...rest}>
+      <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z" />
+    </svg>
+  );
+};
+
 export const WaFlowIcon = (p: IconProps) =>
   base(
     p,

@@ -8,15 +8,7 @@ import type { LeadDetail, ActivityRow } from "./data";
 import { waLink } from "@/lib/whatsapp";
 import { PhoneIcon, WaFlowIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage } from "./actions";
-
-const STAGE_OPTIONS = [
-  { value: "new", label: "New", dot: "#1c3f66" },
-  { value: "contacted", label: "Contacted", dot: "#7a5c14" },
-  { value: "follow_up", label: "Follow Up", dot: "#c9552f" },
-  { value: "quoted", label: "Quoted", dot: "#0f4c35" },
-  { value: "closed_won", label: "Closed Won", dot: "#0f4c35" },
-  { value: "closed_lost", label: "Closed Lost", dot: "#9b2c22" },
-];
+import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
