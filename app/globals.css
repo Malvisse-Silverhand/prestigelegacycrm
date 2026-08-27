@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdf9f3;
+  --foreground: #0f2540;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-poppins);
+  --font-mono: var(--font-jetbrains-mono);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Section 2 — Design System Tokens */
+  --color-navy: #0f2540;
+  --color-gold: #fac748;
+  --color-green: #0f4c35;
+  --color-cream: #fdf9f3;
+  --color-sand: #efe7da;
+  --color-sand-2: #e7ded0;
+  --color-sand-3: #f5eee3;
+  --color-taupe: #a29883;
+  --color-taupe-2: #9a8f7c;
+  --color-muted: #8b8271;
+  --color-muted-2: #7a7161;
+  --color-ink: #5c5648;
+  --color-alert-red: #9b2c22;
+  --color-alert-red-bg: #fdeceb;
+  --color-warn-orange: #c9552f;
+  --color-warn-gold-text: #7a5c14;
+  --color-warn-gold-bg: #fdf3dd;
+  --color-success-bg: #e8f2ec;
+  --color-info-blue-text: #1c3f66;
+  --color-info-blue-bg: #e9edf3;
+  --color-info-blue-bg-2: #eef3f8;
+  --color-info-blue-mid: #7f93aa;
+
+  --radius-card: 20px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgba(15, 37, 64, .05), 0 8px 20px -12px rgba(15, 37, 64, .16);
+  --shadow-elevated: 0 24px 50px -18px rgba(15, 37, 64, .4);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), sans-serif;
 }

@@ -27,9 +27,16 @@ export async function updateSession(request: NextRequest) {
 
   // Do not run code between createServerClient and getUser() — a stray
   // await here can randomly log users out (see @supabase/ssr docs).
-  // This only refreshes the session cookie; route-gating (redirect to
-  // /login when unauthenticated) gets added once the Login screen exists.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && request.nextUrl.pathname !== "/login") {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    return NextResponse.redirect(loginUrl);
+  }
 
   return supabaseResponse;
 }
