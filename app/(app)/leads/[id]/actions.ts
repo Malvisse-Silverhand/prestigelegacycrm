@@ -26,8 +26,13 @@ export async function reassignLead(leadId: string, newAgentId: string, newAgentN
   if (!profile) return { error: "Not signed in." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("leads").update({ agent_id: newAgentId }).eq("id", leadId);
-  if (error) return { error: "Couldn't reassign this lead." };
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ agent_id: newAgentId })
+    .eq("id", leadId)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { error: "Couldn't reassign this lead." };
 
   await supabase.from("lead_activity").insert({
     lead_id: leadId,
@@ -49,8 +54,12 @@ export async function updateStage(leadId: string, newStage: string, stageLabel: 
   const patch: { pipeline_stage: string; status?: "closed" } = { pipeline_stage: newStage };
   if (newStage === "closed_won" || newStage === "closed_lost") patch.status = "closed";
 
-  const { error } = await supabase.from("leads").update(patch).eq("id", leadId);
-  if (error) return { error: "Couldn't update the pipeline stage." };
+  // A plain .update() without .select() reports success even when RLS
+  // filters the WHERE down to zero matching rows -- e.g. the lead was
+  // reassigned away from this agent between page load and this drag.
+  // Only treat it as real if a row actually came back.
+  const { data, error } = await supabase.from("leads").update(patch).eq("id", leadId).select("id").maybeSingle();
+  if (error || !data) return { error: "Couldn't update the pipeline stage." };
 
   await supabase.from("lead_activity").insert({
     lead_id: leadId,

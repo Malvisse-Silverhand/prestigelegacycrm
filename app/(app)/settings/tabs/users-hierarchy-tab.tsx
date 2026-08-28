@@ -53,7 +53,9 @@ export function UsersHierarchyTab({
 }) {
   const { superadmins, groupManagers, roleCounts } = orgTree;
   const canEdit = role === "superadmin";
-  const [editing, setEditing] = useState<{ id: string; fullName: string; role: Role } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; fullName: string; role: Role; currentAssignedUnderId: string | null } | null>(
+    null,
+  );
 
   return (
     <div className="grid grid-cols-[1fr_360px] items-start gap-[22px]">
@@ -103,7 +105,11 @@ export function UsersHierarchyTab({
                   </div>
                 </div>
                 <span className="rounded-[6px] bg-white px-[9px] py-1 text-[10px] font-bold text-green">GROUP MANAGER</span>
-                {canEdit && <EditButton onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, role: "group_manager" })} />}
+                {canEdit && (
+                  <EditButton
+                    onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, role: "group_manager", currentAssignedUnderId: null })}
+                  />
+                )}
               </div>
 
               <div className="flex flex-col gap-2 pl-[26px] pt-2.5">
@@ -126,7 +132,14 @@ export function UsersHierarchyTab({
                       )}
                       {canEdit && unit.unitManager && (
                         <EditButton
-                          onClick={() => setEditing({ id: unit.unitManager!.id, fullName: unit.unitManager!.full_name, role: "unit_manager" })}
+                          onClick={() =>
+                            setEditing({
+                              id: unit.unitManager!.id,
+                              fullName: unit.unitManager!.full_name,
+                              role: "unit_manager",
+                              currentAssignedUnderId: unit.id,
+                            })
+                          }
                         />
                       )}
                     </div>
@@ -145,7 +158,18 @@ export function UsersHierarchyTab({
                             <span className="rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
                               AGENT
                             </span>
-                            {canEdit && <EditButton onClick={() => setEditing({ id: agent.id, fullName: agent.full_name, role: "agent" })} />}
+                            {canEdit && (
+                              <EditButton
+                                onClick={() =>
+                                  setEditing({
+                                    id: agent.id,
+                                    fullName: agent.full_name,
+                                    role: "agent",
+                                    currentAssignedUnderId: unit.unitManager?.id ?? null,
+                                  })
+                                }
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -177,13 +201,13 @@ function EditUserPanel({
   assignmentOptions,
   onDone,
 }: {
-  editing: { id: string; fullName: string; role: Role };
+  editing: { id: string; fullName: string; role: Role; currentAssignedUnderId: string | null };
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
   onDone: () => void;
 }) {
   const router = useRouter();
   const [newRole, setNewRole] = useState<Role>(editing.role);
-  const [assignedUnderId, setAssignedUnderId] = useState("");
+  const [assignedUnderId, setAssignedUnderId] = useState(editing.currentAssignedUnderId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 

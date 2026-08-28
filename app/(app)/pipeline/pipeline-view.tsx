@@ -41,6 +41,7 @@ export function PipelineView({
   const router = useRouter();
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [dragLeadId, setDragLeadId] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [mobileStage, setMobileStage] = useState<PipelineStage>("follow_up");
 
@@ -60,9 +61,18 @@ export function PipelineView({
 
   function moveStage(leadId: string, stage: PipelineStage) {
     setOpenCardId(null);
+    setMoveError(null);
     startTransition(async () => {
-      await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
-      router.refresh();
+      // No optimistic move -- `columns` is derived straight from server-fetched
+      // `leads`, so a rejected update just leaves the card where it already
+      // was once refresh() re-fetches. The one gap was silence: surface the
+      // rejection instead of failing invisibly.
+      const result = await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
+      if (result.error) {
+        setMoveError(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -86,6 +96,12 @@ export function PipelineView({
           </div>
           <AgentFilter agents={agents} currentAgent={currentAgent} />
         </div>
+
+        {moveError && (
+          <div className="mx-[26px] mt-3 rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
+            {moveError} The card stayed in its original column.
+          </div>
+        )}
 
         {totalLeads === 0 ? (
           <div className="px-[26px] py-[18px]">
@@ -188,6 +204,12 @@ export function PipelineView({
             {fmtRM(columns[mobileStage].reduce((sum, l) => sum + (primaryQuoteValue(l) ?? 0), 0))}
           </span>
         </div>
+
+        {moveError && (
+          <div className="mx-5 mt-3 rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
+            {moveError}
+          </div>
+        )}
 
         <div className="flex flex-col gap-2.5 px-5 pt-3 pb-8">
           {columns[mobileStage].length === 0 && (
