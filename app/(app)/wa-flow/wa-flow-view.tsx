@@ -43,7 +43,9 @@ export function WaFlowView({
   const [editing, setEditing] = useState<WaTemplate | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const canManage = profile.role !== "agent";
+  // "Manage templates" is SuperAdmin/Group Manager only per Section 3's
+  // permission matrix -- Unit Manager and Agent both only "Use templates".
+  const canManage = profile.role === "superadmin" || profile.role === "group_manager";
 
   const plan = primaryPlan(lead);
   const q = lead?.quotations[0];

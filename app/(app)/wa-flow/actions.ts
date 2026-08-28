@@ -4,9 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 
+function canManageTemplates(role: string) {
+  return role === "superadmin" || role === "group_manager";
+}
+
 export async function saveTemplate(formData: FormData) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role === "agent") return { error: "You don't have permission to manage templates." };
+  if (!profile || !canManageTemplates(profile.role)) return { error: "You don't have permission to manage templates." };
 
   const id = String(formData.get("id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
@@ -29,7 +33,7 @@ export async function saveTemplate(formData: FormData) {
 
 export async function deleteTemplate(id: string) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role === "agent") return { error: "You don't have permission to delete templates." };
+  if (!profile || !canManageTemplates(profile.role)) return { error: "You don't have permission to delete templates." };
 
   const supabase = await createClient();
   const { data, error } = await supabase.from("wa_templates").delete().eq("id", id).select("id").maybeSingle();
