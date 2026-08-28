@@ -14,13 +14,17 @@ export function ActiveToggle({ memberId, initialActive }: { memberId: string; in
     const next = !active;
     setError(false);
     startTransition(async () => {
-      const result = await setMemberActive(memberId, next);
-      if (result.error) {
+      try {
+        const result = await setMemberActive(memberId, next);
+        if (result.error) {
+          setError(true);
+          return;
+        }
+        setActive(next);
+        router.refresh();
+      } catch {
         setError(true);
-        return;
       }
-      setActive(next);
-      router.refresh();
     });
   }
 

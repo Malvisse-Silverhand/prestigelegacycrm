@@ -87,11 +87,15 @@ export function LeadDetailContent({
     if (!note.trim()) return;
     setError(null);
     startTransition(async () => {
-      const result = await addNote(lead.id, note);
-      if (result.error) setError(result.error);
-      else {
-        setNote("");
-        router.refresh();
+      try {
+        const result = await addNote(lead.id, note);
+        if (result.error) setError(result.error);
+        else {
+          setNote("");
+          router.refresh();
+        }
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }
@@ -99,18 +103,30 @@ export function LeadDetailContent({
   function handleStageChange(value: string) {
     const opt = STAGE_OPTIONS.find((o) => o.value === value);
     if (!opt) return;
+    setError(null);
     startTransition(async () => {
-      await updateStage(lead.id, value, opt.label);
-      router.refresh();
+      try {
+        const result = await updateStage(lead.id, value, opt.label);
+        if (result.error) setError(result.error);
+        else router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+      }
     });
   }
 
   function handleReassign(agentId: string) {
     const agent = reassignAgents.find((a) => a.id === agentId);
     if (!agent) return;
+    setError(null);
     startTransition(async () => {
-      await reassignLead(lead.id, agentId, agent.full_name);
-      router.refresh();
+      try {
+        const result = await reassignLead(lead.id, agentId, agent.full_name);
+        if (result.error) setError(result.error);
+        else router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+      }
     });
   }
 

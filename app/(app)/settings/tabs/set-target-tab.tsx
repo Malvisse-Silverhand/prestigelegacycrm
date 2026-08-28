@@ -26,16 +26,20 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await saveTargets(
-        monthDate,
-        rows.map((r) => ({ agentId: r.agentId, ancTarget: r.ancTarget, nocTarget: r.nocTarget })),
-      );
-      if (result.error) {
-        setError(result.error);
-        return;
+      try {
+        const result = await saveTargets(
+          monthDate,
+          rows.map((r) => ({ agentId: r.agentId, ancTarget: r.ancTarget, nocTarget: r.nocTarget })),
+        );
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        setSaved(true);
+        router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
-      setSaved(true);
-      router.refresh();
     });
   }
 

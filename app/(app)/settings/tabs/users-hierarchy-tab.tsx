@@ -217,16 +217,21 @@ function EditUserPanel({
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await updateUserAssignment({
-        userId: editing.id,
-        role: newRole,
-        assignedUnderId: needsAssignment ? assignedUnderId || null : null,
-      });
-      if (result.error) {
-        setError(result.error);
+      try {
+        const result = await updateUserAssignment({
+          userId: editing.id,
+          role: newRole,
+          assignedUnderId: needsAssignment ? assignedUnderId || null : null,
+        });
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
         return;
       }
-      router.refresh();
       onDone();
     });
   }
@@ -331,21 +336,25 @@ function AddUserForm({
     setError(null);
     setSuccess(null);
     startTransition(async () => {
-      const result = await inviteUser({
-        fullName,
-        email,
-        role: newRole,
-        assignedUnderId: needsAssignment ? assignedUnderId || null : null,
-      });
-      if (result.error) {
-        setError(result.error);
-        return;
+      try {
+        const result = await inviteUser({
+          fullName,
+          email,
+          role: newRole,
+          assignedUnderId: needsAssignment ? assignedUnderId || null : null,
+        });
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        setSuccess({ email: result.email!, tempPassword: result.tempPassword! });
+        setFullName("");
+        setEmail("");
+        setAssignedUnderId("");
+        router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
-      setSuccess({ email: result.email!, tempPassword: result.tempPassword! });
-      setFullName("");
-      setEmail("");
-      setAssignedUnderId("");
-      router.refresh();
     });
   }
 

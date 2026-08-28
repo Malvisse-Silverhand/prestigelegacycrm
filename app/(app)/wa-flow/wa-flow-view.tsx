@@ -75,21 +75,41 @@ export function WaFlowView({
     await navigator.clipboard.writeText(text.replace(/<br\s*\/?>/g, "\n"));
     setCopiedId(t.id);
     setTimeout(() => setCopiedId(null), 1500);
-    await bumpUsage(t.id);
-    router.refresh();
+    // Best-effort usage counter -- the copy itself already succeeded above,
+    // so a network failure here shouldn't surface as if the user's action
+    // failed. Swallow it (already logged server-side if it's a real error).
+    try {
+      await bumpUsage(t.id);
+      router.refresh();
+    } catch {
+      // intentionally ignored
+    }
   }
 
   async function handleSend(t: WaTemplate) {
     if (!lead) return;
     const text = fillTemplate(t.body, fillValues).replace(/<br\s*\/?>/g, "\n");
     window.open(waLink(lead.phone, text), "_blank");
-    await bumpUsage(t.id);
-    router.refresh();
+    try {
+      await bumpUsage(t.id);
+      router.refresh();
+    } catch {
+      // intentionally ignored -- the WA send already happened above
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this template?")) return;
-    await deleteTemplate(id);
+    try {
+      const result = await deleteTemplate(id);
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      router.refresh();
+    } catch {
+      alert("Couldn't connect. Check your internet connection and try again.");
+    }
   }
 
   return (

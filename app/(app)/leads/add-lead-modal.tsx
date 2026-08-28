@@ -20,11 +20,18 @@ export function AddLeadModal({ open, onClose }: { open: boolean; onClose: () => 
   function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await createLead(formData);
-      if (result.error) {
-        setError(result.error);
-      } else {
-        onClose();
+      try {
+        const result = await createLead(formData);
+        if (result.error) {
+          setError(result.error);
+        } else {
+          onClose();
+        }
+      } catch {
+        // The Server Action call itself failed (offline, request dropped
+        // mid-flight) rather than returning a handled {error} result --
+        // surface it the same way instead of leaving an uncaught rejection.
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }

@@ -67,11 +67,15 @@ export function PipelineView({
       // `leads`, so a rejected update just leaves the card where it already
       // was once refresh() re-fetches. The one gap was silence: surface the
       // rejection instead of failing invisibly.
-      const result = await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
-      if (result.error) {
-        setMoveError(result.error);
-      } else {
-        router.refresh();
+      try {
+        const result = await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
+        if (result.error) {
+          setMoveError(result.error);
+        } else {
+          router.refresh();
+        }
+      } catch {
+        setMoveError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }

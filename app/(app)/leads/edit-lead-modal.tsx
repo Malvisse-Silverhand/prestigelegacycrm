@@ -21,12 +21,16 @@ export function EditLeadModal({ lead, onClose }: { lead: LeadRow; onClose: () =>
   function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await updateLead(lead.id, formData);
-      if (result.error) {
-        setError(result.error);
-      } else {
-        router.refresh();
-        onClose();
+      try {
+        const result = await updateLead(lead.id, formData);
+        if (result.error) {
+          setError(result.error);
+        } else {
+          router.refresh();
+          onClose();
+        }
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }

@@ -15,9 +15,13 @@ export function TemplateModal({
   function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await saveTemplate(formData);
-      if (result.error) setError(result.error);
-      else onClose();
+      try {
+        const result = await saveTemplate(formData);
+        if (result.error) setError(result.error);
+        else onClose();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+      }
     });
   }
 

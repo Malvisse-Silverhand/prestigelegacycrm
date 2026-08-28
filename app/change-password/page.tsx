@@ -20,14 +20,19 @@ export default function ChangePasswordPage() {
       return;
     }
     setLoading(true);
-    const result = await setNewPassword(password);
-    if (result.error) {
-      setError(result.error);
+    try {
+      const result = await setNewPassword(password);
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Couldn't connect. Check your internet connection and try again.");
       setLoading(false);
-      return;
     }
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (

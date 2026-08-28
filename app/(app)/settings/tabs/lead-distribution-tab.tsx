@@ -21,14 +21,19 @@ export function LeadDistributionTab({ initial }: { initial: DistributionSettings
     setError(null);
     setSettings(next);
     startTransition(async () => {
-      const result = await saveDistributionSettings(next);
-      if (result.error) {
-        setError(result.error);
+      try {
+        const result = await saveDistributionSettings(next);
+        if (result.error) {
+          setError(result.error);
+          setSettings(settings);
+          return;
+        }
+        setSaved(true);
+        router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
         setSettings(settings);
-        return;
       }
-      setSaved(true);
-      router.refresh();
     });
   }
 
