@@ -35,10 +35,12 @@ export function SettingsView({
   monthDate: string;
   targets: TargetRow[];
   distribution: DistributionSettings;
-  auditLog: AuditEntry[];
+  auditLog: AuditEntry[] | null;
   leadSources: LeadSourceStat[];
 }) {
   const [tab, setTab] = useState<Tab>("Users & Hierarchy");
+  // Audit Log is SuperAdmin-only -- Group Managers get the other five tabs.
+  const visibleTabs = role === "superadmin" ? TABS : TABS.filter((t) => t !== "Audit Log");
 
   return (
     <div>
@@ -48,7 +50,7 @@ export function SettingsView({
           Organisation structure, roles, and lead distribution rules
         </div>
         <div className="mt-[18px] flex gap-[22px] overflow-x-auto">
-          {TABS.map((t) => (
+          {visibleTabs.map((t) => (
             <button
               key={t}
               type="button"
@@ -71,7 +73,7 @@ export function SettingsView({
         {tab === "Set Target" && <SetTargetTab monthDate={monthDate} initialTargets={targets} />}
         {tab === "Lead Distribution" && <LeadDistributionTab initial={distribution} />}
         {tab === "Lead Sources" && <LeadSourcesTab stats={leadSources} />}
-        {tab === "Audit Log" && <AuditLogTab entries={auditLog} />}
+        {tab === "Audit Log" && role === "superadmin" && <AuditLogTab entries={auditLog ?? []} />}
       </div>
     </div>
   );

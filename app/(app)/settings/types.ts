@@ -1,7 +1,7 @@
 import type { Role } from "@/lib/profile-types";
 
 export type OrgPerson = { id: string; full_name: string; email: string };
-export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agentCount: number };
+export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agents: OrgPerson[] };
 export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
 export type OrgTree = {
   superadmins: OrgPerson[];

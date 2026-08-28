@@ -1,10 +1,11 @@
 import Link from "next/link";
-import type { TeamMember } from "./data";
+import type { TeamMember, UnitTargetRow } from "./data";
 import type { AgentMetrics } from "./metrics";
 import { emptyMetrics } from "./metrics";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
 import { ActiveToggle } from "./active-toggle";
+import { SetTargetPanel } from "./set-target-panel";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "no activity yet";
@@ -23,10 +24,14 @@ export function TeamRoster({
   unitName,
   members,
   metrics,
+  monthDate,
+  targets,
 }: {
   unitName: string | null;
   members: TeamMember[];
   metrics: Map<string, AgentMetrics>;
+  monthDate: string;
+  targets: UnitTargetRow[];
 }) {
   const activeCount = members.filter((m) => m.is_active).length;
   const totalLeads = members.reduce((sum, m) => sum + (metrics.get(m.id)?.leadCount ?? 0), 0);
@@ -51,6 +56,8 @@ export function TeamRoster({
           <StatCard label="Active Percentage" value={members.length > 0 ? `${Math.round((activeCount / members.length) * 100)}%` : "—"} />
           <StatCard label="Leads Assigned" value={totalLeads} dark />
         </div>
+
+        <SetTargetPanel monthDate={monthDate} initialTargets={targets} />
 
         {members.length === 0 ? (
           <EmptyState

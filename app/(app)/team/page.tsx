@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getUnitManagerTeam, getGroupManagerLeague } from "./data";
+import { getUnitManagerTeam, getGroupManagerLeague, getUnitManagerTargets, currentMonthDate } from "./data";
 import { TeamRoster } from "./team-roster";
 import { TeamLeague } from "./team-league";
 
@@ -10,8 +10,14 @@ export default async function TeamPage() {
   if (profile.role === "agent") redirect("/dashboard");
 
   if (profile.role === "unit_manager") {
-    const { members, metrics } = await getUnitManagerTeam(profile);
-    return <TeamRoster unitName={profile.unit_name} members={members} metrics={metrics} />;
+    const monthDate = currentMonthDate();
+    const [{ members, metrics }, targets] = await Promise.all([
+      getUnitManagerTeam(profile),
+      getUnitManagerTargets(profile, monthDate),
+    ]);
+    return (
+      <TeamRoster unitName={profile.unit_name} members={members} metrics={metrics} monthDate={monthDate} targets={targets} />
+    );
   }
 
   const { leagues, leads, activities } = await getGroupManagerLeague(profile);

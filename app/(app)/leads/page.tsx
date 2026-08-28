@@ -5,6 +5,7 @@ import { LeadFiltersBar } from "./filters";
 import { StatusBadge } from "./status-badge";
 import { AddLeadButton } from "./add-lead-button";
 import { ExportCsvButton } from "./export-csv-button";
+import { LeadRowActions } from "./lead-row-actions";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
@@ -158,16 +159,7 @@ export default async function LeadsPage({
                       >
                         <WhatsAppIcon width={13} height={13} fill="#fff" />
                       </a>
-                      <Link
-                        href={`/leads/${lead.id}`}
-                        className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 bg-cream"
-                        aria-label="Quotation"
-                      >
-                        <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="text-navy">
-                          <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" />
-                          <path d="M14 2v5h5" />
-                        </svg>
-                      </Link>
+                      <LeadRowActions lead={lead} />
                     </div>
                   </div>
                 );

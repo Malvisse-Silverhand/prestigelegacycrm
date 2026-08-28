@@ -31,6 +31,49 @@ type InviteInput = {
   assignedUnderId: string | null; // unit_manager id (role=agent) or unit id (role=unit_manager)
 };
 
+type CallerProfile = { id: string; role: Role };
+
+// Shared by invite (new user) and edit (existing user): resolves the
+// "assigned under" selection into an actual unit_id/parent_id pair, scoped so
+// a group manager can only ever reach inside units they manage.
+async function resolveAssignment(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  caller: CallerProfile,
+  role: Role,
+  assignedUnderId: string | null,
+): Promise<{ unitId: string | null; parentId: string; error: null } | { unitId: null; parentId: null; error: string }> {
+  if (role === "agent") {
+    if (!assignedUnderId) return { unitId: null, parentId: null, error: "Choose which Unit Manager this agent reports to." };
+    const { data: unitManager } = await supabase
+      .from("profiles")
+      .select("id, unit_id, role")
+      .eq("id", assignedUnderId)
+      .eq("role", "unit_manager")
+      .maybeSingle();
+    if (!unitManager || !unitManager.unit_id) return { unitId: null, parentId: null, error: "That Unit Manager could not be found." };
+    if (caller.role === "group_manager") {
+      const { data: unit } = await supabase
+        .from("units")
+        .select("id")
+        .eq("id", unitManager.unit_id)
+        .eq("group_manager_id", caller.id)
+        .maybeSingle();
+      if (!unit) return { unitId: null, parentId: null, error: "That Unit Manager isn't in one of your units." };
+    }
+    return { unitId: unitManager.unit_id, parentId: unitManager.id, error: null };
+  }
+  if (role === "unit_manager") {
+    if (!assignedUnderId) return { unitId: null, parentId: null, error: "Choose which unit this manager will run." };
+    let unitQuery = supabase.from("units").select("id, group_manager_id").eq("id", assignedUnderId);
+    if (caller.role === "group_manager") unitQuery = unitQuery.eq("group_manager_id", caller.id);
+    const { data: unit } = await unitQuery.maybeSingle();
+    if (!unit) return { unitId: null, parentId: null, error: "That unit could not be found." };
+    return { unitId: unit.id, parentId: unit.group_manager_id ?? caller.id, error: null };
+  }
+  // group_manager / superadmin roles: no unit, parent is the acting superadmin.
+  return { unitId: null, parentId: caller.id, error: null };
+}
+
 export async function inviteUser(input: InviteInput) {
   const profile = await getCurrentProfile();
   if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
@@ -48,39 +91,9 @@ export async function inviteUser(input: InviteInput) {
   if (!allowedRoles.includes(input.role)) return { error: "You can't create a user with that role." };
 
   const supabase = await createClient();
-  let unitId: string | null = null;
-  let parentId: string = profile.id;
-
-  if (input.role === "agent") {
-    if (!input.assignedUnderId) return { error: "Choose which Unit Manager this agent reports to." };
-    const { data: unitManager } = await supabase
-      .from("profiles")
-      .select("id, unit_id, role")
-      .eq("id", input.assignedUnderId)
-      .eq("role", "unit_manager")
-      .maybeSingle();
-    if (!unitManager || !unitManager.unit_id) return { error: "That Unit Manager could not be found." };
-    if (profile.role === "group_manager") {
-      const { data: unit } = await supabase
-        .from("units")
-        .select("id")
-        .eq("id", unitManager.unit_id)
-        .eq("group_manager_id", profile.id)
-        .maybeSingle();
-      if (!unit) return { error: "That Unit Manager isn't in one of your units." };
-    }
-    unitId = unitManager.unit_id;
-    parentId = unitManager.id;
-  } else if (input.role === "unit_manager") {
-    if (!input.assignedUnderId) return { error: "Choose which unit this manager will run." };
-    let unitQuery = supabase.from("units").select("id, group_manager_id").eq("id", input.assignedUnderId);
-    if (profile.role === "group_manager") unitQuery = unitQuery.eq("group_manager_id", profile.id);
-    const { data: unit } = await unitQuery.maybeSingle();
-    if (!unit) return { error: "That unit could not be found." };
-    unitId = unit.id;
-    parentId = unit.group_manager_id ?? profile.id;
-  }
-  // group_manager / superadmin roles: no unit, parent is the creating superadmin.
+  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId);
+  if (assignment.error) return { error: assignment.error };
+  const { unitId, parentId } = assignment;
 
   const admin = createAdminClient();
   const tempPassword = generateTempPassword();
@@ -105,6 +118,7 @@ export async function inviteUser(input: InviteInput) {
     parent_id: parentId,
     is_active: true,
     avatar_initials: initialsFrom(fullName),
+    must_change_password: true,
   });
   if (profileError) {
     // Roll back the orphaned auth user rather than leaving a login with no profile.
@@ -121,6 +135,44 @@ export async function inviteUser(input: InviteInput) {
 
   revalidatePath("/settings");
   return { error: null, email, tempPassword };
+}
+
+export async function updateUserAssignment(input: {
+  userId: string;
+  role: Role;
+  assignedUnderId: string | null;
+}) {
+  const profile = await getCurrentProfile();
+  // Editing an existing user's role/hierarchy placement is SuperAdmin-only --
+  // Group Managers can invite within their own units but not reshuffle the org.
+  if (!profile || profile.role !== "superadmin") return { error: "You don't have permission to do that." };
+  if (input.userId === profile.id) return { error: "You can't edit your own account here." };
+
+  const supabase = await createClient();
+  const { data: target } = await supabase.from("profiles").select("id, role").eq("id", input.userId).maybeSingle();
+  if (!target) return { error: "That user could not be found." };
+  if (target.role === "superadmin") return { error: "SuperAdmin accounts can't be edited here." };
+
+  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId);
+  if (assignment.error) return { error: assignment.error };
+  const { unitId, parentId } = assignment;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ role: input.role, unit_id: unitId, parent_id: parentId })
+    .eq("id", input.userId);
+  if (error) return { error: "Couldn't update this user. Please try again." };
+
+  await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    target_id: input.userId,
+    action: "user_reassigned",
+    metadata: { role: input.role, unit_id: unitId },
+  });
+
+  revalidatePath("/settings");
+  return { error: null };
 }
 
 export async function saveTargets(monthDate: string, rows: { agentId: string; ancTarget: number | null; nocTarget: number | null }[]) {

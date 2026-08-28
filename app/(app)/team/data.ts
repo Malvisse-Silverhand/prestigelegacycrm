@@ -37,6 +37,46 @@ async function fetchLeadsAndActivity(unitIds: string[] | null) {
   return { leads: leads ?? [], activities };
 }
 
+export type UnitTargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };
+
+export function currentMonthDate() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+// Scoped exactly like the leads/quotations pattern: only agents in the unit
+// manager's own unit -- matches the "targets" RLS write policy.
+export async function getUnitManagerTargets(profile: CurrentProfile, monthDate: string): Promise<UnitTargetRow[]> {
+  if (!profile.unit_id) return [];
+  const supabase = await createClient();
+
+  const { data: agents } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .eq("role", "agent")
+    .eq("unit_id", profile.unit_id)
+    .order("full_name");
+
+  const agentIds = (agents ?? []).map((a) => a.id);
+  let targets: { agent_id: string; anc_target: number | null; noc_target: number | null }[] = [];
+  if (agentIds.length > 0) {
+    const { data } = await supabase
+      .from("targets")
+      .select("agent_id, anc_target, noc_target")
+      .eq("month", monthDate)
+      .in("agent_id", agentIds);
+    targets = data ?? [];
+  }
+  const byAgent = new Map(targets.map((t) => [t.agent_id, t]));
+
+  return (agents ?? []).map((a) => ({
+    agentId: a.id,
+    fullName: a.full_name,
+    ancTarget: byAgent.get(a.id)?.anc_target ?? null,
+    nocTarget: byAgent.get(a.id)?.noc_target ?? null,
+  }));
+}
+
 export async function getUnitManagerTeam(profile: CurrentProfile) {
   const supabase = await createClient();
   const { data: members } = await supabase

@@ -13,7 +13,7 @@ async function unitsInScope(profile: CurrentProfile): Promise<ScopeUnit[]> {
 }
 
 export type OrgPerson = { id: string; full_name: string; email: string };
-export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agentCount: number };
+export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agents: OrgPerson[] };
 export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
 export type OrgTree = {
   superadmins: OrgPerson[];
@@ -50,8 +50,10 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
       email: gm.email,
       units: gmUnits.map((u) => {
         const unitManager = (members ?? []).find((m) => m.role === "unit_manager" && m.unit_id === u.id) ?? null;
-        const agentCount = (members ?? []).filter((m) => m.role === "agent" && m.unit_id === u.id).length;
-        return { id: u.id, name: u.name, unitManager, agentCount };
+        const agents = (members ?? [])
+          .filter((m) => m.role === "agent" && m.unit_id === u.id)
+          .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email }));
+        return { id: u.id, name: u.name, unitManager, agents };
       }),
     };
   });

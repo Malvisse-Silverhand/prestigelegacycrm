@@ -9,16 +9,7 @@ import { waLink } from "@/lib/whatsapp";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
-
-function quoteLauncherUrl(tool: string, lead: LeadDetail) {
-  const params = new URLSearchParams({
-    lead_id: lead.id,
-    name: lead.full_name,
-    phone: lead.phone,
-    email: lead.email ?? "",
-  });
-  return `/tools/${tool}?${params.toString()}`;
-}
+import { quoteLauncherUrl } from "@/lib/quote-launcher";
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();

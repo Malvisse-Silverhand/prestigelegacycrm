@@ -38,5 +38,22 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Mandatory password change after an admin-created invite: block every route
+  // except /change-password itself until the flag clears.
+  if (user && request.nextUrl.pathname !== "/change-password") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("must_change_password")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.must_change_password) {
+      const changePasswordUrl = request.nextUrl.clone();
+      changePasswordUrl.pathname = "/change-password";
+      changePasswordUrl.search = "";
+      return NextResponse.redirect(changePasswordUrl);
+    }
+  }
+
   return supabaseResponse;
 }

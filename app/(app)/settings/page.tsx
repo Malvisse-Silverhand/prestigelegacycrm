@@ -29,7 +29,8 @@ export default async function SettingsPage() {
     getAssignmentOptions(profile),
     getTargetsForMonth(profile, monthDate),
     getDistributionSettings(),
-    getAuditLog(profile),
+    // Audit Log is SuperAdmin-only -- don't even fetch it for a Group Manager.
+    profile.role === "superadmin" ? getAuditLog(profile) : Promise.resolve(null),
     getLeadSourceStats(profile),
   ]);
 
