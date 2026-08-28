@@ -44,7 +44,12 @@ export async function getLeads(filters: LeadFilters) {
     .order("created_at", { ascending: false });
 
   if (filters.q) {
-    const q = filters.q.replace(/[%_]/g, "");
+    // Strip characters with special meaning in PostgREST's ilike (%, _) and
+    // its .or() filter DSL (`,` separates conditions, `(` `)` group them) --
+    // otherwise a search term containing one can distort which condition
+    // actually gets evaluated. RLS still governs the final result set either
+    // way, but a malformed filter shouldn't produce confusing search results.
+    const q = filters.q.replace(/[%_,()]/g, "");
     query = query.or(`full_name.ilike.%${q}%,phone.ilike.%${q}%,lead_source.ilike.%${q}%`);
   }
   if (filters.from) query = query.gte("created_at", filters.from);
