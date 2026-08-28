@@ -86,7 +86,7 @@ export default async function StatisticsPage({
       </div>
 
       <div className="flex flex-col gap-[18px] px-[30px] py-[22px] pb-[30px]">
-        <div className="grid grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
           <StatCard label="Total leads" value={top.totalLeads} delta={top.totalLeadsDelta === null ? null : `${top.totalLeadsDelta > 0 ? "+" : ""}${top.totalLeadsDelta}%`} />
           <StatCard label="Quotations sent" value={top.quotationsSent} delta={top.quotationsSentDelta === null ? null : `${top.quotationsSentDelta > 0 ? "+" : ""}${top.quotationsSentDelta}%`} />
           <StatCard label="Cases closed" value={top.casesClosed} delta={`${top.casesClosedDelta > 0 ? "+" : ""}${top.casesClosedDelta}`} />
@@ -99,7 +99,7 @@ export default async function StatisticsPage({
           <AgentTable metrics={agentMetrics} agents={agents} />
         )}
 
-        <div className="grid grid-cols-3 gap-[18px]">
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3">
           <ProductMix data={productMix} />
           <ResponseHistogram data={responseData} />
           <StageFunnel stages={funnel} />

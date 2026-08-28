@@ -114,7 +114,9 @@ export default async function LeadsPage({
           )
         ) : (
           <>
-            <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
+            {/* Desktop table -- the 10-column grid has no room to breathe below
+               lg, so narrow viewports get their own card list instead. */}
+            <div className="hidden overflow-hidden rounded-2xl border border-sand bg-white shadow-card lg:block">
               <div className="grid grid-cols-[1.5fr_1fr_.9fr_.9fr_1fr_1fr_.8fr_1fr_.8fr_.7fr] bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
                 <div>Name</div>
                 <div>Phone</div>
@@ -158,6 +160,44 @@ export default async function LeadsPage({
                         aria-label="Message on WhatsApp"
                       >
                         <WhatsAppIcon width={13} height={13} fill="#fff" />
+                      </a>
+                      <LeadRowActions lead={lead} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Mobile card list */}
+            <div className="flex flex-col gap-2.5 lg:hidden">
+              {leads.map((lead) => {
+                const fu = fmtFollowUp(lead.follow_up_date);
+                return (
+                  <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5 shadow-card">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <Link href={`/leads/${lead.id}`} className="truncate text-[14.5px] font-bold text-navy hover:underline">
+                          {lead.full_name}
+                        </Link>
+                        <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
+                      </div>
+                      <StatusBadge status={lead.status} />
+                    </div>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-medium text-muted">
+                      <span className="truncate font-semibold text-green">{lead.profiles?.full_name ?? "Unassigned"}</span>
+                      <span className={fu.overdue ? "font-semibold text-alert-red" : ""}>FU {fu.text}</span>
+                      {lead.state && <span>{lead.state}</span>}
+                    </div>
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <a
+                        href={waLink(lead.phone)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-9 flex-1 items-center justify-center gap-2 rounded-[10px] bg-green text-[12.5px] font-semibold text-white"
+                        aria-label="Message on WhatsApp"
+                      >
+                        <WhatsAppIcon width={13} height={13} fill="#fff" />
+                        WhatsApp
                       </a>
                       <LeadRowActions lead={lead} />
                     </div>

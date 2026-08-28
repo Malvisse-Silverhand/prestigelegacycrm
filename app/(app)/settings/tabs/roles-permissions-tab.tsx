@@ -54,7 +54,7 @@ export function RolesPermissionsTab() {
         <div className="mb-3.5 mt-0.5 text-xs font-medium text-muted">
           What each tier can reach. Applied to every user created in Users &amp; Hierarchy.
         </div>
-        <div className="grid grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {ROLES.map((r) => (
             <div key={r.name} className={`rounded-[18px] px-[18px] pb-5 pt-[18px] ${r.bg}`}>
               <div className="flex items-center gap-2">

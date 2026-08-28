@@ -58,7 +58,7 @@ export function UsersHierarchyTab({
   );
 
   return (
-    <div className="grid grid-cols-[1fr_360px] items-start gap-[22px]">
+    <div className="grid grid-cols-1 items-start gap-[22px] lg:grid-cols-[1fr_360px]">
       <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-6 pt-5 shadow-[0_1px_2px_rgba(15,37,64,.05)]">
         <div className="flex items-center justify-between">
           <div>

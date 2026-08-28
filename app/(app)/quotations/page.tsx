@@ -43,6 +43,8 @@ export default async function QuotationsPage() {
           />
         ) : (
           <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
+           <div className="overflow-x-auto">
+            <div className="min-w-[640px]">
             <div className="grid grid-cols-[1.6fr_1.4fr_1fr_.9fr_1.2fr] bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
               <div>Client</div>
               <div>Product</div>
@@ -70,6 +72,8 @@ export default async function QuotationsPage() {
                 <div className="truncate font-semibold text-green">{q.profiles?.full_name ?? "—"}</div>
               </Link>
             ))}
+            </div>
+           </div>
           </div>
         )}
       </div>

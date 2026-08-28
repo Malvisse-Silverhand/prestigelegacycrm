@@ -170,7 +170,7 @@ export function WaFlowView({
             }
           />
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const meta = CATEGORIES.find((c) => c.value === t.category);
               const isQuotation = t.category === "product_info";

@@ -72,6 +72,8 @@ export function TeamLeague({
           />
         ) : (
           <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
+           <div className="overflow-x-auto">
+            <div className="min-w-[760px]">
             <div className="grid grid-cols-[1.6fr_.9fr_.8fr_.9fr_.9fr_.9fr_1.1fr] bg-cream px-[22px] py-[11px] text-[10.5px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
               <div>Unit Manager</div>
               <div>Agents</div>
@@ -124,7 +126,7 @@ export function TeamLeague({
                   {row.league.agents.length === 0 ? (
                     <p className="text-[12.5px] text-muted">No agents in this unit yet.</p>
                   ) : (
-                    <div className="grid grid-cols-5 gap-2.5">
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
                       {row.league.agents.map((agent) => {
                         const m = agentMetrics.get(agent.id) ?? emptyMetrics();
                         return (
@@ -155,6 +157,8 @@ export function TeamLeague({
                 </div>
               </details>
             ))}
+            </div>
+           </div>
           </div>
         )}
 

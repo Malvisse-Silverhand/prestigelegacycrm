@@ -48,35 +48,39 @@ export function LeagueTable({
           <div className="mt-0.5 text-xs font-medium text-muted">Ranked by conversion, then response time</div>
         </div>
       </div>
-      <div className="grid grid-cols-[40px_2fr_.7fr_.8fr_.8fr_.8fr_.9fr_.9fr_1fr] border-t border-b border-sand bg-cream px-[22px] py-2.5 text-[10.5px] font-bold tracking-[0.07em] text-taupe-2 uppercase">
-        <div>#</div><div>Unit Manager</div><div>Agents</div><div>Leads</div><div>Quoted</div><div>Closed</div><div>Conv.</div><div>Response</div><div>3-month trend</div>
-      </div>
-      {rows.map((row, i) => (
-        <div key={row.id} className="grid grid-cols-[40px_2fr_.7fr_.8fr_.8fr_.8fr_.9fr_.9fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
-          <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
-              {row.avatarInitials || row.name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
-            </span>
-            <div>
-              <div className="text-[13px] font-bold text-navy">{row.name}</div>
+      <div className="overflow-x-auto">
+        <div className="min-w-[720px]">
+          <div className="grid grid-cols-[40px_2fr_.7fr_.8fr_.8fr_.8fr_.9fr_.9fr_1fr] border-t border-b border-sand bg-cream px-[22px] py-2.5 text-[10.5px] font-bold tracking-[0.07em] text-taupe-2 uppercase">
+            <div>#</div><div>Unit Manager</div><div>Agents</div><div>Leads</div><div>Quoted</div><div>Closed</div><div>Conv.</div><div>Response</div><div>3-month trend</div>
+          </div>
+          {rows.map((row, i) => (
+            <div key={row.id} className="grid grid-cols-[40px_2fr_.7fr_.8fr_.8fr_.8fr_.9fr_.9fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
+              <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+                  {row.avatarInitials || row.name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
+                </span>
+                <div>
+                  <div className="text-[13px] font-bold text-navy">{row.name}</div>
+                </div>
+              </div>
+              <div className="text-[12.5px] font-bold text-navy">{row.agentCount}</div>
+              <div className="text-[12.5px] font-bold text-navy">{row.leadCount}</div>
+              <div className="text-[12.5px] font-semibold text-ink">{row.quoted}</div>
+              <div className="text-[12.5px] font-bold text-navy">{row.closed}</div>
+              <div className="text-[13px] font-extrabold text-green">{row.convRate}%</div>
+              <div className="text-[12.5px] font-semibold text-navy">
+                {row.avgResponse !== null ? `${row.avgResponse.toFixed(1)}h` : "—"}
+              </div>
+              <div>
+                <svg width={88} height={26} viewBox="0 0 88 26">
+                  <polyline points={sparkline(row.trend)} fill="none" stroke="#0f4c35" strokeWidth={2.2} strokeLinecap="round" />
+                </svg>
+              </div>
             </div>
-          </div>
-          <div className="text-[12.5px] font-bold text-navy">{row.agentCount}</div>
-          <div className="text-[12.5px] font-bold text-navy">{row.leadCount}</div>
-          <div className="text-[12.5px] font-semibold text-ink">{row.quoted}</div>
-          <div className="text-[12.5px] font-bold text-navy">{row.closed}</div>
-          <div className="text-[13px] font-extrabold text-green">{row.convRate}%</div>
-          <div className="text-[12.5px] font-semibold text-navy">
-            {row.avgResponse !== null ? `${row.avgResponse.toFixed(1)}h` : "—"}
-          </div>
-          <div>
-            <svg width={88} height={26} viewBox="0 0 88 26">
-              <polyline points={sparkline(row.trend)} fill="none" stroke="#0f4c35" strokeWidth={2.2} strokeLinecap="round" />
-            </svg>
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -100,24 +104,28 @@ export function AgentTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
       <div className="px-[22px] pt-[18px] pb-3.5 text-[15.5px] font-bold text-navy">Agent performance</div>
-      <div className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr] border-t border-b border-sand bg-cream px-[22px] py-2.5 text-[10.5px] font-bold tracking-[0.07em] text-taupe-2 uppercase">
-        <div>#</div><div>Agent</div><div>Leads</div><div>Conv.</div><div>Response</div><div>Stale</div>
-      </div>
-      {rows.map((row, i) => (
-        <div key={row.id} className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
-          <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
-              {row.avatar_initials || row.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
-            </span>
-            <span className="text-[13px] font-bold text-navy">{row.full_name}</span>
+      <div className="overflow-x-auto">
+        <div className="min-w-[560px]">
+          <div className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr] border-t border-b border-sand bg-cream px-[22px] py-2.5 text-[10.5px] font-bold tracking-[0.07em] text-taupe-2 uppercase">
+            <div>#</div><div>Agent</div><div>Leads</div><div>Conv.</div><div>Response</div><div>Stale</div>
           </div>
-          <div className="text-[12.5px] font-bold text-navy">{row.m!.leadCount}</div>
-          <div className="text-[13px] font-extrabold text-green">{row.m!.convRate}%</div>
-          <div className="text-[12.5px] font-semibold text-navy">{row.m!.avgResponseHours !== null ? `${row.m!.avgResponseHours}h` : "—"}</div>
-          <div className="text-[12.5px] font-semibold text-navy">{row.m!.staleCount}</div>
+          {rows.map((row, i) => (
+            <div key={row.id} className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
+              <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+                  {row.avatar_initials || row.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
+                </span>
+                <span className="text-[13px] font-bold text-navy">{row.full_name}</span>
+              </div>
+              <div className="text-[12.5px] font-bold text-navy">{row.m!.leadCount}</div>
+              <div className="text-[13px] font-extrabold text-green">{row.m!.convRate}%</div>
+              <div className="text-[12.5px] font-semibold text-navy">{row.m!.avgResponseHours !== null ? `${row.m!.avgResponseHours}h` : "—"}</div>
+              <div className="text-[12.5px] font-semibold text-navy">{row.m!.staleCount}</div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

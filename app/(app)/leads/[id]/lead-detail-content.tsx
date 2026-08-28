@@ -225,7 +225,7 @@ export function LeadDetailContent({
         </a>
       </div>
 
-      <div className="grid grid-cols-[1fr_268px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
         <div className="max-h-[60vh] overflow-y-auto p-[26px]">
           <div className="flex items-center justify-between">
             <div className="text-[14.5px] font-bold text-navy">Activity timeline</div>
@@ -292,7 +292,7 @@ export function LeadDetailContent({
           </div>
         </div>
 
-        <div className="flex flex-col gap-[18px] border-l border-sand bg-white p-[22px]">
+        <div className="flex flex-col gap-[18px] border-t border-sand bg-white p-[22px] lg:border-l lg:border-t-0">
           <div>
             <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
               Pipeline stage

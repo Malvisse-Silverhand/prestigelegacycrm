@@ -50,7 +50,7 @@ export function TeamRoster({
       </div>
 
       <div className="flex flex-col gap-5 px-[30px] py-[22px] pb-[30px]">
-        <div className="grid grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
           <StatCard label="Total Members" value={members.length} />
           <StatCard label="Active Agents" value={activeCount} />
           <StatCard label="Active Percentage" value={members.length > 0 ? `${Math.round((activeCount / members.length) * 100)}%` : "—"} />
@@ -66,7 +66,7 @@ export function TeamRoster({
             description="Once agents are added to your unit, they'll show up here with their lead and conversion stats."
           />
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((m) => {
               const stats = metrics.get(m.id) ?? emptyMetrics();
               const stale = stats.staleCount > 0;
