@@ -35,11 +35,12 @@ export default async function DashboardPage({
 
   if (monitorTarget) {
     const supabase = await createClient();
-    await supabase.from("audit_log").insert({
+    const { error: auditError } = await supabase.from("audit_log").insert({
       actor_id: profile.id,
       target_id: monitorTarget.id,
       action: "view_dashboard",
     });
+    if (auditError) console.error("dashboard monitor-mode: audit_log insert failed", auditError);
   }
 
   return (

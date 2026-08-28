@@ -34,12 +34,13 @@ export async function reassignLead(leadId: string, newAgentId: string, newAgentN
     .maybeSingle();
   if (error || !data) return { error: "Couldn't reassign this lead." };
 
-  await supabase.from("lead_activity").insert({
+  const { error: activityError } = await supabase.from("lead_activity").insert({
     lead_id: leadId,
     actor_id: profile.id,
     activity_type: "assigned",
     content: `Reassigned to ${newAgentName}`,
   });
+  if (activityError) console.error("reassignLead: lead_activity insert failed", activityError);
 
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/leads");
@@ -61,12 +62,13 @@ export async function updateStage(leadId: string, newStage: string, stageLabel: 
   const { data, error } = await supabase.from("leads").update(patch).eq("id", leadId).select("id").maybeSingle();
   if (error || !data) return { error: "Couldn't update the pipeline stage." };
 
-  await supabase.from("lead_activity").insert({
+  const { error: activityError } = await supabase.from("lead_activity").insert({
     lead_id: leadId,
     actor_id: profile.id,
     activity_type: "stage_change",
     content: `Moved to ${stageLabel}`,
   });
+  if (activityError) console.error("updateStage: lead_activity insert failed", activityError);
 
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/leads");

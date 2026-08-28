@@ -126,12 +126,13 @@ export async function inviteUser(input: InviteInput) {
     return { error: "Couldn't set up this user's profile. Please try again." };
   }
 
-  await admin.from("audit_log").insert({
+  const { error: auditError } = await admin.from("audit_log").insert({
     actor_id: profile.id,
     target_id: created.user.id,
     action: "user_invited",
     metadata: { role: input.role, unit_id: unitId },
   });
+  if (auditError) console.error("inviteUser: audit_log insert failed", auditError);
 
   revalidatePath("/settings");
   return { error: null, email, tempPassword };
@@ -158,18 +159,21 @@ export async function updateUserAssignment(input: {
   const { unitId, parentId } = assignment;
 
   const admin = createAdminClient();
-  const { error } = await admin
+  const { data: updated, error } = await admin
     .from("profiles")
     .update({ role: input.role, unit_id: unitId, parent_id: parentId })
-    .eq("id", input.userId);
-  if (error) return { error: "Couldn't update this user. Please try again." };
+    .eq("id", input.userId)
+    .select("id")
+    .maybeSingle();
+  if (error || !updated) return { error: "Couldn't update this user. Please try again." };
 
-  await admin.from("audit_log").insert({
+  const { error: auditError } = await admin.from("audit_log").insert({
     actor_id: profile.id,
     target_id: input.userId,
     action: "user_reassigned",
     metadata: { role: input.role, unit_id: unitId },
   });
+  if (auditError) console.error("updateUserAssignment: audit_log insert failed", auditError);
 
   revalidatePath("/settings");
   return { error: null };
@@ -189,11 +193,13 @@ export async function saveTargets(monthDate: string, rows: { agentId: string; an
       .maybeSingle();
 
     if (existing) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("targets")
         .update({ anc_target: row.ancTarget, noc_target: row.nocTarget })
-        .eq("id", existing.id);
-      if (error) return { error: "Couldn't save targets. Please try again." };
+        .eq("id", existing.id)
+        .select("id")
+        .maybeSingle();
+      if (error || !data) return { error: "Couldn't save targets. Please try again." };
     } else {
       const { error } = await supabase.from("targets").insert({
         agent_id: row.agentId,
@@ -225,11 +231,11 @@ export async function saveDistributionSettings(input: {
     reassign_requires_approval: input.reassignRequiresApproval,
   };
 
-  const { error } = input.id
-    ? await supabase.from("distribution_settings").update(payload).eq("id", input.id)
-    : await supabase.from("distribution_settings").insert({ ...payload, unit_id: null });
+  const { data, error } = input.id
+    ? await supabase.from("distribution_settings").update(payload).eq("id", input.id).select("id").maybeSingle()
+    : await supabase.from("distribution_settings").insert({ ...payload, unit_id: null }).select("id").maybeSingle();
 
-  if (error) return { error: "Couldn't save these settings. Please try again." };
+  if (error || !data) return { error: "Couldn't save these settings. Please try again." };
 
   revalidatePath("/settings");
   return { error: null };

@@ -18,11 +18,11 @@ export async function saveTemplate(formData: FormData) {
   const supabase = await createClient();
   const payload = { title, category, language, body, created_by: profile.id, unit_id: profile.unit_id };
 
-  const { error } = id
-    ? await supabase.from("wa_templates").update(payload).eq("id", id)
-    : await supabase.from("wa_templates").insert(payload);
+  const { data, error } = id
+    ? await supabase.from("wa_templates").update(payload).eq("id", id).select("id").maybeSingle()
+    : await supabase.from("wa_templates").insert(payload).select("id").maybeSingle();
 
-  if (error) return { error: "Couldn't save this template." };
+  if (error || !data) return { error: "Couldn't save this template." };
   revalidatePath("/wa-flow");
   return { error: null };
 }
@@ -32,8 +32,8 @@ export async function deleteTemplate(id: string) {
   if (!profile || profile.role === "agent") return { error: "You don't have permission to delete templates." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("wa_templates").delete().eq("id", id);
-  if (error) return { error: "Couldn't delete this template." };
+  const { data, error } = await supabase.from("wa_templates").delete().eq("id", id).select("id").maybeSingle();
+  if (error || !data) return { error: "Couldn't delete this template." };
 
   revalidatePath("/wa-flow");
   return { error: null };
@@ -47,5 +47,9 @@ export async function deleteTemplate(id: string) {
 // opening a column-write hole on the table itself.
 export async function bumpUsage(id: string) {
   const supabase = await createClient();
-  await supabase.rpc("increment_template_usage", { template_id: id });
+  // Best-effort: a missed increment is a wrong analytics number, not a
+  // correctness issue for the user's actual action (sending the template
+  // already happened client-side regardless of this call).
+  const { error } = await supabase.rpc("increment_template_usage", { template_id: id });
+  if (error) console.error("bumpUsage: increment_template_usage failed", error);
 }

@@ -55,11 +55,13 @@ export async function saveUnitManagerTargets(
       .maybeSingle();
 
     if (existing) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("targets")
         .update({ anc_target: row.ancTarget, noc_target: row.nocTarget })
-        .eq("id", existing.id);
-      if (error) return { error: "Couldn't save targets. Please try again." };
+        .eq("id", existing.id)
+        .select("id")
+        .maybeSingle();
+      if (error || !data) return { error: "Couldn't save targets. Please try again." };
     } else {
       const { error } = await supabase.from("targets").insert({
         agent_id: row.agentId,
