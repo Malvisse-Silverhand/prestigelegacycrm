@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
+import { QuotationModal } from "@/components/quotation-modal";
 import { EditLeadModal } from "./edit-lead-modal";
 import type { LeadRow } from "./data";
 
@@ -21,8 +23,10 @@ const quotationReceipt = (
 );
 
 export function LeadRowActions({ lead }: { lead: LeadRow }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [quoteMenuOpen, setQuoteMenuOpen] = useState(false);
+  const [modalUrl, setModalUrl] = useState<string | null>(null);
 
   return (
     <div className="flex justify-end gap-1.5">
@@ -53,30 +57,34 @@ export function LeadRowActions({ lead }: { lead: LeadRow }) {
           <>
             <div className="fixed inset-0 z-10" onClick={() => setQuoteMenuOpen(false)} />
             <div className="absolute top-full right-0 z-20 mt-1.5 w-[170px] rounded-[14px] border border-sand-2 bg-white p-1.5 shadow-elevated">
-              <a
-                href={quoteLauncherUrl("imedi-evolusi-quote.html", lead)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setQuoteMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-semibold text-navy hover:bg-cream"
+              <button
+                type="button"
+                onClick={() => { setQuoteMenuOpen(false); setModalUrl(quoteLauncherUrl("imedi-evolusi-quote.html", lead)); }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-semibold text-navy hover:bg-cream"
               >
                 Medical Card
-              </a>
-              <a
-                href={quoteLauncherUrl("quickquote-hibah-life-takaful.html", lead)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setQuoteMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-semibold text-navy hover:bg-cream"
+              </button>
+              <button
+                type="button"
+                onClick={() => { setQuoteMenuOpen(false); setModalUrl(quoteLauncherUrl("quickquote-hibah-life-takaful.html", lead)); }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-semibold text-navy hover:bg-cream"
               >
                 Hibah
-              </a>
+              </button>
             </div>
           </>
         )}
       </div>
 
       {editing && <EditLeadModal lead={lead} onClose={() => setEditing(false)} />}
+      <QuotationModal
+        url={modalUrl}
+        title={`Quotation — ${lead.full_name}`}
+        onClose={() => {
+          setModalUrl(null);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

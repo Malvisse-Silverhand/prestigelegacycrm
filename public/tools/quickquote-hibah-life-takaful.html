@@ -178,6 +178,7 @@
         <div class="qqh-cta-row">
           <a class="qqh-btn qqh-btn-wa" id="qqhWa" href="#" target="_blank" rel="noopener" data-i18n="ctaWa"></a>
           <button type="button" class="qqh-btn qqh-btn-ghost" id="qqhPrint" data-i18n="ctaPdf"></button>
+          <button type="button" class="qqh-btn qqh-btn-save" id="qqhSave" data-i18n="ctaSave" hidden></button>
         </div>
       </div>
     </div>
@@ -270,6 +271,10 @@
 #qqh .qqh-btn-wa{background:var(--gr);color:var(--wh);box-shadow:0 4px 0 #072a1d;margin-top:0}
 #qqh .qqh-btn-wa:hover{box-shadow:0 6px 0 #072a1d}
 #qqh .qqh-btn-ghost{background:var(--wh);color:var(--nv);border:1.5px solid var(--nv);box-shadow:0 4px 0 rgba(15,37,64,.18);margin-top:0}
+#qqh .qqh-btn-save{background:var(--gd);color:var(--nv);box-shadow:0 4px 0 #c9941f;margin-top:0}
+#qqh .qqh-btn-save:hover{box-shadow:0 6px 0 #c9941f}
+#qqh .qqh-btn-save:disabled{opacity:.9;cursor:default;transform:none!important;box-shadow:0 4px 0 #c9941f!important}
+#qqh .qqh-btn-save.is-saved{background:#e8f2ec;color:#0f4c35;box-shadow:0 4px 0 #bcd9c9}
 
 #qqh .qqh-err{margin-top:14px;background:#fff3f3;border:1.5px solid #f2c9c9;color:#8d2b2b;border-radius:12px;padding:14px;font-size:13.5px;font-weight:500}
 #qqh .qqh-err a{color:var(--gr);font-weight:700}
@@ -357,6 +362,7 @@
 #qqh details.qqh-acc .qqh-acc-body a{color:var(--gr);font-weight:700}
 
 #qqh .qqh-cta-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+#qqh .qqh-cta-row.has-save{grid-template-columns:1fr 1fr 1fr}
 #qqh .qqh-disclaimer{font-size:11px;line-height:1.65;color:var(--mut);background:#f3ede2;border-radius:14px;padding:14px 16px;margin:0 0 14px}
 #qqh .qqh-foot{text-align:center;font-size:11.5px;color:var(--mut);font-weight:500}
 
@@ -367,7 +373,7 @@
   #qqh .qqh-cols{grid-template-columns:1fr}
   #qqh .qqh-seg4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   #qqh .qqh-tiers{grid-template-columns:1fr}
-  #qqh .qqh-cta-row{grid-template-columns:1fr}
+  #qqh .qqh-cta-row,#qqh .qqh-cta-row.has-save{grid-template-columns:1fr}
   #qqh .qqh-locked.is-locked{max-height:330px}
   #qqh .qqh-profile-name{font-size:20px}
 }
@@ -480,6 +486,8 @@
     cta2:["Unlock Manfaat Penuh 🔓","Unlock Full Benefits 🔓"],
     ctaWa:["Hantar kepada Ejen","Send to Agent"],
     ctaPdf:["Download PDF","Download PDF"],
+    ctaSave:["Simpan ke Lead","Save to Lead"], ctaSaving:["Menyimpan…","Saving…"],
+    savedTo:["Disimpan ke {n}","Saved to {n}"], saveFail:["Gagal simpan — cuba lagi.","Save failed — try again."],
     eyebrow:["Pilihan pelan untuk anda","Plan options for you"],
     profBar:["Quotation ini khas untuk","This quotation is prepared for"],
     profLocked:["— Belum diisi —","— Not yet provided —"],
@@ -610,11 +618,13 @@
   function esc(s){return String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
   function byId(id){ for(var i=0;i<CATALOG.length;i++) if(CATALOG[i].id===id) return CATALOG[i]; return null; }
 
-  /* CRM prefill patch: read ?lead_id=&name=&phone=&email= so the gate form
-     opens pre-populated when launched from a Lead Detail screen. The gate
-     inputs are static markup (not template-rendered), so the value has to
-     be set on the DOM elements directly, not just on S.lead. */
-  var leadId='';
+  /* CRM prefill patch: read ?lead_id=&name=&phone=&email=&dob=&gender=&smoker=
+     so both the profile form and the gate form open pre-populated when
+     launched from a Lead Detail screen. The gate inputs are static markup
+     (not template-rendered), so the value has to be set on the DOM elements
+     directly, not just on S.lead. dob/gender/smoker are applied later, once
+     calcAnb() and the field bindings below exist (see applyPrefillToForm). */
+  var leadId='', prefillDob='', prefillGender='', prefillSmoker='';
   (function prefillFromUrl(){
     var q=new URLSearchParams(location.search);
     leadId=q.get('lead_id')||'';
@@ -626,6 +636,9 @@
       if(p&&pp)p.value=pp;
       if(e&&pe)e.value=pe;
     }
+    prefillDob=q.get('dob')||'';
+    prefillGender=q.get('gender')||''; // 'male' | 'female'
+    prefillSmoker=q.get('smoker')||''; // 'true' | 'false'
   })();
   var capturedQuotationId=null; // set once capture-quotation's insert responds
   var qqhWaEl=$('qqhWa');
@@ -785,7 +798,10 @@
 
   function renderProfile(){
     var box=$('qqhProfile');
-    if(!S.lead.name||!S.lead.phone||!S.lead.email){ box.hidden=true; return; }
+    // Public mode still needs all three (that's what "unlocked" means there);
+    // CRM mode already knows this is a real lead, so show whatever's known.
+    if(!leadId&&(!S.lead.name||!S.lead.phone||!S.lead.email)){ box.hidden=true; return; }
+    if(!S.lead.name&&!S.lead.phone&&!S.lead.email){ box.hidden=true; return; }
     box.hidden=false;
     $('qqhPName').innerHTML=esc(S.lead.name);
     $('qqhChips').innerHTML=[
@@ -921,6 +937,29 @@
     syncTermVisibility();
   });
 
+  /* CRM prefill patch (cont.): apply dob/gender/smoker onto the static form
+     now that segWire's bindings and calcAnb exist. */
+  (function applyPrefillToForm(){
+    function setSeg(id,value){
+      var box=$(id),btn=box.querySelector('button[data-v="'+value+'"]');if(!btn)return;
+      var bs=box.querySelectorAll('button');
+      for(var i=0;i<bs.length;i++) bs[i].classList.remove('is-on');
+      btn.classList.add('is-on');
+    }
+    if(prefillGender==='male'){setSeg('qqhGender','L');S.g='L';}
+    else if(prefillGender==='female'){setSeg('qqhGender','P');S.g='P';}
+    if(prefillSmoker==='true'){setSeg('qqhSmoker','1');S.s=1;}
+    else if(prefillSmoker==='false'){setSeg('qqhSmoker','0');S.s=0;}
+    if(prefillDob){
+      var dt=new Date(prefillDob);
+      if(!isNaN(dt.getTime())){
+        $('qqhDob').value=prefillDob; S.dob=prefillDob; S.anb=calcAnb(prefillDob);
+        $('qqhAnbHint').innerHTML=S.anb?t('anbIs',{n:S.anb}):t('anbAuto');
+      }
+    }
+    syncTermVisibility();
+  })();
+
   $('qqhGo').addEventListener('click',function(){
     var err=$('qqhErr');
     if(!S.anb){ err.hidden=false; err.innerHTML=t('errDob'); return; }
@@ -935,8 +974,31 @@
     }
     err.hidden=true; CUR=r;
     $('qqhResult').hidden=false;
+
+    /* CRM mode (leadId present): the person filling this in is an agent
+       working a lead they already own, not an anonymous public visitor --
+       the name/phone/email capture gate exists to turn strangers into leads,
+       which doesn't apply here, and requiring a well-formed email before
+       showing the benefit tables/PDF/WA button blocks agents on a field the
+       lead record often just doesn't have. Skip the gate entirely, save the
+       quotation automatically, go straight to the full unlocked view. */
+    if(leadId){
+      S.unlocked=true;
+      $('qqhGate').hidden=true;
+      // A fresh "Get Estimate" click (dob/gender/plan picks may have
+      // changed) is a new quote request, not a re-render of the last one --
+      // reset the save guard so it gets its own quotations row rather than
+      // silently being treated as already-saved from an earlier calculation.
+      capturedQuotationId=null; captureQuotationPromise=null;
+      var saveBtn=$('qqhSave');
+      saveBtn.hidden=false; saveBtn.disabled=false; saveBtn.classList.remove('is-saved');
+      saveBtn.textContent=t('ctaSave');
+      $('qqhWa').closest('.qqh-cta-row').classList.add('has-save');
+    }
+
     if(!S.unlocked) $('qqhLockedWrap').classList.add('is-locked');
     renderAll();
+    if(leadId){ postDirty(true); captureQuotationHibah().then(function(id){postDirty(!id);}); }
     $('qqhResult').scrollIntoView({behavior:'smooth',block:'start'});
   });
 
@@ -962,7 +1024,11 @@
     $('qqhLockedWrap').scrollIntoView({behavior:'smooth',block:'start'});
   });
 
-  /* ============ PABBLY WEBHOOK ============ */
+  /* ============ PABBLY WEBHOOK (public embed only) ============
+     Only relevant for a genuine public WordPress visitor -- when this file
+     is launched from the CRM (leadId present) the person filling it in is
+     an agent working a lead they already own, not a new inbound enquiry, so
+     this never runs there (see the qqhGo handler's leadId branch). */
   function sendLead(){
     if(!PABBLY_ENDPOINT||!CUR) return;
     var c=CUR.cols, dt=new Date();
@@ -993,31 +1059,74 @@
       fetch(PABBLY_ENDPOINT,{method:'POST',mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)});
     }catch(err){}
-
-    /* CRM fan-out patch: additive, does not replace the Pabbly call above. */
-    if(leadId&&CAPTURE_QUOTATION_URL){
-      try{
-        var prods=c.map(function(x){return x.prod;});
-        var uniqueProds=prods.filter(function(v,i){return prods.indexOf(v)===i;});
-        var product=uniqueProds.length>1?'hibah_mixed':(uniqueProds[0]==='nova'?'hibah_nova':'hibah_chinta');
-        var cqPlans=c.map(function(x,i){
-          return {
-            sort_order:i,
-            plan_label:'Option '+(i+1)+' ('+x.prodName+')',
-            monthly_contribution:Number(x.monthly.toFixed(2)),
-            annual_contribution:Number((x.monthly*12).toFixed(2)),
-            coverage_detail:{product:x.prodName,sum_covered:x.sc,coverage_to_age:x.cov,payment_term:x.ct}
-          };
-        });
-        var cqBody={lead_id:leadId,product:product,language:(L?"EN":"BM"),raw_payload:p,plans:cqPlans};
-        fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(cqBody),keepalive:true})
-          .then(function(res){return res.json();})
-          .then(function(json){if(json&&json.quotation_id)capturedQuotationId=json.quotation_id;})
-          .catch(function(err){});
-      }catch(err){}
-    }
   }
+
+  /* Modal-close warning: tells the parent (the CRM's quotation modal, when
+     this is loaded in an iframe there) whether there's a calculated quote
+     that hasn't been saved yet, so it can warn before closing instead of
+     silently discarding it. No-op outside an iframe / non-CRM launches. */
+  function postDirty(v){
+    try{ if(leadId&&window.parent!==window) window.parent.postMessage({type:'t4u-quote-dirty',dirty:!!v},'*'); }catch(e){}
+  }
+
+  /* CRM fan-out: writes the quotation to the lead via the capture-quotation
+     Edge Function. Called automatically once a real plan is computed for a
+     CRM-launched session (leadId present), and again (as a retry, not a
+     duplicate) from the explicit "Save to Lead" button if the automatic call
+     hasn't landed yet. captureQuotationPromise is the shared in-flight/settled
+     request so the automatic call and a racing button click can never both
+     insert a row. */
+  var captureQuotationPromise=null;
+  function captureQuotationHibah(){
+    if(!leadId||!CUR||!CAPTURE_QUOTATION_URL)return Promise.resolve(null);
+    if(capturedQuotationId)return Promise.resolve(capturedQuotationId);
+    if(captureQuotationPromise)return captureQuotationPromise;
+    var c=CUR.cols;
+    var prods=c.map(function(x){return x.prod;});
+    var uniqueProds=prods.filter(function(v,i){return prods.indexOf(v)===i;});
+    var product=uniqueProds.length>1?'hibah_mixed':(uniqueProds[0]==='nova'?'hibah_nova':'hibah_chinta');
+    var cqPlans=c.map(function(x,i){
+      return {
+        sort_order:i,
+        plan_label:'Option '+(i+1)+' ('+x.prodName+')',
+        monthly_contribution:Number(x.monthly.toFixed(2)),
+        annual_contribution:Number((x.monthly*12).toFixed(2)),
+        coverage_detail:{product:x.prodName,sum_covered:x.sc,coverage_to_age:x.cov,payment_term:x.ct}
+      };
+    });
+    var raw={
+      date_of_birth:S.dob, anb:S.anb, gender:(S.g==='L'?"Lelaki":"Perempuan"),
+      smoker:(S.s?"Ya":"Tidak"), occupation_class:S.occ, chinta_term:S.term
+    };
+    var cqBody={lead_id:leadId,product:product,language:(L?"EN":"BM"),raw_payload:raw,plans:cqPlans};
+    captureQuotationPromise=fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cqBody),keepalive:true})
+      .then(function(res){return res.json();})
+      .then(function(json){
+        if(json&&json.quotation_id)capturedQuotationId=json.quotation_id;
+        return capturedQuotationId;
+      })
+      .catch(function(err){captureQuotationPromise=null;return null;});
+    return captureQuotationPromise;
+  }
+
+  /* Explicit "Save to Lead" button click. */
+  function handleSaveToLead(){
+    var btn=$('qqhSave');
+    if(capturedQuotationId){showSaved(btn);return;}
+    btn.disabled=true; btn.textContent=t('ctaSaving');
+    captureQuotationHibah().then(function(id){
+      btn.disabled=false;
+      if(id) showSaved(btn);
+      else { btn.textContent=t('ctaSave'); btn.title=t('saveFail'); }
+    });
+  }
+  function showSaved(btn){
+    postDirty(false);
+    btn.disabled=true; btn.classList.add('is-saved');
+    btn.textContent=t('savedTo',{n:S.lead.name||''});
+  }
+  $('qqhSave').addEventListener('click',handleSaveToLead);
 
   /* CRM fan-out patch: marks the quotation 'sent' when the agent actually
      clicks through to WhatsApp with it. Does not touch the deep-link itself

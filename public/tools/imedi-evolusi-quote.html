@@ -8,15 +8,15 @@
      ============================================================ -->
 <section id="t4u-mediquote" aria-label="QuickQuote Kad Perubatan i-Medi Evolusi">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 #t4u-mediquote{
   --navy:#0f2540;--navy-2:#1c3a5e;--navy-3:#22456e;
   --gold:#fac748;--gold-deep:#e2a82c;--gold-soft:#fdedc4;
-  --green:#0f4c35;--cream:#fbf4e4;--cream-card:#fffdf8;--cream-warm:#f6ecd6;
-  --ink:#0f2540;--ink-2:#3a4a5e;--muted:#6f7a88;
-  --border:#ece0c6;--border-soft:#f3ebd8;
-  --tick:#0f7a45;--warn:#b7791f;--danger:#c53030;
-  --font-display:"Poppins",system-ui,sans-serif;--font-body:"Inter",system-ui,sans-serif;
+  --green:#0f4c35;--cream:#fdf9f3;--cream-card:#ffffff;--cream-warm:#f5eee3;
+  --ink:#0f2540;--ink-2:#3a4a5e;--muted:#8b8271;
+  --border:#e7ded0;--border-soft:#f5eee3;
+  --tick:#0f7a45;--warn:#b7791f;--danger:#9b2c22;
+  --font-display:"Poppins",system-ui,sans-serif;--font-body:"Poppins",system-ui,sans-serif;
   --r-sm:6px;--r-md:10px;--r-lg:16px;--r-pill:9999px;
   --ease:cubic-bezier(.2,.7,.2,1);--ring:0 0 0 3px rgba(250,199,72,.45);
   --shadow:0 18px 44px rgba(15,37,64,.12);
@@ -184,7 +184,8 @@
 #t4u-mediquote .mq-lockmsg .d{font-size:13px;color:var(--muted);margin-top:5px}
 
 #t4u-mediquote .mq-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:22px}
-@media(min-width:560px){#t4u-mediquote .mq-actions{grid-template-columns:1fr 1fr}}
+@media(min-width:560px){#t4u-mediquote .mq-actions{grid-template-columns:1fr 1fr}
+  #t4u-mediquote .mq-actions.has-save{grid-template-columns:1fr 1fr 1fr}}
 #t4u-mediquote .mq-act{display:inline-flex;align-items:center;justify-content:center;gap:9px;
   font-family:var(--font-display);font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;
   border-radius:var(--r-md);padding:15px 18px;min-height:54px;border:none;transition:filter .15s var(--ease),transform .12s var(--ease)}
@@ -194,6 +195,9 @@
 #t4u-mediquote .mq-act:focus-visible{outline:none;box-shadow:var(--ring)}
 #t4u-mediquote .mq-act-wa{background:var(--green);color:var(--gold);box-shadow:0 10px 26px rgba(15,76,53,.3)}
 #t4u-mediquote .mq-act-pdf{background:var(--navy);color:var(--gold);box-shadow:0 10px 26px rgba(15,37,64,.24)}
+#t4u-mediquote .mq-act-save{background:var(--gold);color:var(--navy);box-shadow:0 10px 26px rgba(226,168,44,.32)}
+#t4u-mediquote .mq-act-save:disabled{opacity:.85;cursor:default;filter:none;transform:none}
+#t4u-mediquote .mq-act-save.is-saved{background:var(--success-bg,#e8f2ec);color:var(--tick)}
 
 #t4u-mediquote .mq-disc{font-size:12px;color:var(--muted);line-height:1.65;margin-top:16px;
   background:var(--cream-warm);border:1px solid var(--border-soft);border-radius:var(--r-md);padding:14px 16px}
@@ -242,8 +246,8 @@
 #t4u-mediquote .mq-na h2{font-size:19px;margin-bottom:8px}
 #t4u-mediquote .mq-na p{font-size:14px;color:var(--muted);margin-bottom:18px}
 
-.t4u-mq-tip{position:fixed;z-index:2147483000;max-width:280px;background:#0f2540;color:#fffdf8;
-  font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.5;padding:10px 12px;border-radius:8px;
+.t4u-mq-tip{position:fixed;z-index:2147483000;max-width:280px;background:#0f2540;color:#fdf9f3;
+  font-family:Poppins,system-ui,sans-serif;font-size:13px;line-height:1.5;padding:10px 12px;border-radius:8px;
   box-shadow:0 12px 32px rgba(15,37,64,.4);opacity:0;pointer-events:none;transform:translateY(4px);
   transition:opacity .14s ease,transform .14s ease;border:1px solid #22456e}
 .t4u-mq-tip.is-on{opacity:1;transform:none}
@@ -411,6 +415,8 @@
     viewSimple:['Ringkas','Simplified'], viewFull:['Penuh','Full'],
     colBenefit:['Manfaat','Benefit'],
     btnWa:['Hantar kepada Ejen','Send to Agent'], btnPdf:['Download PDF','Download PDF'],
+    btnSave:['Simpan ke Lead','Save to Lead'], btnSaving:['Menyimpan…','Saving…'],
+    savedTo:['Disimpan ke %s','Saved to %s'], saveFail:['Gagal simpan — cuba lagi.','Save failed — try again.'],
     flagCash:['Nilai Tunai (Simpanan)','Cash Value (Savings)'],
     flagCashD:['Polisi ada simpanan terkumpul — anggaran selepas 10/15/20 tahun perlu dibincang dengan ejen.',
                'The policy accumulates savings — projected values after 10/15/20 years to be discussed with your agent.'],
@@ -582,15 +588,22 @@
   var current=null, view='simple', unlocked=false, naMode=false, naMsg='';
   var lead={name:'',phone:'',email:''};
 
-  /* CRM prefill patch: read ?lead_id=&name=&phone=&email= so the gate form
-     opens pre-populated when launched from a Lead Detail screen. */
-  var leadId='';
+  /* CRM prefill patch: read ?lead_id=&name=&phone=&email=&dob=&gender=&smoker=
+     so both the quote form and the gate form open pre-populated when launched
+     from a Lead Detail screen. Occupation class and illness history have no
+     equivalent on a lead record (occupation class needs judgement calls a
+     free-text job title can't safely resolve, illness history isn't
+     collected at all), so those stay at their defaults for the agent to set. */
+  var leadId='', prefillDob='', prefillGender='', prefillSmoker='';
   (function prefillFromUrl(){
     var q=new URLSearchParams(location.search);
     leadId=q.get('lead_id')||'';
     if(q.get('name'))lead.name=q.get('name');
     if(q.get('phone'))lead.phone=q.get('phone');
     if(q.get('email'))lead.email=q.get('email');
+    prefillDob=q.get('dob')||'';
+    prefillGender=q.get('gender')||''; // 'male' | 'female'
+    prefillSmoker=q.get('smoker')||''; // 'true' | 'false'
   })();
   var capturedQuotationId=null; // set once capture-quotation's insert responds
   var $=function(id){return document.getElementById(id)};
@@ -639,16 +652,37 @@
   bindSeg('mq-ill','ill',function(v){$('mq-illbox').classList.toggle('is-on',v==='yes')});
   $('mq-occ').addEventListener('change',function(e){state.occ=e.target.value});
 
+  /* CRM prefill patch (cont.): apply dob/gender/smoker onto the static form
+     now that the segmented-button bindings above exist. */
+  function setSeg(id,key,value){
+    var box=$(id),btn=box.querySelector('button[data-v="'+value+'"]');if(!btn)return;
+    [].forEach.call(box.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed','false')});
+    btn.setAttribute('aria-pressed','true');state[key]=value;
+  }
+  if(prefillGender==='male'||prefillGender==='female')setSeg('mq-gender','gender',prefillGender);
+  if(prefillSmoker==='true')setSeg('mq-smoke','smoke','smoke');
+  else if(prefillSmoker==='false')setSeg('mq-smoke','smoke','non');
+  if(prefillDob){
+    var dobDt=new Date(prefillDob);
+    if(!isNaN(dobDt.getTime())&&dobDt<=new Date()){$('mq-dob').value=prefillDob;updateDobHint();}
+  }
+
   var tick='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><\/svg>';
   var iconYes='<svg class="mq-yi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><\/svg>';
   var svgWa='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-1.7-.9-2.9-1.6-4-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.5.7.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/><\/svg>';
   var svgPdf='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/><\/svg>';
   var svgLock='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><\/svg>';
+  var svgSave='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/><\/svg>';
+  var svgCheck='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><\/svg>';
 
   function actionsHTML(idSuffix){
-    return '<div class="mq-actions">'
+    var saveBtn=leadId
+      ?'<button type="button" class="mq-act mq-act-save" data-save="1" id="mq-save'+idSuffix+'">'+svgSave+t('btnSave')+'<\/button>'
+      :'';
+    return '<div class="mq-actions'+(leadId?' has-save':'')+'">'
       +'<a class="mq-act mq-act-wa" data-wa-send="1" href="'+waLink()+'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a>'
       +'<button type="button" class="mq-act mq-act-pdf" data-pdf="1" id="mq-pdf'+idSuffix+'">'+svgPdf+t('btnPdf')+'<\/button>'
+      +saveBtn
       +'<\/div>';
   }
 
@@ -770,8 +804,11 @@
 
   function renderResult(){
     if(naMode){
+      /* CRM mode: the "send to agent" gate makes no sense when the agent is
+         the one looking at this -- just show the out-of-range note. */
       resEl.innerHTML='<div class="mq-na"><h2>'+t('naTitle')+'<\/h2><p>'+naMsg+'<\/p><\/div>'
-        + (unlocked ? '<div class="mq-gate"><div class="mq-gate-h">'+tick+'<span>'+t('sentT')+'<\/span><\/div>'
+        + (leadId ? ''
+            : unlocked ? '<div class="mq-gate"><div class="mq-gate-h">'+tick+'<span>'+t('sentT')+'<\/span><\/div>'
               +'<p class="mq-gate-sub">'+t('sentD')+'<\/p>'
               +'<div class="mq-actions" style="grid-template-columns:1fr"><a class="mq-act mq-act-wa" href="'+waLink()
               +'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a><\/div><\/div>'
@@ -820,11 +857,13 @@
     if(rg)rg.addEventListener('click',function(){
       resEl.classList.remove('is-on');resEl.innerHTML='';
       current=null;unlocked=false;naMode=false;view='simple';
+      capturedQuotationId=null;captureQuotationPromise=null;postDirty(false);
       formEl.classList.remove('is-hidden');
       formEl.scrollIntoView({behavior:'smooth',block:'start'});
     });
     [].forEach.call(resEl.querySelectorAll('[data-pdf]'),function(b){b.addEventListener('click',exportPDF);});
     [].forEach.call(resEl.querySelectorAll('[data-wa-send]'),function(a){a.addEventListener('click',markQuotationSent);});
+    [].forEach.call(resEl.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){handleSaveToLead(b);});});
     [].forEach.call(resEl.querySelectorAll('[data-view]'),function(b){
       b.addEventListener('click',function(){view=b.dataset.view;renderResult();
         var el=resEl.querySelector('.mq-ben');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});});
@@ -872,13 +911,13 @@
     w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>QuickQuote - '+esc(lead.name)+'<\/title><style>'
       +'@page{size:A4;margin:14mm}'
       +'*{box-sizing:border-box}body{font-family:Helvetica,Arial,sans-serif;color:#0f2540;margin:0;font-size:11px;line-height:1.45}'
-      +'h1{font-size:18px;margin:0 0 2px}.sub{color:#6f7a88;font-size:11px}'
+      +'h1{font-size:18px;margin:0 0 2px}.sub{color:#8b8271;font-size:11px}'
       +'.hd{border-bottom:3px solid #fac748;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end}'
       +'.brand{font-weight:bold;font-size:12px;color:#0f4c35;text-align:right}'
-      +'.pf{background:#fbf4e4;border:1px solid #ece0c6;border-radius:8px;padding:10px 12px;margin-bottom:14px}'
+      +'.pf{background:#f5eee3;border:1px solid #e7ded0;border-radius:8px;padding:10px 12px;margin-bottom:14px}'
       +'.pf h2{font-size:13px;margin:0 0 7px}'
       +'.pf table{width:100%;border-collapse:collapse}.pf td{padding:2px 4px;font-size:10.5px;vertical-align:top}'
-      +'.pf td.k{color:#6f7a88;width:88px}.pf td.v{font-weight:bold}'
+      +'.pf td.k{color:#8b8271;width:88px}.pf td.v{font-weight:bold}'
       +'.plans{display:flex;gap:10px;margin-bottom:14px}'
       +'.pl{flex:1;background:#0f2540;color:#fff;border-radius:8px;padding:12px}'
       +'.pl .n{font-size:13px;font-weight:bold}.pl .tg{font-size:9.5px;color:#fac748;margin-bottom:6px}'
@@ -886,14 +925,14 @@
       +'table.b{width:100%;border-collapse:collapse;margin-top:4px}'
       +'table.b th{background:#0f2540;color:#fac748;font-size:9.5px;padding:6px;text-align:left;text-transform:uppercase}'
       +'table.b th.c,table.b td.c{text-align:center;width:80px}'
-      +'table.b td{border-bottom:1px solid #f0e8d6;padding:5px 6px;font-size:10px}'
-      +'table.b tr.grp td{background:#f6ecd6;font-weight:bold;font-size:9.5px;text-transform:uppercase;padding:5px 6px}'
+      +'table.b td{border-bottom:1px solid #e7ded0;padding:5px 6px;font-size:10px}'
+      +'table.b tr.grp td{background:#f5eee3;font-weight:bold;font-size:9.5px;text-transform:uppercase;padding:5px 6px}'
       +'.nt{font-size:8px;color:#b7791f;font-weight:bold}'
-      +'.dc{margin-top:14px;font-size:8.5px;color:#6f7a88;line-height:1.5;border-top:1px solid #ece0c6;padding-top:8px}'
+      +'.dc{margin-top:14px;font-size:8.5px;color:#8b8271;line-height:1.5;border-top:1px solid #e7ded0;padding-top:8px}'
       +'<\/style><\/head><body>'
       +'<div class="hd"><div><h1>QuickQuote — '+(L?'i-Medi Evolusi Medical Card':'Kad Perubatan i-Medi Evolusi')+'<\/h1>'
         +'<div class="sub">Great Eastern Takaful Berhad (916257-H)<\/div><\/div>'
-        +'<div class="brand">TAKAFUL4US<br><span style="font-weight:normal;color:#6f7a88">MTA1462134<\/span><\/div><\/div>'
+        +'<div class="brand">TAKAFUL4US<br><span style="font-weight:normal;color:#8b8271">MTA1462134<\/span><\/div><\/div>'
       +'<div class="pf"><h2>'+t('profileFor')+': '+esc(lead.name)+'<\/h2><table>'
         +'<tr><td class="k">'+t('pDob')+'<\/td><td class="v">'+dmy(d.dob)+'<\/td>'
           +'<td class="k">'+t('pAnb')+'<\/td><td class="v">'+current.anb+'<\/td><\/tr>'
@@ -919,6 +958,11 @@
     setTimeout(function(){try{w.focus();w.print();}catch(e){}},450);
   }
 
+  /* Public-embed marketing webhook (Pabbly). Only relevant for a genuine
+     public WordPress visitor -- when this file is launched from the CRM
+     (leadId present) the person filling it in is an agent working a lead
+     they already own, not a new inbound enquiry, so this never fires there.
+     See doUnlock() / the mq-go handler for where that split happens. */
   function sendWebhook(){
     if(!WEBHOOK_URL||WEBHOOK_URL.indexOf('GANTI_DENGAN')>-1){console.warn('[QuickQuote] WEBHOOK_URL belum ditetapkan.');return;}
     var d=current?current.data:state;
@@ -947,30 +991,72 @@
         body:JSON.stringify(payload),mode:'no-cors',keepalive:true})
         .catch(function(err){console.warn('[QuickQuote] webhook gagal:',err);});
     }catch(e){console.warn('[QuickQuote] webhook error:',e);}
+  }
 
-    /* CRM fan-out patch: additive, does not replace the Pabbly/social calls
-       above. Only fires when a real plan was generated (naMode has no plan
-       numbers to record) and a lead_id was supplied. */
-    if(leadId&&!naMode&&CAPTURE_QUOTATION_URL){
-      try{
-        var cqBody={
-          lead_id:leadId, product:'imedi_evolusi', language:lang, raw_payload:payload,
-          plans:[
-            {sort_order:0,plan_label:'Option 1 (RM150 R&B)',
-             monthly_contribution:row[0],annual_contribution:Math.round(row[0]*12),
-             coverage_detail:{room_and_board:'RM150',annual_limit:'RM1,500,000'}},
-            {sort_order:1,plan_label:'Option 2 (RM200 R&B)',
-             monthly_contribution:row[1],annual_contribution:Math.round(row[1]*12),
-             coverage_detail:{room_and_board:'RM200',annual_limit:'RM2,000,000'}}
-          ]
-        };
-        fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(cqBody),keepalive:true})
-          .then(function(res){return res.json();})
-          .then(function(json){if(json&&json.quotation_id)capturedQuotationId=json.quotation_id;})
-          .catch(function(err){console.warn('[QuickQuote] capture-quotation gagal:',err);});
-      }catch(e){console.warn('[QuickQuote] capture-quotation error:',e);}
-    }
+  /* CRM fan-out: writes the quotation to the lead via the capture-quotation
+     Edge Function. Called automatically once a real plan is computed for a
+     CRM-launched session (leadId present), and again (as a retry, not a
+     duplicate) from the explicit "Save to Lead" button if the automatic call
+     hasn't landed yet. Returns a Promise so callers can react to the result;
+     never fires more than the caller asks for -- capturedQuotationId is the
+     single guard against inserting a second quotations row for one session. */
+  /* Modal-close warning: tells the parent (the CRM's quotation modal, when
+     this is loaded in an iframe there) whether there's a calculated quote
+     that hasn't been saved yet, so it can warn before closing instead of
+     silently discarding it. No-op outside an iframe / non-CRM launches. */
+  function postDirty(v){
+    try{ if(leadId&&window.parent!==window) window.parent.postMessage({type:'t4u-quote-dirty',dirty:!!v},'*'); }catch(e){}
+  }
+
+  var captureQuotationPromise=null; // in-flight/settled request, shared so the
+    // automatic call and a "Save to Lead" click racing it can never both insert.
+  function captureQuotation(){
+    if(!leadId||naMode||!current||!CAPTURE_QUOTATION_URL)return Promise.resolve(null);
+    if(capturedQuotationId)return Promise.resolve(capturedQuotationId);
+    if(captureQuotationPromise)return captureQuotationPromise;
+    var row=current.row;
+    var cqBody={
+      lead_id:leadId, product:'imedi_evolusi', language:lang,
+      raw_payload:{tarikh_lahir:current.data.dob,umur_anb:current.anb,
+        jantina:current.data.gender,merokok:current.data.smoke,kelas_pekerjaan:current.data.occ,
+        option1_bulanan:row[0],option2_bulanan:row[1]},
+      plans:[
+        {sort_order:0,plan_label:'Option 1 (RM150 R&B)',
+         monthly_contribution:row[0],annual_contribution:Math.round(row[0]*12),
+         coverage_detail:{room_and_board:'RM150',annual_limit:'RM1,500,000'}},
+        {sort_order:1,plan_label:'Option 2 (RM200 R&B)',
+         monthly_contribution:row[1],annual_contribution:Math.round(row[1]*12),
+         coverage_detail:{room_and_board:'RM200',annual_limit:'RM2,000,000'}}
+      ]
+    };
+    captureQuotationPromise=fetch(CAPTURE_QUOTATION_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cqBody),keepalive:true})
+      .then(function(res){return res.json();})
+      .then(function(json){
+        if(json&&json.quotation_id)capturedQuotationId=json.quotation_id;
+        return capturedQuotationId;
+      })
+      .catch(function(err){console.warn('[QuickQuote] capture-quotation gagal:',err);captureQuotationPromise=null;return null;});
+    return captureQuotationPromise;
+  }
+
+  /* Explicit "Save to Lead" button. If the automatic capture on calculate
+     already landed (capturedQuotationId set), this just confirms it -- no
+     second network call, no second quotations row. If it hasn't landed yet
+     (still in flight, or failed), this is what actually retries it. */
+  function handleSaveToLead(btn){
+    if(capturedQuotationId){showSaved(btn);return;}
+    btn.disabled=true;btn.innerHTML=svgSave+t('btnSaving');
+    captureQuotation().then(function(id){
+      btn.disabled=false;
+      if(id)showSaved(btn);
+      else{btn.innerHTML=svgSave+t('btnSave');btn.title=t('saveFail');}
+    });
+  }
+  function showSaved(btn){
+    postDirty(false);
+    btn.disabled=true;btn.classList.add('is-saved');
+    btn.innerHTML=svgCheck+t('savedTo').replace('%s',esc(lead.name||''));
   }
 
   /* CRM fan-out patch: marks the quotation 'sent' when the agent actually
@@ -1059,6 +1145,20 @@
     }else{
       naMode=false;current={row:row,anb:anb,data:d};
     }
+
+    /* CRM mode (leadId present): the person filling this in is an agent
+       working a lead they already own, not an anonymous public visitor --
+       the name/phone/email capture gate exists to turn strangers into leads,
+       which doesn't apply here, and requiring a well-formed email before
+       showing the benefits/PDF/WA buttons blocks agents on a field the lead
+       record often just doesn't have. Skip the gate entirely, save the
+       quotation automatically, and go straight to the full unlocked view. */
+    if(leadId&&!naMode){
+      unlocked=true;
+      postDirty(true);
+      captureQuotation().then(function(id){postDirty(!id);});
+    }
+
     formEl.classList.add('is-hidden');
     resEl.classList.remove('is-on');void resEl.offsetWidth;resEl.classList.add('is-on');
     renderResult();

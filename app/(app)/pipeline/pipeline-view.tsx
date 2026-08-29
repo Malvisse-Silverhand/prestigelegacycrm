@@ -8,10 +8,19 @@ import { STAGES, type PipelineStage } from "@/lib/pipeline-stages";
 import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity } from "./types";
 import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
+import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
+import { QuotationModal } from "@/components/quotation-modal";
 import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon, PipelineIcon, TableIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
+
+// Same interest -> tool mapping InterestDropdown uses. No mapped tool (no
+// interest set yet, or a product without a calculator) falls back to
+// Lead Detail, where the agent can set the interest and launch from there.
+function quoteToolFor(lead: { interest: string | null }) {
+  return INTEREST_OPTIONS.find((o) => o.label === lead.interest)?.tool ?? null;
+}
 
 function fmtRM(n: number) {
   return n >= 1000 ? `RM ${(n / 1000).toFixed(1)}k` : `RM ${n.toFixed(0)}`;
@@ -52,9 +61,16 @@ export function PipelineView({
   const [, startTransition] = useTransition();
   const [mobileStage, setMobileStage] = useState<PipelineStage>("follow_up");
   const [view, setView] = useState<"board" | "table">("board");
+  const [quoteModal, setQuoteModal] = useState<{ url: string; leadName: string } | null>(null);
 
   const canManageStage = profile.role !== "group_manager" && profile.role !== "superadmin";
   const canAddLead = profile.role !== "agent";
+
+  function openQuotation(lead: PipelineLead) {
+    const tool = quoteToolFor(lead);
+    if (tool) setQuoteModal({ url: quoteLauncherUrl(tool, lead), leadName: lead.full_name });
+    else router.push(`/leads/${lead.id}`);
+  }
 
   const columns = useMemo(() => {
     const map: Record<string, PipelineLead[]> = {};
@@ -190,6 +206,7 @@ export function PipelineView({
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
                     staleAfterDays={staleAfterDays}
+                    onOpenQuotation={() => openQuotation(lead)}
                   />
                 ))}
               </div>
@@ -274,9 +291,9 @@ export function PipelineView({
                   <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green" aria-label="WhatsApp">
                     <WhatsAppIcon width={16} height={16} fill="#fff" />
                   </a>
-                  <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
+                  <button type="button" onClick={() => openQuotation(lead)} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
                     <QuotationIcon width={15} height={15} className="text-warn-gold-text" />
-                  </Link>
+                  </button>
                   {canManageStage ? (
                     <button
                       type="button"
@@ -297,6 +314,15 @@ export function PipelineView({
           })}
         </div>
       </div>
+
+      <QuotationModal
+        url={quoteModal?.url ?? null}
+        title={quoteModal ? `Quotation — ${quoteModal.leadName}` : ""}
+        onClose={() => {
+          setQuoteModal(null);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }
@@ -433,7 +459,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, onDragStart, onMove, canManageStage, staleAfterDays,
+  lead, stage, open, onToggle, onDragStart, onMove, canManageStage, staleAfterDays, onOpenQuotation,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -443,6 +469,7 @@ function PipelineCard({
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
   staleAfterDays: number;
+  onOpenQuotation: () => void;
 }) {
   const tag = productTag(lead.interest);
   const quoteValue = primaryQuoteValue(lead);
@@ -505,9 +532,9 @@ function PipelineCard({
         <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-8 items-center justify-center rounded-[8px] bg-green" aria-label="WhatsApp">
           <WhatsAppIcon width={13} height={13} fill="#fff" />
         </a>
-        <Link href={`/leads/${lead.id}`} className="flex h-8 items-center justify-center rounded-[8px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
+        <button type="button" onClick={onOpenQuotation} className="flex h-8 items-center justify-center rounded-[8px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
           <QuotationIcon width={13} height={13} className="text-warn-gold-text" />
-        </Link>
+        </button>
       </div>
 
       {open && (
@@ -523,10 +550,14 @@ function PipelineCard({
             <WhatsAppIcon width={14} height={14} className="text-green" />
             Send WA template
           </Link>
-          <Link href={`/leads/${lead.id}`} onClick={onToggle} className="flex items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-navy hover:bg-cream">
+          <button
+            type="button"
+            onClick={() => { onToggle(); onOpenQuotation(); }}
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[12px] font-semibold text-navy hover:bg-cream"
+          >
             <QuotationIcon width={14} height={14} />
             Quotation estimate
-          </Link>
+          </button>
           <span
             title="The full Quotation Customizer isn't built yet -- coming in a future update"
             className="flex cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-taupe opacity-60"

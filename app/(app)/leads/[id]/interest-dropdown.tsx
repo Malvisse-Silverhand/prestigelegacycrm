@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { INTEREST_OPTIONS as OPTIONS } from "@/lib/product-interest";
+import { QuotationModal } from "@/components/quotation-modal";
 import { updateInterest } from "./actions";
 import type { LeadDetail } from "./data";
 
@@ -13,12 +14,23 @@ const checkIcon = (
   </svg>
 );
 
+const quoteIcon = (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" />
+    <path d="M14 2v5h5" />
+    <path d="M9 13h6M9 17h4" />
+  </svg>
+);
+
 export function InterestDropdown({ lead }: { lead: LeadDetail }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [comingSoon, setComingSoon] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [modalUrl, setModalUrl] = useState<string | null>(null);
+
+  const currentOption = OPTIONS.find((o) => o.label === lead.interest);
 
   function handleSelect(option: (typeof OPTIONS)[number]) {
     setOpen(false);
@@ -40,7 +52,7 @@ export function InterestDropdown({ lead }: { lead: LeadDetail }) {
     });
 
     if (option.tool) {
-      window.open(quoteLauncherUrl(option.tool, lead), "_blank", "noopener");
+      setModalUrl(quoteLauncherUrl(option.tool, lead));
     } else {
       setComingSoon(true);
     }
@@ -49,41 +61,55 @@ export function InterestDropdown({ lead }: { lead: LeadDetail }) {
   return (
     <div>
       <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">Product interest</div>
-      <div className="relative mt-1.5">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          disabled={pending}
-          className="flex w-full items-center gap-2 rounded-[10px] border-[1.5px] border-sand-2 bg-cream px-[11px] py-[9px] text-left disabled:opacity-70"
-        >
-          <span className="flex-1 text-[13px] font-semibold text-navy">{lead.interest ?? "Choose…"}</span>
-          <ChevronIcon open={open} />
-        </button>
+      <div className="mt-1.5 flex items-start gap-1.5">
+        <div className="relative flex-1">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            disabled={pending}
+            className="flex w-full items-center gap-2 rounded-[10px] border-[1.5px] border-sand-2 bg-cream px-[11px] py-[9px] text-left disabled:opacity-70"
+          >
+            <span className="flex-1 text-[13px] font-semibold text-navy">{lead.interest ?? "Choose…"}</span>
+            <ChevronIcon open={open} />
+          </button>
 
-        {open && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-            <div className="absolute top-full left-0 z-20 mt-[5px] flex w-full flex-col gap-0.5 rounded-[11px] border-[1.5px] border-sand-2 bg-cream p-[5px] shadow-elevated">
-              {OPTIONS.map((option) => {
-                const selected = lead.interest === option.label;
-                return (
-                  <button
-                    key={option.label}
-                    type="button"
-                    onClick={() => handleSelect(option)}
-                    className={
-                      selected
-                        ? "flex items-center gap-2 rounded-lg bg-navy px-[9px] py-2 text-left text-[12.5px] font-semibold text-white"
-                        : "flex items-center gap-2 rounded-lg py-2 pr-[9px] pl-[30px] text-left text-[12.5px] font-medium text-ink"
-                    }
-                  >
-                    {selected && checkIcon}
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
-          </>
+          {open && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+              <div className="absolute top-full left-0 z-20 mt-[5px] flex w-full flex-col gap-0.5 rounded-[11px] border-[1.5px] border-sand-2 bg-cream p-[5px] shadow-elevated">
+                {OPTIONS.map((option) => {
+                  const selected = lead.interest === option.label;
+                  return (
+                    <button
+                      key={option.label}
+                      type="button"
+                      onClick={() => handleSelect(option)}
+                      className={
+                        selected
+                          ? "flex items-center gap-2 rounded-lg bg-navy px-[9px] py-2 text-left text-[12.5px] font-semibold text-white"
+                          : "flex items-center gap-2 rounded-lg py-2 pr-[9px] pl-[30px] text-left text-[12.5px] font-medium text-ink"
+                      }
+                    >
+                      {selected && checkIcon}
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {currentOption?.tool && (
+          <button
+            type="button"
+            title="Open Quotation"
+            aria-label="Open Quotation"
+            onClick={() => setModalUrl(quoteLauncherUrl(currentOption.tool!, lead))}
+            className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] border-[1.5px] border-sand-2 bg-cream text-navy hover:border-gold"
+          >
+            {quoteIcon}
+          </button>
         )}
       </div>
 
@@ -95,6 +121,15 @@ export function InterestDropdown({ lead }: { lead: LeadDetail }) {
         </div>
       )}
       {error && <div className="mt-2 text-[11.5px] font-medium text-alert-red">{error}</div>}
+
+      <QuotationModal
+        url={modalUrl}
+        title={`Quotation — ${lead.full_name}`}
+        onClose={() => {
+          setModalUrl(null);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

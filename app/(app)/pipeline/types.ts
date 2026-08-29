@@ -4,6 +4,10 @@ export type PipelineLead = {
   id: string;
   full_name: string;
   phone: string;
+  email: string | null;
+  date_of_birth: string | null;
+  gender: "male" | "female" | null;
+  is_smoker: boolean | null;
   lead_source: string | null;
   interest: string | null;
   budget_indicated: string | null;
