@@ -10,6 +10,7 @@ import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, Alert
 import { addNote, reassignLead, updateStage } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
+import { InterestDropdown } from "./interest-dropdown";
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -337,7 +338,7 @@ export function LeadDetailContent({
 
           <div className="flex flex-col gap-[13px]">
             <Detail label="Source" value={lead.lead_source} />
-            <Detail label="Interest" value={lead.interest} />
+            <InterestDropdown lead={lead} />
             <Detail label="Budget indicated" value={lead.budget_indicated} />
             <Detail label="Best time to reach" value={lead.best_time_to_reach} />
             <Detail

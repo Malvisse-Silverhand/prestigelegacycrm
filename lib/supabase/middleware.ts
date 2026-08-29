@@ -31,11 +31,24 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname !== "/login") {
+  // "/" is the public homepage -- viewable without a session, unlike every
+  // other route. A signed-in user hitting it gets sent straight to their
+  // dashboard instead (handled below), so this page never actually renders
+  // for someone already logged in.
+  const isPublicRoute = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/";
+
+  if (!user && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (user && request.nextUrl.pathname === "/") {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.search = "";
+    return NextResponse.redirect(dashboardUrl);
   }
 
   // Mandatory password change after an admin-created invite: block every route

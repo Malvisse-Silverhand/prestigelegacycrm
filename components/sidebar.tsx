@@ -68,14 +68,16 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
           </div>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={handleSignOut}
-        className="mt-3 flex items-center gap-2 px-[18px] text-[12px] font-medium text-white/50 hover:text-white/80"
-      >
-        <SignOutIcon width={15} height={15} />
-        Sign Out
-      </button>
+      <div className="px-3">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="mt-2 flex w-full items-center gap-2 rounded-[10px] px-[13px] py-[9px] text-[12px] font-medium text-white/50 transition-colors hover:bg-white/5 hover:text-white/85"
+        >
+          <SignOutIcon width={15} height={15} />
+          Sign Out
+        </button>
+      </div>
     </div>
   );
 }

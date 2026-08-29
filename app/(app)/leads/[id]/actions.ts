@@ -47,6 +47,24 @@ export async function reassignLead(leadId: string, newAgentId: string, newAgentN
   return { error: null };
 }
 
+export async function updateInterest(leadId: string, interest: string) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ interest })
+    .eq("id", leadId)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { error: "Couldn't save product interest." };
+
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/leads");
+  return { error: null };
+}
+
 export async function updateStage(leadId: string, newStage: string, stageLabel: string) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };
