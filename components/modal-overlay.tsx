@@ -17,7 +17,7 @@ export function ModalOverlay({ children }: { children: ReactNode }) {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="max-h-[90vh] w-full max-w-[820px] overflow-y-auto">{children}</div>
+      <div className="max-h-[90vh] w-full max-w-[900px] overflow-y-auto">{children}</div>
     </div>
   );
 }

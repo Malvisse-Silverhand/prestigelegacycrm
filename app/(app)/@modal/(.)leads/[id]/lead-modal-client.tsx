@@ -2,19 +2,19 @@
 
 import { ModalOverlay, useModalClose } from "@/components/modal-overlay";
 import { LeadDetailContent } from "@/app/(app)/leads/[id]/lead-detail-content";
-import type { LeadDetail, ActivityRow } from "@/app/(app)/leads/[id]/data";
+import type { LeadDetail, ActivityRow, ReassignOption } from "@/app/(app)/leads/[id]/data";
 import type { CurrentProfile } from "@/lib/profile-types";
 
 export function LeadModalClient({
   lead,
   activity,
   profile,
-  reassignAgents,
+  reassignOptions,
 }: {
   lead: LeadDetail;
   activity: ActivityRow[];
   profile: CurrentProfile;
-  reassignAgents: { id: string; full_name: string }[];
+  reassignOptions: ReassignOption[];
 }) {
   const close = useModalClose();
 
@@ -24,7 +24,7 @@ export function LeadModalClient({
         lead={lead}
         activity={activity}
         profile={profile}
-        reassignAgents={reassignAgents}
+        reassignOptions={reassignOptions}
         onClose={close}
         isModal
       />

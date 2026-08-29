@@ -7,7 +7,7 @@ export type PipelineStage =
   | "closed_lost";
 
 export const STAGES: { value: PipelineStage; label: string; dot: string }[] = [
-  { value: "new", label: "New", dot: "#1c3f66" },
+  { value: "new", label: "New Lead", dot: "#1c3f66" },
   { value: "contacted", label: "Contacted", dot: "#4a6a8c" },
   { value: "follow_up", label: "Follow Up", dot: "#fac748" },
   { value: "quoted", label: "Quoted", dot: "#0f4c35" },

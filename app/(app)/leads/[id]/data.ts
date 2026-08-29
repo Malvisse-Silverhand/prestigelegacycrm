@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { MalaysianState, LeadSource } from "@/lib/lead-constants";
+import type { CurrentProfile } from "@/lib/profile-types";
 
 export type LeadDetail = {
   id: string;
@@ -55,10 +56,45 @@ export async function getLeadDetail(id: string) {
   return { lead, activity: activity ?? [] };
 }
 
-export async function getReassignableAgents(unitId: string | null) {
+export type ReassignOption = { id: string; full_name: string; role: string };
+
+// Scoped the same way as Settings' org-hierarchy assignment picker: an agent
+// gets nothing (no subordinates, no self-service reassignment), a unit
+// manager gets their own agents, a group manager gets the unit managers and
+// agents under their units, superadmin gets everyone. "At or below the
+// viewer's level" includes the viewer's own level, so the list always
+// includes the viewer themself -- that's what makes "assign to Self" mean
+// anything for an unassigned lead.
+export async function getReassignableUsers(profile: CurrentProfile): Promise<ReassignOption[]> {
   const supabase = await createClient();
-  let query = supabase.from("profiles").select("id, full_name").eq("role", "agent");
-  if (unitId) query = query.eq("unit_id", unitId);
-  const { data } = await query.order("full_name");
+
+  if (profile.role === "agent") return [];
+
+  if (profile.role === "unit_manager") {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("unit_id", profile.unit_id)
+      .in("role", ["unit_manager", "agent"])
+      .order("full_name");
+    return data ?? [];
+  }
+
+  if (profile.role === "group_manager") {
+    const { data: units } = await supabase.from("units").select("id").eq("group_manager_id", profile.id);
+    const unitIds = (units ?? []).map((u) => u.id);
+    const scoped = unitIds.length
+      ? await supabase
+          .from("profiles")
+          .select("id, full_name, role")
+          .in("unit_id", unitIds)
+          .in("role", ["unit_manager", "agent"])
+          .order("full_name")
+      : { data: [] as ReassignOption[] };
+    return [{ id: profile.id, full_name: profile.full_name, role: "group_manager" }, ...(scoped.data ?? [])];
+  }
+
+  // superadmin: anyone
+  const { data } = await supabase.from("profiles").select("id, full_name, role").order("full_name");
   return data ?? [];
 }

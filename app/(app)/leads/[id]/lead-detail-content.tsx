@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
-import type { LeadDetail, ActivityRow } from "./data";
+import type { LeadDetail, ActivityRow, ReassignOption } from "./data";
 import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
+import { LEAD_SOURCES } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
-import { addNote, reassignLead, updateStage } from "./actions";
+import { addNote, reassignLead, updateStage, updateSource } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { InterestDropdown } from "./interest-dropdown";
 import { EditLeadModal } from "../edit-lead-modal";
@@ -65,14 +66,14 @@ export function LeadDetailContent({
   lead,
   activity,
   profile,
-  reassignAgents,
+  reassignOptions,
   onClose,
   isModal,
 }: {
   lead: LeadDetail;
   activity: ActivityRow[];
   profile: CurrentProfile;
-  reassignAgents: { id: string; full_name: string }[];
+  reassignOptions: ReassignOption[];
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -81,11 +82,18 @@ export function LeadDetailContent({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  // Date.now() is impure -- calling it straight in the render body would
+  // violate component purity. A useState lazy initializer is the idiomatic
+  // escape hatch for one-time impure work: it runs once (not on every
+  // render), unlike a plain body call.
+  const [isNewLead] = useState(() => Date.now() - new Date(lead.created_at).getTime() < NEW_THRESHOLD_MS);
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
   const canEditStage =
     profile.role === "unit_manager" || (profile.role === "agent" && lead.agent_id === profile.id);
-  const canReassign = profile.role === "unit_manager";
+  // Same "at or below the viewer's level" scope as reassignOptions itself --
+  // an agent has no subordinates so gets no picker at all.
+  const canReassign = profile.role !== "agent";
 
   // The quotation calculators open in a new tab (no CRM JS runs there) and
   // fan out to capture-quotation on submit -- there's no in-app event to
@@ -133,7 +141,7 @@ export function LeadDetailContent({
   }
 
   function handleReassign(agentId: string) {
-    const agent = reassignAgents.find((a) => a.id === agentId);
+    const agent = reassignOptions.find((a) => a.id === agentId);
     if (!agent) return;
     setError(null);
     startTransition(async () => {
@@ -147,8 +155,20 @@ export function LeadDetailContent({
     });
   }
 
+  function handleSourceChange(value: string) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await updateSource(lead.id, value);
+        if (result.error) setError(result.error);
+        else router.refresh();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
+
   const tag = productTag(lead.interest);
-  const isNewLead = Date.now() - new Date(lead.created_at).getTime() < NEW_THRESHOLD_MS;
   const initials = lead.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
   const dobValue = lead.date_of_birth
     ? `${fmtDate(lead.date_of_birth)} · ANB ${ageNextBirthday(lead.date_of_birth)}`
@@ -206,20 +226,6 @@ export function LeadDetailContent({
         >
           Add note
         </button>
-        {canReassign && (
-          <div className="relative flex-1">
-            <select
-              defaultValue=""
-              onChange={(e) => e.target.value && handleReassign(e.target.value)}
-              className="h-11 w-full appearance-none rounded-[11px] bg-gold px-3 text-[13px] font-bold text-navy"
-            >
-              <option value="" disabled>Reassign</option>
-              {reassignAgents.map((a) => (
-                <option key={a.id} value={a.id}>{a.full_name}</option>
-              ))}
-            </select>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
@@ -347,27 +353,66 @@ export function LeadDetailContent({
 
           <div>
             <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
-              Owner
+              Lead Assigned
             </div>
             <div className="mt-2 flex items-center gap-[9px]">
-              <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+              <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
                 {lead.profiles?.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase() ?? "—"}
               </div>
-              <div>
-                <div className="text-[13px] font-semibold text-navy">
-                  {lead.profiles?.full_name ?? "Unassigned"}
-                </div>
-                <div className="text-[11px] font-medium text-taupe">
+              <div className="min-w-0 flex-1">
+                {canReassign ? (
+                  <select
+                    value={lead.agent_id ?? ""}
+                    onChange={(e) => e.target.value && handleReassign(e.target.value)}
+                    className="w-full rounded-[8px] border border-sand-2 bg-cream px-2 py-[5px] text-[13px] font-semibold text-navy"
+                  >
+                    <option value="" disabled>Unassigned</option>
+                    {reassignOptions.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.full_name}{o.id === profile.id ? " (Self)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="truncate text-[13px] font-semibold text-navy">
+                    {lead.profiles?.full_name ?? "Unassigned"}
+                  </div>
+                )}
+                <div className="truncate text-[11px] font-medium text-taupe">
                   {lead.profiles?.units?.name ?? "—"}
                 </div>
               </div>
             </div>
+            {!lead.agent_id && canReassign && (
+              <button
+                type="button"
+                onClick={() => handleReassign(profile.id)}
+                className="mt-1.5 text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy"
+              >
+                Assign to me
+              </button>
+            )}
           </div>
 
           <div className="h-px bg-sand-3" />
 
           <div className="flex flex-col gap-[13px]">
-            <Detail label="Source" value={lead.lead_source} />
+            <div>
+              <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">Source</div>
+              <div className="relative mt-[3px]">
+                <select
+                  value={lead.lead_source ?? ""}
+                  onChange={(e) => handleSourceChange(e.target.value)}
+                  className="w-full appearance-none rounded-[8px] border border-sand-2 bg-cream py-1.5 pr-7 pl-2 text-[13px] font-semibold text-navy"
+                >
+                  <option value="" disabled>Choose…</option>
+                  {LEAD_SOURCES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <ChevronDownIcon width={13} height={13} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-navy" />
+              </div>
+            </div>
             <Detail label="Budget indicated" value={lead.budget_indicated ? `RM ${lead.budget_indicated}` : null} />
             <Detail label="Best time to reach" value={lead.best_time_to_reach} />
             <Detail

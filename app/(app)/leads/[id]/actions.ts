@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { getReassignableUsers } from "./data";
+import { LEAD_SOURCES } from "@/lib/lead-constants";
 
 export async function addNote(leadId: string, content: string) {
   const profile = await getCurrentProfile();
@@ -24,6 +26,15 @@ export async function addNote(leadId: string, content: string) {
 export async function reassignLead(leadId: string, newAgentId: string, newAgentName: string) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };
+
+  // The picker only ever renders options from getReassignableUsers, but this
+  // is a Server Action -- it can be called directly with any id, so the same
+  // scope check runs again here rather than trusting the client sent a value
+  // that came from the picker.
+  const allowed = await getReassignableUsers(profile);
+  if (!allowed.some((u) => u.id === newAgentId)) {
+    return { error: "You don't have permission to assign this lead to that person." };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -59,6 +70,27 @@ export async function updateInterest(leadId: string, interest: string) {
     .select("id")
     .maybeSingle();
   if (error || !data) return { error: "Couldn't save product interest." };
+
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/leads");
+  return { error: null };
+}
+
+export async function updateSource(leadId: string, source: string) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+  if (!(LEAD_SOURCES as readonly string[]).includes(source)) {
+    return { error: "Not a valid lead source." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ lead_source: source })
+    .eq("id", leadId)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { error: "Couldn't save lead source." };
 
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/leads");

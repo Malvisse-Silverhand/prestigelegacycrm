@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getLeadDetail, getReassignableAgents } from "@/app/(app)/leads/[id]/data";
+import { getLeadDetail, getReassignableUsers } from "@/app/(app)/leads/[id]/data";
 import { LeadModalClient } from "./lead-modal-client";
 
 export default async function LeadDetailModalRoute({
@@ -15,14 +15,14 @@ export default async function LeadDetailModalRoute({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const reassignAgents = await getReassignableAgents(profile.unit_id);
+  const reassignOptions = await getReassignableUsers(profile);
 
   return (
     <LeadModalClient
       lead={lead}
       activity={activity}
       profile={profile}
-      reassignAgents={reassignAgents}
+      reassignOptions={reassignOptions}
     />
   );
 }
