@@ -9,15 +9,20 @@ import { useEffect, useRef, useState } from "react";
 // dirty} whenever they have a calculated-but-unsaved quote, which is how the
 // close button knows whether to warn before discarding in-progress state.
 export function QuotationModal({ url, title, onClose }: { url: string | null; title: string; onClose: () => void }) {
+  if (!url) return null;
+  // Keyed on url so a new quote (a different URL) always starts from a
+  // fresh mount -- dirty state resets for free instead of needing an effect
+  // to reset it, which would set state synchronously during render.
+  return <QuotationModalPanel key={url} url={url} title={title} onClose={onClose} />;
+}
+
+function QuotationModalPanel({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
   const [dirty, setDirty] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    setDirty(false);
-  }, [url]);
-
-  useEffect(() => {
     function onMessage(e: MessageEvent) {
+      if (e.source !== iframeRef.current?.contentWindow) return;
       if (e.data?.type === "t4u-quote-dirty") setDirty(Boolean(e.data.dirty));
     }
     window.addEventListener("message", onMessage);
@@ -25,21 +30,18 @@ export function QuotationModal({ url, title, onClose }: { url: string | null; ti
   }, []);
 
   useEffect(() => {
-    if (!url) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") requestClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, dirty]);
+  }, [dirty]);
 
   function requestClose() {
     if (dirty && !window.confirm("This quotation hasn't been saved yet. Close anyway?")) return;
     onClose();
   }
-
-  if (!url) return null;
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-navy/55 p-4">
