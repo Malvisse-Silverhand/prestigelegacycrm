@@ -133,7 +133,7 @@ export function DashboardView({
                 <span className="text-[30px] font-extrabold tracking-[-0.03em] text-white">
                   {fmtRM(stats.pipelineValue)}
                 </span>
-                <span className="text-[11.5px] font-bold text-gold">/month ANC</span>
+                <span className="text-[11.5px] font-bold text-gold">/month</span>
               </div>
             </div>
           </div>
