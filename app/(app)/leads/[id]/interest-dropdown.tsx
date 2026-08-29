@@ -3,15 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
+import { INTEREST_OPTIONS as OPTIONS } from "@/lib/product-interest";
 import { updateInterest } from "./actions";
 import type { LeadDetail } from "./data";
-
-const OPTIONS = [
-  { label: "Medical Card", tool: "imedi-evolusi-quote.html" },
-  { label: "Hibah", tool: "quickquote-hibah-life-takaful.html" },
-  { label: "Investment-Linked Takaful", tool: null },
-  { label: "Critical Illness", tool: null },
-] as const;
 
 const checkIcon = (
   <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#fac748" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">

@@ -1,5 +1,5 @@
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getPipelineLeads, getPipelineAgents } from "./data";
+import { getPipelineLeads, getPipelineAgents, getStaleAfterDays } from "./data";
 import { PipelineView } from "./pipeline-view";
 
 export default async function PipelinePage({
@@ -11,9 +11,10 @@ export default async function PipelinePage({
   if (!profile) return null;
 
   const params = await searchParams;
-  const [leads, agents] = await Promise.all([
-    getPipelineLeads({ agent: params.agent }),
+  const [leads, agents, staleAfterDays] = await Promise.all([
+    getPipelineLeads({ agent: params.agent, interest: params.interest }),
     getPipelineAgents(),
+    getStaleAfterDays(),
   ]);
 
   return (
@@ -22,6 +23,8 @@ export default async function PipelinePage({
       agents={profile.role === "agent" ? [] : agents}
       profile={profile}
       currentAgent={params.agent ?? ""}
+      currentInterest={params.interest ?? ""}
+      staleAfterDays={staleAfterDays}
     />
   );
 }

@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateLead } from "./actions";
-import type { LeadRow } from "./data";
 
 const LEAD_SOURCES = [
   "FB Ads — Medical Card",
@@ -13,7 +12,26 @@ const LEAD_SOURCES = [
   "Walk-in",
 ];
 
-export function EditLeadModal({ lead, onClose }: { lead: LeadRow; onClose: () => void }) {
+// Structural type (not imported from a specific screen's data.ts) so this
+// modal can be reused from both the Leads Manager row list (LeadRow) and
+// Lead Detail's "Edit" link (LeadDetail) without those two screens' types
+// needing to match exactly.
+type EditableLead = {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  date_of_birth: string | null;
+  state: string | null;
+  occupation: string | null;
+  lead_source: string | null;
+  gender: "male" | "female" | null;
+  is_smoker: boolean | null;
+  budget_indicated: string | null;
+  best_time_to_reach: string | null;
+};
+
+export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: () => void }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -63,7 +81,40 @@ export function EditLeadModal({ lead, onClose }: { lead: LeadRow; onClose: () =>
               ))}
             </select>
           </label>
-          <Field label="Interest / product note" name="interest" defaultValue={lead.interest ?? ""} />
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
+                Gender
+              </span>
+              <select
+                name="gender"
+                defaultValue={lead.gender ?? ""}
+                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
+              >
+                <option value="">Unknown</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
+                Smoker
+              </span>
+              <select
+                name="is_smoker"
+                defaultValue={lead.is_smoker === null || lead.is_smoker === undefined ? "" : String(lead.is_smoker)}
+                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
+              >
+                <option value="">Unknown</option>
+                <option value="true">Smoker</option>
+                <option value="false">Non-smoker</option>
+              </select>
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Monthly budget (RM)" name="budget_indicated" type="number" defaultValue={lead.budget_indicated ?? ""} />
+            <Field label="Best time to reach" name="best_time_to_reach" defaultValue={lead.best_time_to_reach ?? ""} />
+          </div>
 
           {error && (
             <div className="rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">

@@ -21,6 +21,10 @@ export type LeadRow = {
   occupation: string | null;
   lead_source: string | null;
   interest: string | null;
+  gender: "male" | "female" | null;
+  is_smoker: boolean | null;
+  budget_indicated: string | null;
+  best_time_to_reach: string | null;
   created_at: string;
   status: "hot" | "warm" | "cold" | "unassigned" | "closed";
   follow_up_date: string | null;
@@ -38,7 +42,7 @@ export async function getLeads(filters: LeadFilters) {
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, state, occupation, lead_source, interest, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
+      "id, full_name, phone, email, date_of_birth, state, occupation, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });

@@ -70,6 +70,22 @@ export async function updateStage(leadId: string, newStage: string, stageLabel: 
   if (!profile) return { error: "Not signed in." };
 
   const supabase = await createClient();
+
+  // Business rule: a lead can't enter Quoted without an actual quotation on
+  // file -- enforced here (not just in the UI) so every caller (Lead Detail's
+  // dropdown, Pipeline drag, Pipeline's popover, Pipeline's mobile arrow) gets
+  // it for free, and it can't be bypassed by hitting the action directly.
+  if (newStage === "quoted") {
+    const { count, error: countError } = await supabase
+      .from("quotations")
+      .select("id", { count: "exact", head: true })
+      .eq("lead_id", leadId);
+    if (countError) return { error: "Couldn't verify this lead's quotations. Please try again." };
+    if (!count) {
+      return { error: "This lead needs a quotation before it can move to Quoted — create one from Lead Detail first." };
+    }
+  }
+
   const patch: { pipeline_stage: string; status?: "closed" } = { pipeline_stage: newStage };
   if (newStage === "closed_won" || newStage === "closed_lost") patch.status = "closed";
 

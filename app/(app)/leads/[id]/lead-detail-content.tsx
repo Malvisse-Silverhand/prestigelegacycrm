@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import type { LeadDetail, ActivityRow } from "./data";
 import { waLink } from "@/lib/whatsapp";
+import { productTag } from "@/lib/product-interest";
+import { ageNextBirthday } from "@/lib/age";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
-import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { InterestDropdown } from "./interest-dropdown";
+import { EditLeadModal } from "../edit-lead-modal";
+
+const NEW_THRESHOLD_MS = 48 * 3600000;
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -22,11 +25,16 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-function productTag(lead: LeadDetail) {
-  const text = `${lead.lead_source ?? ""} ${lead.interest ?? ""}`.toLowerCase();
-  if (text.includes("medical")) return "MEDICAL";
-  if (text.includes("hibah")) return "HIBAH";
-  return null;
+function fmtDate(iso: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+function genderSmokerLabel(lead: LeadDetail) {
+  const gender = lead.gender === "male" ? "Male" : lead.gender === "female" ? "Female" : "—";
+  const smoker = lead.is_smoker === true ? "Smoker" : lead.is_smoker === false ? "Non-smoker" : "Unknown";
+  return `${gender} · ${smoker}`;
 }
 
 function activityIcon(type: string) {
@@ -45,6 +53,13 @@ function activityIcon(type: string) {
       return { bg: "bg-warn-gold-bg", node: <AlertIcon width={14} height={14} className="text-warn-gold-text" /> };
   }
 }
+
+const editPencil = (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
+    <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
+  </svg>
+);
 
 export function LeadDetailContent({
   lead,
@@ -65,6 +80,7 @@ export function LeadDetailContent({
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
   const canEditStage =
@@ -131,9 +147,12 @@ export function LeadDetailContent({
     });
   }
 
-  const stage = STAGE_OPTIONS.find((o) => o.value === lead.pipeline_stage) ?? STAGE_OPTIONS[0];
-  const tag = productTag(lead);
+  const tag = productTag(lead.interest);
+  const isNewLead = Date.now() - new Date(lead.created_at).getTime() < NEW_THRESHOLD_MS;
   const initials = lead.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
+  const dobValue = lead.date_of_birth
+    ? `${fmtDate(lead.date_of_birth)} · ANB ${ageNextBirthday(lead.date_of_birth)}`
+    : null;
 
   return (
     <div className="overflow-hidden rounded-[20px] bg-cream shadow-elevated">
@@ -145,13 +164,11 @@ export function LeadDetailContent({
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-xl font-bold tracking-[-0.01em]">{lead.full_name}</div>
             {tag && (
-              <span className="rounded-[6px] bg-success-bg px-2 py-[3px] text-[10px] font-bold text-green">
-                {tag}
-              </span>
+              <span className={`rounded-[6px] px-2 py-[3px] text-[10px] font-bold ${tag.cls}`}>{tag.label}</span>
             )}
-            <span className="rounded-[6px] bg-white/[.12] px-2 py-[3px] text-[10px] font-bold uppercase">
-              {stage.label}
-            </span>
+            {isNewLead && (
+              <span className="rounded-[6px] bg-gold px-2 py-[3px] text-[10px] font-bold text-navy">NEW</span>
+            )}
           </div>
           <div className="mt-1 text-[12.5px] font-medium text-white/60">
             {[lead.phone, lead.email, lead.address].filter(Boolean).join(" · ")}
@@ -205,30 +222,43 @@ export function LeadDetailContent({
         )}
       </div>
 
-      <div className="flex gap-2 border-b border-sand bg-cream px-4 py-3">
-        <a
-          href={quoteLauncherUrl("imedi-evolusi-quote.html", lead)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[10px] border border-sand-2 bg-white text-[12.5px] font-semibold text-navy"
-        >
-          <QuotationIcon width={14} height={14} className="text-green" />
-          Buat Quotation Medical Card
-        </a>
-        <a
-          href={quoteLauncherUrl("quickquote-hibah-life-takaful.html", lead)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[10px] border border-sand-2 bg-white text-[12.5px] font-semibold text-navy"
-        >
-          <QuotationIcon width={14} height={14} className="text-info-blue-text" />
-          Buat Quotation Hibah
-        </a>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
-        <div className="max-h-[60vh] overflow-y-auto p-[26px]">
-          <div className="flex items-center justify-between">
+        <div className="max-h-[70vh] overflow-y-auto p-[26px]">
+          <div className="rounded-[16px] border border-sand bg-white p-[18px]">
+            <div className="flex items-center justify-between">
+              <div className="text-[14.5px] font-bold text-navy">Lead details</div>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-1.5 text-[12px] font-semibold text-navy hover:underline"
+              >
+                {editPencil}
+                Edit
+              </button>
+            </div>
+
+            <div className="mt-[16px] grid grid-cols-1 gap-x-5 gap-y-[14px] sm:grid-cols-2">
+              <Detail label="Full name" value={lead.full_name} />
+              <Detail label="Phone / WhatsApp" value={lead.phone} />
+              <Detail label="Email" value={lead.email} />
+              <Detail label="Date of birth" value={dobValue} />
+              <Detail label="Gender · smoker status" value={genderSmokerLabel(lead)} />
+              <Detail label="Occupation" value={lead.occupation} />
+              <Detail label="Location" value={lead.address ?? lead.state} />
+              <InterestDropdown lead={lead} />
+              <Detail label="Source" value={lead.lead_source} />
+              <Detail label="Assigned agent" value={lead.profiles?.full_name ?? "Unassigned"} />
+              <Detail label="Monthly budget" value={lead.budget_indicated ? `RM ${lead.budget_indicated}` : null} />
+              <Detail
+                label="Created"
+                value={new Date(lead.created_at).toLocaleString("en-MY", {
+                  day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
+                })}
+              />
+            </div>
+          </div>
+
+          <div className="mt-[22px] flex items-center justify-between">
             <div className="text-[14.5px] font-bold text-navy">Activity timeline</div>
           </div>
 
@@ -338,8 +368,7 @@ export function LeadDetailContent({
 
           <div className="flex flex-col gap-[13px]">
             <Detail label="Source" value={lead.lead_source} />
-            <InterestDropdown lead={lead} />
-            <Detail label="Budget indicated" value={lead.budget_indicated} />
+            <Detail label="Budget indicated" value={lead.budget_indicated ? `RM ${lead.budget_indicated}` : null} />
             <Detail label="Best time to reach" value={lead.best_time_to_reach} />
             <Detail
               label="Created"
@@ -350,6 +379,8 @@ export function LeadDetailContent({
           </div>
         </div>
       </div>
+
+      {editing && <EditLeadModal lead={lead} onClose={() => setEditing(false)} />}
     </div>
   );
 }

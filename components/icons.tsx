@@ -50,6 +50,15 @@ export const PipelineIcon = (p: IconProps) =>
     </>,
   );
 
+export const TableIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="1.5" />
+      <path d="M3 9.5h18M3 15h18" />
+    </>,
+  );
+
 export const TeamIcon = (p: IconProps) =>
   base(
     p,

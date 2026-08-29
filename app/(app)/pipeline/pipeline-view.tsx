@@ -5,21 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { STAGES, type PipelineStage } from "@/lib/pipeline-stages";
-import { type PipelineLead, primaryQuoteValue } from "./types";
+import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity } from "./types";
 import { waLink } from "@/lib/whatsapp";
+import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
-import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon, PipelineIcon } from "@/components/icons";
+import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
+import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon, PipelineIcon, TableIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 
 function fmtRM(n: number) {
   return n >= 1000 ? `RM ${(n / 1000).toFixed(1)}k` : `RM ${n.toFixed(0)}`;
-}
-
-function productTag(lead: PipelineLead) {
-  const text = `${lead.lead_source ?? ""} ${lead.interest ?? ""}`.toLowerCase();
-  if (text.includes("medical")) return { label: "MEDICAL", cls: "bg-success-bg text-green" };
-  if (text.includes("hibah")) return { label: "HIBAH", cls: "bg-info-blue-bg text-info-blue-text" };
-  return null;
 }
 
 function isToday(dateStr: string | null) {
@@ -27,16 +22,28 @@ function isToday(dateStr: string | null) {
   return dateStr === new Date().toISOString().slice(0, 10);
 }
 
+function buildQuery(agent: string, interest: string) {
+  const params = new URLSearchParams();
+  if (agent) params.set("agent", agent);
+  if (interest) params.set("interest", interest);
+  const qs = params.toString();
+  return qs ? `/pipeline?${qs}` : "/pipeline";
+}
+
 export function PipelineView({
   leads,
   agents,
   profile,
   currentAgent,
+  currentInterest,
+  staleAfterDays,
 }: {
   leads: PipelineLead[];
   agents: { id: string; full_name: string }[];
   profile: CurrentProfile;
   currentAgent: string;
+  currentInterest: string;
+  staleAfterDays: number;
 }) {
   const router = useRouter();
   const [openCardId, setOpenCardId] = useState<string | null>(null);
@@ -44,8 +51,10 @@ export function PipelineView({
   const [moveError, setMoveError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [mobileStage, setMobileStage] = useState<PipelineStage>("follow_up");
+  const [view, setView] = useState<"board" | "table">("board");
 
   const canManageStage = profile.role !== "group_manager" && profile.role !== "superadmin";
+  const canAddLead = profile.role !== "agent";
 
   const columns = useMemo(() => {
     const map: Record<string, PipelineLead[]> = {};
@@ -57,7 +66,7 @@ export function PipelineView({
   }, [leads]);
 
   const totalLeads = leads.length;
-  const totalValue = leads.reduce((sum, l) => sum + (primaryQuoteValue(l) ?? 0), 0);
+  const totalValue = STAGES.reduce((sum, s) => sum + stagePotentialValue(s.value, columns[s.value]), 0);
 
   function moveStage(leadId: string, stage: PipelineStage) {
     setOpenCardId(null);
@@ -66,7 +75,9 @@ export function PipelineView({
       // No optimistic move -- `columns` is derived straight from server-fetched
       // `leads`, so a rejected update just leaves the card where it already
       // was once refresh() re-fetches. The one gap was silence: surface the
-      // rejection instead of failing invisibly.
+      // rejection instead of failing invisibly. This is also where the
+      // "no quotation yet" block on entering Quoted actually gets enforced --
+      // updateStage rejects it server-side, this just displays that rejection.
       try {
         const result = await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
         if (result.error) {
@@ -98,12 +109,19 @@ export function PipelineView({
               {totalLeads} lead{totalLeads === 1 ? "" : "s"} · {fmtRM(totalValue)} monthly contribution in play
             </div>
           </div>
-          <AgentFilter agents={agents} currentAgent={currentAgent} />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 border-b border-sand bg-cream px-[26px] py-3">
+          <ViewToggle view={view} onChange={setView} />
+          <div className="flex-1" />
+          <ProductFilter currentAgent={currentAgent} currentInterest={currentInterest} />
+          <AgentFilter agents={agents} currentAgent={currentAgent} currentInterest={currentInterest} />
+          {canAddLead && <AddLeadButton />}
         </div>
 
         {moveError && (
           <div className="mx-[26px] mt-3 rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
-            {moveError} The card stayed in its original column.
+            {moveError}
           </div>
         )}
 
@@ -111,22 +129,24 @@ export function PipelineView({
           <div className="px-[26px] py-[18px]">
             <EmptyState
               icon={<PipelineIcon width={28} height={28} className="text-green" />}
-              title={currentAgent ? "No leads for this agent" : "Pipeline is empty"}
+              title={currentAgent || currentInterest ? "No leads match these filters" : "Pipeline is empty"}
               description={
-                currentAgent
-                  ? "Clear the agent filter to see the full board."
+                currentAgent || currentInterest
+                  ? "Clear the filters to see the full board."
                   : canManageStage
                     ? "Leads land here as soon as they're created in Leads Manager."
                     : "Leads assigned to you will show up here."
               }
-              actions={currentAgent ? [{ label: "Clear filter", href: "/pipeline" }] : undefined}
+              actions={currentAgent || currentInterest ? [{ label: "Clear filters", href: "/pipeline" }] : undefined}
             />
           </div>
+        ) : view === "table" ? (
+          <PipelineTable leads={leads} agents={agents} />
         ) : (
         <div className="flex items-start gap-3 overflow-x-auto px-[26px] py-[18px] pb-16">
           {STAGES.map((stage) => {
             const cards = columns[stage.value];
-            const value = cards.reduce((sum, l) => sum + (primaryQuoteValue(l) ?? 0), 0);
+            const value = stagePotentialValue(stage.value, cards);
             return (
               <div
                 key={stage.value}
@@ -169,6 +189,7 @@ export function PipelineView({
                     onDragStart={() => setDragLeadId(lead.id)}
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
+                    staleAfterDays={staleAfterDays}
                   />
                 ))}
               </div>
@@ -205,7 +226,7 @@ export function PipelineView({
             {STAGES.find((s) => s.value === mobileStage)?.label} · {columns[mobileStage].length} leads
           </span>
           <span className="text-[11.5px] font-semibold text-taupe">
-            {fmtRM(columns[mobileStage].reduce((sum, l) => sum + (primaryQuoteValue(l) ?? 0), 0))}
+            {fmtRM(stagePotentialValue(mobileStage, columns[mobileStage]))}
           </span>
         </div>
 
@@ -220,7 +241,9 @@ export function PipelineView({
             <p className="py-6 text-center text-[13px] text-muted">No leads in this stage.</p>
           )}
           {columns[mobileStage].map((lead) => {
-            const tag = productTag(lead);
+            const tag = productTag(lead.interest);
+            const staleDays = daysSinceLastActivity(lead);
+            const stale = staleDays >= staleAfterDays;
             const nextStage = STAGES[Math.min(STAGES.findIndex((s) => s.value === mobileStage) + 1, STAGES.length - 1)];
             return (
               <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5">
@@ -231,9 +254,9 @@ export function PipelineView({
                     </Link>
                     <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
                   </div>
-                  {lead.is_stale ? (
+                  {stale ? (
                     <span className="rounded-[6px] bg-alert-red-bg px-[7px] py-1 text-[9.5px] font-bold text-alert-red">
-                      STALE
+                      STALE {staleDays}d
                     </span>
                   ) : tag ? (
                     <span className={`rounded-[7px] px-2 py-[3px] text-[10px] font-bold ${tag.cls}`}>{tag.label}</span>
@@ -245,13 +268,13 @@ export function PipelineView({
                   </div>
                 )}
                 <div className="mt-3 grid grid-cols-4 gap-1.5">
-                  <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-navy">
+                  <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-navy" aria-label="Call">
                     <PhoneIcon width={15} height={15} className="text-gold" />
                   </a>
-                  <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green">
+                  <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green" aria-label="WhatsApp">
                     <WhatsAppIcon width={16} height={16} fill="#fff" />
                   </a>
-                  <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg">
+                  <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
                     <QuotationIcon width={15} height={15} className="text-warn-gold-text" />
                   </Link>
                   {canManageStage ? (
@@ -264,7 +287,7 @@ export function PipelineView({
                       <ChevronRightIcon width={15} height={15} className="text-navy" />
                     </button>
                   ) : (
-                    <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream">
+                    <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream" aria-label="Open lead">
                       <ChevronRightIcon width={15} height={15} className="text-navy" />
                     </Link>
                   )}
@@ -278,18 +301,47 @@ export function PipelineView({
   );
 }
 
+function ViewToggle({ view, onChange }: { view: "board" | "table"; onChange: (v: "board" | "table") => void }) {
+  return (
+    <div className="flex rounded-[10px] border border-sand-2 bg-white p-[3px]">
+      <button
+        type="button"
+        onClick={() => onChange("board")}
+        className={
+          view === "board"
+            ? "flex items-center gap-1.5 rounded-[7px] bg-navy px-3 py-[7px] text-[12px] font-semibold text-white"
+            : "flex items-center gap-1.5 rounded-[7px] px-3 py-[7px] text-[12px] font-semibold text-muted"
+        }
+      >
+        <PipelineIcon width={13} height={13} />
+        Board
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("table")}
+        className={
+          view === "table"
+            ? "flex items-center gap-1.5 rounded-[7px] bg-navy px-3 py-[7px] text-[12px] font-semibold text-white"
+            : "flex items-center gap-1.5 rounded-[7px] px-3 py-[7px] text-[12px] font-semibold text-muted"
+        }
+      >
+        <TableIcon width={13} height={13} />
+        Table
+      </button>
+    </div>
+  );
+}
+
 function AgentFilter({
-  agents, currentAgent,
-}: { agents: { id: string; full_name: string }[]; currentAgent: string }) {
+  agents, currentAgent, currentInterest,
+}: { agents: { id: string; full_name: string }[]; currentAgent: string; currentInterest: string }) {
   const router = useRouter();
   if (agents.length === 0) return null;
   return (
     <select
-      onChange={(e) => {
-        router.push(e.target.value ? `/pipeline?agent=${e.target.value}` : "/pipeline");
-      }}
+      onChange={(e) => router.push(buildQuery(e.target.value, currentInterest))}
       defaultValue={currentAgent}
-      className="rounded-[10px] border border-sand-2 bg-cream px-3.5 py-2.5 text-[12.5px] font-semibold text-navy"
+      className="rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy"
     >
       <option value="">All agents</option>
       {agents.map((a) => (
@@ -299,8 +351,89 @@ function AgentFilter({
   );
 }
 
+function ProductFilter({
+  currentAgent, currentInterest,
+}: { currentAgent: string; currentInterest: string }) {
+  const router = useRouter();
+  return (
+    <select
+      onChange={(e) => router.push(buildQuery(currentAgent, e.target.value))}
+      defaultValue={currentInterest}
+      className="rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy"
+    >
+      <option value="">All products</option>
+      {INTEREST_OPTIONS.map((o) => (
+        <option key={o.label} value={o.label}>{o.label}</option>
+      ))}
+    </select>
+  );
+}
+
+function PipelineTable({
+  leads, agents,
+}: { leads: PipelineLead[]; agents: { id: string; full_name: string }[] }) {
+  const agentName = new Map(agents.map((a) => [a.id, a.full_name]));
+  return (
+    <div className="px-[26px] py-[18px] pb-16">
+      <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
+        <div className="overflow-x-auto">
+          <div className="min-w-[820px]">
+            <div className="grid grid-cols-[1.5fr_1fr_1fr_1.1fr_1fr_1fr] bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
+              <div>Lead</div>
+              <div>Phone</div>
+              <div>Stage</div>
+              <div>Product</div>
+              <div>Agent</div>
+              <div className="text-right">Value / Actions</div>
+            </div>
+            {leads.map((lead) => {
+              const stage = STAGES.find((s) => s.value === lead.pipeline_stage) ?? STAGES[0];
+              const tag = productTag(lead.interest);
+              const value = leadPotentialValue(lead);
+              return (
+                <div
+                  key={lead.id}
+                  className="grid grid-cols-[1.5fr_1fr_1fr_1.1fr_1fr_1fr] items-center border-b border-sand-3 px-5 py-3 text-[12.5px] text-ink last:border-b-0"
+                >
+                  <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
+                    {lead.full_name}
+                  </Link>
+                  <div className="font-medium">{lead.phone}</div>
+                  <div>
+                    <span className="inline-flex items-center gap-[6px] rounded-[7px] bg-cream px-2 py-1 text-[10.5px] font-bold text-navy">
+                      <span className="h-[6px] w-[6px] rounded-full" style={{ background: stage.dot }} />
+                      {stage.label}
+                    </span>
+                  </div>
+                  <div>
+                    {tag ? (
+                      <span className={`rounded-[6px] px-[7px] py-[3px] text-[10px] font-bold ${tag.cls}`}>{tag.label}</span>
+                    ) : (
+                      <span className="text-taupe">—</span>
+                    )}
+                  </div>
+                  <div className="truncate font-semibold text-green">{agentName.get(lead.agent_id ?? "") ?? "—"}</div>
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="font-extrabold text-navy">{value > 0 ? fmtRM(value) : "—"}</span>
+                    <a href={`tel:${lead.phone}`} className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-navy" aria-label="Call">
+                      <PhoneIcon width={12} height={12} className="text-gold" />
+                    </a>
+                    <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-green" aria-label="WhatsApp">
+                      <WhatsAppIcon width={12} height={12} fill="#fff" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PipelineCard({
-  lead, stage, open, onToggle, onDragStart, onMove, canManageStage,
+  lead, stage, open, onToggle, onDragStart, onMove, canManageStage, staleAfterDays,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -309,10 +442,13 @@ function PipelineCard({
   onDragStart: () => void;
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
+  staleAfterDays: number;
 }) {
-  const tag = productTag(lead);
+  const tag = productTag(lead.interest);
   const quoteValue = primaryQuoteValue(lead);
   const hasQuote = lead.quotations.length > 0;
+  const staleDays = daysSinceLastActivity(lead);
+  const stale = staleDays >= staleAfterDays;
 
   return (
     <div
@@ -330,9 +466,9 @@ function PipelineCard({
       </div>
       <div className="mt-0.5 text-[11.5px] font-medium text-muted-2">{lead.phone}</div>
 
-      {lead.is_stale && (
+      {stale && (
         <span className="mt-2 inline-block rounded-[5px] bg-alert-red-bg px-[6px] py-[3px] text-[8.5px] font-bold text-alert-red">
-          STALE
+          STALE {staleDays}d
         </span>
       )}
       {isToday(lead.follow_up_date) && (
@@ -340,7 +476,7 @@ function PipelineCard({
           Callback today
         </div>
       )}
-      {tag && !lead.is_stale && (
+      {tag && !stale && (
         <div className="mt-2 flex flex-wrap gap-1">
           <span className={`rounded-[5px] px-[6px] py-[3px] text-[9px] font-bold ${tag.cls}`}>{tag.label}</span>
           {lead.lead_source && (
@@ -362,6 +498,18 @@ function PipelineCard({
         </div>
       )}
 
+      <div className="mt-2.5 grid grid-cols-3 gap-1.5 border-t border-sand-3 pt-2.5">
+        <a href={`tel:${lead.phone}`} className="flex h-8 items-center justify-center rounded-[8px] bg-navy" aria-label="Call">
+          <PhoneIcon width={13} height={13} className="text-gold" />
+        </a>
+        <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-8 items-center justify-center rounded-[8px] bg-green" aria-label="WhatsApp">
+          <WhatsAppIcon width={13} height={13} fill="#fff" />
+        </a>
+        <Link href={`/leads/${lead.id}`} className="flex h-8 items-center justify-center rounded-[8px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
+          <QuotationIcon width={13} height={13} className="text-warn-gold-text" />
+        </Link>
+      </div>
+
       {open && (
         <div className="absolute top-full left-0 z-10 mt-1.5 w-[240px] rounded-[14px] border border-sand-2 bg-white p-1.5 shadow-elevated">
           <div className="px-2 pt-1 pb-1 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
@@ -379,6 +527,13 @@ function PipelineCard({
             <QuotationIcon width={14} height={14} />
             Quotation estimate
           </Link>
+          <span
+            title="The full Quotation Customizer isn't built yet -- coming in a future update"
+            className="flex cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-taupe opacity-60"
+          >
+            <QuotationIcon width={14} height={14} />
+            Open customizer
+          </span>
           {canManageStage && (
             <>
               <div className="mt-1 border-t border-sand-3 px-2 pt-2 pb-1 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">

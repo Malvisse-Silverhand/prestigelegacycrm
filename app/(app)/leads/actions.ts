@@ -46,10 +46,15 @@ export async function updateLead(leadId: string, formData: FormData) {
     return { error: "Name and phone are required." };
   }
 
+  const genderRaw = String(formData.get("gender") ?? "").trim();
+  const smokerRaw = String(formData.get("is_smoker") ?? "").trim();
+
   const supabase = await createClient();
   // RLS already scopes which rows this UPDATE can actually reach (own leads
   // for an agent, unit leads for a unit manager, etc.) -- no row matching the
   // WHERE means either it doesn't exist or the caller can't touch it.
+  // `interest` is deliberately not writable here -- it's a controlled field
+  // owned by updateInterest/the InterestDropdown, so this form doesn't touch it.
   const { data, error } = await supabase
     .from("leads")
     .update({
@@ -60,7 +65,10 @@ export async function updateLead(leadId: string, formData: FormData) {
       state: String(formData.get("state") ?? "").trim() || null,
       occupation: String(formData.get("occupation") ?? "").trim() || null,
       lead_source: String(formData.get("lead_source") ?? "").trim() || null,
-      interest: String(formData.get("interest") ?? "").trim() || null,
+      gender: genderRaw === "male" || genderRaw === "female" ? genderRaw : null,
+      is_smoker: smokerRaw === "" ? null : smokerRaw === "true",
+      budget_indicated: String(formData.get("budget_indicated") ?? "").trim() || null,
+      best_time_to_reach: String(formData.get("best_time_to_reach") ?? "").trim() || null,
     })
     .eq("id", leadId)
     .select("id")
