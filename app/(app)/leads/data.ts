@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { MalaysianState, LeadSource } from "@/lib/lead-constants";
 
 export const PAGE_SIZE = 20;
 
@@ -17,9 +18,11 @@ export type LeadRow = {
   phone: string;
   email: string | null;
   date_of_birth: string | null;
-  state: string | null;
+  state: MalaysianState | null;
   occupation: string | null;
-  lead_source: string | null;
+  postcode: string | null;
+  agent_remark: string | null;
+  lead_source: LeadSource | null;
   interest: string | null;
   gender: "male" | "female" | null;
   is_smoker: boolean | null;
@@ -42,7 +45,7 @@ export async function getLeads(filters: LeadFilters) {
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, state, occupation, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
+      "id, full_name, phone, email, date_of_birth, state, occupation, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
@@ -53,8 +56,10 @@ export async function getLeads(filters: LeadFilters) {
     // otherwise a search term containing one can distort which condition
     // actually gets evaluated. RLS still governs the final result set either
     // way, but a malformed filter shouldn't produce confusing search results.
+    // lead_source is a fixed enum now (Batch D) -- ilike against it would be
+    // a Postgres type error, so it's dropped from the free-text search.
     const q = filters.q.replace(/[%_,()]/g, "");
-    query = query.or(`full_name.ilike.%${q}%,phone.ilike.%${q}%,lead_source.ilike.%${q}%`);
+    query = query.or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`);
   }
   if (filters.from) query = query.gte("created_at", filters.from);
   if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59`);

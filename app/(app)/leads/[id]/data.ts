@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { MalaysianState, LeadSource } from "@/lib/lead-constants";
 
 export type LeadDetail = {
   id: string;
@@ -6,12 +7,14 @@ export type LeadDetail = {
   phone: string;
   email: string | null;
   address: string | null;
-  state: string | null;
+  state: MalaysianState | null;
+  postcode: string | null;
+  agent_remark: string | null;
   date_of_birth: string | null;
   occupation: string | null;
   gender: "male" | "female" | null;
   is_smoker: boolean | null;
-  lead_source: string | null;
+  lead_source: LeadSource | null;
   interest: string | null;
   budget_indicated: string | null;
   best_time_to_reach: string | null;
@@ -37,7 +40,7 @@ export async function getLeadDetail(id: string) {
     supabase
       .from("leads")
       .select(
-        "id, full_name, phone, email, address, state, date_of_birth, occupation, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
+        "id, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
       )
       .eq("id", id)
       .single<LeadDetail>(),

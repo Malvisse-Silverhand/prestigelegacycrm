@@ -508,7 +508,7 @@ function PipelineCard({
           <span className={`rounded-[5px] px-[6px] py-[3px] text-[9px] font-bold ${tag.cls}`}>{tag.label}</span>
           {lead.lead_source && (
             <span className="rounded-[5px] border border-sand-2 bg-cream px-[6px] py-[3px] text-[9px] font-semibold text-muted">
-              {lead.lead_source.split(" — ")[0]}
+              {lead.lead_source}
             </span>
           )}
         </div>
