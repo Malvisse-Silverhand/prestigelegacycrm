@@ -202,7 +202,9 @@ export function PipelineView({
                     stage={stage.value}
                     open={openCardId === lead.id}
                     onToggle={() => setOpenCardId(openCardId === lead.id ? null : lead.id)}
+                    isDragging={dragLeadId === lead.id}
                     onDragStart={() => setDragLeadId(lead.id)}
+                    onDragEnd={() => setDragLeadId(null)}
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
                     staleAfterDays={staleAfterDays}
@@ -459,13 +461,15 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, onDragStart, onMove, canManageStage, staleAfterDays, onOpenQuotation,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, staleAfterDays, onOpenQuotation,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
   open: boolean;
   onToggle: () => void;
+  isDragging: boolean;
   onDragStart: () => void;
+  onDragEnd: () => void;
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
   staleAfterDays: number;
@@ -481,10 +485,15 @@ function PipelineCard({
     <div
       draggable={canManageStage}
       onDragStart={onDragStart}
-      className="relative rounded-[14px] border border-sand bg-white p-3"
+      onDragEnd={onDragEnd}
+      className={
+        "relative rounded-[14px] border bg-white p-3 transition-colors " +
+        (canManageStage ? "cursor-grab active:cursor-grabbing " : "") +
+        (isDragging ? "border-gold bg-gold/10 opacity-70 shadow-elevated ring-2 ring-gold" : "border-sand")
+      }
     >
       <div className="flex items-start justify-between gap-1.5">
-        <Link href={`/leads/${lead.id}`} className="text-[13px] font-bold text-navy hover:underline">
+        <Link href={`/leads/${lead.id}`} draggable={false} className="text-[13px] font-bold text-navy hover:underline">
           {lead.full_name}
         </Link>
         <button type="button" onClick={onToggle} className="text-taupe" aria-label="Card actions">
@@ -526,10 +535,10 @@ function PipelineCard({
       )}
 
       <div className="mt-2.5 grid grid-cols-3 gap-1.5 border-t border-sand-3 pt-2.5">
-        <a href={`tel:${lead.phone}`} className="flex h-8 items-center justify-center rounded-[8px] bg-navy" aria-label="Call">
+        <a href={`tel:${lead.phone}`} draggable={false} className="flex h-8 items-center justify-center rounded-[8px] bg-navy" aria-label="Call">
           <PhoneIcon width={13} height={13} className="text-gold" />
         </a>
-        <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-8 items-center justify-center rounded-[8px] bg-green" aria-label="WhatsApp">
+        <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" draggable={false} className="flex h-8 items-center justify-center rounded-[8px] bg-green" aria-label="WhatsApp">
           <WhatsAppIcon width={13} height={13} fill="#fff" />
         </a>
         <button type="button" onClick={onOpenQuotation} className="flex h-8 items-center justify-center rounded-[8px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
