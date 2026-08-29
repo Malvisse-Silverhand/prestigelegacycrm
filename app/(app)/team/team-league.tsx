@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { UnitLeague } from "./data";
 import { computeAgentMetrics, emptyMetrics, type MinimalLead, type MinimalActivity } from "./metrics";
+import { daysSinceLastActivity } from "@/lib/staleness";
 import { ChevronDownIcon, ShieldIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
@@ -22,13 +23,15 @@ export function TeamLeague({
   leagues,
   leads,
   activities,
+  staleAfterDays,
 }: {
   groupLabel: string;
   leagues: UnitLeague[];
   leads: MinimalLead[];
   activities: MinimalActivity[];
+  staleAfterDays: number;
 }) {
-  const agentMetrics = computeAgentMetrics(leads, activities);
+  const agentMetrics = computeAgentMetrics(leads, activities, staleAfterDays);
 
   const unitManagerRows = leagues.map((league) => {
     const unitLeads = leads.filter((l) => l.unit_id === league.unitId);
@@ -36,10 +39,19 @@ export function TeamLeague({
     // Roll a unit manager's row up from their agents' per-lead numbers directly,
     // rather than re-deriving from the (per-agent) metrics map.
     const closedWon = unitLeads.filter((l) => l.pipeline_stage === "closed_won").length;
-    const staleCount = unitLeads.filter((l) => l.is_stale).length;
-    const perAgent = computeAgentMetrics(unitLeads, unitActivities);
+    const perAgent = computeAgentMetrics(unitLeads, unitActivities, staleAfterDays);
     const responseValues = [...perAgent.values()].map((m) => m.avgResponseHours).filter((v): v is number => v !== null);
     const avgResponse = responseValues.length > 0 ? responseValues.reduce((a, b) => a + b, 0) / responseValues.length : null;
+    // Counted over every unit lead (not just perAgent's assigned-only view) so
+    // an unassigned-but-stale lead still shows up here, same as the old
+    // is_stale-column version did.
+    const timestampsByLead = new Map<string, string[]>();
+    for (const a of unitActivities) {
+      (timestampsByLead.get(a.lead_id) ?? timestampsByLead.set(a.lead_id, []).get(a.lead_id)!).push(a.created_at);
+    }
+    const staleCount = unitLeads.filter(
+      (l) => daysSinceLastActivity(l.created_at, timestampsByLead.get(l.id) ?? []) >= staleAfterDays,
+    ).length;
 
     return {
       league,

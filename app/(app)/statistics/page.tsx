@@ -10,6 +10,7 @@ import {
   computeLeague,
 } from "./data";
 import { computeAgentMetrics } from "@/app/(app)/team/metrics";
+import { getStaleAfterDays } from "@/lib/staleness-server";
 import { StatCard, LeagueTable, ProductMix, ResponseHistogram, StageFunnel, AgentTable } from "./statistics-view";
 
 export default async function StatisticsPage({
@@ -24,7 +25,10 @@ export default async function StatisticsPage({
   const params = await searchParams;
   const scope = params.scope ?? "units";
 
-  const { leads, activities, quotations, units, unitManagers, agents } = await getStatisticsData(profile);
+  const [{ leads, activities, quotations, units, unitManagers, agents }, staleAfterDays] = await Promise.all([
+    getStatisticsData(profile),
+    getStaleAfterDays(),
+  ]);
 
   const now = new Date();
   const thisMonth = now.toISOString().slice(0, 7);
@@ -46,10 +50,11 @@ export default async function StatisticsPage({
           leads,
           quotations,
           activities,
+          staleAfterDays,
         )
       : [];
 
-  const agentMetrics = computeAgentMetrics(leads, activities);
+  const agentMetrics = computeAgentMetrics(leads, activities, staleAfterDays);
 
   return (
     <div>

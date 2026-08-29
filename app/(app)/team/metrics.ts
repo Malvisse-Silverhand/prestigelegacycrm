@@ -1,9 +1,10 @@
+import { daysSinceLastActivity } from "@/lib/staleness";
+
 export type MinimalLead = {
   id: string;
   agent_id: string | null;
   unit_id?: string | null;
   pipeline_stage: string;
-  is_stale: boolean;
   created_at: string;
 };
 
@@ -23,12 +24,16 @@ export type AgentMetrics = {
 export function computeAgentMetrics(
   leads: MinimalLead[],
   activities: MinimalActivity[],
+  staleAfterDays: number,
 ): Map<string, AgentMetrics> {
   const firstActivityByLead = new Map<string, string>();
+  const timestampsByLead = new Map<string, string[]>();
   for (const a of activities) {
-    if (a.activity_type === "created") continue;
-    const existing = firstActivityByLead.get(a.lead_id);
-    if (!existing || a.created_at < existing) firstActivityByLead.set(a.lead_id, a.created_at);
+    if (a.activity_type !== "created") {
+      const existing = firstActivityByLead.get(a.lead_id);
+      if (!existing || a.created_at < existing) firstActivityByLead.set(a.lead_id, a.created_at);
+    }
+    (timestampsByLead.get(a.lead_id) ?? timestampsByLead.set(a.lead_id, []).get(a.lead_id)!).push(a.created_at);
   }
 
   const byAgent = new Map<string, MinimalLead[]>();
@@ -51,7 +56,9 @@ export function computeAgentMetrics(
     result.set(agentId, {
       leadCount: agentLeads.length,
       convRate: agentLeads.length > 0 ? Math.round((closedWon / agentLeads.length) * 1000) / 10 : 0,
-      staleCount: agentLeads.filter((l) => l.is_stale).length,
+      staleCount: agentLeads.filter(
+        (l) => daysSinceLastActivity(l.created_at, timestampsByLead.get(l.id) ?? []) >= staleAfterDays,
+      ).length,
       avgResponseHours:
         responseTimes.length > 0
           ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 10) / 10

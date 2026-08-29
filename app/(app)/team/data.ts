@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { computeAgentMetrics, type MinimalLead, type MinimalActivity } from "./metrics";
+import { getStaleAfterDays } from "@/lib/staleness-server";
+
+export { getStaleAfterDays };
 
 export type TeamMember = {
   id: string;
@@ -18,7 +21,7 @@ async function fetchLeadsAndActivity(unitIds: string[] | null) {
   const supabase = await createClient();
   let leadsQuery = supabase
     .from("leads")
-    .select("id, agent_id, unit_id, pipeline_stage, is_stale, created_at");
+    .select("id, agent_id, unit_id, pipeline_stage, created_at");
   if (unitIds) leadsQuery = leadsQuery.in("unit_id", unitIds);
 
   const { data: leads } = await leadsQuery.returns<MinimalLead[]>();
@@ -87,8 +90,11 @@ export async function getUnitManagerTeam(profile: CurrentProfile) {
     .order("full_name")
     .returns<TeamMember[]>();
 
-  const { leads, activities } = await fetchLeadsAndActivity(profile.unit_id ? [profile.unit_id] : null);
-  const metrics = computeAgentMetrics(leads, activities);
+  const [{ leads, activities }, staleAfterDays] = await Promise.all([
+    fetchLeadsAndActivity(profile.unit_id ? [profile.unit_id] : null),
+    getStaleAfterDays(),
+  ]);
+  const metrics = computeAgentMetrics(leads, activities, staleAfterDays);
   const unassignedPool = leads.filter((l) => !l.agent_id).length;
 
   return { members: members ?? [], metrics, unassignedPool, totalUnitLeads: leads.length };

@@ -18,7 +18,7 @@ export async function getStatisticsData(profile: CurrentProfile) {
   const [{ data: leads }, { data: quotations }] = await Promise.all([
     supabase
       .from("leads")
-      .select("id, agent_id, unit_id, pipeline_stage, is_stale, created_at, lead_source, interest")
+      .select("id, agent_id, unit_id, pipeline_stage, created_at, lead_source, interest")
       .returns<MinimalLeadWithSource[]>(),
     supabase
       .from("quotations")
@@ -194,6 +194,7 @@ export function computeLeague(
   leads: MinimalLead[],
   quotations: QuotationRow[],
   activities: MinimalActivity[],
+  staleAfterDays: number,
 ) {
   return rows
     .map((row) => {
@@ -202,7 +203,7 @@ export function computeLeague(
       const unitActivities = activities.filter((a) => unitLeadIds.has(a.lead_id));
       const closed = unitLeads.filter((l) => l.pipeline_stage === "closed_won").length;
       const quoted = quotations.filter((q) => unitLeadIds.has(q.lead_id)).length;
-      const perAgent = computeAgentMetrics(unitLeads, unitActivities);
+      const perAgent = computeAgentMetrics(unitLeads, unitActivities, staleAfterDays);
       const responseValues = [...perAgent.values()].map((m) => m.avgResponseHours).filter((v): v is number => v !== null);
       const avgResponse = responseValues.length > 0 ? responseValues.reduce((a, b) => a + b, 0) / responseValues.length : null;
       const agentCount = new Set(unitLeads.map((l) => l.agent_id).filter(Boolean)).size;

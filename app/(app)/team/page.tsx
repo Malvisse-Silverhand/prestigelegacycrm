@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getUnitManagerTeam, getGroupManagerLeague, getUnitManagerTargets, currentMonthDate } from "./data";
+import { getUnitManagerTeam, getGroupManagerLeague, getUnitManagerTargets, currentMonthDate, getStaleAfterDays } from "./data";
 import { TeamRoster } from "./team-roster";
 import { TeamLeague } from "./team-league";
 
@@ -20,13 +20,17 @@ export default async function TeamPage() {
     );
   }
 
-  const { leagues, leads, activities } = await getGroupManagerLeague(profile);
+  const [{ leagues, leads, activities }, staleAfterDays] = await Promise.all([
+    getGroupManagerLeague(profile),
+    getStaleAfterDays(),
+  ]);
   return (
     <TeamLeague
       groupLabel={profile.role === "superadmin" ? "All units" : `Group ${profile.full_name}`}
       leagues={leagues}
       leads={leads}
       activities={activities}
+      staleAfterDays={staleAfterDays}
     />
   );
 }
