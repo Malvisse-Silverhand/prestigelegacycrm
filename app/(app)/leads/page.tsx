@@ -4,6 +4,7 @@ import { getLeads, getFilterOptions, PAGE_SIZE, type LeadFilters } from "./data"
 import { LeadFiltersBar } from "./filters";
 import { StatusBadge } from "./status-badge";
 import { AddLeadButton } from "./add-lead-button";
+import { ImportButton } from "./import/import-button";
 import { ExportCsvButton } from "./export-csv-button";
 import { LeadRowActions } from "./lead-row-actions";
 import { EmptyState } from "@/components/empty-state";
@@ -88,7 +89,8 @@ export default async function LeadsPage({
         agents={agents}
         showAgentFilter={canManage}
       />
-      <div className="flex justify-end px-5 lg:px-[30px] pb-4">
+      <div className="flex flex-wrap justify-end gap-2.5 px-5 lg:px-[30px] pb-4">
+        <ImportButton />
         {canManage && <AddLeadButton />}
       </div>
 

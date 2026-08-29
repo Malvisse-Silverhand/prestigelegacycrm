@@ -3,29 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { MALAYSIAN_STATES, LEAD_SOURCES } from "@/lib/lead-constants";
-import { INTEREST_OPTIONS } from "@/lib/product-interest";
-
-const STATUS_VALUES = ["hot", "warm", "cold"];
-
-function pickState(v: string) {
-  return (MALAYSIAN_STATES as readonly string[]).includes(v) ? v : null;
-}
-function pickLeadSource(v: string) {
-  return (LEAD_SOURCES as readonly string[]).includes(v) ? v : null;
-}
-function pickInterest(v: string) {
-  return INTEREST_OPTIONS.some((o) => o.label === v) ? v : null;
-}
-function pickStatus(v: string, fallback: string) {
-  return STATUS_VALUES.includes(v) ? v : fallback;
-}
-function pickGender(v: string) {
-  return v === "male" || v === "female" ? v : null;
-}
-function pickSmoker(v: string) {
-  return v === "" ? null : v === "true";
-}
+import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker } from "@/lib/lead-field-validation";
 
 export async function createLead(formData: FormData) {
   const profile = await getCurrentProfile();
