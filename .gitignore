@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+desktop.ini
+Thumbs.db
 
 # debug
 npm-debug.log*
