@@ -577,19 +577,20 @@ function PipelineCard({
           {canManageStage && (
             <>
               <div className="mt-1 border-t border-sand-3 px-2 pt-2 pb-1 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
-                Move card to
+                Pipeline stage
               </div>
-              <div className="flex flex-wrap gap-1 px-2 pb-2">
-                {STAGES.filter((s) => s.value !== stage).map((s) => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => onMove(s.value)}
-                    className="rounded-[7px] border border-sand-2 bg-cream px-2 py-1 text-[10.5px] font-semibold text-muted-2 hover:border-navy hover:text-navy"
-                  >
-                    {s.label}
-                  </button>
-                ))}
+              <div className="px-2 pb-2">
+                <select
+                  value={stage}
+                  onChange={(e) => onMove(e.target.value as PipelineStage)}
+                  className="w-full rounded-[7px] border border-sand-2 bg-cream px-2 py-1.5 text-[10.5px] font-semibold text-navy outline-none focus:border-gold"
+                >
+                  {STAGES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </>
           )}
