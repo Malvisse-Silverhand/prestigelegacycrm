@@ -22,7 +22,7 @@ const quotationReceipt = (
   </svg>
 );
 
-export function LeadRowActions({ lead }: { lead: LeadRow }) {
+export function LeadRowActions({ lead, canManage }: { lead: LeadRow; canManage: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [quoteMenuOpen, setQuoteMenuOpen] = useState(false);
@@ -76,7 +76,7 @@ export function LeadRowActions({ lead }: { lead: LeadRow }) {
         )}
       </div>
 
-      {editing && <EditLeadModal lead={lead} onClose={() => setEditing(false)} />}
+      {editing && <EditLeadModal lead={lead} canDelete={canManage} onClose={() => setEditing(false)} />}
       <QuotationModal
         url={modalUrl}
         title={`Quotation — ${lead.full_name}`}

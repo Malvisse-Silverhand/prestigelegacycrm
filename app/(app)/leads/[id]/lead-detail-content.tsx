@@ -425,7 +425,7 @@ export function LeadDetailContent({
         </div>
       </div>
 
-      {editing && <EditLeadModal lead={lead} onClose={() => setEditing(false)} />}
+      {editing && <EditLeadModal lead={lead} canDelete={profile.role !== "agent"} onClose={() => setEditing(false)} />}
     </div>
   );
 }

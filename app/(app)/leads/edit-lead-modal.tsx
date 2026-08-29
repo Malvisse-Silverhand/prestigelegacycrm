@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateLead } from "./actions";
+import { updateLead, deleteLead } from "./actions";
 import { LeadFormFields } from "./lead-form-fields";
 
 // Structural type (not imported from a specific screen's data.ts) so this
@@ -30,10 +30,12 @@ type EditableLead = {
   created_at: string;
 };
 
-export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: () => void }) {
+export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead; canDelete: boolean; onClose: () => void }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, startDeleteTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -48,6 +50,29 @@ export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: 
         }
       } catch {
         setError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
+
+  function handleDelete() {
+    setError(null);
+    startDeleteTransition(async () => {
+      try {
+        const result = await deleteLead(lead.id);
+        if (result.error) {
+          setError(result.error);
+          setConfirmingDelete(false);
+        } else {
+          // Not just router.refresh() -- this modal is also reachable from
+          // Lead Detail (a page for this exact lead), which would otherwise
+          // be left rendering a now-deleted record. /leads is always a safe
+          // landing spot either way.
+          onClose();
+          router.push("/leads");
+        }
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+        setConfirmingDelete(false);
       }
     });
   }
@@ -110,21 +135,62 @@ export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: 
             </div>
           )}
 
-          <div className="mt-2 flex justify-end gap-2.5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={pending}
-              className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
-            >
-              {pending ? "Saving…" : "Save changes"}
-            </button>
+          {confirmingDelete && (
+            <div className="rounded-[10px] border border-[#f6d5cf] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
+              Delete this lead permanently? This also removes its activity history and any quotations
+              linked to it. This can&apos;t be undone.
+            </div>
+          )}
+
+          <div className="mt-2 flex items-center justify-between gap-2.5">
+            {canDelete ? (
+              confirmingDelete ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(false)}
+                    className="rounded-[10px] border border-sand-2 px-3.5 py-2.5 text-[13px] font-semibold text-navy"
+                  >
+                    Keep lead
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="rounded-[10px] bg-alert-red px-3.5 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                  >
+                    {deleting ? "Deleting…" : "Yes, delete lead"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="rounded-[10px] border border-[#f6d5cf] px-3.5 py-2.5 text-[13px] font-semibold text-alert-red"
+                >
+                  Delete lead
+                </button>
+              )
+            ) : (
+              <span />
+            )}
+
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={pending}
+                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+              >
+                {pending ? "Saving…" : "Save changes"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

@@ -163,7 +163,7 @@ export default async function LeadsPage({
                       >
                         <WhatsAppIcon width={13} height={13} fill="#fff" />
                       </a>
-                      <LeadRowActions lead={lead} />
+                      <LeadRowActions lead={lead} canManage={canManage} />
                     </div>
                   </div>
                 );
@@ -201,7 +201,7 @@ export default async function LeadsPage({
                         <WhatsAppIcon width={13} height={13} fill="#fff" />
                         WhatsApp
                       </a>
-                      <LeadRowActions lead={lead} />
+                      <LeadRowActions lead={lead} canManage={canManage} />
                     </div>
                   </div>
                 );

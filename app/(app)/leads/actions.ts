@@ -107,3 +107,23 @@ export async function updateLead(leadId: string, formData: FormData) {
   revalidatePath(`/leads/${leadId}`);
   return { error: null };
 }
+
+export async function deleteLead(leadId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role === "agent") {
+    return { error: "You don't have permission to delete leads." };
+  }
+
+  const supabase = await createClient();
+  // RLS scopes which row this can actually reach (own unit for a unit
+  // manager, own units for a group manager, any for superadmin). No row
+  // matching the WHERE means either it doesn't exist or the caller can't
+  // touch it -- same "not found vs not allowed" ambiguity as updateLead.
+  const { data, error } = await supabase.from("leads").delete().eq("id", leadId).select("id").maybeSingle();
+
+  if (error || !data) return { error: "Couldn't delete this lead. Please try again." };
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+  return { error: null };
+}
