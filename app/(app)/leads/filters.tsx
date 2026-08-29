@@ -28,7 +28,7 @@ export function LeadFiltersBar({
       ref={formRef}
       action="/leads"
       method="get"
-      className="flex flex-wrap items-center gap-2.5 bg-cream px-[30px] py-[18px]"
+      className="flex flex-wrap items-center gap-2.5 bg-cream px-5 lg:px-[30px] py-[18px]"
     >
       <div className="flex flex-1 min-w-[200px] items-center gap-2.5 rounded-[11px] border border-sand-2 bg-white px-3.5 py-[11px]">
         <SearchIcon width={16} height={16} className="text-taupe" />

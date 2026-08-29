@@ -26,7 +26,7 @@ export default async function QuotationsPage() {
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-[30px] py-5">
+      <div className="border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Quotation</div>
         <div className="mt-[3px] text-[13px] font-medium text-muted">
           {quotations.length} quotation{quotations.length === 1 ? "" : "s"} · generated from a lead's own
@@ -34,7 +34,7 @@ export default async function QuotationsPage() {
         </div>
       </div>
 
-      <div className="px-[30px] py-[22px]">
+      <div className="px-5 lg:px-[30px] py-[22px]">
         {quotations.length === 0 ? (
           <EmptyState
             icon={<QuotationIcon width={28} height={28} className="text-green" />}

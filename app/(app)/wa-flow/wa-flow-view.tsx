@@ -114,7 +114,7 @@ export function WaFlowView({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-[30px] py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div>
           <div className="flex items-center gap-2.5">
             <WhatsAppIcon width={20} height={20} className="text-green" />
@@ -138,7 +138,7 @@ export function WaFlowView({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2 px-[30px] pt-[18px]">
+      <div className="flex flex-wrap gap-2 px-5 lg:px-[30px] pt-[18px]">
         <button
           type="button"
           onClick={() => setCategory("all")}
@@ -158,7 +158,7 @@ export function WaFlowView({
         ))}
       </div>
 
-      <div className="px-[30px] py-[18px] pb-[30px]">
+      <div className="px-5 lg:px-[30px] py-[18px] pb-[30px]">
         {filtered.length === 0 ? (
           <EmptyState
             icon={<WaFlowIcon width={28} height={28} className="text-green" />}

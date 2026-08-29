@@ -71,7 +71,7 @@ export default async function LeadsPage({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-[30px] py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div>
           <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">
             Lead Management
@@ -88,11 +88,11 @@ export default async function LeadsPage({
         agents={agents}
         showAgentFilter={canManage}
       />
-      <div className="flex justify-end px-[30px] pb-4">
+      <div className="flex justify-end px-5 lg:px-[30px] pb-4">
         {canManage && <AddLeadButton />}
       </div>
 
-      <div className="px-[30px] pb-[30px]">
+      <div className="px-5 lg:px-[30px] pb-[30px]">
         {leads.length === 0 ? (
           hasFilters ? (
             <EmptyState

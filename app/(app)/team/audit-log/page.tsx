@@ -30,7 +30,7 @@ export default async function AuditLogPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-4 border-b border-sand bg-white px-[30px] py-5">
+      <div className="flex items-center gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div className="flex-1">
           <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">Audit Log</div>
           <div className="mt-[3px] text-[13px] font-medium text-muted">
@@ -42,7 +42,7 @@ export default async function AuditLogPage() {
         </Link>
       </div>
 
-      <div className="px-[30px] py-[22px]">
+      <div className="px-5 lg:px-[30px] py-[22px]">
         {rows.length === 0 ? (
           <p className="rounded-2xl border border-sand bg-white p-8 text-center text-[13px] text-muted">
             No audit events yet.

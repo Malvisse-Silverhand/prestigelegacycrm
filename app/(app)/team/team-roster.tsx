@@ -38,7 +38,7 @@ export function TeamRoster({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-[30px] py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div>
           <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">
             Team Management
@@ -49,7 +49,7 @@ export function TeamRoster({
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 px-[30px] py-[22px] pb-[30px]">
+      <div className="flex flex-col gap-5 px-5 lg:px-[30px] py-[22px] pb-[30px]">
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
           <StatCard label="Total Members" value={members.length} />
           <StatCard label="Active Agents" value={activeCount} />

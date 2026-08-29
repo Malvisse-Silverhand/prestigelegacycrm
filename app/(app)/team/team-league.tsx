@@ -52,7 +52,7 @@ export function TeamLeague({
 
   return (
     <div>
-      <div className="flex items-center gap-4 border-b border-sand bg-white px-[30px] py-[18px]">
+      <div className="flex items-center gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-[18px]">
         <div className="flex-1">
           <div className="flex items-center gap-2 text-xs font-semibold text-taupe">
             <span>{groupLabel}</span>
@@ -63,7 +63,7 @@ export function TeamLeague({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-[30px] py-[22px] pb-[30px]">
+      <div className="flex flex-col gap-4 px-5 lg:px-[30px] py-[22px] pb-[30px]">
         {unitManagerRows.length === 0 ? (
           <EmptyState
             icon={<TeamIcon width={28} height={28} className="text-green" />}

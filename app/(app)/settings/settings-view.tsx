@@ -44,7 +44,7 @@ export function SettingsView({
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-[30px] pt-5">
+      <div className="border-b border-sand bg-white px-5 lg:px-[30px] pt-5">
         <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">System Settings</div>
         <div className="mt-[3px] text-[13px] font-medium text-muted">
           Organisation structure, roles, and lead distribution rules
@@ -65,7 +65,7 @@ export function SettingsView({
         </div>
       </div>
 
-      <div className="px-[30px] py-6">
+      <div className="px-5 lg:px-[30px] py-6">
         {tab === "Users & Hierarchy" && (
           <UsersHierarchyTab role={role} orgTree={orgTree} assignmentOptions={assignmentOptions} />
         )}

@@ -53,7 +53,7 @@ export default async function StatisticsPage({
 
   return (
     <div>
-      <div className="flex items-center gap-3.5 border-b border-sand bg-white px-[30px] py-5">
+      <div className="flex items-center gap-3.5 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div className="flex-1">
           <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Statistics</div>
           <div className="mt-0.5 text-[13px] font-medium text-muted">
@@ -85,7 +85,7 @@ export default async function StatisticsPage({
         )}
       </div>
 
-      <div className="flex flex-col gap-[18px] px-[30px] py-[22px] pb-[30px]">
+      <div className="flex flex-col gap-[18px] px-5 lg:px-[30px] py-[22px] pb-[30px]">
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
           <StatCard label="Total leads" value={top.totalLeads} delta={top.totalLeadsDelta === null ? null : `${top.totalLeadsDelta > 0 ? "+" : ""}${top.totalLeadsDelta}%`} />
           <StatCard label="Quotations sent" value={top.quotationsSent} delta={top.quotationsSentDelta === null ? null : `${top.quotationsSentDelta > 0 ? "+" : ""}${top.quotationsSentDelta}%`} />

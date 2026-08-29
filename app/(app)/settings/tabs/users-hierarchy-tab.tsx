@@ -77,11 +77,11 @@ export function UsersHierarchyTab({
                 <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-gold text-[11.5px] font-bold text-navy">
                   {initialsOf(sa.full_name)}
                 </div>
-                <div className="flex-1">
-                  <div className="text-[13.5px] font-bold text-white">{sa.full_name}</div>
-                  <div className="text-[11.5px] text-white/50">{sa.email}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13.5px] font-bold text-white">{sa.full_name}</div>
+                  <div className="truncate text-[11.5px] text-white/50">{sa.email}</div>
                 </div>
-                <span className="rounded-[6px] bg-gold px-[9px] py-1 text-[10px] font-bold text-navy">SUPERADMIN</span>
+                <span className="flex-none rounded-[6px] bg-gold px-[9px] py-1 text-[10px] font-bold text-navy">SUPERADMIN</span>
               </div>
             ))}
 
@@ -97,14 +97,14 @@ export function UsersHierarchyTab({
                 <div className="flex h-[32px] w-[32px] items-center justify-center rounded-[10px] bg-green text-[11px] font-bold text-white">
                   {initialsOf(gm.full_name)}
                 </div>
-                <div className="flex-1">
-                  <div className="text-[13px] font-bold text-navy">{gm.full_name}</div>
-                  <div className="text-[11.5px] text-muted">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13px] font-bold text-navy">{gm.full_name}</div>
+                  <div className="truncate text-[11.5px] text-muted">
                     {gm.units.length} unit{gm.units.length === 1 ? "" : "s"} ·{" "}
                     {gm.units.reduce((s, u) => s + u.agents.length, 0)} agents
                   </div>
                 </div>
-                <span className="rounded-[6px] bg-white px-[9px] py-1 text-[10px] font-bold text-green">GROUP MANAGER</span>
+                <span className="flex-none rounded-[6px] bg-white px-[9px] py-1 text-[10px] font-bold text-green">GROUP MANAGER</span>
                 {canEdit && (
                   <EditButton
                     onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, role: "group_manager", currentAssignedUnderId: null })}
@@ -119,14 +119,14 @@ export function UsersHierarchyTab({
                       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-navy text-[10px] font-bold text-gold">
                         {unit.unitManager ? initialsOf(unit.unitManager.full_name) : "?"}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-[12.5px] font-bold text-navy">{unit.unitManager?.full_name ?? "No Unit Manager assigned"}</div>
-                        <div className="text-[11px] text-taupe">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[12.5px] font-bold text-navy">{unit.unitManager?.full_name ?? "No Unit Manager assigned"}</div>
+                        <div className="truncate text-[11px] text-taupe">
                           {unit.name} · {unit.agents.length} agent{unit.agents.length === 1 ? "" : "s"}
                         </div>
                       </div>
                       {unit.unitManager && (
-                        <span className="rounded-[6px] bg-info-blue-bg px-2 py-[3px] text-[9.5px] font-bold text-[#45566b]">
+                        <span className="flex-none rounded-[6px] bg-info-blue-bg px-2 py-[3px] text-[9.5px] font-bold text-[#45566b]">
                           UNIT MANAGER
                         </span>
                       )}
@@ -155,7 +155,7 @@ export function UsersHierarchyTab({
                               {initialsOf(agent.full_name)}
                             </div>
                             <div className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-navy">{agent.full_name}</div>
-                            <span className="rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                            <span className="flex-none rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
                               AGENT
                             </span>
                             {canEdit && (
