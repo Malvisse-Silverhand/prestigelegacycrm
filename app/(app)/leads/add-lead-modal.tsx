@@ -2,14 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createLead } from "./actions";
-
-const LEAD_SOURCES = [
-  "FB Ads — Medical Card",
-  "Referral",
-  "WhatsApp inbound",
-  "Roadshow",
-  "Walk-in",
-];
+import { LeadFormFields } from "./lead-form-fields";
 
 export function AddLeadModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
@@ -38,31 +31,11 @@ export function AddLeadModal({ open, onClose }: { open: boolean; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-elevated">
+      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-elevated">
         <div className="text-lg font-bold text-navy">Add Lead</div>
+        <p className="mt-0.5 text-[12.5px] text-muted">Lead ID and Date Created are generated automatically once saved.</p>
         <form action={handleSubmit} className="mt-4 flex flex-col gap-3">
-          <Field label="Full name" name="full_name" required />
-          <Field label="Phone" name="phone" required />
-          <Field label="Email" name="email" type="email" />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="State" name="state" />
-            <Field label="Occupation" name="occupation" />
-          </div>
-          <label className="block">
-            <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-              Lead source
-            </span>
-            <select
-              name="lead_source"
-              className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
-            >
-              <option value="">—</option>
-              {LEAD_SOURCES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-          <Field label="Interest / product note" name="interest" />
+          <LeadFormFields defaults={{}} />
 
           {error && (
             <div className="rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
@@ -89,23 +62,5 @@ export function AddLeadModal({ open, onClose }: { open: boolean; onClose: () => 
         </form>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label, name, required, type = "text",
-}: { label: string; name: string; required?: boolean; type?: string }) {
-  return (
-    <label className="block">
-      <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-        {label}
-      </span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
-      />
-    </label>
   );
 }

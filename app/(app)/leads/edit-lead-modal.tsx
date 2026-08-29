@@ -3,14 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateLead } from "./actions";
-
-const LEAD_SOURCES = [
-  "FB Ads — Medical Card",
-  "Referral",
-  "WhatsApp inbound",
-  "Roadshow",
-  "Walk-in",
-];
+import { LeadFormFields } from "./lead-form-fields";
 
 // Structural type (not imported from a specific screen's data.ts) so this
 // modal can be reused from both the Leads Manager row list (LeadRow) and
@@ -25,10 +18,16 @@ type EditableLead = {
   state: string | null;
   occupation: string | null;
   lead_source: string | null;
+  interest: string | null;
+  address: string | null;
+  postcode: string | null;
+  agent_remark: string | null;
+  status: string;
   gender: "male" | "female" | null;
   is_smoker: boolean | null;
   budget_indicated: string | null;
   best_time_to_reach: string | null;
+  created_at: string;
 };
 
 export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: () => void }) {
@@ -55,65 +54,54 @@ export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: 
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-elevated">
+      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-elevated">
         <div className="text-lg font-bold text-navy">Edit Lead</div>
+        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[11.5px] font-medium text-taupe">
+          <span>Lead ID: {lead.id}</span>
+          <span>
+            Date Created: {new Date(lead.created_at).toLocaleString("en-MY", {
+              day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
+            })}
+          </span>
+        </div>
         <form action={handleSubmit} className="mt-4 flex flex-col gap-3">
-          <Field label="Full name" name="full_name" defaultValue={lead.full_name} required />
-          <Field label="Phone" name="phone" defaultValue={lead.phone} required />
-          <Field label="Email" name="email" type="email" defaultValue={lead.email ?? ""} />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Date of birth" name="date_of_birth" type="date" defaultValue={lead.date_of_birth ?? ""} />
-            <Field label="State" name="state" defaultValue={lead.state ?? ""} />
-          </div>
-          <Field label="Occupation" name="occupation" defaultValue={lead.occupation ?? ""} />
-          <label className="block">
-            <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-              Lead source
-            </span>
-            <select
-              name="lead_source"
-              defaultValue={lead.lead_source ?? ""}
-              className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
-            >
-              <option value="">—</option>
-              {LEAD_SOURCES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
+          <LeadFormFields
+            defaults={{
+              full_name: lead.full_name,
+              phone: lead.phone,
+              email: lead.email,
+              date_of_birth: lead.date_of_birth,
+              gender: lead.gender,
+              is_smoker: lead.is_smoker,
+              occupation: lead.occupation,
+              interest: lead.interest,
+              address: lead.address,
+              postcode: lead.postcode,
+              state: lead.state,
+              lead_source: lead.lead_source,
+              status: lead.status,
+              agent_remark: lead.agent_remark,
+            }}
+          />
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-                Gender
-              </span>
-              <select
-                name="gender"
-                defaultValue={lead.gender ?? ""}
-                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
-              >
-                <option value="">Unknown</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
+              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">Monthly budget (RM)</span>
+              <input
+                name="budget_indicated"
+                type="number"
+                defaultValue={lead.budget_indicated ?? ""}
+                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
+              />
             </label>
             <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-                Smoker
-              </span>
-              <select
-                name="is_smoker"
-                defaultValue={lead.is_smoker === null || lead.is_smoker === undefined ? "" : String(lead.is_smoker)}
-                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
-              >
-                <option value="">Unknown</option>
-                <option value="true">Smoker</option>
-                <option value="false">Non-smoker</option>
-              </select>
+              <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">Best time to reach</span>
+              <input
+                name="best_time_to_reach"
+                type="text"
+                defaultValue={lead.best_time_to_reach ?? ""}
+                className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
+              />
             </label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Monthly budget (RM)" name="budget_indicated" type="number" defaultValue={lead.budget_indicated ?? ""} />
-            <Field label="Best time to reach" name="best_time_to_reach" defaultValue={lead.best_time_to_reach ?? ""} />
           </div>
 
           {error && (
@@ -141,24 +129,5 @@ export function EditLeadModal({ lead, onClose }: { lead: EditableLead; onClose: 
         </form>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label, name, required, type = "text", defaultValue,
-}: { label: string; name: string; required?: boolean; type?: string; defaultValue?: string }) {
-  return (
-    <label className="block">
-      <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">
-        {label}
-      </span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        defaultValue={defaultValue}
-        className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
-      />
-    </label>
   );
 }
