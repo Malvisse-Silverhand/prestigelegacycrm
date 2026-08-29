@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { UnitLeague } from "./data";
 import { computeAgentMetrics, emptyMetrics, type MinimalLead, type MinimalActivity } from "./metrics";
@@ -7,6 +5,7 @@ import { daysSinceLastActivity } from "@/lib/staleness";
 import { ChevronDownIcon, ShieldIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
+import { StopPropagationLink } from "./stop-propagation-link";
 
 function initialsOf(name: string, given: string | null) {
   return given || name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
@@ -121,13 +120,12 @@ export function TeamLeague({
                     </span>
                   </div>
                   <div className="flex justify-end gap-1.5">
-                    <Link
+                    <StopPropagationLink
                       href={`/dashboard?monitor=${row.league.unitManager.id}`}
-                      onClick={(e) => e.stopPropagation()}
                       className="rounded-[9px] border border-sand-2 bg-cream px-3.5 py-2 text-xs font-semibold text-navy"
                     >
                       Open Dashboard
-                    </Link>
+                    </StopPropagationLink>
                   </div>
                 </summary>
 
