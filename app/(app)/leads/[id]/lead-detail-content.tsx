@@ -89,8 +89,14 @@ export function LeadDetailContent({
   const [isNewLead] = useState(() => Date.now() - new Date(lead.created_at).getTime() < NEW_THRESHOLD_MS);
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
-  const canEditStage =
-    profile.role === "unit_manager" || (profile.role === "agent" && lead.agent_id === profile.id);
+  // Mirrors the `leads` UPDATE RLS policies. This was originally
+  // unit_manager/owning-agent only because group_manager and superadmin
+  // genuinely had no leads UPDATE policy back then -- showing them a live
+  // control would have silently no-op'd. 20260828150000_section2_rls_fixes
+  // added policies for both, so the gate is just stale. A manager only ever
+  // reaches a lead their matching SELECT policy already scoped to them, so
+  // role alone is enough for them; an agent must additionally own the row.
+  const canEditStage = profile.role === "agent" ? lead.agent_id === profile.id : true;
   // Same "at or below the viewer's level" scope as reassignOptions itself --
   // an agent has no subordinates so gets no picker at all.
   const canReassign = profile.role !== "agent";

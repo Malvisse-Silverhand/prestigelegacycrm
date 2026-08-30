@@ -63,7 +63,13 @@ export function PipelineView({
   const [view, setView] = useState<"board" | "table">("board");
   const [quoteModal, setQuoteModal] = useState<{ url: string; leadName: string } | null>(null);
 
-  const canManageStage = profile.role !== "group_manager" && profile.role !== "superadmin";
+  // Same stale gate Lead Detail had: group_manager/superadmin were excluded
+  // because they had no `leads` UPDATE RLS policy at the time, which
+  // 20260828150000_section2_rls_fixes since added. The UPDATE policies line
+  // up role-for-role with the SELECT policies, so every card the viewer can
+  // see on this board is one they're also allowed to move (an agent's board
+  // only ever contains their own leads).
+  const canManageStage = true;
   const canAddLead = profile.role !== "agent";
 
   function openQuotation(lead: PipelineLead) {
