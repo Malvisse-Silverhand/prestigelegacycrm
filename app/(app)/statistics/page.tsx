@@ -38,8 +38,12 @@ export default async function StatisticsPage({
   const responseData = computeResponseBuckets(leads, activities);
   const funnel = computeStageFunnel(leads);
 
+  // Roles that lead one team see their own team's numbers; everyone above
+  // that sees the cross-unit league.
+  const singleTeamView = profile.role === "unit_manager" || profile.role === "aspirant_unit_manager";
+
   const league =
-    profile.role !== "unit_manager"
+    !singleTeamView
       ? computeLeague(
           unitManagers
             .map((um) => {
@@ -62,12 +66,12 @@ export default async function StatisticsPage({
         <div className="flex-1">
           <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Statistics</div>
           <div className="mt-0.5 text-[13px] font-medium text-muted">
-            {profile.role === "unit_manager"
+            {singleTeamView
               ? `${profile.unit_name ?? "your unit"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`
               : `${units.length} unit${units.length === 1 ? "" : "s"} · ${unitManagers.length} unit manager${unitManagers.length === 1 ? "" : "s"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`}
           </div>
         </div>
-        {profile.role !== "unit_manager" && (
+        {!singleTeamView && (
           <div className="flex rounded-[10px] border border-sand-2 bg-cream p-[3px]">
             {[
               { key: "units", label: "Units" },
@@ -99,8 +103,8 @@ export default async function StatisticsPage({
           <StatCard label="Monthly contribution" value={`RM ${top.monthlyContribution >= 1000 ? (top.monthlyContribution / 1000).toFixed(1) + "k" : top.monthlyContribution}`} dark />
         </div>
 
-        {profile.role !== "unit_manager" && scope === "units" && <LeagueTable rows={league} />}
-        {profile.role !== "unit_manager" && scope === "agents" && (
+        {!singleTeamView && scope === "units" && <LeagueTable rows={league} />}
+        {!singleTeamView && scope === "agents" && (
           <AgentTable metrics={agentMetrics} agents={agents} />
         )}
 

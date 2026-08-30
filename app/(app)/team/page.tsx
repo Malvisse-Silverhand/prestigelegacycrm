@@ -9,7 +9,9 @@ export default async function TeamPage() {
   if (!profile) return null;
   if (profile.role === "agent") redirect("/dashboard");
 
-  if (profile.role === "unit_manager") {
+  // An Aspirant Unit Manager gets the same roster view; the profiles/leads RLS
+  // policies narrow it from "the whole unit" to "my own downline" for them.
+  if (profile.role === "unit_manager" || profile.role === "aspirant_unit_manager") {
     const monthDate = currentMonthDate();
     const [{ members, metrics }, targets] = await Promise.all([
       getUnitManagerTeam(profile),

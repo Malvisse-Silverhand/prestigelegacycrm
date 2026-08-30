@@ -40,7 +40,7 @@ export async function getStatisticsData(profile: CurrentProfile) {
   }
 
   let unitRows: { id: string; name: string; group_manager_id: string | null }[] = [];
-  if (profile.role !== "unit_manager") {
+  if (profile.role !== "unit_manager" && profile.role !== "aspirant_unit_manager") {
     let unitsQuery = supabase.from("units").select("id, name, group_manager_id").order("name");
     if (profile.role === "group_manager") unitsQuery = unitsQuery.eq("group_manager_id", profile.id);
     const { data } = await unitsQuery;

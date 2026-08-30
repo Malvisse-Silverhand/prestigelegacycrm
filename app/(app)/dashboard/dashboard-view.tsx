@@ -20,6 +20,8 @@ function subtitleFor(profile: CurrentProfile) {
       return "Lead performance across your units";
     case "unit_manager":
       return `Lead performance for ${profile.unit_name ?? "your unit"}`;
+    case "aspirant_unit_manager":
+      return "Lead performance for you and your agents";
     default:
       return "Your lead performance";
   }

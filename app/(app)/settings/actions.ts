@@ -1,14 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import type { Role } from "@/lib/profile-types";
+import { ROLE_RANK, type Role } from "@/lib/profile-types";
 
+// Unit Managers can now invite into their own unit too ("Superadmin, Group
+// Manager & Unit Manager boleh assign agent under mereka"). An Aspirant Unit
+// Manager runs agents but does not create accounts.
 function canManageSettings(role: Role) {
-  return role === "superadmin" || role === "group_manager";
+  return role === "superadmin" || role === "group_manager" || role === "unit_manager";
+}
+
+// You may only create someone strictly below your own rank -- "ikut priority
+// siapa lebih tinggi". Superadmin is the exception, able to mint peers.
+function creatableRoles(role: Role): Role[] {
+  const below = (Object.keys(ROLE_RANK) as Role[]).filter((r) => ROLE_RANK[r] > ROLE_RANK[role]);
+  return role === "superadmin" ? ["superadmin", ...below] : below;
 }
 
 function initialsFrom(name: string) {
@@ -16,6 +27,16 @@ function initialsFrom(name: string) {
   const first = parts[0]?.[0] ?? "";
   const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
   return (first + last).toUpperCase() || "?";
+}
+
+// Absolute origin for links inside auth emails. Derived from the incoming
+// request rather than hard-coded so local, preview, and production each send
+// links back to themselves.
+async function appOrigin() {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
 }
 
 function generateTempPassword() {
@@ -31,7 +52,7 @@ type InviteInput = {
   assignedUnderId: string | null; // unit_manager id (role=agent) or unit id (role=unit_manager)
 };
 
-type CallerProfile = { id: string; role: Role };
+type CallerProfile = { id: string; role: Role; unit_id: string | null };
 
 // Shared by invite (new user) and edit (existing user): resolves the
 // "assigned under" selection into an actual unit_id/parent_id pair, scoped so
@@ -42,25 +63,44 @@ async function resolveAssignment(
   role: Role,
   assignedUnderId: string | null,
 ): Promise<{ unitId: string | null; parentId: string; error: null } | { unitId: null; parentId: null; error: string }> {
-  if (role === "agent") {
-    if (!assignedUnderId) return { unitId: null, parentId: null, error: "Choose which Unit Manager this agent reports to." };
-    const { data: unitManager } = await supabase
+  // An agent may report to a Unit Manager or an Aspirant Unit Manager; an
+  // Aspirant Unit Manager only to a Unit Manager.
+  if (role === "agent" || role === "aspirant_unit_manager") {
+    const allowedSupervisorRoles: Role[] =
+      role === "agent" ? ["unit_manager", "aspirant_unit_manager"] : ["unit_manager"];
+    if (!assignedUnderId) {
+      return {
+        unitId: null,
+        parentId: null,
+        error:
+          role === "agent"
+            ? "Choose which Unit Manager or Aspirant Unit Manager this agent reports to."
+            : "Choose which Unit Manager this Aspirant Unit Manager reports to.",
+      };
+    }
+    const { data: supervisor } = await supabase
       .from("profiles")
       .select("id, unit_id, role")
       .eq("id", assignedUnderId)
-      .eq("role", "unit_manager")
+      .in("role", allowedSupervisorRoles)
       .maybeSingle();
-    if (!unitManager || !unitManager.unit_id) return { unitId: null, parentId: null, error: "That Unit Manager could not be found." };
+    if (!supervisor || !supervisor.unit_id) {
+      return { unitId: null, parentId: null, error: "That supervisor could not be found." };
+    }
     if (caller.role === "group_manager") {
       const { data: unit } = await supabase
         .from("units")
         .select("id")
-        .eq("id", unitManager.unit_id)
+        .eq("id", supervisor.unit_id)
         .eq("group_manager_id", caller.id)
         .maybeSingle();
-      if (!unit) return { unitId: null, parentId: null, error: "That Unit Manager isn't in one of your units." };
+      if (!unit) return { unitId: null, parentId: null, error: "That supervisor isn't in one of your units." };
     }
-    return { unitId: unitManager.unit_id, parentId: unitManager.id, error: null };
+    // A unit manager can only ever place people inside their own unit.
+    if (caller.role === "unit_manager" && supervisor.unit_id !== caller.unit_id) {
+      return { unitId: null, parentId: null, error: "That supervisor isn't in your unit." };
+    }
+    return { unitId: supervisor.unit_id, parentId: supervisor.id, error: null };
   }
   if (role === "unit_manager") {
     if (!assignedUnderId) return { unitId: null, parentId: null, error: "Choose which unit this manager will run." };
@@ -83,11 +123,10 @@ export async function inviteUser(input: InviteInput) {
   if (fullName.length < 2) return { error: "Enter the new user's full name." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "Enter a valid email address." };
 
-  // Group managers can only create unit managers/agents inside units they
-  // manage -- everything else (creating group managers, superadmins, or
-  // reaching outside their own units) is superadmin-only.
-  const allowedRoles: Role[] =
-    profile.role === "superadmin" ? ["superadmin", "group_manager", "unit_manager", "agent"] : ["unit_manager", "agent"];
+  // Rank-based: you can only create someone below you. resolveAssignment then
+  // additionally pins where they land (a group manager inside their own units,
+  // a unit manager inside their own unit).
+  const allowedRoles = creatableRoles(profile.role);
   if (!allowedRoles.includes(input.role)) return { error: "You can't create a user with that role." };
 
   const supabase = await createClient();
@@ -134,8 +173,29 @@ export async function inviteUser(input: InviteInput) {
   });
   if (auditError) console.error("inviteUser: audit_log insert failed", auditError);
 
+  // Email the new user a set-your-own-password link via Supabase's built-in
+  // mailer. Note this CANNOT carry `tempPassword`: Supabase renders its own
+  // recovery template and never sees a password we generated. So the temp
+  // password is still returned for the inviter to pass on directly -- the
+  // email is an additional path, not a replacement.
+  //
+  // Supabase's built-in mailer is also heavily rate limited (a handful per
+  // hour) and is documented as not for production, so a failure here must not
+  // fail the invite -- the account already exists and works.
+  let emailSent = false;
+  let emailError: string | null = null;
+  const { error: mailError } = await admin.auth.resetPasswordForEmail(email, {
+    redirectTo: `${await appOrigin()}/reset-password`,
+  });
+  if (mailError) {
+    emailError = mailError.message;
+    console.error("inviteUser: invite email failed", mailError);
+  } else {
+    emailSent = true;
+  }
+
   revalidatePath("/settings");
-  return { error: null, email, tempPassword };
+  return { error: null, email, tempPassword, emailSent, emailError };
 }
 
 export async function updateUserAssignment(input: {
@@ -144,15 +204,21 @@ export async function updateUserAssignment(input: {
   assignedUnderId: string | null;
 }) {
   const profile = await getCurrentProfile();
-  // Editing an existing user's role/hierarchy placement is SuperAdmin-only --
-  // Group Managers can invite within their own units but not reshuffle the org.
-  if (!profile || profile.role !== "superadmin") return { error: "You don't have permission to do that." };
+  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
   if (input.userId === profile.id) return { error: "You can't edit your own account here." };
+  if (!creatableRoles(profile.role).includes(input.role)) {
+    return { error: "You can't move a user into that role." };
+  }
 
   const supabase = await createClient();
   const { data: target } = await supabase.from("profiles").select("id, role").eq("id", input.userId).maybeSingle();
   if (!target) return { error: "That user could not be found." };
   if (target.role === "superadmin") return { error: "SuperAdmin accounts can't be edited here." };
+  // You can only move people who rank below you -- a unit manager must not be
+  // able to reshuffle their own group manager.
+  if (ROLE_RANK[target.role as Role] <= ROLE_RANK[profile.role]) {
+    return { error: "You can only edit users below your own level." };
+  }
 
   const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId);
   if (assignment.error) return { error: assignment.error };

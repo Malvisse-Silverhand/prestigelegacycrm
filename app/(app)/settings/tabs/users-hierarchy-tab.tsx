@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ROLE_RANK } from "@/lib/profile-types";
 import type { Role, OrgTree, UnitManagerOption, UnitOption } from "../types";
 import { inviteUser, updateUserAssignment } from "../actions";
 
@@ -9,8 +10,50 @@ const ROLE_LABEL: Record<Role, string> = {
   superadmin: "SuperAdmin",
   group_manager: "Group Manager",
   unit_manager: "Unit Manager",
+  aspirant_unit_manager: "Aspirant UM",
   agent: "Agent",
 };
+
+// Mirrors creatableRoles() in ../actions -- you may only create/move someone
+// below your own rank (superadmin excepted, who can mint peers).
+function creatableRoles(role: Role): Role[] {
+  const below = (Object.keys(ROLE_RANK) as Role[]).filter((r) => ROLE_RANK[r] > ROLE_RANK[role]);
+  return role === "superadmin" ? [...below, "superadmin"] : below;
+}
+
+// Group managers and superadmins attach to nothing; everyone else is placed
+// under a supervisor (or, for a unit manager, a unit). Mirrors
+// resolveAssignment() in ../actions.
+function needsAssignment(role: Role) {
+  return role === "unit_manager" || role === "aspirant_unit_manager" || role === "agent";
+}
+
+function assignmentLabel(role: Role) {
+  if (role === "agent") return "Assigned under (Unit Manager or Aspirant UM)";
+  if (role === "aspirant_unit_manager") return "Assigned under (Unit Manager)";
+  return "Assigned under (Unit)";
+}
+
+// Normalised to {id,label} so the <select> renders the same either way,
+// whether the choices are people or units.
+function assignmentChoicesFor(
+  role: Role,
+  opts: { unitManagers: UnitManagerOption[]; units: UnitOption[] },
+): { id: string; label: string }[] {
+  if (role === "agent") {
+    return opts.unitManagers.map((m) => ({
+      id: m.id,
+      label: `${m.full_name} — ${m.unitName}${m.role === "aspirant_unit_manager" ? " (Aspirant UM)" : ""}`,
+    }));
+  }
+  if (role === "aspirant_unit_manager") {
+    return opts.unitManagers
+      .filter((m) => m.role === "unit_manager")
+      .map((m) => ({ id: m.id, label: `${m.full_name} — ${m.unitName}` }));
+  }
+  if (role === "unit_manager") return opts.units.map((u) => ({ id: u.id, label: u.name }));
+  return [];
+}
 
 function initialsOf(name: string) {
   return name
@@ -52,7 +95,8 @@ export function UsersHierarchyTab({
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
 }) {
   const { superadmins, groupManagers, roleCounts } = orgTree;
-  const canEdit = role === "superadmin";
+  // Mirrors canManageSettings() in ../actions.
+  const canEdit = role === "superadmin" || role === "group_manager" || role === "unit_manager";
   const [editing, setEditing] = useState<{ id: string; fullName: string; role: Role; currentAssignedUnderId: string | null } | null>(
     null,
   );
@@ -65,7 +109,7 @@ export function UsersHierarchyTab({
             <div className="text-[15.5px] font-bold text-navy">Organisation structure</div>
             <div className="mt-0.5 text-xs font-medium text-muted">
               {roleCounts.superadmin} SuperAdmin · {roleCounts.group_manager} Group Manager · {roleCounts.unit_manager} Unit Manager ·{" "}
-              {roleCounts.agent} Agent
+              {roleCounts.aspirant_unit_manager} Aspirant UM · {roleCounts.agent} Agent
             </div>
           </div>
         </div>
@@ -144,6 +188,69 @@ export function UsersHierarchyTab({
                       )}
                     </div>
 
+                    {unit.aspirants.map((asp) => (
+                      <div key={asp.id} className="pl-[22px] pt-1.5">
+                        <div className="flex items-center gap-2.5 rounded-lg border border-[#e7dcc1] bg-warn-gold-bg px-3 py-2">
+                          <div className="flex h-[26px] w-[26px] items-center justify-center rounded-md bg-gold text-[9.5px] font-bold text-navy">
+                            {initialsOf(asp.full_name)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-[12px] font-bold text-navy">{asp.full_name}</div>
+                            <div className="truncate text-[10.5px] text-taupe">
+                              {asp.agents.length} agent{asp.agents.length === 1 ? "" : "s"}
+                            </div>
+                          </div>
+                          <span className="flex-none rounded-[5px] bg-white px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                            ASPIRANT UM
+                          </span>
+                          {canEdit && (
+                            <EditButton
+                              onClick={() =>
+                                setEditing({
+                                  id: asp.id,
+                                  fullName: asp.full_name,
+                                  role: "aspirant_unit_manager",
+                                  currentAssignedUnderId: unit.unitManager?.id ?? null,
+                                })
+                              }
+                            />
+                          )}
+                        </div>
+                        {asp.agents.length > 0 && (
+                          <div className="flex flex-col gap-1.5 pl-[22px] pt-1.5">
+                            {asp.agents.map((agent) => (
+                              <div
+                                key={agent.id}
+                                className="flex items-center gap-2.5 rounded-lg border border-sand-3 bg-white px-3 py-2"
+                              >
+                                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sand-3 text-[9.5px] font-bold text-navy">
+                                  {initialsOf(agent.full_name)}
+                                </div>
+                                <div className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-navy">
+                                  {agent.full_name}
+                                </div>
+                                <span className="flex-none rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                                  AGENT
+                                </span>
+                                {canEdit && (
+                                  <EditButton
+                                    onClick={() =>
+                                      setEditing({
+                                        id: agent.id,
+                                        fullName: agent.full_name,
+                                        role: "agent",
+                                        currentAssignedUnderId: asp.id,
+                                      })
+                                    }
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
                     {unit.agents.length > 0 && (
                       <div className="flex flex-col gap-1.5 pl-[22px] pt-1.5">
                         {unit.agents.map((agent) => (
@@ -188,6 +295,7 @@ export function UsersHierarchyTab({
           <EditUserPanel
             editing={editing}
             assignmentOptions={assignmentOptions}
+            viewerRole={role}
             onDone={() => setEditing(null)}
           />
         )}
@@ -199,10 +307,12 @@ export function UsersHierarchyTab({
 function EditUserPanel({
   editing,
   assignmentOptions,
+  viewerRole,
   onDone,
 }: {
   editing: { id: string; fullName: string; role: Role; currentAssignedUnderId: string | null };
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
+  viewerRole: Role;
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -211,8 +321,8 @@ function EditUserPanel({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const needsAssignment = newRole === "unit_manager" || newRole === "agent";
-  const assignmentChoices = newRole === "agent" ? assignmentOptions.unitManagers : assignmentOptions.units;
+  const requiresAssignment = needsAssignment(newRole);
+  const assignmentChoices = assignmentChoicesFor(newRole, assignmentOptions);
 
   function handleSave() {
     setError(null);
@@ -221,7 +331,7 @@ function EditUserPanel({
         const result = await updateUserAssignment({
           userId: editing.id,
           role: newRole,
-          assignedUnderId: needsAssignment ? assignedUnderId || null : null,
+          assignedUnderId: requiresAssignment ? assignedUnderId || null : null,
         });
         if (result.error) {
           setError(result.error);
@@ -249,7 +359,7 @@ function EditUserPanel({
       <div className="mt-4 flex flex-col gap-3.5">
         <Field label="Role">
           <div className="grid grid-cols-2 gap-[7px]">
-            {(["group_manager", "unit_manager", "agent"] as Role[]).map((r) => (
+            {creatableRoles(viewerRole).map((r) => (
               <button
                 key={r}
                 type="button"
@@ -266,25 +376,19 @@ function EditUserPanel({
             ))}
           </div>
         </Field>
-        {needsAssignment && (
-          <Field label={newRole === "agent" ? "Assigned under (Unit Manager)" : "Assigned under (Unit)"}>
+        {requiresAssignment && (
+          <Field label={assignmentLabel(newRole)}>
             <select
               value={assignedUnderId}
               onChange={(e) => setAssignedUnderId(e.target.value)}
               className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-semibold text-navy outline-none focus:border-gold"
             >
               <option value="">Choose…</option>
-              {newRole === "agent"
-                ? assignmentOptions.unitManagers.map((um) => (
-                    <option key={um.id} value={um.id}>
-                      {um.full_name} — {um.unitName}
-                    </option>
-                  ))
-                : assignmentOptions.units.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name}
-                    </option>
-                  ))}
+              {assignmentChoices.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
             </select>
             {assignmentChoices.length === 0 && (
               <div className="mt-1.5 text-[11px] font-medium text-alert-red">No options available yet.</div>
@@ -297,7 +401,7 @@ function EditUserPanel({
         <button
           type="button"
           onClick={handleSave}
-          disabled={pending || (needsAssignment && !assignedUnderId)}
+          disabled={pending || (requiresAssignment && !assignedUnderId)}
           className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : "Save changes"}
@@ -320,12 +424,17 @@ function AddUserForm({
   const [newRole, setNewRole] = useState<Role>("agent");
   const [assignedUnderId, setAssignedUnderId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ email: string; tempPassword: string } | null>(null);
+  const [success, setSuccess] = useState<{
+    email: string;
+    tempPassword: string;
+    emailSent: boolean;
+    emailError: string | null;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const availableRoles: Role[] = role === "superadmin" ? ["group_manager", "unit_manager", "agent", "superadmin"] : ["unit_manager", "agent"];
-  const needsAssignment = newRole === "unit_manager" || newRole === "agent";
-  const assignmentChoices = newRole === "agent" ? assignmentOptions.unitManagers : assignmentOptions.units;
+  const availableRoles = creatableRoles(role);
+  const requiresAssignment = needsAssignment(newRole);
+  const assignmentChoices = assignmentChoicesFor(newRole, assignmentOptions);
 
   function handleRoleChange(r: Role) {
     setNewRole(r);
@@ -341,13 +450,18 @@ function AddUserForm({
           fullName,
           email,
           role: newRole,
-          assignedUnderId: needsAssignment ? assignedUnderId || null : null,
+          assignedUnderId: requiresAssignment ? assignedUnderId || null : null,
         });
         if (result.error) {
           setError(result.error);
           return;
         }
-        setSuccess({ email: result.email!, tempPassword: result.tempPassword! });
+        setSuccess({
+          email: result.email!,
+          tempPassword: result.tempPassword!,
+          emailSent: result.emailSent ?? false,
+          emailError: result.emailError ?? null,
+        });
         setFullName("");
         setEmail("");
         setAssignedUnderId("");
@@ -362,9 +476,19 @@ function AddUserForm({
     return (
       <div className="rounded-[18px] border-2 border-gold bg-white px-[22px] pb-[22px] pt-5">
         <div className="text-[15px] font-bold text-navy">Account created</div>
-        <div className="mt-1 text-xs font-medium text-muted">
-          Share this temporary password with {success.email} — they should change it after signing in.
-        </div>
+        {success.emailSent ? (
+          <div className="mt-2 rounded-[10px] bg-success-bg px-3.5 py-2.5 text-[12px] font-medium text-green">
+            A set-your-password email was sent to {success.email}. For security, the email contains a link
+            rather than the password below — so still pass this temporary password on if they need to sign
+            in right away.
+          </div>
+        ) : (
+          <div className="mt-2 rounded-[10px] bg-warn-gold-bg px-3.5 py-2.5 text-[12px] font-medium text-warn-gold-text">
+            The account works, but the email could not be sent
+            {success.emailError ? ` (${success.emailError})` : ""}. Share the temporary password below with{" "}
+            {success.email} directly.
+          </div>
+        )}
         <div className="mt-4 rounded-[10px] border border-sand-2 bg-cream px-3.5 py-3">
           <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">Temporary password</div>
           <div className="mt-1 select-all font-mono text-[15px] font-bold text-navy">{success.tempPassword}</div>
@@ -419,29 +543,23 @@ function AddUserForm({
             ))}
           </div>
         </Field>
-        {needsAssignment && (
-          <Field label={newRole === "agent" ? "Assigned under (Unit Manager)" : "Assigned under (Unit)"}>
+        {requiresAssignment && (
+          <Field label={assignmentLabel(newRole)}>
             <select
               value={assignedUnderId}
               onChange={(e) => setAssignedUnderId(e.target.value)}
               className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-semibold text-navy outline-none focus:border-gold"
             >
               <option value="">Choose…</option>
-              {newRole === "agent"
-                ? assignmentOptions.unitManagers.map((um) => (
-                    <option key={um.id} value={um.id}>
-                      {um.full_name} — {um.unitName}
-                    </option>
-                  ))
-                : assignmentOptions.units.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name}
-                    </option>
-                  ))}
+              {assignmentChoices.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
             </select>
             {assignmentChoices.length === 0 && (
               <div className="mt-1.5 text-[11px] font-medium text-alert-red">
-                {newRole === "agent" ? "No Unit Managers available to assign under yet." : "No units available yet."}
+                {newRole === "unit_manager" ? "No units available yet." : "No supervisors available to assign under yet."}
               </div>
             )}
           </Field>
@@ -452,7 +570,7 @@ function AddUserForm({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={pending || !fullName || !email || (needsAssignment && !assignedUnderId)}
+          disabled={pending || !fullName || !email || (requiresAssignment && !assignedUnderId)}
           className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Creating…" : "Send Invitation"}

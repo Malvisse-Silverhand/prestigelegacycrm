@@ -19,6 +19,8 @@ function subtitleFor(role: string) {
       return "Track and manage incoming leads across your units";
     case "unit_manager":
       return "Track and manage incoming leads for your unit";
+    case "aspirant_unit_manager":
+      return "Track and manage leads for you and your agents";
     default:
       return "Track and manage your own leads";
   }

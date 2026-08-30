@@ -70,12 +70,28 @@ export async function getReassignableUsers(profile: CurrentProfile): Promise<Rea
 
   if (profile.role === "agent") return [];
 
+  // An Aspirant Unit Manager can only hand a lead to their own agents (or
+  // take it themselves) -- the profiles RLS policy already narrows the query
+  // to parent_id = them, so this needs no extra filter beyond self.
+  if (profile.role === "aspirant_unit_manager") {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("unit_id", profile.unit_id)
+      .in("role", ["aspirant_unit_manager", "agent"])
+      .order("full_name");
+    const rows = data ?? [];
+    return rows.some((r) => r.id === profile.id)
+      ? rows
+      : [{ id: profile.id, full_name: profile.full_name, role: "aspirant_unit_manager" }, ...rows];
+  }
+
   if (profile.role === "unit_manager") {
     const { data } = await supabase
       .from("profiles")
       .select("id, full_name, role")
       .eq("unit_id", profile.unit_id)
-      .in("role", ["unit_manager", "agent"])
+      .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
       .order("full_name");
     return data ?? [];
   }
@@ -88,7 +104,7 @@ export async function getReassignableUsers(profile: CurrentProfile): Promise<Rea
           .from("profiles")
           .select("id, full_name, role")
           .in("unit_id", unitIds)
-          .in("role", ["unit_manager", "agent"])
+          .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
           .order("full_name")
       : { data: [] as ReassignOption[] };
     return [{ id: profile.id, full_name: profile.full_name, role: "group_manager" }, ...(scoped.data ?? [])];

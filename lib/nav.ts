@@ -26,7 +26,9 @@ export const SIDEBAR_NAV: NavItem[] = [
     href: "/team",
     label: "My Team",
     icon: TeamIcon,
-    roles: ["superadmin", "group_manager", "unit_manager"],
+    // An Aspirant Unit Manager has agents reporting to them, so they get the
+    // roster too -- RLS narrows it to just their own downline.
+    roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"],
   },
   { href: "/quotations", label: "Quotation", icon: QuotationIcon },
   { href: "/wa-flow", label: "WA Flow", icon: WaFlowIcon },
@@ -34,13 +36,14 @@ export const SIDEBAR_NAV: NavItem[] = [
     href: "/statistics",
     label: "Statistics",
     icon: StatisticsIcon,
-    roles: ["superadmin", "group_manager", "unit_manager"],
+    roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"],
   },
   {
     href: "/settings",
     label: "Settings",
     icon: SettingsIcon,
-    roles: ["superadmin", "group_manager"],
+    // Unit managers can now invite/assign inside their own unit.
+    roles: ["superadmin", "group_manager", "unit_manager"],
   },
 ];
 

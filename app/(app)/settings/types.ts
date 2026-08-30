@@ -1,15 +1,33 @@
 import type { Role } from "@/lib/profile-types";
 
 export type OrgPerson = { id: string; full_name: string; email: string };
-export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agents: OrgPerson[] };
+export type OrgAspirant = { id: string; full_name: string; email: string; agents: OrgPerson[] };
+export type OrgUnit = {
+  id: string;
+  name: string;
+  unitManager: OrgPerson | null;
+  aspirants: OrgAspirant[];
+  agents: OrgPerson[];
+};
 export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
 export type OrgTree = {
   superadmins: OrgPerson[];
   groupManagers: OrgGroupManager[];
-  roleCounts: { superadmin: number; group_manager: number; unit_manager: number; agent: number };
+  roleCounts: {
+    superadmin: number;
+    group_manager: number;
+    unit_manager: number;
+    aspirant_unit_manager: number;
+    agent: number;
+  };
 };
 
-export type UnitManagerOption = { id: string; full_name: string; unitName: string };
+export type UnitManagerOption = {
+  id: string;
+  full_name: string;
+  unitName: string;
+  role: "unit_manager" | "aspirant_unit_manager";
+};
 export type UnitOption = { id: string; name: string; groupManagerName: string | null };
 
 export type TargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };

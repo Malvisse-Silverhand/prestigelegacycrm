@@ -3,22 +3,43 @@ import type { CurrentProfile } from "@/lib/profile-types";
 
 export type ScopeUnit = { id: string; name: string; group_manager_id: string | null };
 
-// Superadmin sees every unit; a group manager sees only the units they manage.
+// Superadmin sees every unit; a group manager only the units they manage; a
+// unit manager only their own (they can now invite into it -- see
+// canManageSettings in ./actions).
 async function unitsInScope(profile: CurrentProfile): Promise<ScopeUnit[]> {
   const supabase = await createClient();
   let query = supabase.from("units").select("id, name, group_manager_id").order("name");
   if (profile.role === "group_manager") query = query.eq("group_manager_id", profile.id);
+  else if (profile.role === "unit_manager") {
+    if (!profile.unit_id) return [];
+    query = query.eq("id", profile.unit_id);
+  }
   const { data } = await query;
   return data ?? [];
 }
 
 export type OrgPerson = { id: string; full_name: string; email: string };
-export type OrgUnit = { id: string; name: string; unitManager: OrgPerson | null; agents: OrgPerson[] };
+// An Aspirant Unit Manager runs a sub-team inside a unit, so it renders as
+// its own branch with the agents reporting to it nested underneath.
+export type OrgAspirant = { id: string; full_name: string; email: string; agents: OrgPerson[] };
+export type OrgUnit = {
+  id: string;
+  name: string;
+  unitManager: OrgPerson | null;
+  aspirants: OrgAspirant[];
+  agents: OrgPerson[];
+};
 export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
 export type OrgTree = {
   superadmins: OrgPerson[];
   groupManagers: OrgGroupManager[];
-  roleCounts: { superadmin: number; group_manager: number; unit_manager: number; agent: number };
+  roleCounts: {
+    superadmin: number;
+    group_manager: number;
+    unit_manager: number;
+    aspirant_unit_manager: number;
+    agent: number;
+  };
 };
 
 export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
@@ -36,11 +57,13 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
     unitIds.length > 0
       ? supabase
           .from("profiles")
-          .select("id, full_name, email, role, unit_id")
+          .select("id, full_name, email, role, unit_id, parent_id")
           .in("unit_id", unitIds)
-          .in("role", ["unit_manager", "agent"])
+          .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
       : Promise.resolve({ data: [] }),
   ]);
+
+  const all = members ?? [];
 
   const groupManagers: OrgGroupManager[] = (allGroupManagers ?? []).map((gm) => {
     const gmUnits = units.filter((u) => u.group_manager_id === gm.id);
@@ -49,11 +72,27 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
       full_name: gm.full_name,
       email: gm.email,
       units: gmUnits.map((u) => {
-        const unitManager = (members ?? []).find((m) => m.role === "unit_manager" && m.unit_id === u.id) ?? null;
-        const agents = (members ?? [])
-          .filter((m) => m.role === "agent" && m.unit_id === u.id)
+        const unitManager = all.find((m) => m.role === "unit_manager" && m.unit_id === u.id) ?? null;
+        const unitAgents = all.filter((m) => m.role === "agent" && m.unit_id === u.id);
+
+        const aspirants: OrgAspirant[] = all
+          .filter((m) => m.role === "aspirant_unit_manager" && m.unit_id === u.id)
+          .map((a) => ({
+            id: a.id,
+            full_name: a.full_name,
+            email: a.email,
+            agents: unitAgents
+              .filter((m) => m.parent_id === a.id)
+              .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email })),
+          }));
+
+        // Only agents not already shown under an aspirant, so nobody appears twice.
+        const aspirantIds = new Set(aspirants.map((a) => a.id));
+        const agents = unitAgents
+          .filter((m) => !m.parent_id || !aspirantIds.has(m.parent_id))
           .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email }));
-        return { id: u.id, name: u.name, unitManager, agents };
+
+        return { id: u.id, name: u.name, unitManager, aspirants, agents };
       }),
     };
   });
@@ -61,14 +100,23 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
   const roleCounts = {
     superadmin: (superadmins ?? []).length,
     group_manager: groupManagers.length,
-    unit_manager: (members ?? []).filter((m) => m.role === "unit_manager").length,
-    agent: (members ?? []).filter((m) => m.role === "agent").length,
+    unit_manager: all.filter((m) => m.role === "unit_manager").length,
+    aspirant_unit_manager: all.filter((m) => m.role === "aspirant_unit_manager").length,
+    agent: all.filter((m) => m.role === "agent").length,
   };
 
   return { superadmins: superadmins ?? [], groupManagers, roleCounts };
 }
 
-export type UnitManagerOption = { id: string; full_name: string; unitName: string };
+// `role` lets the form show only valid supervisors for the role being
+// created: an agent may sit under a Unit Manager or an Aspirant Unit
+// Manager, an Aspirant Unit Manager only under a Unit Manager.
+export type UnitManagerOption = {
+  id: string;
+  full_name: string;
+  unitName: string;
+  role: "unit_manager" | "aspirant_unit_manager";
+};
 export type UnitOption = { id: string; name: string; groupManagerName: string | null };
 
 // Options for the "Assigned under" field on the Add User form -- scoped the
@@ -80,18 +128,19 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
   const unitIds = units.map((u) => u.id);
   if (unitIds.length === 0) return { unitManagers: [] as UnitManagerOption[], units: [] as UnitOption[] };
 
-  const { data: unitManagers } = await supabase
+  const { data: supervisors } = await supabase
     .from("profiles")
-    .select("id, full_name, unit_id")
-    .eq("role", "unit_manager")
+    .select("id, full_name, unit_id, role")
+    .in("role", ["unit_manager", "aspirant_unit_manager"])
     .in("unit_id", unitIds);
 
   const unitById = new Map(units.map((u) => [u.id, u.name]));
   return {
-    unitManagers: (unitManagers ?? []).map((m) => ({
+    unitManagers: (supervisors ?? []).map((m) => ({
       id: m.id,
       full_name: m.full_name,
       unitName: unitById.get(m.unit_id ?? "") ?? "Unknown unit",
+      role: m.role as "unit_manager" | "aspirant_unit_manager",
     })),
     units: units.map((u) => ({ id: u.id, name: u.name, groupManagerName: null })),
   };
