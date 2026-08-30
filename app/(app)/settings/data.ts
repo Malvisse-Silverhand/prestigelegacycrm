@@ -115,7 +115,7 @@ export type UnitManagerOption = {
   id: string;
   full_name: string;
   unitName: string;
-  role: "unit_manager" | "aspirant_unit_manager";
+  role: "group_manager" | "unit_manager" | "aspirant_unit_manager";
 };
 export type UnitOption = { id: string; name: string; groupManagerName: string | null };
 
@@ -126,21 +126,31 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
   const supabase = await createClient();
   const units = await unitsInScope(profile);
   const unitIds = units.map((u) => u.id);
-  if (unitIds.length === 0) return { unitManagers: [] as UnitManagerOption[], units: [] as UnitOption[] };
 
-  const { data: supervisors } = await supabase
-    .from("profiles")
-    .select("id, full_name, unit_id, role")
-    .in("role", ["unit_manager", "aspirant_unit_manager"])
-    .in("unit_id", unitIds);
+  // Unit-based supervisors (Unit Managers / Aspirant UMs)...
+  const { data: unitSupervisors } = unitIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name, unit_id, role")
+        .in("role", ["unit_manager", "aspirant_unit_manager"])
+        .in("unit_id", unitIds)
+    : { data: [] as { id: string; full_name: string; unit_id: string | null; role: string }[] };
+
+  // ...plus Group Managers, who can now hold people directly and have no unit.
+  // A group manager can only ever assign under themselves.
+  let gmQuery = supabase.from("profiles").select("id, full_name, unit_id, role").eq("role", "group_manager");
+  if (profile.role === "group_manager") gmQuery = gmQuery.eq("id", profile.id);
+  const { data: groupManagers } = profile.role === "unit_manager" ? { data: [] } : await gmQuery;
 
   const unitById = new Map(units.map((u) => [u.id, u.name]));
+  const all = [...(groupManagers ?? []), ...(unitSupervisors ?? [])];
+
   return {
-    unitManagers: (supervisors ?? []).map((m) => ({
+    unitManagers: all.map((m) => ({
       id: m.id,
       full_name: m.full_name,
-      unitName: unitById.get(m.unit_id ?? "") ?? "Unknown unit",
-      role: m.role as "unit_manager" | "aspirant_unit_manager",
+      unitName: m.role === "group_manager" ? "" : unitById.get(m.unit_id ?? "") ?? "Unknown unit",
+      role: m.role as "group_manager" | "unit_manager" | "aspirant_unit_manager",
     })),
     units: units.map((u) => ({ id: u.id, name: u.name, groupManagerName: null })),
   };
@@ -148,20 +158,43 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
 
 export type TargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };
 
-export async function getTargetsForMonth(profile: CurrentProfile, monthDate: string): Promise<TargetRow[]> {
+// Whose targets this profile may set. Superadmin and Group Managers cover
+// everyone in their scope; a Unit Manager or Aspirant Unit Manager may only
+// set targets for the agents reporting directly to them, not for everyone
+// who happens to share their unit.
+export async function getTargetableAgents(
+  profile: CurrentProfile,
+): Promise<{ id: string; full_name: string }[]> {
   const supabase = await createClient();
+
+  if (profile.role === "unit_manager" || profile.role === "aspirant_unit_manager") {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("role", "agent")
+      .eq("parent_id", profile.id)
+      .order("full_name");
+    return data ?? [];
+  }
+
   const units = await unitsInScope(profile);
   const unitIds = units.map((u) => u.id);
   if (unitIds.length === 0) return [];
-
-  const { data: agents } = await supabase
+  const { data } = await supabase
     .from("profiles")
     .select("id, full_name")
     .eq("role", "agent")
     .in("unit_id", unitIds)
     .order("full_name");
+  return data ?? [];
+}
 
-  const agentIds = (agents ?? []).map((a) => a.id);
+export async function getTargetsForMonth(profile: CurrentProfile, monthDate: string): Promise<TargetRow[]> {
+  const supabase = await createClient();
+  const agents = await getTargetableAgents(profile);
+  if (agents.length === 0) return [];
+
+  const agentIds = agents.map((a) => a.id);
   let targets: { agent_id: string; anc_target: number | null; noc_target: number | null }[] = [];
   if (agentIds.length > 0) {
     const { data } = await supabase
@@ -173,7 +206,7 @@ export async function getTargetsForMonth(profile: CurrentProfile, monthDate: str
   }
   const byAgent = new Map(targets.map((t) => [t.agent_id, t]));
 
-  return (agents ?? []).map((a) => ({
+  return agents.map((a) => ({
     agentId: a.id,
     fullName: a.full_name,
     ancTarget: byAgent.get(a.id)?.anc_target ?? null,

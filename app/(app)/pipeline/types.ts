@@ -68,6 +68,14 @@ export function stagePotentialValue(stage: string, cards: PipelineLead[]): numbe
   return cards.reduce((sum, l) => sum + parseBudget(l.budget_indicated), 0);
 }
 
+// Annual New Contribution: the annualised value of a monthly contribution.
+// One definition, used everywhere a pipeline figure is labelled ANC, so the
+// monthly -> annual conversion can never drift between screens.
+export const MONTHS_PER_YEAR = 12;
+export function toAnc(monthly: number): number {
+  return monthly * MONTHS_PER_YEAR;
+}
+
 export function daysSinceLastActivity(lead: PipelineLead): number {
   return daysSince(lead.created_at, lead.lead_activity.map((a) => a.created_at));
 }

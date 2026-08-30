@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import type { DashboardStats } from "./data";
 import { SunIcon, MoonIcon, AlertIcon, ClockIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
+import { useTheme } from "@/components/theme";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -57,23 +57,17 @@ export function DashboardView({
   profile: CurrentProfile;
   stats: DashboardStats;
 }) {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("pl-dashboard-theme");
-    if (saved === "dark") setDark(true);
-  }, []);
-
-  function toggleTheme(next: boolean) {
-    setDark(next);
-    window.localStorage.setItem("pl-dashboard-theme", next ? "dark" : "light");
-  }
+  // Theme is system-wide now: the class lives on <html> and is shared with
+  // every other screen, so this only reads it (for the donut's colours) and
+  // writes through the same helper the sidebar toggle uses.
+  const { dark, setDark } = useTheme();
+  const toggleTheme = setDark;
 
   const now = new Date();
   const arcs = donutArcs(stats.statusCounts, stats.statusTotal, dark);
 
   return (
-    <div className={dark ? "dark" : ""}>
+    <div>
       {/* Desktop */}
       <div className="hidden bg-cream dark:bg-[#0b1a2b] lg:block">
         <div className="flex items-start gap-4 border-b border-sand bg-white px-[30px] py-5 dark:border-white/10 dark:bg-[#12283f]">
@@ -410,9 +404,9 @@ export function DashboardView({
         </div>
 
         <div className="flex flex-col gap-[11px] px-5 pt-4">
-          <MobileAlert tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} dark={dark} />
-          <MobileAlert tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} dark={dark} />
-          <MobileAlert tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" dark={dark} />
+          <MobileAlert tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
+          <MobileAlert tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
+          <MobileAlert tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
 
           <div className="mt-0.5 rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
             <div className="text-[13.5px] font-bold text-navy dark:text-[#eef3f8]">Lead status</div>
@@ -568,9 +562,9 @@ function MobileStat({ value, label }: { value: number; label: string }) {
 }
 
 function MobileAlert({
-  tone, value, title, detail, dark,
+  tone, value, title, detail,
 }: {
-  tone: keyof typeof ALERT_TONES; value: number; title: string; detail: string; dark: boolean;
+  tone: keyof typeof ALERT_TONES; value: number; title: string; detail: string;
 }) {
   const t = ALERT_TONES[tone];
   return (

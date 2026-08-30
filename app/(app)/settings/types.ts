@@ -26,7 +26,7 @@ export type UnitManagerOption = {
   id: string;
   full_name: string;
   unitName: string;
-  role: "unit_manager" | "aspirant_unit_manager";
+  role: "group_manager" | "unit_manager" | "aspirant_unit_manager";
 };
 export type UnitOption = { id: string; name: string; groupManagerName: string | null };
 

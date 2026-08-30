@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { visibleNav } from "@/lib/nav";
 import { SignOutIcon } from "@/components/icons";
+import { ThemeToggle } from "@/components/theme";
 import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
 
 export function Sidebar({ profile }: { profile: CurrentProfile }) {
@@ -58,7 +59,7 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
         <div className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-green text-[11.5px] font-bold text-white">
           {profile.avatar_initials}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="truncate text-[12.5px] font-semibold text-white">
             {profile.full_name}
           </div>
@@ -67,6 +68,9 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
             {profile.unit_name ? ` · ${profile.unit_name}` : ""}
           </div>
         </div>
+        {/* Lives in the shell, so the theme can be switched from any screen
+            and applies to the whole system, not just the Dashboard. */}
+        <ThemeToggle className="flex-none" />
       </div>
       <div className="px-3">
         <button

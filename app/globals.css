@@ -53,3 +53,53 @@ body {
   color: var(--foreground);
   font-family: var(--font-poppins), sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+   SYSTEM-WIDE DARK THEME
+   The palette above is baked into utilities by `@theme inline`, so it can't be
+   re-pointed with a variable override. Instead the handful of surface/text
+   utilities the app actually uses are remapped under `.dark`, which is set on
+   <html> by ThemeScript/ThemeToggle. That keeps every existing screen
+   theme-aware without touching each component, and without breaking
+   `bg-navy`/`text-white` (buttons and the sidebar stay dark in both themes).
+--------------------------------------------------------------------------- */
+.dark {
+  --background: #0b1a2b;
+  --foreground: #eef3f8;
+  --pl-surface: #12283f;
+  --pl-surface-2: #0f2136;
+  --pl-line: rgba(255, 255, 255, .10);
+  --pl-text: #eef3f8;
+  --pl-text-dim: #7f93aa;
+}
+
+.dark .bg-white { background-color: var(--pl-surface); }
+.dark .bg-cream,
+.dark .bg-sand-3 { background-color: var(--pl-surface-2); }
+.dark .bg-sand,
+.dark .bg-sand-2 { background-color: var(--pl-surface); }
+
+.dark .border-sand,
+.dark .border-sand-2,
+.dark .border-sand-3 { border-color: var(--pl-line); }
+
+.dark .text-navy { color: var(--pl-text); }
+.dark .text-ink,
+.dark .text-muted,
+.dark .text-muted-2,
+.dark .text-taupe,
+.dark .text-taupe-2 { color: var(--pl-text-dim); }
+
+/* Cards carry a light-theme drop shadow that reads as a grey halo on dark. */
+.dark .shadow-card { box-shadow: 0 1px 2px rgba(0, 0, 0, .4); }
+
+/* Inputs/selects inherit bg-white above; make their text follow too. */
+.dark input,
+.dark select,
+.dark textarea { color: var(--pl-text); }
+.dark input::placeholder,
+.dark textarea::placeholder { color: var(--pl-text-dim); }
+
+/* The sidebar is navy in both themes by design, so its own white-on-navy
+   text must not be dimmed by the rules above. */
+.dark .bg-navy .text-navy { color: #0f2540; }

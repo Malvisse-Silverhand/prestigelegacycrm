@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getQuotations, primaryContribution } from "./data";
+import { createClient } from "@/lib/supabase/server";
+import { QuotationLauncher, type LauncherLead } from "./quotation-launcher";
 import { EmptyState } from "@/components/empty-state";
 import { QuotationIcon } from "@/components/icons";
 
@@ -22,15 +24,27 @@ function fmtRM(n: number | null) {
 }
 
 export default async function QuotationsPage() {
-  const quotations = await getQuotations();
+  const supabase = await createClient();
+  const [quotations, { data: leads }] = await Promise.all([
+    getQuotations(),
+    // RLS already scopes this to the leads the viewer can work.
+    supabase
+      .from("leads")
+      .select("id, full_name, phone, email, date_of_birth, gender, is_smoker")
+      .order("full_name")
+      .returns<LauncherLead[]>(),
+  ]);
 
   return (
     <div>
       <div className="border-b border-sand bg-white px-5 lg:px-[30px] py-5">
         <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Quotation</div>
         <div className="mt-[3px] text-[13px] font-medium text-muted">
-          {quotations.length} quotation{quotations.length === 1 ? "" : "s"} · generated from a lead's own
-          quotation launcher — there's no standalone builder here
+          {quotations.length} quotation{quotations.length === 1 ? "" : "s"} · every quotation is saved against
+          the lead it was built for
+        </div>
+        <div className="mt-3.5">
+          <QuotationLauncher leads={leads ?? []} />
         </div>
       </div>
 
@@ -39,7 +53,7 @@ export default async function QuotationsPage() {
           <EmptyState
             icon={<QuotationIcon width={28} height={28} className="text-green" />}
             title="No quotations yet"
-            description={'Open a lead and use "Buat Quotation Medical Card" or "Buat Quotation Hibah" to generate the first one.'}
+            description="Use one of the buttons above to build an estimate or a customised quotation for a lead."
           />
         ) : (
           <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">

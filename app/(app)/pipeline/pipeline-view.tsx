@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { STAGES, type PipelineStage } from "@/lib/pipeline-stages";
-import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity } from "./types";
+import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
 import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
@@ -78,6 +78,15 @@ export function PipelineView({
     else router.push(`/leads/${lead.id}`);
   }
 
+  // The customizer saves straight onto this lead (capture-quotation), same as
+  // from Lead Detail -- so refresh on close to pick the new quotation up.
+  function openCustomizer(lead: PipelineLead) {
+    setQuoteModal({
+      url: quoteLauncherUrl("quotation-customizer.html", lead),
+      leadName: lead.full_name,
+    });
+  }
+
   const columns = useMemo(() => {
     const map: Record<string, PipelineLead[]> = {};
     for (const s of STAGES) map[s.value] = [];
@@ -128,7 +137,7 @@ export function PipelineView({
               Sales Pipeline
             </div>
             <div className="mt-0.5 text-[12.5px] font-medium text-muted">
-              {totalLeads} lead{totalLeads === 1 ? "" : "s"} · {fmtRM(totalValue)} monthly contribution in play
+              {totalLeads} lead{totalLeads === 1 ? "" : "s"} · {fmtRM(toAnc(totalValue))} ANC in play
             </div>
           </div>
         </div>
@@ -188,10 +197,10 @@ export function PipelineView({
                     className={`mt-[3px] text-[10.5px] font-semibold ${stage.value === "closed_won" ? "text-green" : "text-taupe"}`}
                   >
                     {stage.value === "closed_won"
-                      ? `${fmtRM(value)} / month`
+                      ? `${fmtRM(toAnc(value))} ANC`
                       : stage.value === "closed_lost"
                         ? "Reason required"
-                        : `${fmtRM(value)} potential`}
+                        : `${fmtRM(toAnc(value))} ANC potential`}
                   </div>
                 </div>
 
@@ -215,6 +224,7 @@ export function PipelineView({
                     canManageStage={canManageStage}
                     staleAfterDays={staleAfterDays}
                     onOpenQuotation={() => openQuotation(lead)}
+                    onOpenCustomizer={() => openCustomizer(lead)}
                   />
                 ))}
               </div>
@@ -251,7 +261,7 @@ export function PipelineView({
             {STAGES.find((s) => s.value === mobileStage)?.label} · {columns[mobileStage].length} leads
           </span>
           <span className="text-[11.5px] font-semibold text-taupe">
-            {fmtRM(stagePotentialValue(mobileStage, columns[mobileStage]))}
+            {fmtRM(toAnc(stagePotentialValue(mobileStage, columns[mobileStage])))} ANC
           </span>
         </div>
 
@@ -467,7 +477,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, staleAfterDays, onOpenQuotation,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, staleAfterDays, onOpenQuotation, onOpenCustomizer,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -480,6 +490,7 @@ function PipelineCard({
   canManageStage: boolean;
   staleAfterDays: number;
   onOpenQuotation: () => void;
+  onOpenCustomizer: () => void;
 }) {
   const tag = productTag(lead.interest);
   const quoteValue = primaryQuoteValue(lead);
@@ -573,13 +584,14 @@ function PipelineCard({
             <QuotationIcon width={14} height={14} />
             Quotation estimate
           </button>
-          <span
-            title="The full Quotation Customizer isn't built yet -- coming in a future update"
-            className="flex cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-taupe opacity-60"
+          <button
+            type="button"
+            onClick={() => { onToggle(); onOpenCustomizer(); }}
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[12px] font-semibold text-navy hover:bg-cream"
           >
             <QuotationIcon width={14} height={14} />
             Open customizer
-          </span>
+          </button>
           {canManageStage && (
             <>
               <div className="mt-1 border-t border-sand-3 px-2 pt-2 pb-1 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">

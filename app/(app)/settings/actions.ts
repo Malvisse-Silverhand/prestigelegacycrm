@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { getTargetableAgents } from "./data";
 import { ROLE_RANK, type Role } from "@/lib/profile-types";
 
 // Unit Managers can now invite into their own unit too ("Superadmin, Group
@@ -74,16 +75,19 @@ async function resolveAssignment(
   // An agent may report to a Unit Manager or an Aspirant Unit Manager; an
   // Aspirant Unit Manager only to a Unit Manager.
   if (role === "agent" || role === "aspirant_unit_manager") {
+    // A Group Manager can hold people directly, not just via a unit.
     const allowedSupervisorRoles: Role[] =
-      role === "agent" ? ["unit_manager", "aspirant_unit_manager"] : ["unit_manager"];
+      role === "agent"
+        ? ["group_manager", "unit_manager", "aspirant_unit_manager"]
+        : ["group_manager", "unit_manager"];
     if (!assignedUnderId) {
       return {
         unitId: null,
         parentId: null,
         error:
           role === "agent"
-            ? "Choose which Unit Manager or Aspirant Unit Manager this agent reports to."
-            : "Choose which Unit Manager this Aspirant Unit Manager reports to.",
+            ? "Choose who this agent reports to."
+            : "Choose who this Aspirant Unit Manager reports to.",
       };
     }
     const { data: supervisor } = await supabase
@@ -92,8 +96,22 @@ async function resolveAssignment(
       .eq("id", assignedUnderId)
       .in("role", allowedSupervisorRoles)
       .maybeSingle();
-    if (!supervisor || !supervisor.unit_id) {
+    if (!supervisor) {
       return { unitId: null, parentId: null, error: "That supervisor could not be found." };
+    }
+    // Reporting straight to a Group Manager means no unit -- the group
+    // manager RLS policies cover direct reports via my_downline().
+    if (supervisor.role === "group_manager") {
+      if (caller.role === "group_manager" && supervisor.id !== caller.id) {
+        return { unitId: null, parentId: null, error: "You can only assign people under yourself." };
+      }
+      if (caller.role === "unit_manager") {
+        return { unitId: null, parentId: null, error: "You can't assign someone under a Group Manager." };
+      }
+      return { unitId: null, parentId: supervisor.id, error: null };
+    }
+    if (!supervisor.unit_id) {
+      return { unitId: null, parentId: null, error: "That supervisor has no unit yet." };
     }
     if (caller.role === "group_manager") {
       const { data: unit } = await supabase
@@ -227,10 +245,10 @@ export async function updateUserAssignment(input: {
   const supabase = await createClient();
   const { data: target } = await supabase.from("profiles").select("id, role").eq("id", input.userId).maybeSingle();
   if (!target) return { error: "That user could not be found." };
-  if (target.role === "superadmin") return { error: "SuperAdmin accounts can't be edited here." };
-  // You can only move people who rank below you -- a unit manager must not be
-  // able to reshuffle their own group manager.
-  if (ROLE_RANK[target.role as Role] <= ROLE_RANK[profile.role]) {
+  // A superadmin has full reach over every other account, peers included.
+  // Everyone else can only touch people who rank strictly below them, so a
+  // unit manager can't reshuffle their own group manager.
+  if (profile.role !== "superadmin" && ROLE_RANK[target.role as Role] <= ROLE_RANK[profile.role]) {
     return { error: "You can only edit users below your own level." };
   }
 
@@ -261,7 +279,17 @@ export async function updateUserAssignment(input: {
 
 export async function saveTargets(monthDate: string, rows: { agentId: string; ancTarget: number | null; nocTarget: number | null }[]) {
   const profile = await getCurrentProfile();
-  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
+  // Aspirant Unit Managers run agents without Settings access generally, but
+  // they do own their agents' targets -- so this checks target scope rather
+  // than canManageSettings.
+  if (!profile) return { error: "You don't have permission to do that." };
+  const allowed = new Set((await getTargetableAgents(profile)).map((a) => a.id));
+  if (allowed.size === 0) return { error: "You don't have permission to do that." };
+  // The form only renders allowed agents, but this is a Server Action -- it
+  // can be called with any agent id, so re-check server-side.
+  if (rows.some((r) => !allowed.has(r.agentId))) {
+    return { error: "You can only set targets for agents assigned to you." };
+  }
 
   const supabase = await createClient();
   for (const row of rows) {
@@ -316,6 +344,59 @@ export async function saveDistributionSettings(input: {
     : await supabase.from("distribution_settings").insert({ ...payload, unit_id: null }).select("id").maybeSingle();
 
   if (error || !data) return { error: "Couldn't save these settings. Please try again." };
+
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+export async function deleteUser(userId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
+  if (userId === profile.id) return { error: "You can't delete your own account." };
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("id, role, full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!target) return { error: "That user could not be found." };
+  // Superadmins can remove anyone but themselves; everyone else only people
+  // ranking strictly below them.
+  if (profile.role !== "superadmin" && ROLE_RANK[target.role as Role] <= ROLE_RANK[profile.role]) {
+    return { error: "You can only delete users below your own level." };
+  }
+
+  const admin = createAdminClient();
+
+  // profiles.parent_id and several tables reference this row, so detach the
+  // references that would otherwise block the delete rather than cascading
+  // and silently taking real work (leads, quotations) with it.
+  const { count: leadCount } = await admin
+    .from("leads")
+    .select("id", { count: "exact", head: true })
+    .eq("agent_id", userId);
+  if (leadCount && leadCount > 0) {
+    return {
+      error: `${target.full_name} still owns ${leadCount} lead${leadCount === 1 ? "" : "s"}. Reassign them first, then delete.`,
+    };
+  }
+
+  await admin.from("profiles").update({ parent_id: null }).eq("parent_id", userId);
+  await admin.from("audit_log").update({ target_id: null }).eq("target_id", userId);
+  await admin.from("units").update({ group_manager_id: null }).eq("group_manager_id", userId);
+
+  // Deleting the auth user cascades to the profile row (profiles.id
+  // references auth.users on delete cascade).
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) return { error: "Couldn't delete this user. Please try again." };
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "user_deleted",
+    metadata: { deleted_name: target.full_name, role: target.role },
+  });
+  if (auditError) console.error("deleteUser: audit_log insert failed", auditError);
 
   revalidatePath("/settings");
   return { error: null };

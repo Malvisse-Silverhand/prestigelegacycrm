@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ROLE_RANK } from "@/lib/profile-types";
 import type { Role, OrgTree, UnitManagerOption, UnitOption } from "../types";
-import { inviteUser, updateUserAssignment } from "../actions";
+import { inviteUser, updateUserAssignment, deleteUser } from "../actions";
 
 const ROLE_LABEL: Record<Role, string> = {
   superadmin: "SuperAdmin",
@@ -29,27 +29,37 @@ function needsAssignment(role: Role) {
 }
 
 function assignmentLabel(role: Role) {
-  if (role === "agent") return "Assigned under (Unit Manager or Aspirant UM)";
-  if (role === "aspirant_unit_manager") return "Assigned under (Unit Manager)";
+  if (role === "agent") return "Assigned under (supervisor)";
+  if (role === "aspirant_unit_manager") return "Assigned under (Group or Unit Manager)";
   return "Assigned under (Unit)";
 }
 
 // Normalised to {id,label} so the <select> renders the same either way,
 // whether the choices are people or units.
+const SUPERVISOR_SUFFIX: Record<string, string> = {
+  group_manager: " (Group Manager)",
+  aspirant_unit_manager: " (Aspirant UM)",
+  unit_manager: "",
+};
+
 function assignmentChoicesFor(
   role: Role,
   opts: { unitManagers: UnitManagerOption[]; units: UnitOption[] },
 ): { id: string; label: string }[] {
-  if (role === "agent") {
-    return opts.unitManagers.map((m) => ({
-      id: m.id,
-      label: `${m.full_name} — ${m.unitName}${m.role === "aspirant_unit_manager" ? " (Aspirant UM)" : ""}`,
-    }));
-  }
-  if (role === "aspirant_unit_manager") {
+  // An agent may report to a Group Manager, a Unit Manager or an Aspirant UM;
+  // an Aspirant UM to a Group Manager or a Unit Manager.
+  const supervisorRoles =
+    role === "agent"
+      ? ["group_manager", "unit_manager", "aspirant_unit_manager"]
+      : ["group_manager", "unit_manager"];
+
+  if (role === "agent" || role === "aspirant_unit_manager") {
     return opts.unitManagers
-      .filter((m) => m.role === "unit_manager")
-      .map((m) => ({ id: m.id, label: `${m.full_name} — ${m.unitName}` }));
+      .filter((m) => supervisorRoles.includes(m.role))
+      .map((m) => ({
+        id: m.id,
+        label: `${m.full_name}${m.unitName ? ` — ${m.unitName}` : ""}${SUPERVISOR_SUFFIX[m.role] ?? ""}`,
+      }));
   }
   if (role === "unit_manager") return opts.units.map((u) => ({ id: u.id, label: u.name }));
   return [];
@@ -71,6 +81,42 @@ const editPencil = (
     <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
   </svg>
 );
+
+function CollapseButton({ collapsed, onClick }: { collapsed: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={collapsed ? "Expand" : "Collapse"}
+      aria-expanded={!collapsed}
+      className="flex h-6 w-6 flex-none items-center justify-center rounded-md text-current opacity-60 hover:opacity-100"
+    >
+      <svg
+        width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"
+        className={`transition-transform ${collapsed ? "" : "rotate-180"}`}
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </button>
+  );
+}
+
+function DeleteButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Delete user"
+      title="Delete user"
+      className="flex h-6 w-6 flex-none items-center justify-center rounded-md text-alert-red opacity-70 hover:opacity-100"
+    >
+      <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+      </svg>
+    </button>
+  );
+}
 
 function EditButton({ onClick }: { onClick: () => void }) {
   return (
@@ -100,11 +146,18 @@ export function UsersHierarchyTab({
   const [editing, setEditing] = useState<{ id: string; fullName: string; role: Role; currentAssignedUnderId: string | null } | null>(
     null,
   );
+  const [adding, setAdding] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  // Collapsed by id; everything starts expanded so the tree still reads as a
+  // tree, and long branches can be folded away.
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggleCollapse = (id: string) =>
+    setCollapsed((c) => ({ ...c, [id]: !c[id] }));
 
   return (
     <div className="grid grid-cols-1 items-start gap-[22px] lg:grid-cols-[1fr_360px]">
       <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-6 pt-5 shadow-[0_1px_2px_rgba(15,37,64,.05)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-[15.5px] font-bold text-navy">Organisation structure</div>
             <div className="mt-0.5 text-xs font-medium text-muted">
@@ -112,6 +165,15 @@ export function UsersHierarchyTab({
               {roleCounts.aspirant_unit_manager} Aspirant UM · {roleCounts.agent} Agent
             </div>
           </div>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="flex flex-none items-center gap-1.5 rounded-[10px] bg-navy px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
+            >
+              + Add user
+            </button>
+          )}
         </div>
 
         <div className="mt-5 flex flex-col gap-2.5">
@@ -149,14 +211,16 @@ export function UsersHierarchyTab({
                   </div>
                 </div>
                 <span className="flex-none rounded-[6px] bg-white px-[9px] py-1 text-[10px] font-bold text-green">GROUP MANAGER</span>
+                <CollapseButton collapsed={!!collapsed[gm.id]} onClick={() => toggleCollapse(gm.id)} />
                 {canEdit && (
                   <EditButton
                     onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, role: "group_manager", currentAssignedUnderId: null })}
                   />
                 )}
+                {canEdit && <DeleteButton onClick={() => setConfirmDelete({ id: gm.id, name: gm.full_name })} />}
               </div>
 
-              <div className="flex flex-col gap-2 pl-[26px] pt-2.5">
+              <div className={`flex-col gap-2 pl-[26px] pt-2.5 ${collapsed[gm.id] ? "hidden" : "flex"}`}>
                 {gm.units.map((unit) => (
                   <div key={unit.id}>
                     <div className="flex items-center gap-3 rounded-xl border border-sand-2 bg-cream px-3.5 py-[11px]">
@@ -174,6 +238,9 @@ export function UsersHierarchyTab({
                           UNIT MANAGER
                         </span>
                       )}
+                      {unit.unitManager && (
+                        <CollapseButton collapsed={!!collapsed[unit.id]} onClick={() => toggleCollapse(unit.id)} />
+                      )}
                       {canEdit && unit.unitManager && (
                         <EditButton
                           onClick={() =>
@@ -186,10 +253,13 @@ export function UsersHierarchyTab({
                           }
                         />
                       )}
+                      {canEdit && unit.unitManager && (
+                        <DeleteButton onClick={() => setConfirmDelete({ id: unit.unitManager!.id, name: unit.unitManager!.full_name })} />
+                      )}
                     </div>
 
                     {unit.aspirants.map((asp) => (
-                      <div key={asp.id} className="pl-[22px] pt-1.5">
+                      <div key={asp.id} className={`pl-[22px] pt-1.5 ${collapsed[unit.id] ? "hidden" : ""}`}>
                         <div className="flex items-center gap-2.5 rounded-lg border border-[#e7dcc1] bg-warn-gold-bg px-3 py-2">
                           <div className="flex h-[26px] w-[26px] items-center justify-center rounded-md bg-gold text-[9.5px] font-bold text-navy">
                             {initialsOf(asp.full_name)}
@@ -203,6 +273,7 @@ export function UsersHierarchyTab({
                           <span className="flex-none rounded-[5px] bg-white px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
                             ASPIRANT UM
                           </span>
+                          <CollapseButton collapsed={!!collapsed[asp.id]} onClick={() => toggleCollapse(asp.id)} />
                           {canEdit && (
                             <EditButton
                               onClick={() =>
@@ -217,7 +288,7 @@ export function UsersHierarchyTab({
                           )}
                         </div>
                         {asp.agents.length > 0 && (
-                          <div className="flex flex-col gap-1.5 pl-[22px] pt-1.5">
+                          <div className={`flex-col gap-1.5 pl-[22px] pt-1.5 ${collapsed[asp.id] ? "hidden" : "flex"}`}>
                             {asp.agents.map((agent) => (
                               <div
                                 key={agent.id}
@@ -244,6 +315,9 @@ export function UsersHierarchyTab({
                                     }
                                   />
                                 )}
+                                {canEdit && (
+                                  <DeleteButton onClick={() => setConfirmDelete({ id: agent.id, name: agent.full_name })} />
+                                )}
                               </div>
                             ))}
                           </div>
@@ -252,7 +326,7 @@ export function UsersHierarchyTab({
                     ))}
 
                     {unit.agents.length > 0 && (
-                      <div className="flex flex-col gap-1.5 pl-[22px] pt-1.5">
+                      <div className={`flex-col gap-1.5 pl-[22px] pt-1.5 ${collapsed[unit.id] ? "hidden" : "flex"}`}>
                         {unit.agents.map((agent) => (
                           <div
                             key={agent.id}
@@ -277,6 +351,9 @@ export function UsersHierarchyTab({
                                 }
                               />
                             )}
+                            {canEdit && (
+                              <DeleteButton onClick={() => setConfirmDelete({ id: agent.id, name: agent.full_name })} />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -290,7 +367,6 @@ export function UsersHierarchyTab({
       </div>
 
       <div className="flex flex-col gap-[18px]">
-        <AddUserForm role={role} assignmentOptions={assignmentOptions} />
         {editing && (
           <EditUserPanel
             editing={editing}
@@ -300,6 +376,21 @@ export function UsersHierarchyTab({
           />
         )}
       </div>
+
+      {adding && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-elevated">
+            <AddUserForm role={role} assignmentOptions={assignmentOptions} onClose={() => setAdding(false)} />
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <DeleteUserDialog
+          user={confirmDelete}
+          onDone={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -411,12 +502,77 @@ function EditUserPanel({
   );
 }
 
+function DeleteUserDialog({
+  user,
+  onDone,
+}: {
+  user: { id: string; name: string };
+  onDone: () => void;
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handleDelete() {
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await deleteUser(user.id);
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        router.refresh();
+        onDone();
+      } catch {
+        setError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-navy/55 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-elevated">
+        <div className="text-[15px] font-bold text-navy">Delete {user.name}?</div>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          This permanently removes their login and profile. Anyone reporting to them is detached rather than
+          deleted. A user who still owns leads must have those reassigned first.
+        </p>
+        {error && (
+          <div className="mt-3 rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
+            {error}
+          </div>
+        )}
+        <div className="mt-5 flex justify-end gap-2.5">
+          <button
+            type="button"
+            onClick={onDone}
+            className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={pending}
+            className="rounded-[10px] bg-alert-red px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+          >
+            {pending ? "Deleting…" : "Delete user"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AddUserForm({
   role,
   assignmentOptions,
+  onClose,
 }: {
   role: Role;
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
+  onClose: () => void;
 }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -474,8 +630,13 @@ function AddUserForm({
 
   if (success) {
     return (
-      <div className="rounded-[18px] border-2 border-gold bg-white px-[22px] pb-[22px] pt-5">
-        <div className="text-[15px] font-bold text-navy">Account created</div>
+      <div className="px-[22px] pb-[22px] pt-5">
+        <div className="flex items-center justify-between">
+          <div className="text-[15px] font-bold text-navy">Account created</div>
+          <button type="button" onClick={onClose} className="text-[12px] font-semibold text-muted">
+            Close
+          </button>
+        </div>
         {success.emailSent ? (
           <div className="mt-2 rounded-[10px] bg-success-bg px-3.5 py-2.5 text-[12px] font-medium text-green">
             A set-your-password email was sent to {success.email}. For security, the email contains a link
@@ -505,8 +666,13 @@ function AddUserForm({
   }
 
   return (
-    <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-[22px] pt-5">
-      <div className="text-[15px] font-bold text-navy">Add a new user</div>
+    <div className="px-[22px] pb-[22px] pt-5">
+      <div className="flex items-center justify-between">
+        <div className="text-[15px] font-bold text-navy">Add a new user</div>
+        <button type="button" onClick={onClose} className="text-[12px] font-semibold text-muted">
+          Cancel
+        </button>
+      </div>
       <div className="mt-0.5 text-xs font-medium text-muted">Creates a real login — share the temporary password with them directly.</div>
 
       <div className="mt-4 flex flex-col gap-3.5">
