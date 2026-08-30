@@ -34,6 +34,26 @@ export type ActivityRow = {
   profiles: { full_name: string } | null;
 };
 
+export type QuotationPlanRow = {
+  sort_order: number;
+  plan_label: string;
+  monthly_contribution: number | null;
+  annual_contribution: number | null;
+};
+
+export type QuotationRow = {
+  id: string;
+  product: string;
+  language: string | null;
+  status: string;
+  created_at: string;
+  // Only the marker is read here -- a customizer-authored quotation is the
+  // one that can be reopened for editing. The full payload stays server-side
+  // until the tool asks for it via /api/quotations/[id].
+  raw_payload: { __customizer?: boolean } | null;
+  quotation_plans: QuotationPlanRow[];
+};
+
 export async function getLeadDetail(id: string) {
   const supabase = await createClient();
 
@@ -54,6 +74,25 @@ export async function getLeadDetail(id: string) {
   ]);
 
   return { lead, activity: activity ?? [] };
+}
+
+// Quotations saved against this lead, newest first, with their plan options
+// so Lead Detail can show the figures without a second round trip.
+export async function getLeadQuotations(leadId: string): Promise<QuotationRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("quotations")
+    .select(
+      "id, product, language, status, created_at, raw_payload, quotation_plans(sort_order, plan_label, monthly_contribution, annual_contribution)",
+    )
+    .eq("lead_id", leadId)
+    .order("created_at", { ascending: false })
+    .returns<QuotationRow[]>();
+
+  return (data ?? []).map((q) => ({
+    ...q,
+    quotation_plans: [...(q.quotation_plans ?? [])].sort((a, b) => a.sort_order - b.sort_order),
+  }));
 }
 
 export type ReassignOption = { id: string; full_name: string; role: string };

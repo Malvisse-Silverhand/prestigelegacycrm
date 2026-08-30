@@ -12,7 +12,11 @@ import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, Alert
 import { addNote, reassignLead, updateStage, updateSource } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { InterestDropdown } from "./interest-dropdown";
+import { LeadQuotations } from "./lead-quotations";
 import { EditLeadModal } from "../edit-lead-modal";
+import { QuotationModal } from "@/components/quotation-modal";
+import { quoteLauncherUrl } from "@/lib/quote-launcher";
+import type { QuotationRow } from "./data";
 
 const NEW_THRESHOLD_MS = 48 * 3600000;
 
@@ -62,9 +66,28 @@ const editPencil = (
   </svg>
 );
 
+// lead_activity has no quotation_id column, so a timeline row is matched to
+// its quotation by creation time: capture-quotation inserts both in the same
+// request, milliseconds apart. The 2-minute window keeps that reliable while
+// refusing to guess when nothing sits near it.
+function quotationForActivity(a: ActivityRow, quotations: QuotationRow[]) {
+  const at = new Date(a.created_at).getTime();
+  let best: QuotationRow | null = null;
+  let bestGap = Infinity;
+  for (const q of quotations) {
+    const gap = Math.abs(new Date(q.created_at).getTime() - at);
+    if (gap < bestGap) {
+      bestGap = gap;
+      best = q;
+    }
+  }
+  return bestGap <= 120000 ? best : null;
+}
+
 export function LeadDetailContent({
   lead,
   activity,
+  quotations,
   profile,
   reassignOptions,
   onClose,
@@ -72,6 +95,7 @@ export function LeadDetailContent({
 }: {
   lead: LeadDetail;
   activity: ActivityRow[];
+  quotations: QuotationRow[];
   profile: CurrentProfile;
   reassignOptions: ReassignOption[];
   onClose?: () => void;
@@ -82,6 +106,14 @@ export function LeadDetailContent({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [customizerUrl, setCustomizerUrl] = useState<string | null>(null);
+
+  // Passing quotation_id puts the customizer in reopen mode; without it the
+  // tool just prefills from the lead and starts a fresh comparison.
+  function openCustomizer(quotationId?: string) {
+    const base = quoteLauncherUrl("quotation-customizer.html", lead);
+    setCustomizerUrl(quotationId ? `${base}&quotation_id=${quotationId}` : base);
+  }
   // Date.now() is impure -- calling it straight in the render body would
   // violate component purity. A useState lazy initializer is the idiomatic
   // escape hatch for one-time impure work: it runs once (not on every
@@ -268,6 +300,26 @@ export function LeadDetailContent({
                 })}
               />
             </div>
+
+            {/* Quotation Customizer sits directly under Product Interest, which
+                is what decides the plan family it opens on. */}
+            <div className="mt-4 border-t border-sand-3 pt-3.5">
+              <button
+                type="button"
+                onClick={() => openCustomizer()}
+                className="flex items-center gap-2 rounded-[10px] border border-[#f0dfb4] bg-warn-gold-bg px-3.5 py-2.5 text-[12.5px] font-semibold text-warn-gold-text"
+              >
+                <QuotationIcon width={14} height={14} />
+                Open Quotation Customizer
+              </button>
+              <p className="mt-1.5 text-[11px] font-medium text-taupe">
+                Build a side-by-side plan comparison. Saving stores it on this lead.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-[22px]">
+            <LeadQuotations quotations={quotations} onOpen={(id) => openCustomizer(id)} />
           </div>
 
           <div className="mt-[22px] flex items-center justify-between">
@@ -305,6 +357,15 @@ export function LeadDetailContent({
                     )}
                     {a.activity_type !== "note" && a.content && (
                       <div className="mt-1 text-[12.5px] font-medium text-muted-2">{a.content}</div>
+                    )}
+                    {a.activity_type === "quotation_created" && quotationForActivity(a, quotations) && (
+                      <button
+                        type="button"
+                        onClick={() => openCustomizer(quotationForActivity(a, quotations)!.id)}
+                        className="mt-1.5 text-[12px] font-semibold text-green underline underline-offset-2"
+                      >
+                        Open quotation
+                      </button>
                     )}
                   </div>
                 </div>
@@ -432,6 +493,17 @@ export function LeadDetailContent({
       </div>
 
       {editing && <EditLeadModal lead={lead} canDelete={profile.role !== "agent"} onClose={() => setEditing(false)} />}
+
+      <QuotationModal
+        url={customizerUrl}
+        title={`Quotation Customizer — ${lead.full_name}`}
+        onClose={() => {
+          setCustomizerUrl(null);
+          // A save inside the iframe writes a new quotations row; refetch so
+          // the saved-quotations list and timeline pick it up.
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

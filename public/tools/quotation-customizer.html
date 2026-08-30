@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quotation Customizer — Prestige Legacy</title>
+<style>html,body{margin:0;padding:0;background:#fbf4e4}</style>
+</head>
+<body>
+<!-- =====================================================================
+   TAKAFUL4US — QUOTATION CUSTOMIZER (Kad Medikal i-Medi Evolusi + Hibah)
+   Single-file embed untuk WordPress Custom HTML block.
+   ---------------------------------------------------------------------
+   ★ TETAPAN — isi nilai di bawah dalam blok <script> "CONFIG":
+     1. PABBLY_WEBHOOK_URL  — URL webhook Pabbly Connect (untuk butang Simpan)
+     2. LOGO_GREAT_EASTERN  — logo Great Eastern Takaful (kanan) — sudah embed
+     3. LOGO_GREAT_JOURNEY  — URL logo The Great Journey (kiri, medical sahaja)
+     4. AGENT_PHONE         — no. telefon (format antarabangsa, cth 60123456789)
+   Kalau logo dibiar kosong, ia tunjuk badge teks ganti (takkan pecah).
+   ===================================================================== -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div id="t4u-qc" class="tab-medical">
+  <style>
+  /* ---------- TOKENS (Takaful4Us brand) ---------- */
+  #t4u-qc{
+    --navy:#0f2540; --gold:#fac748; --cream:#fbf4e4;
+    --get-red:#e3001b; --get-red-dk:#b3000f;
+    --ink:#0f2540; --muted:#5f6f81; --surface:#ffffff;
+    --bg:#fbf4e4; --border:#e7dcc1; --line:#eee6d2;
+    --ok:#1f7a4d; --warn:#b8860b; --danger:#c0392b;
+    --radius:14px; --radius-sm:9px; --shadow:0 10px 30px rgba(15,37,64,.10);
+    --font:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+
+    font-family:var(--font); color:var(--ink); background:var(--bg);
+    line-height:1.45; box-sizing:border-box;
+    max-width:1600px; width:100%; margin:0 auto; padding:18px clamp(10px,2vw,26px) 60px;
+  }
+  #t4u-qc *,#t4u-qc *::before,#t4u-qc *::after{box-sizing:border-box}
+  #t4u-qc button{font-family:inherit}
+
+  /* ---------- HEADER / BRAND ---------- */
+  #t4u-qc .qc-brand{
+    display:flex; align-items:center; gap:16px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:16px 22px; box-shadow:var(--shadow);
+  }
+  #t4u-qc .qc-logo{display:flex; align-items:center; min-height:46px; flex:0 0 auto}
+  #t4u-qc .qc-logo img{max-height:48px; width:auto; display:block}
+  #t4u-qc .qc-logo-right{
+    width:75px; height:50px; flex:0 0 75px;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  #t4u-qc .qc-logo-right img{width:100%; height:100%; object-fit:contain}   /* saiz tetap 75x50, tiada stretch */
+  #t4u-qc .qc-logo .fallback{
+    font-weight:800; font-size:13px; letter-spacing:.3px; padding:8px 12px;
+    border-radius:8px; border:1.5px dashed var(--border); color:var(--muted); white-space:nowrap;
+  }
+  #t4u-qc .qc-logo-left .fallback{font-size:9px; padding:5px 9px; letter-spacing:.2px}
+  #t4u-qc .qc-logo-left{order:0}
+  #t4u-qc .qc-head-mid{flex:1 1 auto; text-align:center; min-width:0}
+  #t4u-qc .qc-logo-right{order:3}
+  #t4u-qc .qc-head-mid .eyebrow{
+    font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--get-red);
+  }
+  #t4u-qc.tab-hibah .qc-head-mid .eyebrow{color:var(--navy)}
+  #t4u-qc .qc-head-mid h1{margin:2px 0 0; font-size:clamp(13px,1.4vw,17px); font-weight:800; color:var(--navy)}
+  /* logo kiri (The Great Journey) hanya untuk medical */
+  #t4u-qc.tab-hibah .qc-logo-left{display:none}
+
+  /* ---------- TAB PILLS ---------- */
+  #t4u-qc .qc-pills{display:flex; gap:8px; margin:16px 0 12px; flex-wrap:wrap}
+  #t4u-qc .qc-pill{
+    flex:1 1 200px; cursor:pointer; border:1.5px solid var(--border); background:var(--surface);
+    color:var(--navy); font-weight:700; font-size:14px; padding:13px 16px; border-radius:999px;
+    display:flex; align-items:center; justify-content:center; gap:9px; transition:.18s;
+  }
+  #t4u-qc .qc-pill small{font-weight:500; color:var(--muted); font-size:12px}
+  #t4u-qc .qc-pill:hover{border-color:var(--gold); transform:translateY(-1px)}
+  #t4u-qc .qc-pill.active{background:var(--navy); color:#fff; border-color:var(--navy)}
+  #t4u-qc .qc-pill.active small{color:rgba(255,255,255,.7)}
+  #t4u-qc .qc-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--get-red)}
+  #t4u-qc .qc-pill:nth-child(2) .dot{background:var(--gold)}
+
+  /* ---------- PROFILE CARD ---------- */
+  #t4u-qc .qc-profile{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:14px 18px; margin-top:12px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px 16px;
+  }
+  #t4u-qc .qc-pfield label{display:block; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+  #t4u-qc .qc-pfield input{
+    width:100%; border:1.5px solid var(--border); border-radius:8px; padding:9px 10px;
+    font-family:inherit; font-size:13.5px; font-weight:600; color:var(--navy); background:#fff; transition:.15s;
+  }
+  #t4u-qc .qc-pfield input:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(250,199,72,.35)}
+  #t4u-qc .qc-pfield.age input{background:var(--cream); color:var(--navy); font-weight:800}
+
+  /* ---------- BOTTOM ACTION BAR ---------- */
+  #t4u-qc .qc-toolbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:14px}
+  #t4u-qc .btn{
+    cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--navy);
+    font-weight:600; font-size:13px; padding:10px 14px; border-radius:var(--radius-sm);
+    display:inline-flex; align-items:center; gap:7px; transition:.15s; white-space:nowrap;
+  }
+  #t4u-qc .btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(15,37,64,.12)}
+  #t4u-qc .btn:active{transform:translateY(0)}
+  #t4u-qc .btn svg{width:16px;height:16px;flex:0 0 auto}
+  #t4u-qc .btn-primary{background:var(--navy); color:#fff; border-color:var(--navy)}
+  #t4u-qc .btn-add{background:var(--gold); color:var(--navy); border-color:var(--gold)}
+  #t4u-qc .btn-wa{background:#25D366; color:#073b21; border-color:#25D366}
+  #t4u-qc .btn .sp{flex:1}
+
+  /* language toggle */
+  #t4u-qc .lang-toggle{display:inline-flex; border:1.5px solid var(--border); border-radius:999px; overflow:hidden; background:var(--surface); flex:0 0 auto}
+  #t4u-qc .lang-btn{border:none; background:transparent; color:var(--muted); font-weight:800; font-size:12px; padding:10px 15px; cursor:pointer; transition:.15s; letter-spacing:.4px}
+  #t4u-qc .lang-btn.active{background:var(--navy); color:#fff}
+  #t4u-qc .lang-btn:hover:not(.active){background:var(--cream)}
+
+  /* ---------- TABLE ---------- */
+  #t4u-qc .qc-export{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-top:14px}
+  #t4u-qc .qc-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  #t4u-qc table.qc-table{border-collapse:collapse; width:100%; min-width:600px; font-size:13px}
+  #t4u-qc .qc-table th,#t4u-qc .qc-table td{border-bottom:1px solid var(--line); padding:10px 12px; vertical-align:middle; text-align:left}
+  #t4u-qc .qc-table thead th{background:var(--navy); color:#fff; font-weight:700; font-size:12.5px; position:sticky; top:0; text-align:center}
+  #t4u-qc.tab-medical .qc-table thead th{background:linear-gradient(180deg,var(--get-red),var(--get-red-dk))}
+  /* lajur nama benefit — GOLD */
+  #t4u-qc .qc-table td.lbl,#t4u-qc .qc-table th.lbl{
+    position:sticky; left:0; z-index:2; background:var(--gold); color:var(--navy);
+    width:190px; min-width:190px; max-width:190px; box-shadow:1px 0 0 var(--border);
+  }
+  #t4u-qc .qc-table thead th.lbl{background:var(--gold); color:var(--navy); z-index:5; text-align:center}
+  #t4u-qc .qc-table tbody td.lbl{background:#fdedb8; font-weight:700}
+  /* lajur description (collapsible) — warna sama dgn lajur benefit supaya blend bila collapsed */
+  #t4u-qc .qc-table th.desc,#t4u-qc .qc-table td.desc{
+    min-width:230px; max-width:280px; font-size:12px; color:#6f5d28; background:#fdedb8;
+    position:sticky; left:190px; z-index:1; box-shadow:1px 0 0 var(--border); transition:.15s;
+  }
+  #t4u-qc .qc-table thead th.desc{
+    background:var(--gold); color:var(--navy); z-index:4; cursor:pointer; user-select:none;
+    display:table-cell; vertical-align:middle;
+  }
+  #t4u-qc .desc-head{display:flex; align-items:center; justify-content:center; gap:6px}
+  #t4u-qc .desc-ic{font-weight:800; font-size:16px; line-height:1}
+  #t4u-qc.desc-collapsed .qc-table th.desc,#t4u-qc.desc-collapsed .qc-table td.desc{
+    min-width:26px; max-width:26px; width:26px; padding:6px 4px; box-shadow:none;
+  }
+  #t4u-qc .qc-table tbody tr:nth-child(odd) td:not(.lbl):not(.desc){background:#fffdf6}
+  #t4u-qc .col-cell{min-width:160px; text-align:center}
+  #t4u-qc .lbl .b-name{font-weight:700}
+  #t4u-qc .badge-rider{
+    display:inline-block; margin-top:5px; font-size:9px; font-weight:800; letter-spacing:.4px;
+    text-transform:uppercase; background:var(--navy); color:#fff; padding:2px 7px; border-radius:5px;
+  }
+  #t4u-qc .row-link{color:var(--get-red); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; justify-content:center}
+  #t4u-qc.tab-hibah .row-link{color:var(--navy)}
+  #t4u-qc .row-link:hover{text-decoration:underline}
+  #t4u-qc .row-link svg{width:13px;height:13px}
+
+  /* column header (name + delete) */
+  #t4u-qc .col-head{display:flex; align-items:center; justify-content:center; gap:6px}
+  #t4u-qc .col-head input{
+    flex:1; min-width:0; border:none; border-radius:6px; padding:6px 8px; font-weight:700;
+    font-size:13px; color:var(--navy); background:rgba(255,255,255,.92); text-align:center;
+  }
+  #t4u-qc .col-head input::placeholder{color:#9aa7b5; font-weight:500}
+  #t4u-qc .col-del{
+    cursor:pointer; border:none; background:rgba(255,255,255,.2); color:#fff; width:24px;height:24px;
+    border-radius:6px; font-size:15px; line-height:1; flex:0 0 auto; transition:.15s;
+  }
+  #t4u-qc .col-del:hover{background:rgba(255,255,255,.4)}
+
+  /* inputs inside cells */
+  #t4u-qc .num,#t4u-qc .txt{
+    width:100%; border:1.5px solid var(--border); border-radius:8px; padding:8px 9px; text-align:center;
+    font-family:inherit; font-size:13px; color:var(--ink); background:#fff; transition:.15s;
+  }
+  #t4u-qc .num:focus,#t4u-qc .txt:focus,#t4u-qc .col-head input:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(250,199,72,.35)}
+  #t4u-qc select.sel{
+    width:100%; border:1.5px solid var(--border); border-radius:8px; padding:8px 9px; text-align:center; text-align-last:center;
+    font-family:inherit; font-size:13px; color:var(--ink); background:#fff; cursor:pointer;
+  }
+  #t4u-qc select.sel:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(250,199,72,.35)}
+  #t4u-qc .fixed-val{font-weight:600}
+  #t4u-qc .pill-val{display:inline-block; background:var(--cream); border-radius:7px; padding:3px 9px; font-weight:700; font-size:12px}
+  #t4u-qc .muted{color:#9aa7b5}
+  #t4u-qc .opt-wrap{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap}
+  #t4u-qc .opt-wrap input[type="checkbox"]{width:18px;height:18px; accent-color:var(--get-red); cursor:pointer; flex:0 0 auto}
+  #t4u-qc.tab-hibah .opt-wrap input[type="checkbox"]{accent-color:var(--navy)}
+  #t4u-qc .opt-wrap .val{flex:1 1 100px; min-width:90px}
+  #t4u-qc .prefix{display:flex; align-items:center; justify-content:center}
+  #t4u-qc .prefix .rm{font-weight:700; color:var(--muted); padding:0 7px 0 2px; flex:0 0 auto}
+  #t4u-qc .derived{font-weight:700; color:var(--navy); font-size:14px}
+  #t4u-qc .hint{font-size:11px; color:var(--muted); margin-top:3px}
+  #t4u-qc .warn-msg{font-size:10.5px; font-weight:700; color:var(--danger); margin-top:3px; line-height:1.3}
+
+
+
+  #t4u-qc .qc-toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:var(--navy); color:#fff; padding:12px 18px; border-radius:11px; font-size:13px; font-weight:600;
+    box-shadow:0 12px 30px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:.25s; z-index:99999; max-width:90vw;
+  }
+  #t4u-qc .qc-toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  #t4u-qc .qc-toast.ok{background:var(--ok)} #t4u-qc .qc-toast.err{background:var(--danger)} #t4u-qc .qc-toast.warn{background:var(--warn)}
+
+  /* PDF mode — buka penuh description, no sticky/scroll */
+  #t4u-qc.pdf .qc-scroll{overflow:visible}
+  #t4u-qc.pdf .qc-table{min-width:0; font-size:11px}
+  #t4u-qc.pdf .qc-table td.lbl,#t4u-qc.pdf .qc-table th.lbl,
+  #t4u-qc.pdf .qc-table td.desc,#t4u-qc.pdf .qc-table th.desc{position:static; box-shadow:none}
+  #t4u-qc.pdf .col-del{display:none!important}
+
+  @media (max-width:560px){
+    #t4u-qc{padding:10px 8px 50px}
+    /* header stack & shrink */
+    #t4u-qc .qc-brand{flex-wrap:wrap; justify-content:center; gap:4px 10px; padding:9px 10px}
+    #t4u-qc .qc-logo-left{order:1}
+    #t4u-qc .qc-logo-right{order:2}
+    #t4u-qc .qc-head-mid{order:3; flex:1 1 100%; text-align:center; margin-top:2px}
+    #t4u-qc .qc-logo img{max-height:26px}
+    #t4u-qc .qc-logo-right{width:75px; height:50px; flex:0 0 75px}
+    #t4u-qc .qc-logo-right img{width:100%; height:100%; object-fit:contain}
+    #t4u-qc .qc-logo-left .fallback{font-size:7px; padding:3px 6px; letter-spacing:.1px}
+    #t4u-qc .qc-head-mid .eyebrow{font-size:9px; letter-spacing:1px}
+    #t4u-qc .qc-head-mid h1{font-size:clamp(11px,3.2vw,13px); margin-top:1px}
+    /* pills — sembunyi subtitle produk */
+    #t4u-qc .qc-pill small{display:none}
+    #t4u-qc .qc-pill{padding:11px 10px; font-size:13px}
+    /* profil customer — stack 2x2 */
+    #t4u-qc .qc-profile{grid-template-columns:repeat(2,1fr); gap:8px 10px; padding:10px 12px}
+    /* action bar */
+    #t4u-qc .btn{flex:1 1 46%; justify-content:center}
+    #t4u-qc .lang-toggle{order:-1; width:100%; display:flex; justify-content:center; align-items:center; margin-bottom:6px}
+
+    /* ---------- JADUAL MOBILE ---------- */
+    #t4u-qc .qc-table{min-width:0}
+
+    /* Lajur "Manfaat/Benefit" — SENTIASA fixed 66px (sama tak kira 1 atau banyak lajur pelan) */
+    #t4u-qc .qc-table td.lbl,#t4u-qc .qc-table th.lbl{width:66px; min-width:66px; max-width:66px; font-size:9.5px; padding:6px 5px}
+
+    /* Kes DEFAULT (2+ lajur pelan) — kekal scrollable, desc lebar/collapsed macam biasa, col-cell min-width tetap */
+    #t4u-qc .qc-table td.desc,#t4u-qc .qc-table th.desc{left:66px; min-width:160px; max-width:180px}
+    #t4u-qc.desc-collapsed .qc-table td.desc,#t4u-qc.desc-collapsed .qc-table th.desc{width:18px; min-width:18px; max-width:18px}
+    #t4u-qc .col-cell{min-width:104px; max-width:300px}
+
+    /* Kes 1 LAJUR PELAN sahaja — table-layout:fixed, lajur Pelan guna calc() supaya EXACT muat
+       baki ruang (bukan anggaran %), jadi tak overflow tak kira saiz skrin.
+       :has() detect jika ada 4th-child td (= lajur pelan ke-2). Jika tiada, guna calc(). */
+    #t4u-qc .qc-table:not(:has(td.col-cell:nth-child(4))){
+      table-layout:fixed; width:100%;
+    }
+    /* — desc collapsed (default): lbl 66px + desc 18px, Pelan ambil baki */
+    #t4u-qc.desc-collapsed .qc-table:not(:has(td.col-cell:nth-child(4))) td.desc,
+    #t4u-qc.desc-collapsed .qc-table:not(:has(td.col-cell:nth-child(4))) th.desc{
+      left:66px; width:18px; min-width:18px; max-width:18px; padding:6px 3px;
+    }
+    #t4u-qc.desc-collapsed .qc-table:not(:has(td.col-cell:nth-child(4))) td.col-cell,
+    #t4u-qc.desc-collapsed .qc-table:not(:has(td.col-cell:nth-child(4))) th.col-cell{
+      width:calc(100% - 84px); min-width:0; max-width:300px;
+    }
+    /* — desc dibuka (user tekan "+"): desc lebih lebar, Pelan tolak ikut baki sebenar */
+    #t4u-qc:not(.desc-collapsed) .qc-table:not(:has(td.col-cell:nth-child(4))) td.desc,
+    #t4u-qc:not(.desc-collapsed) .qc-table:not(:has(td.col-cell:nth-child(4))) th.desc{
+      left:66px; width:140px; min-width:140px; max-width:140px;
+    }
+    #t4u-qc:not(.desc-collapsed) .qc-table:not(:has(td.col-cell:nth-child(4))) td.col-cell,
+    #t4u-qc:not(.desc-collapsed) .qc-table:not(:has(td.col-cell:nth-child(4))) th.col-cell{
+      width:calc(100% - 206px); min-width:0; max-width:300px;
+    }
+    /* pastikan value panjang break ke baris baru, tak overflow/cut-off */
+    #t4u-qc .qc-table:not(:has(td.col-cell:nth-child(4))) td.col-cell,
+    #t4u-qc .qc-table:not(:has(td.col-cell:nth-child(4))) th.col-cell{
+      white-space:normal; word-break:break-word; overflow-wrap:anywhere;
+    }
+    #t4u-qc .qc-table:not(:has(td.col-cell:nth-child(4))) .col-head input{
+      min-width:0;
+    }
+
+    #t4u-qc .badge-rider{font-size:7.5px; padding:1px 4px; margin-top:3px}
+  }
+  </style>
+
+  <!-- HEADER -->
+  <div class="qc-brand" id="qc-brand">
+    <div class="qc-logo qc-logo-left" id="logoLeft"></div>
+    <div class="qc-head-mid">
+      <div class="eyebrow" id="qcEyebrow">Kad Medikal</div>
+      <h1 id="qcTitle">Quotation Kad Medikal — i-Medi Evolusi</h1>
+    </div>
+    <div class="qc-logo qc-logo-right" id="logoRight"></div>
+  </div>
+
+  <!-- PILLS -->
+  <div class="qc-pills">
+    <button class="qc-pill active" data-tab="medical"><span class="dot"></span><span id="pillMedTxt">Kad Medikal</span> <small id="pillMedSub">i-Medi Evolusi</small></button>
+    <button class="qc-pill" data-tab="hibah"><span class="dot"></span><span id="pillHibTxt">Hibah</span> <small id="pillHibSub">i-Great Nova &amp; Chinta</small></button>
+  </div>
+
+  <!-- PROFIL CUSTOMER -->
+  <div class="qc-profile" id="qcProfile">
+    <div class="qc-pfield">
+      <label for="pfName" id="lblName">Nama</label>
+      <input type="text" id="pfName" placeholder="cth Muhammad Danial Bin Abdul Rahman">
+    </div>
+    <div class="qc-pfield">
+      <label for="pfDob" id="lblDob">Tarikh Lahir</label>
+      <input type="date" id="pfDob">
+    </div>
+    <div class="qc-pfield age">
+      <label for="pfAge" id="lblAge">ANB (auto)</label>
+      <input type="text" id="pfAge" readonly placeholder="—">
+    </div>
+    <div class="qc-pfield">
+      <label for="pfPhone" id="lblPhone">Nombor Telefon</label>
+      <input type="tel" id="pfPhone" placeholder="cth 011-63030513">
+    </div>
+  </div>
+
+  <!-- TABLE AREA -->
+  <div class="qc-export" id="qcExport">
+    <div class="qc-scroll">
+      <table class="qc-table"></table>
+    </div>
+  </div>
+
+  <!-- ACTION BAR (bawah) -->
+  <div class="qc-toolbar">
+    <div class="lang-toggle" id="langToggle">
+      <button class="lang-btn active" data-lang="bm">BM</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <button class="btn btn-add" id="btnAdd">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span id="btnAddTxt">Tambah Column</span>
+    </button>
+    <span class="sp" style="flex:1"></span>
+    <button class="btn" id="btnPdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+      <span id="btnPdfTxt">Muat Turun PDF</span>
+    </button>
+    <button class="btn" id="btnJpeg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 18.5l5-5.2 3.2 3.2 2.3-2.6 4.5 4.6"/></svg>
+      <span id="btnJpegTxt">Muat Turun JPEG</span>
+    </button>
+    <button class="btn btn-wa" id="btnWa">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.04c-.24.68-1.4 1.3-1.93 1.34-.5.04-.97.22-3.28-.68-2.76-1.09-4.5-3.92-4.64-4.1-.13-.18-1.1-1.47-1.1-2.8 0-1.33.7-1.98.94-2.25.24-.27.53-.34.7-.34.18 0 .35 0 .5.01.16.01.38-.06.59.45.24.58.8 2 .87 2.14.07.14.12.31.02.49-.09.18-.14.29-.27.45-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.27.14.43.12.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.6-.13.24.09 1.55.73 1.82.86.27.14.45.2.51.31.07.11.07.63-.17 1.31z"/></svg>
+      <span id="btnWaTxt">Hantar WhatsApp</span>
+    </button>
+    <button class="btn btn-primary" id="btnSave">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5zM8 4v5h7M8 14h8v6H8z"/></svg>
+      <span id="btnSaveTxt">Simpan</span>
+    </button>
+  </div>
+
+  <div class="qc-toast" id="qcToast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =================== CONFIG (ISI DI SINI) =================== */
+  const CONFIG = {
+    // CRM fan-out -- same endpoint the other two calculators post to.
+    CAPTURE_QUOTATION_URL : "https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/capture-quotation",
+    PABBLY_WEBHOOK_URL : "https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY5MDYzMzA0M2M1MjZmNTUzNDUxMzYi_pc",
+    LOGO_GREAT_EASTERN : "data:image/png;base64,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",
+    LOGO_GREAT_JOURNEY : "",                 // <-- URL logo The Great Journey (kiri, medical sahaja)
+    AGENT_NAME         : "Takaful4Us",
+    AGENT_PHONE        : "60XXXXXXXXX",      // <-- no. telefon utk WhatsApp (cth 60123456789)
+    SITE_URL           : "https://takaful4us.com",
+    PANEL_LOCATOR_URL  : "https://takaful4us.com/getb-panel-locator/",
+    PORTAL_MEDICAL_URL : "https://takaful4us.com/medical-card-client-portal/",
+    PORTAL_HIBAH_URL   : "https://takaful4us.com/hibah-client-portal/"
+  };
+  /* =========================================================== */
+
+  const root  = document.getElementById('t4u-qc');
+  const TABLE = root.querySelector('table.qc-table');   // stable ref (kekal selepas re-render)
+  const toast = document.getElementById('qcToast');
+  let uid = 0;
+
+  /* ---------- HELPERS ---------- */
+  const num = v => { const n = parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; };
+  const fmt  = n => 'RM' + (Math.round(n*100)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtI = n => 'RM' + Math.round(n).toLocaleString('en-MY');
+  const esc  = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const setT = (id,t)=>{ const el=document.getElementById(id); if(el) el.textContent=t; };
+  const setShow = (id,show)=>{ const el=document.getElementById(id); if(el) el.style.display = show?'block':'none'; };
+
+  const state = { active:'medical', lang:'bm', descOpen:false, profile:{ name:'', dob:'', phone:'' }, medical:null, hibah:null };
+  const L = (bm,en) => state.lang==='en' ? en : bm;             // pilih string ikut bahasa semasa
+  const tr = o => (typeof o==='string') ? o : (o[state.lang] || o.bm);
+
+  function showToast(msg,type){ toast.textContent=msg; toast.className='qc-toast show '+(type||''); clearTimeout(showToast._t); showToast._t=setTimeout(()=>toast.className='qc-toast',3200); }
+
+  /* =================== UI STRINGS (BM/EN) =================== */
+  const UI = {
+    bm:{
+      eyebrowMedical:'Kad Medikal', eyebrowHibah:'Hibah',
+      titleMedical:'Quotation Kad Medikal — i-Medi Evolusi', titleHibah:'Quotation Hibah — i-Great Nova & Chinta',
+      pillMed:'Kad Medikal', pillHib:'Hibah',
+      profName:'Nama', profDob:'Tarikh Lahir', profAge:'ANB (auto)', profPhone:'Nombor Telefon',
+      thBenefit:'Manfaat / Benefit', thDesc:'Keterangan',
+      colPh:'Nama / Pelan', btnAdd:'Tambah Column', btnPdf:'Muat Turun PDF', btnJpeg:'Muat Turun JPEG', btnWa:'Hantar WhatsApp', btnSave:'Simpan',
+      totalRow:'TOTAL CARUMAN (KELUARGA)', badgeRider:'Rider/Add-On',
+      toastPdfPrep:'Menyediakan PDF…', toastPdfOk:'PDF berjaya dimuat turun ✅', toastPdfErr:'Ralat PDF: ',
+      toastWaOpen:'WhatsApp dibuka — lampirkan PDF secara manual jika perlu.',
+      toastSaveNeed:'Sila set PABBLY_WEBHOOK_URL dalam CONFIG dahulu.', toastSaving:'Menghantar data…',
+      toastSaveOk:'Data dihantar ke Pabbly Connect ✅', toastSaveOk2:'Data dihantar (mod no-cors) ✅', toastSaveErr:'Gagal hantar: '
+    },
+    en:{
+      eyebrowMedical:'Medical Card', eyebrowHibah:'Hibah',
+      titleMedical:'Medical Card Quotation — i-Medi Evolusi', titleHibah:'Hibah Quotation — i-Great Nova & Chinta',
+      pillMed:'Medical Card', pillHib:'Hibah',
+      profName:'Name', profDob:'Date of Birth', profAge:'ANB (auto)', profPhone:'Phone Number',
+      thBenefit:'Manfaat / Benefit', thDesc:'Description',
+      colPh:'Name / Plan', btnAdd:'Add Column', btnPdf:'Download PDF', btnJpeg:'Download JPEG', btnWa:'Send WhatsApp', btnSave:'Save',
+      totalRow:'TOTAL CONTRIBUTION (FAMILY)', badgeRider:'Rider/Add-On',
+      toastPdfPrep:'Preparing PDF…', toastPdfOk:'PDF downloaded successfully ✅', toastPdfErr:'PDF error: ',
+      toastWaOpen:'WhatsApp opened — attach the PDF manually if needed.',
+      toastSaveNeed:'Please set PABBLY_WEBHOOK_URL in CONFIG first.', toastSaving:'Sending data…',
+      toastSaveOk:'Data sent to Pabbly Connect ✅', toastSaveOk2:'Data sent (no-cors mode) ✅', toastSaveErr:'Failed to send: '
+    }
+  };
+
+  /* ---------- BENEFIT DEFINITIONS (bilingual) ---------- */
+  const D = {
+    planM:{bm:"Pelan kad perubatan i-Medi Evolusi oleh Great Eastern Takaful.", en:"i-Medi Evolusi medical card plan by Great Eastern Takaful."},
+    hospital:{bm:"Jumlah bil hospital ditanggung sepenuhnya oleh pengendali Takaful (cashless).", en:"Full hospital bill covered by the Takaful operator (cashless)."},
+    outpatient:{bm:"Rawatan outpatient di klinik panel — hanya bayar 5% dari jumlah bil (sehingga RM500 setahun sijil) untuk klinik di bawah The Great Journey. Meliputi Dengue, Zika, Chikungunya, Influenza A & B, HFMD, Bronkitis & Pneumonia.", en:"Outpatient treatment at panel clinics — pay only 5% of the total bill (up to RM500 per certificate year) at clinics under The Great Journey. Covers Dengue, Zika, Chikungunya, Influenza A & B, HFMD, Bronchitis & Pneumonia."},
+    basicM:{bm:"Pampasan Kematian atau Lumpuh Kekal (TPD) — manfaat asas dalam pelan medikal.", en:"Death or Total Permanent Disability (TPD) benefit — basic benefit in the medical plan."},
+    income:{bm:"Penggantian gaji semasa dirawat. Tidak termasuk dalam pelan ini.", en:"Income replacement while under treatment. Not included in this plan."},
+    ageM:{bm:"Pilih had umur perlindungan: 70 atau 80 tahun.", en:"Choose the coverage age limit: 70 or 80 years old."},
+    deduct:{bm:"Jumlah yang peserta tanggung dahulu sebelum Takaful cover bil. Hanya bayar sekali setahun (per policy year).", en:"Amount the participant pays first before Takaful covers the bill. Paid once per policy year."},
+    rnb:{bm:"Harga bilik semalaman. RM150 (biasanya bilik 4 katil), RM200 (bilik 2 katil / seorang). Naik 20% setiap 5 tahun jika tiada tuntutan (maks RM300 untuk RM150, RM400 untuk RM200).", en:"Overnight room rate. RM150 (usually 4-bed ward), RM200 (2-bed / single room). Increases 20% every 5 years if claim-free (max RM300 for RM150, RM400 for RM200)."},
+    limit:{bm:"Limit kredit hospital untuk setahun. Bergantung pada pilihan Room & Board (RM150 → RM1,500,000 · RM200 → RM2,000,000).", en:"Annual hospital credit limit. Depends on Room & Board choice (RM150 → RM1,500,000 · RM200 → RM2,000,000)."},
+    lifetime:{bm:"Tiada had tabarru sepanjang hayat.", en:"No lifetime tabarru' limit."},
+    preHosp:{bm:"Perlindungan rawatan/pemeriksaan sebelum dimasukkan ke hospital.", en:"Coverage for treatment/examination before hospital admission."},
+    postHosp:{bm:"Perlindungan rawatan susulan selepas keluar hospital.", en:"Coverage for follow-up treatment after hospital discharge."},
+    cashM:{bm:"Nilai simpanan dalam polisi yang boleh dikeluarkan jika perlu (jenis caruman: Level).", en:"Savings value in the policy that can be withdrawn if needed (contribution type: Level)."},
+    compass:{bm:"Khairat kematian / elaun ihsan untuk waris.", en:"Death compassionate benefit for beneficiaries."},
+    second:{bm:"Pendapat kedua daripada pakar perubatan untuk pengesahan diagnosis penyakit.", en:"Second opinion from a medical specialist to confirm diagnosis."},
+    supreme:{bm:"Pampasan kematian & khidmat bantuan perubatan kecemasan ketika di luar negara.", en:"Death benefit & emergency medical assistance while overseas."},
+    allow:{bm:"Elaun tunai harian semasa dimasukkan ke wad (Hospital Kerajaan / Swasta / ICU).", en:"Daily cash allowance while warded (Government / Private Hospital / ICU)."},
+    ciM:{bm:"Pampasan tunai apabila disahkan menghidap penyakit kritikal (i-Lifetime Critical Illness).", en:"Cash payout upon confirmed diagnosis of a critical illness (i-Lifetime Critical Illness)."},
+    waiverM:{bm:"i-Provider Plus — jika pemilik polisi sakit kritikal/lumpuh, caruman ditanggung GET (polisi jadi percuma).", en:"i-Provider Plus — if the policy owner suffers critical illness/disability, GET pays the contribution (policy becomes free)."},
+    contribType:{bm:"Jenis caruman: Level (caruman tetap, tidak naik mengikut umur).", en:"Contribution type: Level (fixed contribution, does not increase with age)."},
+    panel:{bm:"Senarai hospital & klinik panel di bawah i-Medi Evolusi. Klik untuk semak panel locator.", en:"List of panel hospitals & clinics under i-Medi Evolusi. Click to check the panel locator."},
+    gj:{bm:"Great Journey Rule: wajib ke klinik panel dahulu sebelum ke hospital (kecuali kemalangan).", en:"Great Journey Rule: must visit a panel clinic first before hospital (except accidents)."},
+    days:{bm:"Bilangan hari boleh dimasukkan ke wad termasuk ICU.", en:"Number of days allowed in ward including ICU."},
+    waiting:{bm:"Tempoh menunggu sebelum perlindungan berjalan: 30 hari (am), 120 hari (tertentu), 2 tahun (pre-existing).", en:"Waiting period before coverage starts: 30 days (general), 120 days (specific), 2 years (pre-existing)."},
+    portalM:{bm:"Portal pelanggan untuk urusan kad perubatan (claim, panel, dokumen).", en:"Customer portal for medical card matters (claims, panel, documents)."},
+    remarkM:{bm:"Boleh dituntut cukai (eFiling): sehingga RM4,000 (swasta) / RM7,000 (kerajaan).", en:"Tax claimable (eFiling): up to RM4,000 (private) / RM7,000 (government)."},
+    yearly:{bm:"Jumlah caruman setahun. Caruman bulanan dikira automatik (÷12).", en:"Total yearly contribution. Monthly contribution is auto-calculated (÷12)."},
+    planH:{bm:"i-Great Nova = hibah mampu milik untuk semua generasi. i-Great Chinta = hibah pampasan tinggi (min RM800,000).", en:"i-Great Nova = affordable hibah for all generations. i-Great Chinta = high-payout hibah (min RM800,000)."},
+    basicH:{bm:"Pampasan hibah Kematian / Lumpuh Kekal Penuh (HUPK/TPD).", en:"Hibah death / Total Permanent Disability (TPD) benefit."},
+    ageH:{bm:"Pilih had umur perlindungan: 60, 70 atau 80 tahun.", en:"Choose the coverage age limit: 60, 70 or 80 years old."},
+    khairat:{bm:"Faedah pengurusan pusaka / jenazah. Nova RM2,000 · Chinta RM5,000.", en:"Estate/funeral management benefit. Nova RM2,000 · Chinta RM5,000."},
+    haji:{bm:"Pampasan tambahan jika kematian berlaku ketika haji/umrah.", en:"Additional benefit if death occurs during haj/umrah."},
+    penama:{bm:"Bilangan penama hibah yang boleh didaftarkan.", en:"Number of hibah nominees that can be registered."},
+    cashH:{bm:"Jumlah simpanan apabila polisi matang pada umur 60 tahun.", en:"Savings amount upon policy maturity at age 60."},
+    ciH:{bm:"Pampasan tunai apabila disahkan menghidap penyakit kritikal.", en:"Cash payout upon confirmed diagnosis of a critical illness."},
+    adb:{bm:"Pampasan tambahan jika kematian/kecacatan disebabkan kemalangan.", en:"Additional benefit if death/disability is caused by an accident."},
+    waiverH:{bm:"i-Provider Plus — jika pemilik polisi sakit kritikal/lumpuh, caruman ditanggung GET.", en:"i-Provider Plus — if the policy owner suffers critical illness/disability, GET pays the contribution."},
+    portalH:{bm:"Portal pelanggan untuk urusan hibah (penama, dokumen, status).", en:"Customer portal for hibah matters (nominees, documents, status)."},
+    remarkH:{bm:"Boleh dituntut cukai (eFiling): sehingga RM3,000 (swasta) / RM7,000 (kerajaan).", en:"Tax claimable (eFiling): up to RM3,000 (private) / RM7,000 (government)."}
+  };
+
+  const linkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+  const linkCell = (url,label)=>`<a class="row-link" href="${url}" target="_blank" rel="noopener">${label} ${linkIcon}</a>`;
+
+  // cell builders — checkbox kiri, kotak nilai di kanan (inline)
+  function optWaiver(c){ return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="waiver" ${c.waiver?'checked':''} title="${L('Sertakan','Include')}"><span class="${c.waiver?'fixed-val':'muted'}">${c.waiver?L('Ya','Yes'):'—'}</span></div>`; }
+  const WARN_MIN = () => L('⚠️ nilai wajib RM100,000 ke atas','⚠️ value must be RM100,000 or above');
+  const WARN_RANGE = (mn,mx) => L(`⚠️ nilai wajib antara ${fmtI(mn)} – ${fmtI(mx)}`,`⚠️ value must be between ${fmtI(mn)} – ${fmtI(mx)}`);
+  function optAmt(c,key,min,step,tag,max){
+    const on=c[key+'_on'];
+    const amtVal = c[key+'_amt']!=null ? num(c[key+'_amt']) : min;
+    const showWarn = on && (max ? (amtVal<min || amtVal>max) : amtVal<100000);
+    const hint = max ? `${L('Min','Min')} ${fmtI(min)} · ${L('Maks','Max')} ${fmtI(max)}` : `${L('Min','Min')} ${fmtI(min)}`;
+    const warnTxt = max ? WARN_RANGE(min,max) : WARN_MIN();
+    return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="${key}_on" ${on?'checked':''} title="${L('Sertakan','Include')}">`
+      + (on
+        ? `<div class="prefix val"><span class="rm">RM</span><input class="num" type="number" min="${min}" ${max?`max="${max}"`:''} step="${step}" data-col="${c.id}" data-field="${key}_amt" value="${c[key+'_amt']!=null?c[key+'_amt']:min}"></div></div><div class="hint">${hint}</div><div class="warn-msg" id="warn-${tag}-${c.id}" style="display:${showWarn?'block':'none'}">${warnTxt}</div>`
+        : `<span class="muted">—</span></div>`);
+  }
+  function optAllow(c){
+    const on=c.allow_on;
+    return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="allow_on" ${on?'checked':''} title="${L('Sertakan','Include')}">`
+      + (on
+        ? `<input class="txt val" type="text" data-col="${c.id}" data-field="allow_txt" value="${esc(c.allow_txt!=null?c.allow_txt:'RM100/hari (Gov & Swasta)')}"></div>`
+        : `<span class="muted">—</span></div>`);
+  }
+  function optCash(c,defLbl){
+    const on=c.cash_on;
+    return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="cash_on" ${on?'checked':''} title="${L('Sertakan','Include')}">`
+      + (on
+        ? `<div class="prefix val"><span class="rm">RM</span><input class="num" type="number" min="0" step="100" placeholder="${L('Anggaran','Estimate')}" data-col="${c.id}" data-field="cash_amt" value="${c.cash_amt!=null?c.cash_amt:''}"></div></div><div class="hint">${defLbl}</div>`
+        : `<span class="muted">—</span></div>`);
+  }
+
+  /* MEDICAL rows (badge:true = tanda Rider/Add-On) */
+  const MEDICAL = () => [
+    {key:'planM', label:{bm:'Pelan',en:'Plan'}, def:D.planM, cell:()=>`<span class="pill-val">i-Medi Evolusi</span>`},
+    {key:'hospital', label:{bm:'Hospital Medical Bill',en:'Hospital Medical Bill'}, def:D.hospital, cell:()=>`<span class="fixed-val">As Charged (Cashless)</span>`},
+    {key:'outpatient', label:{bm:'Outpatient Benefit (Klinik)',en:'Outpatient Benefit (Clinic)'}, def:D.outpatient, cell:()=>`<span>${L('Bayar 5% sahaja','Pay only 5%')}<br><span class="muted">${L('(maks RM500/thn · The Great Journey)','(max RM500/yr · The Great Journey)')}</span></span>`},
+    {key:'basicM', label:{bm:'Death Benefit & TPD',en:'Death Benefit & TPD'}, def:D.basicM, cell:()=>`<span class="pill-val">RM15,000</span>`},
+    {key:'compass', label:{bm:'Compassionate Benefit',en:'Compassionate Benefit'}, def:D.compass, cell:()=>`<span class="pill-val">RM2,000</span>`},
+    {key:'income', label:{bm:'Income Protection',en:'Income Protection'}, def:D.income, cell:()=>`<span class="muted">N/A</span>`},
+    {key:'ageM', label:{bm:'Coverage Until Age',en:'Coverage Until Age'}, def:D.ageM, cell:c=>`<select class="sel" data-col="${c.id}" data-field="ageM"><option value="70" ${c.ageM==='70'?'selected':''}>70</option><option value="80" ${c.ageM==='80'?'selected':''}>80</option></select>`},
+    {key:'deduct', label:{bm:'Deductible',en:'Deductible'}, def:D.deduct, cell:()=>`<span class="pill-val">RM500</span><div class="hint">${L('Bayar sekali / tahun polisi','Paid once per policy year')}</div>`},
+    {key:'rnb', label:{bm:'Room & Board (R&B)',en:'Room & Board (R&B)'}, def:D.rnb, cell:c=>`<select class="sel" data-col="${c.id}" data-field="rnb"><option value="150" ${c.rnb==='150'?'selected':''}>RM150 / ${L('hari','day')}</option><option value="200" ${c.rnb==='200'?'selected':''}>RM200 / ${L('hari','day')}</option></select>`},
+    {key:'limit', label:{bm:'Annual / Overall Medical Limit',en:'Annual / Overall Medical Limit'}, def:D.limit, cell:c=>`<span class="derived" id="der-limit-medical-${c.id}">${c.rnb==='200'?fmtI(2000000):fmtI(1500000)}</span><div class="hint">${L('auto ikut R&B','auto based on R&B')}</div>`},
+    {key:'lifetime', label:{bm:'Lifetime Limit',en:'Lifetime Limit'}, def:D.lifetime, cell:()=>`<span class="fixed-val">${L('No lifetime limit','No lifetime limit')}</span>`},
+    {key:'preHosp', label:{bm:'Pre-Hospitalisation Benefit',en:'Pre-Hospitalisation Benefit'}, def:D.preHosp, cell:()=>`<span class="fixed-val">${L('120 hari sebelum','120 days before')}</span>`},
+    {key:'postHosp', label:{bm:'Post-Hospitalisation Benefit',en:'Post-Hospitalisation Benefit'}, def:D.postHosp, cell:()=>`<span class="fixed-val">${L('180 hari selepas','180 days after')}</span>`},
+    {key:'allow', label:{bm:'Daily Hospital Allowance (Elaun Hospital)',en:'Daily Hospital Allowance'}, def:D.allow, cell:c=>optAllow(c), badge:true},
+    {key:'ciM', label:{bm:'i-Lifetime Critical Illness Benefit',en:'i-Lifetime Critical Illness Benefit'}, def:D.ciM, cell:c=>optAmt(c,'ci',10000,1000,'ci-medical',30000), badge:true},
+    {key:'waiverM', label:{bm:'Waiver of Contribution (i-Provider Plus)',en:'Waiver of Contribution (i-Provider Plus)'}, def:D.waiverM, cell:c=>optWaiver(c), badge:true},
+    {key:'second', label:{bm:'Executive Second Opinion',en:'Executive Second Opinion'}, def:D.second, cell:()=>`<span class="fixed-val">${L('Ya','Yes')}</span>`},
+    {key:'supreme', label:{bm:'Supreme Assist',en:'Supreme Assist'}, def:D.supreme, cell:()=>`<span class="fixed-val">${L('Ya','Yes')}</span>`},
+    {key:'contribType', label:{bm:'Type of Contribution',en:'Type of Contribution'}, def:D.contribType, cell:()=>`<span class="fixed-val">Level</span>`},
+    {key:'cashM', label:{bm:'Cash Value / Savings',en:'Cash Value / Savings'}, def:D.cashM, cell:c=>optCash(c,L('Anggaran selepas 10 tahun','Estimate after 10 years'))},
+    {key:'gj', label:{bm:'Great Journey Rule',en:'Great Journey Rule'}, def:D.gj, cell:()=>`<span>${L('Ya','Yes')} <span class="muted">${L('(klinik dahulu)','(clinic first)')}</span></span>`},
+    {key:'days', label:{bm:'Days in Hospital + ICU',en:'Days in Hospital + ICU'}, def:D.days, cell:()=>`<span class="fixed-val">${L('Unlimited (365 hari)','Unlimited (365 days)')}</span>`},
+    {key:'waiting', label:{bm:'Waiting Period',en:'Waiting Period'}, def:D.waiting, cell:()=>`<span>${L('30 hari · 120 hari · 2 tahun','30 days · 120 days · 2 years')}</span><br>${linkCell(CONFIG.PORTAL_MEDICAL_URL, L('Buka Portal','Open Portal'))}`},
+    {key:'panel', label:{bm:'Lists of Hospitals (Panel)',en:'Lists of Hospitals (Panel)'}, def:D.panel, cell:()=>linkCell(CONFIG.PANEL_LOCATOR_URL, L('85 hospital — Panel Locator','85 hospitals — Panel Locator'))},
+    {key:'portalM', label:{bm:'Client Portal',en:'Client Portal'}, def:D.portalM, cell:()=>linkCell(CONFIG.PORTAL_MEDICAL_URL, L('Buka Portal','Open Portal'))},
+    {key:'remarkM', label:{bm:'Remarks (Tax)',en:'Remarks (Tax)'}, def:D.remarkM, cell:()=>`<span class="muted">${L('Tax claimable RM4,000 (swasta) / RM7,000 (gov)','Tax claimable RM4,000 (private) / RM7,000 (gov)')}</span>`},
+    {key:'yearly', label:{bm:'Caruman Tahunan',en:'Yearly Contribution'}, def:D.yearly, cell:c=>`<div class="prefix"><span class="rm">RM</span><input class="num" type="number" min="0" step="0.01" placeholder="${L('cth','e.g.')} 2769.60" data-col="${c.id}" data-field="yearly" value="${c.yearly!=null?c.yearly:''}"></div>`},
+    {key:'monthly', label:{bm:'Caruman Bulanan',en:'Monthly Contribution'}, cell:c=>`<span class="derived" id="der-monthly-medical-${c.id}">${fmt(num(c.yearly)/12)}</span>`}
+  ];
+
+  /* HIBAH rows */
+  const HIBAH = () => [
+    {key:'planH', label:{bm:'Pelan',en:'Plan'}, def:D.planH, cell:c=>`<select class="sel" data-col="${c.id}" data-field="plan"><option value="nova" ${c.plan==='nova'?'selected':''}>i-Great Nova</option><option value="chinta" ${c.plan==='chinta'?'selected':''}>i-Great Chinta</option></select>`},
+    {key:'basicH', label:{bm:'Manfaat Kematian & HUPK / TPD',en:'Death Benefit & HUPK / TPD'}, def:D.basicH, cell:c=>{ const ph=c.plan==='chinta'?'800000':'250000'; return `<div class="prefix"><span class="rm">RM</span><input class="num" type="number" min="0" step="1000" placeholder="${L('cth','e.g.')} ${ph}" data-col="${c.id}" data-field="sumCovered" value="${c.sumCovered!=null?c.sumCovered:''}"></div>`; }},
+    {key:'haji', label:{bm:'Manfaat Kematian Haji & Umrah',en:'Death Benefit during Haj & Umrah'}, def:D.haji, cell:c=>`<span class="derived" id="der-haji-hibah-${c.id}">${fmtI(num(c.sumCovered)*2)}</span><div class="hint">${L('auto 2× pampasan asas','auto 2× basic benefit')}</div>`},
+    {key:'khairat', label:{bm:'Khairat Kematian',en:'Death Compassionate Benefit'}, def:D.khairat, cell:c=>`<span class="pill-val" id="der-khairat-hibah-${c.id}">${c.plan==='chinta'?'RM5,000':'RM2,000'}</span>`},
+    {key:'ageH', label:{bm:'Coverage Until Age',en:'Coverage Until Age'}, def:D.ageH, cell:c=>`<select class="sel" data-col="${c.id}" data-field="ageH"><option value="60" ${c.ageH==='60'?'selected':''}>60</option><option value="70" ${c.ageH==='70'?'selected':''}>70</option><option value="80" ${c.ageH==='80'?'selected':''}>80</option></select>`},
+    {key:'penama', label:{bm:'Penama Hibah',en:'Hibah Nominees'}, def:D.penama, cell:()=>`<span class="fixed-val">${L('4 orang','4 people')}</span>`},
+    {key:'ciH', label:{bm:'Critical Illness Benefit',en:'Critical Illness Benefit'}, def:D.ciH, cell:c=>optAmt(c,'ci',100000,1000,'ci-hibah'), badge:true},
+    {key:'adb', label:{bm:'Accidental Death Benefit',en:'Accidental Death Benefit'}, def:D.adb, cell:c=>optAmt(c,'adb',100000,1000,'adb-hibah'), badge:true},
+    {key:'waiverH', label:{bm:'Manfaat Waiver (i-Provider Plus)',en:'Waiver Benefit (i-Provider Plus)'}, def:D.waiverH, cell:c=>optWaiver(c), badge:true},
+    {key:'cashH', label:{bm:'Cash Value',en:'Cash Value'}, def:D.cashH, cell:c=>optCash(c,L('Anggaran matang umur 60','Estimate at maturity age 60'))},
+    {key:'portalH', label:{bm:'Client Portal',en:'Client Portal'}, def:D.portalH, cell:()=>linkCell(CONFIG.PORTAL_HIBAH_URL, L('Buka Portal','Open Portal'))},
+    {key:'remarkH', label:{bm:'Remarks (Tax)',en:'Remarks (Tax)'}, def:D.remarkH, cell:()=>`<span class="muted">${L('Tax claimable RM3,000 (swasta) / RM7,000 (gov)','Tax claimable RM3,000 (private) / RM7,000 (gov)')}</span>`},
+    {key:'yearly', label:{bm:'Caruman Tahunan',en:'Yearly Contribution'}, def:D.yearly, cell:c=>`<div class="prefix"><span class="rm">RM</span><input class="num" type="number" min="0" step="0.01" placeholder="${L('cth','e.g.')} 1132.20" data-col="${c.id}" data-field="yearly" value="${c.yearly!=null?c.yearly:''}"></div>`},
+    {key:'monthly', label:{bm:'Caruman Bulanan',en:'Monthly Contribution'}, cell:c=>`<span class="derived" id="der-monthly-hibah-${c.id}">${fmt(num(c.yearly)/12)}</span>`}
+  ];
+
+  const ROWS = { medical:MEDICAL, hibah:HIBAH };
+
+  /* ---------- STATE ---------- */
+  function newMed(){ return { id:++uid, name:'', ageM:'70', rnb:'150', yearly:'', cash_on:false, cash_amt:'', allow_on:false, allow_txt:'', ci_on:false, ci_amt:10000, waiver:false }; }
+  function newHib(){ return { id:++uid, name:'', ageH:'60', plan:'nova', sumCovered:'', yearly:'', cash_on:false, cash_amt:'', ci_on:false, ci_amt:100000, adb_on:false, adb_amt:100000, waiver:false }; }
+  state.medical = { columns:[ newMed(), newMed() ] };
+  state.hibah   = { columns:[ newHib(), newHib() ] };
+
+  function calcANB(dobStr){
+    if(!dobStr) return '';
+    const d=new Date(dobStr); if(isNaN(d)) return '';
+    const t=new Date(); let a=t.getFullYear()-d.getFullYear();
+    const m=t.getMonth()-d.getMonth();
+    if(m<0 || (m===0 && t.getDate()<d.getDate())) a--;
+    a = a + 1; // ANB = Age Next Birthday
+    return a>=0 && a<131 ? String(a) : '';
+  }
+
+  /* ---------- RENDER ---------- */
+  function render(){
+    const tab = state.active;
+    const cols = state[tab].columns;
+    const rows = ROWS[tab]();
+
+    let html = '';
+    // header
+    html += `<thead><tr><th class="lbl">${UI[state.lang].thBenefit}</th>`
+          + `<th class="desc" id="descHeadCell">${state.descOpen
+              ? `<div class="desc-head"><span>${UI[state.lang].thDesc}</span><span class="desc-ic">−</span></div>`
+              : `<div class="desc-head"><span class="desc-ic">+</span></div>`}</th>`;
+    cols.forEach(c=>{
+      html += `<th class="col-cell"><div class="col-head"><input type="text" placeholder="${UI[state.lang].colPh} ${cols.indexOf(c)+1}" data-col="${c.id}" data-field="name" value="${esc(c.name)}">`
+            + (cols.length>1?`<button class="col-del" title="×" data-del="${c.id}">×</button>`:'')
+            + '</div></th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    rows.forEach(r=>{
+      html += '<tr>';
+      const badge = r.badge ? `<span class="badge-rider">${UI[state.lang].badgeRider}</span>` : '';
+      html += `<td class="lbl"><span class="b-name">${tr(r.label)}</span>${badge}</td>`;
+      html += `<td class="desc">${(state.descOpen && r.def) ? tr(r.def) : ''}</td>`;
+      cols.forEach(c=>{ html += `<td class="col-cell">${r.cell(c)}</td>`; });
+      html += '</tr>';
+    });
+
+    html += '</tbody>';
+    TABLE.innerHTML = html;   // html mengandungi <thead>…</thead><tbody>…
+    updateHeaderChrome();
+    recalc();
+  }
+
+  function updateHeaderChrome(){
+    const tab = state.active;
+    root.className = 'tab-'+tab + (state.descOpen ? '' : ' desc-collapsed');
+    const t = UI[state.lang];
+    setT('qcEyebrow', tab==='medical' ? t.eyebrowMedical : t.eyebrowHibah);
+    setT('qcTitle', tab==='medical' ? t.titleMedical : t.titleHibah);
+    setT('pillMedTxt', t.pillMed); setT('pillHibTxt', t.pillHib);
+    setT('lblName', t.profName); setT('lblDob', t.profDob); setT('lblAge', t.profAge); setT('lblPhone', t.profPhone);
+    setT('btnAddTxt', t.btnAdd); setT('btnPdfTxt', t.btnPdf); setT('btnJpegTxt', t.btnJpeg); setT('btnWaTxt', t.btnWa); setT('btnSaveTxt', t.btnSave);
+    // logos
+    document.getElementById('logoRight').innerHTML = CONFIG.LOGO_GREAT_EASTERN
+      ? `<img src="${CONFIG.LOGO_GREAT_EASTERN}" alt="Great Eastern Takaful" crossorigin="anonymous">`
+      : `<span class="fallback">Great Eastern Takaful</span>`;
+    document.getElementById('logoLeft').innerHTML = CONFIG.LOGO_GREAT_JOURNEY
+      ? `<img src="${CONFIG.LOGO_GREAT_JOURNEY}" alt="The Great Journey" crossorigin="anonymous">`
+      : `<span class="fallback">The Great Journey</span>`;
+  }
+
+  function recalc(){
+    const tab = state.active;
+    const cols = state[tab].columns;
+    cols.forEach(c=>{
+      const y = num(c.yearly), m = y/12;
+      setT(`der-monthly-${tab}-${c.id}`, fmt(m));
+      if(tab==='hibah'){
+        setT(`der-haji-hibah-${c.id}`, fmtI(num(c.sumCovered)*2));
+        setT(`der-khairat-hibah-${c.id}`, c.plan==='chinta'?'RM5,000':'RM2,000');
+        setShow(`warn-ci-hibah-${c.id}`, c.ci_on && num(c.ci_amt) < 100000);
+        setShow(`warn-adb-hibah-${c.id}`, c.adb_on && num(c.adb_amt) < 100000);
+      } else {
+        setT(`der-limit-medical-${c.id}`, c.rnb==='200'?fmtI(2000000):fmtI(1500000));
+        setShow(`warn-ci-medical-${c.id}`, c.ci_on && (num(c.ci_amt) < 10000 || num(c.ci_amt) > 30000));
+      }
+    });
+  }
+
+  /* ---------- EVENTS ---------- */
+  // pills
+  document.querySelectorAll('#t4u-qc .qc-pill').forEach(p=>{
+    p.addEventListener('click',()=>{
+      document.querySelectorAll('#t4u-qc .qc-pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      state.active = p.dataset.tab;
+      render();
+    });
+  });
+
+  // language toggle
+  document.querySelectorAll('#t4u-qc .lang-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(b.classList.contains('active')) return;
+      document.querySelectorAll('#t4u-qc .lang-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      state.lang = b.dataset.lang;
+      render();
+    });
+  });
+
+  // typing (no re-render) — text & number inputs
+  TABLE.addEventListener('input', e=>{
+    const t=e.target; if(!t.matches('input[type="number"],input[type="text"]')) return;
+    const id=+t.dataset.col, field=t.dataset.field; if(!field) return;
+    const col=state[state.active].columns.find(c=>c.id===id); if(!col) return;
+    col[field]=t.value;
+    recalc();
+  });
+
+  // change (re-render) — selects & checkboxes
+  TABLE.addEventListener('change', e=>{
+    const t=e.target; if(!t.matches('select, input[type="checkbox"]')) return;
+    const id=+t.dataset.col, field=t.dataset.field; if(!field) return;
+    const col=state[state.active].columns.find(c=>c.id===id); if(!col) return;
+    col[field] = (t.type==='checkbox') ? t.checked : t.value;
+    render();
+  });
+
+  // clicks — toggle lajur description + delete column
+  TABLE.addEventListener('click', e=>{
+    const descHead=e.target.closest('th.desc');
+    if(descHead){ state.descOpen=!state.descOpen; render(); return; }
+    const del=e.target.closest('.col-del');
+    if(del){ const id=+del.dataset.del; const cols=state[state.active].columns;
+      if(cols.length>1){ state[state.active].columns = cols.filter(c=>c.id!==id); render(); } }
+  });
+
+  // add column
+  document.getElementById('btnAdd').addEventListener('click',()=>{
+    state[state.active].columns.push(state.active==='medical'?newMed():newHib());
+    render();
+    const sc=document.querySelector('#t4u-qc .qc-scroll'); sc.scrollLeft=sc.scrollWidth;
+  });
+
+  // profile fields
+  const pfName=document.getElementById('pfName'), pfDob=document.getElementById('pfDob'),
+        pfAge=document.getElementById('pfAge'), pfPhone=document.getElementById('pfPhone');
+  pfName.addEventListener('input', ()=>{ state.profile.name=pfName.value; });
+  pfPhone.addEventListener('input', ()=>{ state.profile.phone=pfPhone.value; });
+  pfDob.addEventListener('input', ()=>{ state.profile.dob=pfDob.value; pfAge.value=calcANB(pfDob.value); });
+
+  /* ---------- PAYLOAD / EXPORT ---------- */
+  function buildPayload(){
+    const tab=state.active;
+    return {
+      type: tab==='medical'?'Kad Medikal (i-Medi Evolusi)':'Hibah (i-Great Nova/Chinta)',
+      tab, lang:state.lang, created_at:new Date().toISOString(),
+      agent:CONFIG.AGENT_NAME, site:CONFIG.SITE_URL,
+      customer:{ name:state.profile.name||'', dob:state.profile.dob||'', anb:calcANB(state.profile.dob), phone:state.profile.phone||'' },
+      columns: state[tab].columns.map(c=>{
+        const o={ name:c.name||'', yearly_contribution:num(c.yearly), monthly_contribution:Math.round(num(c.yearly)/12*100)/100 };
+        if(tab==='medical'){ o.coverage_age=c.ageM; o.room_board='RM'+c.rnb; o.overall_medical_limit=c.rnb==='200'?2000000:1500000;
+          o.cash_value=c.cash_on?(num(c.cash_amt)||true):false; o.daily_allowance=c.allow_on?(c.allow_txt||'RM100/hari'):false;
+          o.critical_illness=c.ci_on?num(c.ci_amt):false; o.payment_waiver=!!c.waiver; }
+        else { o.plan=c.plan==='chinta'?'i-Great Chinta':'i-Great Nova'; o.coverage_age=c.ageH; o.basic_sum_covered=num(c.sumCovered);
+          o.khairat_kematian=c.plan==='chinta'?5000:2000; o.haji_umrah=num(c.sumCovered)*2;
+          o.cash_value=c.cash_on?(num(c.cash_amt)||true):false; o.critical_illness=c.ci_on?num(c.ci_amt):false;
+          o.accidental_benefit=c.adb_on?num(c.adb_amt):false; o.payment_waiver=!!c.waiver; }
+        return o;
+      })
+    };
+  }
+
+  function waText(){
+    const p=buildPayload(); let lines=[`*${state.lang==='en'?'Quotation':'Quotation'} ${p.type}*`, ''];
+    if(p.customer.name) lines.push(`*${L('Nama','Name')}:* ${p.customer.name}`);
+    if(p.customer.anb) lines.push(`*ANB:* ${p.customer.anb}`);
+    if(p.customer.name||p.customer.anb) lines.push('');
+    p.columns.forEach((c,i)=>{
+      lines.push(`*${c.name||(L('Pelan','Plan')+' '+(i+1))}*`);
+      if(p.tab==='hibah'){ lines.push(`• ${L('Pelan','Plan')}: ${c.plan}`); lines.push(`• ${L('Pampasan Hibah','Hibah Benefit')}: ${fmtI(c.basic_sum_covered)}`); lines.push(`• ${L('Khairat','Compassionate')}: ${fmtI(c.khairat_kematian)}`); lines.push(`• Haji/Umrah: ${fmtI(c.haji_umrah)}`); if(c.critical_illness)lines.push(`• ${L('Penyakit Kritikal','Critical Illness')}: ${fmtI(c.critical_illness)}`); if(c.accidental_benefit)lines.push(`• Accidental: ${fmtI(c.accidental_benefit)}`); if(c.payment_waiver)lines.push(`• Payment Waiver: ${L('Ya','Yes')}`); }
+      else { lines.push(`• R&B: ${c.room_board}/${L('hari','day')}`); lines.push(`• ${L('Had Perlindungan','Coverage Age')}: ${c.coverage_age}`); lines.push(`• Medical Limit: ${fmtI(c.overall_medical_limit)}/${L('thn','yr')}`); if(c.critical_illness)lines.push(`• ${L('Penyakit Kritikal','Critical Illness')}: ${fmtI(c.critical_illness)}`); if(c.daily_allowance)lines.push(`• ${L('Elaun Hospital','Daily Allowance')}: ${c.daily_allowance}`); if(c.payment_waiver)lines.push(`• Payment Waiver: ${L('Ya','Yes')}`); }
+      lines.push(`• ${L('Caruman','Contribution')}: ${fmt(c.yearly_contribution)}/${L('thn','yr')} (${fmt(c.monthly_contribution)}/${L('bln','mo')})`); lines.push('');
+    });
+    lines.push(`${L('Dapatkan quotation penuh & konsultasi PERCUMA di','Get your full quotation & FREE consultation at')} ${CONFIG.SITE_URL}`);
+    return lines.join('\n');
+  }
+
+  // SAVE -> CRM (capture-quotation). Falls back to the original Pabbly
+  // webhook only when this isn't opened against a lead.
+  document.getElementById('btnSave').addEventListener('click', async ()=>{
+    if(CRM.leadId){ return CRM.save(); }
+    const t=UI[state.lang];
+    if(!CONFIG.PABBLY_WEBHOOK_URL){ showToast(t.toastSaveNeed,'warn'); return; }
+    const payload=buildPayload();
+    showToast(t.toastSaving);
+    try{
+      await fetch(CONFIG.PABBLY_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      showToast(t.toastSaveOk,'ok');
+    }catch(err){
+      try{ await fetch(CONFIG.PABBLY_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        showToast(t.toastSaveOk2,'ok'); }
+      catch(e2){ showToast(t.toastSaveErr+e2.message,'err'); }
+    }
+  });
+
+  /* =================== EKSPORT PDF / JPEG / WHATSAPP =================== */
+  let pdfLoading=false;
+  function ensureLibs(){
+    return new Promise((res,rej)=>{
+      if(window.html2pdf && window.html2canvas) return res();
+      if(pdfLoading){ const i=setInterval(()=>{ if(window.html2pdf && window.html2canvas){clearInterval(i);res();} },120); return; }
+      pdfLoading=true; const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      s.onload=res; s.onerror=()=>rej(new Error('load fail')); document.head.appendChild(s);
+    });
+  }
+
+  // Tangkap KESELURUHAN halaman (#t4u-qc penuh: header, pill, profil, jadual, butang)
+  // secara live guna html2canvas. Kelas .pdf dipasang sementara utk buka sticky/scroll
+  // supaya jadual penuh kelihatan (tiada bahagian tersembunyi).
+  async function captureCanvas(){
+    await ensureLibs();
+    root.classList.add('pdf');            // matikan sticky/scroll utk tangkapan bersih
+    const prevW=root.style.width;
+    try{
+      // pastikan lebar cukup utk jadual penuh (jika jadual lebih lebar dari container)
+      const tbl=root.querySelector('table.qc-table');
+      const needW=Math.max(root.scrollWidth, (tbl?tbl.scrollWidth:0)+40);
+      root.style.width=needW+'px';
+      // beri masa font/img/layout settle dulu
+      if(document.fonts && document.fonts.ready) { try{ await document.fonts.ready; }catch(e){} }
+      await new Promise(r=>setTimeout(r,80));
+      const canvas=await window.html2canvas(root, {scale:2, useCORS:true, backgroundColor:'#fbf4e4', windowWidth:needW, scrollX:0, scrollY:0,
+        ignoreElements: el => el.classList && el.classList.contains('qc-toast')});
+      return canvas;
+    } finally {
+      root.style.width=prevW;
+      root.classList.remove('pdf');
+    }
+  }
+
+  // Bina PDF (A4 landscape) drpd canvas — pecah ke banyak page jika panjang
+  function canvasToPdf(canvas){
+    const jsPDFctor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    const pdf=new jsPDFctor({unit:'mm', format:'a4', orientation:'landscape'});
+    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+    const margin=8, availW=pw-margin*2, availH=ph-margin*2;
+    const imgW=availW, imgH=canvas.height*(availW/canvas.width);
+    const img=canvas.toDataURL('image/jpeg',0.95);
+    if(imgH<=availH){
+      pdf.addImage(img,'JPEG',margin,margin,imgW,imgH);
+    } else {
+      // pecah page: hirisan mengikut ketinggian
+      let remaining=imgH, pos=margin;
+      let page=0;
+      const pxPerMm=canvas.width/imgW;
+      const sliceHpx=availH*pxPerMm;
+      let sy=0;
+      while(sy<canvas.height){
+        const c2=document.createElement('canvas');
+        c2.width=canvas.width; c2.height=Math.min(sliceHpx, canvas.height-sy);
+        c2.getContext('2d').drawImage(canvas,0,sy,canvas.width,c2.height,0,0,canvas.width,c2.height);
+        const sliceImg=c2.toDataURL('image/jpeg',0.95);
+        const sliceHmm=c2.height/pxPerMm;
+        if(page>0) pdf.addPage();
+        pdf.addImage(sliceImg,'JPEG',margin,margin,imgW,sliceHmm);
+        sy+=c2.height; page++;
+      }
+    }
+    return pdf;
+  }
+
+  const nameSafe=()=> state.active==='medical'?'Kad-Medikal':'Hibah';
+  const fileStamp=()=> nameSafe()+'-'+Date.now();
+
+  // ---- DOWNLOAD PDF ----
+  document.getElementById('btnPdf').addEventListener('click', async ()=>{
+    const t=UI[state.lang];
+    showToast(t.toastPdfPrep);
+    try{
+      const canvas=await captureCanvas();
+      const pdf=canvasToPdf(canvas);
+      pdf.save(`Quotation-${fileStamp()}.pdf`);
+      showToast(t.toastPdfOk,'ok');
+    }catch(err){ showToast(UI[state.lang].toastPdfErr+(err&&err.message?err.message:''),'err'); }
+  });
+
+  // ---- DOWNLOAD JPEG ----
+  document.getElementById('btnJpeg').addEventListener('click', async ()=>{
+    showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
+    try{
+      const canvas=await captureCanvas();
+      const link=document.createElement('a');
+      link.download=`Quotation-${fileStamp()}.jpg`;
+      link.href=canvas.toDataURL('image/jpeg',0.95);
+      document.body.appendChild(link); link.click(); link.remove();
+      showToast(L('JPEG berjaya dimuat turun ✅','JPEG downloaded successfully ✅'),'ok');
+    }catch(err){ showToast(L('Ralat JPEG: ','JPEG error: ')+(err&&err.message?err.message:''),'err'); }
+  });
+
+  // Normalkan nombor telefon MY ke format wa.me (cth 0116303... -> 60116303...)
+  // Normalkan nombor telefon ke format Malaysia +60 (E.164).
+  // Terima apa saja input: "011-6303 0513", "+6011...", "601163..." → output digit "6011..."
+  // (wa.me guna digit tanpa tanda "+", tapi ini tetap nombor +60 yang sama)
+  function waNumber(){
+    let d=String(state.profile.phone||'').replace(/\D/g,'');
+    if(!d) return '';
+    if(d.startsWith('600')) d='60'+d.slice(3);       // user taip +60 011... (lebihan 0)
+    else if(d.startsWith('0')) d='60'+d.slice(1);    // 011... -> 6011...
+    else if(!d.startsWith('60')) d='60'+d;           // 11... -> 6011...
+    return d;
+  }
+
+  // ---- HANTAR WHATSAPP (hantar fail PDF) ----
+  document.getElementById('btnWa').addEventListener('click', async ()=>{
+    const textMsg=waText();
+    const numDigits=waNumber();
+    showToast(L('Menyediakan PDF untuk WhatsApp…','Preparing PDF for WhatsApp…'));
+    try{
+      const canvas=await captureCanvas();
+      const pdf=canvasToPdf(canvas);
+      const blob=pdf.output('blob');
+      const filename=`Quotation-${fileStamp()}.pdf`;
+      const file=new File([blob],filename,{type:'application/pdf'});
+
+      // Cara terbaik hantar FAIL: Web Share API (mobile) — buka share sheet, user pilih chat WhatsApp
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({ files:[file], title:'Quotation '+nameSafe(), text:textMsg });
+        showToast(L('Kongsi berjaya ✅','Shared successfully ✅'),'ok');
+        return;
+      }
+
+      // Fallback (desktop / browser tak sokong share fail):
+      // muat turun PDF + buka chat WhatsApp (guna nombor telefon jika terisi) dgn teks ringkasan.
+      const dlUrl=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=dlUrl; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(dlUrl),5000);
+      const waUrl = numDigits
+        ? 'https://wa.me/'+numDigits+'?text='+encodeURIComponent(textMsg)
+        : 'https://wa.me/?text='+encodeURIComponent(textMsg);
+      window.open(waUrl,'_blank');
+      showToast(
+        numDigits
+          ? L('PDF dimuat turun & chat WhatsApp dibuka ke nombor pelanggan — lampirkan PDF tersebut.','PDF downloaded & WhatsApp chat opened to the customer number — attach the PDF.')
+          : L('PDF dimuat turun — sila lampirkan secara manual di WhatsApp.','PDF downloaded — attach it manually in WhatsApp.'),
+        'ok'
+      );
+    }catch(err){
+      if(err && err.name==='AbortError'){ /* user batal share sheet */ }
+      else showToast(L('Ralat kongsi: ','Share error: ')+(err&&err.message?err.message:''),'err');
+    }
+  });
+
+  /* ---------- CRM INTEGRATION ---------- */
+  const CRM = (function(){
+    const q = new URLSearchParams(location.search);
+    const leadId = q.get('lead_id') || '';
+    const quotationId = q.get('quotation_id') || '';
+    let savedId = null;
+
+    function post(msg){ try{ if(window.parent!==window) window.parent.postMessage(msg,'*'); }catch(e){} }
+
+    // Prefill the customer card from the lead the CRM opened this for.
+    function prefill(){
+      const name = q.get('name'), dob = q.get('dob'), phone = q.get('phone');
+      if(name){ state.profile.name = name; pfName.value = name; }
+      if(phone){ state.profile.phone = phone; pfPhone.value = phone; }
+      if(dob){ state.profile.dob = dob; pfDob.value = dob; pfAge.value = calcANB(dob); }
+    }
+
+    // Reopening a saved quotation: restore the exact columns/tab/language it
+    // was saved with so it can be reviewed and edited, not just re-created.
+    async function restore(){
+      if(!quotationId) return;
+      try{
+        const res = await fetch('/api/quotations/' + quotationId, { headers:{ 'Accept':'application/json' } });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const { raw_payload: p } = await res.json();
+        if(!p || !p.__customizer) return;
+        state.active = p.tab === 'hibah' ? 'hibah' : 'medical';
+        state.lang = p.lang === 'en' ? 'en' : 'bm';
+        if(p.customer){
+          state.profile.name = p.customer.name || '';
+          state.profile.phone = p.customer.phone || '';
+          state.profile.dob = p.customer.dob || '';
+          pfName.value = state.profile.name;
+          pfPhone.value = state.profile.phone;
+          pfDob.value = state.profile.dob;
+          pfAge.value = calcANB(state.profile.dob);
+        }
+        if(Array.isArray(p.__columns) && p.__columns.length){
+          state[state.active].columns = p.__columns;
+        }
+        document.querySelectorAll('#t4u-qc .qc-pill').forEach(x=>{
+          x.classList.toggle('active', x.dataset.tab === state.active);
+        });
+        document.getElementById('t4u-qc').className = 'tab-' + state.active;
+        render();
+        showToast(L('Quotation dimuatkan untuk disunting.','Quotation loaded for editing.'),'ok');
+      }catch(err){
+        showToast(L('Gagal muat quotation tersimpan.','Could not load the saved quotation.'),'err');
+      }
+    }
+
+    async function save(){
+      const p = buildPayload();
+      const tab = p.tab;
+      // The customizer spans both product families; map onto the existing
+      // quotation_product enum rather than widening it.
+      const product = tab === 'hibah' ? 'hibah_mixed' : 'imedi_evolusi';
+      // A blank column is one the agent hasn't filled in yet, not a real
+      // option -- saving it would put RM0 plans on the lead and drag down the
+      // pipeline/statistics figures that average over plans.
+      const cols = p.columns.filter(c => (c.yearly_contribution || 0) > 0);
+      if(!cols.length){
+        showToast(L('Isi caruman tahunan sekurang-kurangnya satu pelan dahulu.','Enter a yearly contribution for at least one plan first.'),'warn');
+        return;
+      }
+      const plans = cols.map((c,i)=>({
+        sort_order: i,
+        plan_label: c.name || ((tab==='hibah' ? 'Hibah' : 'Medical') + ' Option ' + (i+1)),
+        monthly_contribution: c.monthly_contribution || 0,
+        annual_contribution: c.yearly_contribution || 0,
+        coverage_detail: c
+      }));
+
+      showToast(L('Menyimpan ke lead…','Saving to lead…'));
+      try{
+        const res = await fetch(CONFIG.CAPTURE_QUOTATION_URL, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            lead_id: leadId, product, language: state.lang,
+            // __customizer/__columns let restore() rebuild the editor exactly;
+            // the rest stays human-readable for anything else reading it.
+            raw_payload: Object.assign({}, p, { __customizer:true, __columns: state[tab].columns }),
+            plans
+          })
+        });
+        const json = await res.json().catch(()=>null);
+        if(!res.ok || !json || !json.quotation_id) throw new Error((json&&json.error)||('HTTP '+res.status));
+        savedId = json.quotation_id;
+        showToast(L('Disimpan ke lead.','Saved to lead.'),'ok');
+        post({ type:'t4u-quotation-saved', quotation_id: savedId });
+      }catch(err){
+        showToast(L('Gagal simpan: ','Save failed: ') + (err&&err.message?err.message:''),'err');
+      }
+    }
+
+    return { leadId, quotationId, prefill, restore, save };
+  })();
+
+  /* ---------- INIT ---------- */
+  render();
+  CRM.prefill();
+  CRM.restore();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+"use client";
+
+import type { QuotationRow } from "./data";
+import { QuotationIcon } from "@/components/icons";
+
+const PRODUCT_LABEL: Record<string, string> = {
+  imedi_evolusi: "Medical Card — i-Medi Evolusi",
+  hibah_nova: "Hibah — i-Great Nova",
+  hibah_chinta: "Hibah — i-Great Chinta",
+  hibah_mixed: "Hibah — i-Great Nova / Chinta",
+};
+
+function fmtRM(n: number | null) {
+  if (n === null || n === undefined) return "—";
+  return `RM ${n.toLocaleString("en-MY", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
+function fmtWhen(iso: string) {
+  return new Date(iso).toLocaleString("en-MY", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export function LeadQuotations({
+  quotations,
+  onOpen,
+}: {
+  quotations: QuotationRow[];
+  onOpen: (quotationId: string) => void;
+}) {
+  if (quotations.length === 0) return null;
+
+  return (
+    <div className="rounded-[14px] border border-sand bg-white p-[18px]">
+      <div className="flex items-center gap-2">
+        <QuotationIcon width={15} height={15} className="text-warn-gold-text" />
+        <div className="text-[13px] font-bold text-navy">
+          Saved quotations <span className="font-semibold text-taupe">({quotations.length})</span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2">
+        {quotations.map((q) => {
+          // Only customizer-authored quotations carry the state needed to
+          // rebuild the editor; the older calculators save figures only.
+          const editable = q.raw_payload?.__customizer === true;
+          const primary = q.quotation_plans[0] ?? null;
+
+          return (
+            <div key={q.id} className="rounded-[11px] border border-sand-2 bg-cream px-3.5 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-[12.5px] font-bold text-navy">
+                    {PRODUCT_LABEL[q.product] ?? q.product}
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-medium text-taupe">
+                    {fmtWhen(q.created_at)} · {q.quotation_plans.length} plan
+                    {q.quotation_plans.length === 1 ? "" : "s"}
+                    {q.language ? ` · ${q.language.toUpperCase()}` : ""}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onOpen(q.id)}
+                  className="flex-none rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+                >
+                  {editable ? "Preview / Edit" : "Preview"}
+                </button>
+              </div>
+
+              {primary && (
+                <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-sand-3 pt-2.5">
+                  {q.quotation_plans.map((p) => (
+                    <div key={p.sort_order} className="min-w-0">
+                      <div className="truncate text-[10px] font-bold tracking-[0.06em] text-taupe-2 uppercase">
+                        {p.plan_label}
+                      </div>
+                      <div className="text-[12px] font-extrabold text-navy">
+                        {fmtRM(p.monthly_contribution)}
+                        <span className="text-[9.5px] font-semibold text-taupe">/mo</span>
+                        <span className="ml-1.5 text-[10.5px] font-semibold text-green">
+                          {fmtRM(p.annual_contribution)}
+                          <span className="text-[9px] text-taupe">/yr</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!editable && (
+                <div className="mt-2 text-[10.5px] font-medium text-taupe">
+                  Created with a calculator — opens read-only.
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

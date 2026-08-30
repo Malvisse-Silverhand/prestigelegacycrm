@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getLeadDetail, getReassignableUsers } from "./data";
+import { getLeadDetail, getLeadQuotations, getReassignableUsers } from "./data";
 import { LeadDetailContent } from "./lead-detail-content";
 
 export default async function LeadDetailPage({
@@ -15,13 +15,17 @@ export default async function LeadDetailPage({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const reassignOptions = await getReassignableUsers(profile);
+  const [reassignOptions, quotations] = await Promise.all([
+    getReassignableUsers(profile),
+    getLeadQuotations(id),
+  ]);
 
   return (
     <div className="mx-auto max-w-[900px] px-5 py-8">
       <LeadDetailContent
         lead={lead}
         activity={activity}
+        quotations={quotations}
         profile={profile}
         reassignOptions={reassignOptions}
       />
