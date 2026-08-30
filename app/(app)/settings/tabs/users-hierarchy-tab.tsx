@@ -207,7 +207,11 @@ export function UsersHierarchyTab({
                   <div className="truncate text-[13px] font-bold text-navy">{gm.full_name}</div>
                   <div className="truncate text-[11.5px] text-muted">
                     {gm.units.length} unit{gm.units.length === 1 ? "" : "s"} ·{" "}
-                    {gm.units.reduce((s, u) => s + u.agents.length, 0)} agents
+                    {gm.units.reduce(
+                      (s, u) => s + u.agents.length + u.aspirants.reduce((n, a) => n + a.agents.length, 0),
+                      0,
+                    ) + gm.directAgents.length}{" "}
+                    agents
                   </div>
                 </div>
                 <span className="flex-none rounded-[6px] bg-white px-[9px] py-1 text-[10px] font-bold text-green">GROUP MANAGER</span>
@@ -221,6 +225,43 @@ export function UsersHierarchyTab({
               </div>
 
               <div className={`flex-col gap-2 pl-[26px] pt-2.5 ${collapsed[gm.id] ? "hidden" : "flex"}`}>
+                {/* Reports straight to the Group Manager -- no unit in between. */}
+                {gm.directAgents.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    {gm.directAgents.map((agent) => (
+                      <div
+                        key={agent.id}
+                        className="flex items-center gap-2.5 rounded-lg border border-sand-3 bg-white px-3 py-2"
+                      >
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sand-3 text-[9.5px] font-bold text-navy">
+                          {initialsOf(agent.full_name)}
+                        </div>
+                        <div className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-navy">
+                          {agent.full_name}
+                        </div>
+                        <span className="flex-none rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                          AGENT
+                        </span>
+                        {canEdit && (
+                          <EditButton
+                            onClick={() =>
+                              setEditing({
+                                id: agent.id,
+                                fullName: agent.full_name,
+                                role: "agent",
+                                currentAssignedUnderId: gm.id,
+                              })
+                            }
+                          />
+                        )}
+                        {canEdit && (
+                          <DeleteButton onClick={() => setConfirmDelete({ id: agent.id, name: agent.full_name })} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {gm.units.map((unit) => (
                   <div key={unit.id}>
                     <div className="flex items-center gap-3 rounded-xl border border-sand-2 bg-cream px-3.5 py-[11px]">

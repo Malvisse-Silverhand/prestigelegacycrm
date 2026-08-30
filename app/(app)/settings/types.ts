@@ -9,7 +9,13 @@ export type OrgUnit = {
   aspirants: OrgAspirant[];
   agents: OrgPerson[];
 };
-export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
+export type OrgGroupManager = {
+  id: string;
+  full_name: string;
+  email: string;
+  units: OrgUnit[];
+  directAgents: OrgPerson[];
+};
 export type OrgTree = {
   superadmins: OrgPerson[];
   groupManagers: OrgGroupManager[];

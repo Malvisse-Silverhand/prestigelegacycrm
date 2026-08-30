@@ -191,13 +191,13 @@ export function WaFlowView({
                     </div>
                     {canManage && (
                       <div className="flex flex-none gap-1.5">
-                        <button type="button" onClick={() => { setEditing(t); setModalOpen(true); }} aria-label="Edit template" className="text-taupe hover:text-navy">
+                        <button type="button" onClick={() => { setEditing(t); setModalOpen(true); }} aria-label="Edit template" className="flex h-8 w-8 items-center justify-center rounded-lg text-taupe hover:text-navy">
                           <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                             <path d="M11 4h-5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
                             <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
                           </svg>
                         </button>
-                        <button type="button" onClick={() => handleDelete(t.id)} aria-label="Delete template" className="text-taupe hover:text-alert-red">
+                        <button type="button" onClick={() => handleDelete(t.id)} aria-label="Delete template" className="flex h-8 w-8 items-center justify-center rounded-lg text-taupe hover:text-alert-red">
                           <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                             <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
                           </svg>

@@ -29,7 +29,15 @@ export type OrgUnit = {
   aspirants: OrgAspirant[];
   agents: OrgPerson[];
 };
-export type OrgGroupManager = { id: string; full_name: string; email: string; units: OrgUnit[] };
+// People reporting straight to a Group Manager have no unit, so they hang off
+// the group manager itself rather than off one of its units.
+export type OrgGroupManager = {
+  id: string;
+  full_name: string;
+  email: string;
+  units: OrgUnit[];
+  directAgents: OrgPerson[];
+};
 export type OrgTree = {
   superadmins: OrgPerson[];
   groupManagers: OrgGroupManager[];
@@ -65,6 +73,19 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
 
   const all = members ?? [];
 
+  // Direct reports of the group managers in scope. These have unit_id = null,
+  // so the unit-scoped `members` query above can never return them.
+  const gmIds = (allGroupManagers ?? []).map((g) => g.id);
+  const { data: directReports } = gmIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, parent_id")
+        .in("parent_id", gmIds)
+        .in("role", ["agent", "aspirant_unit_manager"])
+        .is("unit_id", null)
+        .order("full_name")
+    : { data: [] as { id: string; full_name: string; email: string; role: string; parent_id: string | null }[] };
+
   const groupManagers: OrgGroupManager[] = (allGroupManagers ?? []).map((gm) => {
     const gmUnits = units.filter((u) => u.group_manager_id === gm.id);
     return {
@@ -94,6 +115,9 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
 
         return { id: u.id, name: u.name, unitManager, aspirants, agents };
       }),
+      directAgents: (directReports ?? [])
+        .filter((r) => r.parent_id === gm.id)
+        .map((r) => ({ id: r.id, full_name: r.full_name, email: r.email })),
     };
   });
 
@@ -101,8 +125,12 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
     superadmin: (superadmins ?? []).length,
     group_manager: groupManagers.length,
     unit_manager: all.filter((m) => m.role === "unit_manager").length,
-    aspirant_unit_manager: all.filter((m) => m.role === "aspirant_unit_manager").length,
-    agent: all.filter((m) => m.role === "agent").length,
+    aspirant_unit_manager:
+      all.filter((m) => m.role === "aspirant_unit_manager").length +
+      (directReports ?? []).filter((r) => r.role === "aspirant_unit_manager").length,
+    agent:
+      all.filter((m) => m.role === "agent").length +
+      (directReports ?? []).filter((r) => r.role === "agent").length,
   };
 
   return { superadmins: superadmins ?? [], groupManagers, roleCounts };
