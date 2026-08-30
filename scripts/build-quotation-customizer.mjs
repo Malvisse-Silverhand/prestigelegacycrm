@@ -87,9 +87,9 @@ patch(
         });
         document.getElementById('t4u-qc').className = 'tab-' + state.active;
         render();
-        showToast(L('Quotation dimuatkan untuk disunting.','Quotation loaded for editing.'),'ok');
+        showToast('Quotation loaded for editing.','ok');
       }catch(err){
-        showToast(L('Gagal muat quotation tersimpan.','Could not load the saved quotation.'),'err');
+        showToast('Could not load the saved quotation.','err');
       }
     }
 
@@ -104,7 +104,7 @@ patch(
       // pipeline/statistics figures that average over plans.
       const cols = p.columns.filter(c => (c.yearly_contribution || 0) > 0);
       if(!cols.length){
-        showToast(L('Isi caruman tahunan sekurang-kurangnya satu pelan dahulu.','Enter a yearly contribution for at least one plan first.'),'warn');
+        showToast('Enter a yearly contribution for at least one plan first.','warn');
         return;
       }
       const plans = cols.map((c,i)=>({
@@ -115,7 +115,7 @@ patch(
         coverage_detail: c
       }));
 
-      showToast(L('Menyimpan ke lead…','Saving to lead…'));
+      showToast('Saving to lead...');
       try{
         const res = await fetch(CONFIG.CAPTURE_QUOTATION_URL, {
           method:'POST', headers:{'Content-Type':'application/json'},
@@ -130,10 +130,10 @@ patch(
         const json = await res.json().catch(()=>null);
         if(!res.ok || !json || !json.quotation_id) throw new Error((json&&json.error)||('HTTP '+res.status));
         savedId = json.quotation_id;
-        showToast(L('Disimpan ke lead.','Saved to lead.'),'ok');
+        showToast('Saved to lead.','ok');
         post({ type:'t4u-quotation-saved', quotation_id: savedId });
       }catch(err){
-        showToast(L('Gagal simpan: ','Save failed: ') + (err&&err.message?err.message:''),'err');
+        showToast('Save failed: ' + (err&&err.message?err.message:''),'err');
       }
     }
 

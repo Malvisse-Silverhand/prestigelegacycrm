@@ -1188,3 +1188,26 @@
   window.addEventListener('scroll',hideTip,{passive:true});window.addEventListener('resize',hideTip);
 })();
 </script>
+
+<script>
+/* CRM preview mode: opened from a saved quotation in Lead Detail with
+   ?preview=1. The lead's details are already prefilled by the CRM patch
+   above, so auto-run the calculation and land straight on the rendered
+   quotation instead of making the agent re-submit a form they didn't fill.
+   Retries briefly because the prefill itself runs on DOM ready. */
+(function(){
+  try{
+    if(new URLSearchParams(location.search).get('preview') !== '1') return;
+    var BTN_IDS = ['mq-go','qqhGo'];
+    var tries = 0;
+    var timer = setInterval(function(){
+      tries++;
+      for(var i=0;i<BTN_IDS.length;i++){
+        var b = document.getElementById(BTN_IDS[i]);
+        if(b){ clearInterval(timer); b.click(); return; }
+      }
+      if(tries > 40) clearInterval(timer);
+    }, 150);
+  }catch(e){}
+})();
+</script>

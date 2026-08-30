@@ -54,6 +54,14 @@ type InviteInput = {
 
 type CallerProfile = { id: string; role: Role; unit_id: string | null };
 
+// When the org has exactly one Group Manager, new Unit Managers roll up to
+// them without anyone having to pick. Returns null once there is more than
+// one, since then it genuinely is a choice.
+async function soleGroupManagerId(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase.from("profiles").select("id").eq("role", "group_manager").limit(2);
+  return data && data.length === 1 ? data[0].id : null;
+}
+
 // Shared by invite (new user) and edit (existing user): resolves the
 // "assigned under" selection into an actual unit_id/parent_id pair, scoped so
 // a group manager can only ever reach inside units they manage.
@@ -108,7 +116,13 @@ async function resolveAssignment(
     if (caller.role === "group_manager") unitQuery = unitQuery.eq("group_manager_id", caller.id);
     const { data: unit } = await unitQuery.maybeSingle();
     if (!unit) return { unitId: null, parentId: null, error: "That unit could not be found." };
-    return { unitId: unit.id, parentId: unit.group_manager_id ?? caller.id, error: null };
+    // Every Unit Manager should roll up to a Group Manager. Normally that's
+    // whoever owns the unit; when the unit has none (superadmin-created), fall
+    // back to the sole Group Manager if there is exactly one, so unit managers
+    // land under them automatically instead of hanging off the superadmin.
+    let parentId = unit.group_manager_id;
+    if (!parentId) parentId = await soleGroupManagerId(supabase);
+    return { unitId: unit.id, parentId: parentId ?? caller.id, error: null };
   }
   // group_manager / superadmin roles: no unit, parent is the acting superadmin.
   return { unitId: null, parentId: caller.id, error: null };

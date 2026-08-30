@@ -106,13 +106,35 @@ export function LeadDetailContent({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [customizerUrl, setCustomizerUrl] = useState<string | null>(null);
+  const [quoteTool, setQuoteTool] = useState<{ url: string; title: string } | null>(null);
 
   // Passing quotation_id puts the customizer in reopen mode; without it the
   // tool just prefills from the lead and starts a fresh comparison.
   function openCustomizer(quotationId?: string) {
     const base = quoteLauncherUrl("quotation-customizer.html", lead);
-    setCustomizerUrl(quotationId ? `${base}&quotation_id=${quotationId}` : base);
+    setQuoteTool({
+      url: quotationId ? `${base}&quotation_id=${quotationId}` : base,
+      title: `Quotation Customizer — ${lead.full_name}`,
+    });
+  }
+
+  // A saved quotation reopens in whichever tool produced it. Calculator
+  // quotations go back to their own calculator, which re-renders the full
+  // benefits breakdown from the lead's details -- the customizer could only
+  // ever show a blank sheet for those, since they don't store editor state.
+  // preview=1 makes that calculator auto-run, so this lands on the finished
+  // quotation rather than on a form the agent has to submit again.
+  function openQuotation(q: QuotationRow) {
+    if (q.raw_payload?.__customizer) {
+      openCustomizer(q.id);
+      return;
+    }
+    const isHibah = q.product.startsWith("hibah");
+    const tool = isHibah ? "quickquote-hibah-life-takaful.html" : "imedi-evolusi-quote.html";
+    setQuoteTool({
+      url: `${quoteLauncherUrl(tool, lead)}&preview=1`,
+      title: `${isHibah ? "Hibah" : "Medical Card"} quotation — ${lead.full_name}`,
+    });
   }
   // Date.now() is impure -- calling it straight in the render body would
   // violate component purity. A useState lazy initializer is the idiomatic
@@ -319,7 +341,7 @@ export function LeadDetailContent({
           </div>
 
           <div className="mt-[22px]">
-            <LeadQuotations quotations={quotations} onOpen={(id) => openCustomizer(id)} />
+            <LeadQuotations quotations={quotations} onOpen={openQuotation} />
           </div>
 
           <div className="mt-[22px] flex items-center justify-between">
@@ -361,7 +383,7 @@ export function LeadDetailContent({
                     {a.activity_type === "quotation_created" && quotationForActivity(a, quotations) && (
                       <button
                         type="button"
-                        onClick={() => openCustomizer(quotationForActivity(a, quotations)!.id)}
+                        onClick={() => openQuotation(quotationForActivity(a, quotations)!)}
                         className="mt-1.5 text-[12px] font-semibold text-green underline underline-offset-2"
                       >
                         Open quotation
@@ -495,10 +517,10 @@ export function LeadDetailContent({
       {editing && <EditLeadModal lead={lead} canDelete={profile.role !== "agent"} onClose={() => setEditing(false)} />}
 
       <QuotationModal
-        url={customizerUrl}
-        title={`Quotation Customizer — ${lead.full_name}`}
+        url={quoteTool?.url ?? null}
+        title={quoteTool?.title ?? ""}
         onClose={() => {
-          setCustomizerUrl(null);
+          setQuoteTool(null);
           // A save inside the iframe writes a new quotations row; refetch so
           // the saved-quotations list and timeline pick it up.
           router.refresh();
