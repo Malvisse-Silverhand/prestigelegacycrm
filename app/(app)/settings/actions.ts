@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getTargetableAgents } from "./data";
-import { ROLE_RANK, type Role } from "@/lib/profile-types";
+import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
+import { sendEmail, inviteEmail } from "@/lib/email";
 
 // Unit Managers can now invite into their own unit too ("Superadmin, Group
 // Manager & Unit Manager boleh assign agent under mereka"). An Aspirant Unit
@@ -205,26 +206,33 @@ export async function inviteUser(input: InviteInput) {
   });
   if (auditError) console.error("inviteUser: audit_log insert failed", auditError);
 
-  // Email the new user a set-your-own-password link via Supabase's built-in
-  // mailer. Note this CANNOT carry `tempPassword`: Supabase renders its own
-  // recovery template and never sees a password we generated. So the temp
-  // password is still returned for the inviter to pass on directly -- the
-  // email is an additional path, not a replacement.
+  // Invite email goes out through Resend. Supabase's own mailer can't be used
+  // for this: it renders its own template and never sees the password we
+  // generated, so it could only ever send a bare link. Generating the recovery
+  // link ourselves lets the email carry a real "set your password" button and
+  // keeps the temp password as a fallback in the same message.
   //
-  // Supabase's built-in mailer is also heavily rate limited (a handful per
-  // hour) and is documented as not for production, so a failure here must not
-  // fail the invite -- the account already exists and works.
-  let emailSent = false;
-  let emailError: string | null = null;
-  const { error: mailError } = await admin.auth.resetPasswordForEmail(email, {
-    redirectTo: `${await appOrigin()}/reset-password`,
+  // A mail failure must not fail the invite -- the account already exists and
+  // works, and the temp password is shown on screen regardless.
+  const origin = await appOrigin();
+  let actionLink: string | null = null;
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: { redirectTo: `${origin}/reset-password` },
   });
-  if (mailError) {
-    emailError = mailError.message;
-    console.error("inviteUser: invite email failed", mailError);
-  } else {
-    emailSent = true;
-  }
+  if (linkError) console.error("inviteUser: generateLink failed", linkError);
+  else actionLink = linkData?.properties?.action_link ?? null;
+
+  const { subject, html } = inviteEmail({
+    fullName,
+    roleLabel: ROLE_LABEL[input.role],
+    actionLink,
+    tempPassword,
+    loginUrl: `${origin}/login`,
+  });
+  const { sent: emailSent, error: emailError } = await sendEmail({ to: email, subject, html });
+  if (emailError) console.error("inviteUser: invite email failed", emailError);
 
   revalidatePath("/settings");
   return { error: null, email, tempPassword, emailSent, emailError };

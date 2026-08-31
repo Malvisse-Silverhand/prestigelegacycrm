@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
+import { requestPasswordReset } from "./actions";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -16,20 +16,15 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (resetError) {
-      // Rate limiting is the realistic failure here -- the built-in Supabase
-      // mailer allows only a handful of sends per hour -- so name it rather
-      // than showing a generic error the agent can't act on.
-      setError(
-        resetError.message.toLowerCase().includes("rate")
-          ? "Too many reset emails have been requested recently. Please wait a few minutes and try again."
-          : "Couldn't send the reset email. Check the address and try again.",
-      );
+    try {
+      const result = await requestPasswordReset(email);
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Couldn't connect. Check your internet connection and try again.");
       setLoading(false);
       return;
     }
