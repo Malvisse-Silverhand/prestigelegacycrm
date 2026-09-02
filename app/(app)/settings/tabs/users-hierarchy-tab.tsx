@@ -65,6 +65,27 @@ function assignmentChoicesFor(
   return [];
 }
 
+// The message an admin pastes straight into WhatsApp. Written in BM because
+// it is sent to a person, not shown in the CRM -- the same exception the WA
+// Flow template bodies use. Asterisks are WhatsApp's bold syntax.
+//
+// The origin is read from the browser rather than hard-coded, so the link is
+// always the environment the admin is actually using.
+function shareMessage(s: { fullName: string; email: string; tempPassword: string }) {
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  return [
+    "*Prestige Legacy CRM*",
+    "",
+    `Salam ${s.fullName}, akaun CRM anda sudah siap.`,
+    "",
+    `🔗 Log masuk: ${origin}/login`,
+    `📧 Emel: ${s.email}`,
+    `🔑 Kata laluan sementara: ${s.tempPassword}`,
+    "",
+    "Sila tukar kata laluan selepas log masuk kali pertama.",
+  ].join("\n");
+}
+
 function initialsOf(name: string) {
   return name
     .trim()
@@ -622,11 +643,13 @@ function AddUserForm({
   const [assignedUnderId, setAssignedUnderId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
+    fullName: string;
     email: string;
     tempPassword: string;
     emailSent: boolean;
     emailError: string | null;
   } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const availableRoles = creatableRoles(role);
@@ -654,6 +677,7 @@ function AddUserForm({
           return;
         }
         setSuccess({
+          fullName,
           email: result.email!,
           tempPassword: result.tempPassword!,
           emailSent: result.emailSent ?? false,
@@ -695,6 +719,22 @@ function AddUserForm({
           <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">Temporary password</div>
           <div className="mt-1 select-all font-mono text-[15px] font-bold text-navy">{success.tempPassword}</div>
         </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(shareMessage(success));
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch {
+              setCopied(false);
+            }
+          }}
+          className="mt-3 flex h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-green text-[13px] font-semibold text-white"
+        >
+          {copied ? "Copied — paste into WhatsApp" : "Copy login details for WhatsApp"}
+        </button>
         <button
           type="button"
           onClick={() => setSuccess(null)}
