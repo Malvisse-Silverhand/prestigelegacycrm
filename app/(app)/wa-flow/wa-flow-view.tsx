@@ -51,11 +51,11 @@ export function WaFlowView({
   const q = lead?.quotations[0];
   const fillValues: Record<string, string> = lead
     ? {
-        tokNama: lead.full_name,
-        tokAgent: profile.full_name,
-        tokProduk: q ? PRODUCT_LABEL[q.product] ?? q.product : "",
-        tokCaruman: plan?.monthly_contribution != null ? String(plan.monthly_contribution) : "",
-        tokHad: plan
+        Name: lead.full_name,
+        Agent: profile.full_name,
+        Product: q ? PRODUCT_LABEL[q.product] ?? q.product : "",
+        Contribution: plan?.monthly_contribution != null ? String(plan.monthly_contribution) : "",
+        Limit: plan
           ? String(
               (plan.coverage_detail as Record<string, unknown>)?.annual_limit ??
                 (plan.coverage_detail as Record<string, unknown>)?.sum_covered ??

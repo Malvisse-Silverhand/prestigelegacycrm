@@ -75,7 +75,7 @@ export function TemplateModal({
               required
               rows={6}
               defaultValue={template?.body}
-              placeholder="Use {{tokNama}}, {{tokAgent}}, {{tokProduk}}, {{tokCaruman}}, {{tokHad}}"
+              placeholder="Use {{Name}}, {{Agent}}, {{Product}}, {{Contribution}}, {{Limit}}"
               className="mt-1.5 w-full resize-none rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 font-mono text-[12.5px] text-navy outline-none focus:border-gold"
             />
           </label>
