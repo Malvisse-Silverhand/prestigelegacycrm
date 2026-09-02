@@ -18,10 +18,10 @@ async function unitsInScope(profile: CurrentProfile): Promise<ScopeUnit[]> {
   return data ?? [];
 }
 
-export type OrgPerson = { id: string; full_name: string; email: string };
+export type OrgPerson = { id: string; full_name: string; email: string; phone: string | null };
 // An Aspirant Unit Manager runs a sub-team inside a unit, so it renders as
 // its own branch with the agents reporting to it nested underneath.
-export type OrgAspirant = { id: string; full_name: string; email: string; agents: OrgPerson[] };
+export type OrgAspirant = { id: string; full_name: string; email: string; phone: string | null; agents: OrgPerson[] };
 export type OrgUnit = {
   id: string;
   name: string;
@@ -35,6 +35,7 @@ export type OrgGroupManager = {
   id: string;
   full_name: string;
   email: string;
+  phone: string | null;
   units: OrgUnit[];
   directAgents: OrgPerson[];
 };
@@ -57,15 +58,15 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
 
   const [{ data: superadmins }, { data: allGroupManagers }, { data: members }] = await Promise.all([
     profile.role === "superadmin"
-      ? supabase.from("profiles").select("id, full_name, email").eq("role", "superadmin").order("full_name")
+      ? supabase.from("profiles").select("id, full_name, email, phone").eq("role", "superadmin").order("full_name")
       : Promise.resolve({ data: [] as OrgPerson[] }),
     profile.role === "superadmin"
-      ? supabase.from("profiles").select("id, full_name, email").eq("role", "group_manager").order("full_name")
-      : supabase.from("profiles").select("id, full_name, email").eq("id", profile.id),
+      ? supabase.from("profiles").select("id, full_name, email, phone").eq("role", "group_manager").order("full_name")
+      : supabase.from("profiles").select("id, full_name, email, phone").eq("id", profile.id),
     unitIds.length > 0
       ? supabase
           .from("profiles")
-          .select("id, full_name, email, role, unit_id, parent_id")
+          .select("id, full_name, email, phone, role, unit_id, parent_id")
           .in("unit_id", unitIds)
           .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
       : Promise.resolve({ data: [] }),
@@ -79,12 +80,12 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
   const { data: directReports } = gmIds.length
     ? await supabase
         .from("profiles")
-        .select("id, full_name, email, role, parent_id")
+        .select("id, full_name, email, phone, role, parent_id")
         .in("parent_id", gmIds)
         .in("role", ["agent", "aspirant_unit_manager"])
         .is("unit_id", null)
         .order("full_name")
-    : { data: [] as { id: string; full_name: string; email: string; role: string; parent_id: string | null }[] };
+    : { data: [] as { id: string; full_name: string; email: string; phone: string | null; role: string; parent_id: string | null }[] };
 
   const groupManagers: OrgGroupManager[] = (allGroupManagers ?? []).map((gm) => {
     const gmUnits = units.filter((u) => u.group_manager_id === gm.id);
@@ -92,6 +93,7 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
       id: gm.id,
       full_name: gm.full_name,
       email: gm.email,
+      phone: gm.phone,
       units: gmUnits.map((u) => {
         const unitManager = all.find((m) => m.role === "unit_manager" && m.unit_id === u.id) ?? null;
         const unitAgents = all.filter((m) => m.role === "agent" && m.unit_id === u.id);
@@ -102,22 +104,23 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
             id: a.id,
             full_name: a.full_name,
             email: a.email,
+            phone: a.phone,
             agents: unitAgents
               .filter((m) => m.parent_id === a.id)
-              .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email })),
+              .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email, phone: m.phone })),
           }));
 
         // Only agents not already shown under an aspirant, so nobody appears twice.
         const aspirantIds = new Set(aspirants.map((a) => a.id));
         const agents = unitAgents
           .filter((m) => !m.parent_id || !aspirantIds.has(m.parent_id))
-          .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email }));
+          .map((m) => ({ id: m.id, full_name: m.full_name, email: m.email, phone: m.phone }));
 
         return { id: u.id, name: u.name, unitManager, aspirants, agents };
       }),
       directAgents: (directReports ?? [])
         .filter((r) => r.parent_id === gm.id)
-        .map((r) => ({ id: r.id, full_name: r.full_name, email: r.email })),
+        .map((r) => ({ id: r.id, full_name: r.full_name, email: r.email, phone: r.phone })),
     };
   });
 

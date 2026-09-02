@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ROLE_RANK } from "@/lib/profile-types";
 import type { Role, OrgTree, UnitManagerOption, UnitOption } from "../types";
 import { inviteUser, updateUserAssignment, deleteUser } from "../actions";
+import { waLink } from "@/lib/whatsapp";
 
 const ROLE_LABEL: Record<Role, string> = {
   superadmin: "SuperAdmin",
@@ -164,9 +165,9 @@ export function UsersHierarchyTab({
   const { superadmins, groupManagers, roleCounts } = orgTree;
   // Mirrors canManageSettings() in ../actions.
   const canEdit = role === "superadmin" || role === "group_manager" || role === "unit_manager";
-  const [editing, setEditing] = useState<{ id: string; fullName: string; role: Role; currentAssignedUnderId: string | null } | null>(
-    null,
-  );
+  const [editing, setEditing] = useState<
+    { id: string; fullName: string; email: string; phone: string; role: Role; currentAssignedUnderId: string | null } | null
+  >(null);
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   // Collapsed by id; everything starts expanded so the tree still reads as a
@@ -239,7 +240,7 @@ export function UsersHierarchyTab({
                 <CollapseButton collapsed={!!collapsed[gm.id]} onClick={() => toggleCollapse(gm.id)} />
                 {canEdit && (
                   <EditButton
-                    onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, role: "group_manager", currentAssignedUnderId: null })}
+                    onClick={() => setEditing({ id: gm.id, fullName: gm.full_name, email: gm.email, phone: gm.phone ?? "", role: "group_manager", currentAssignedUnderId: null })}
                   />
                 )}
                 {canEdit && <DeleteButton onClick={() => setConfirmDelete({ id: gm.id, name: gm.full_name })} />}
@@ -269,6 +270,8 @@ export function UsersHierarchyTab({
                               setEditing({
                                 id: agent.id,
                                 fullName: agent.full_name,
+                                email: agent.email,
+                                phone: agent.phone ?? "",
                                 role: "agent",
                                 currentAssignedUnderId: gm.id,
                               })
@@ -309,6 +312,8 @@ export function UsersHierarchyTab({
                             setEditing({
                               id: unit.unitManager!.id,
                               fullName: unit.unitManager!.full_name,
+                              email: unit.unitManager!.email,
+                              phone: unit.unitManager!.phone ?? "",
                               role: "unit_manager",
                               currentAssignedUnderId: unit.id,
                             })
@@ -342,6 +347,8 @@ export function UsersHierarchyTab({
                                 setEditing({
                                   id: asp.id,
                                   fullName: asp.full_name,
+                                  email: asp.email,
+                                  phone: asp.phone ?? "",
                                   role: "aspirant_unit_manager",
                                   currentAssignedUnderId: unit.unitManager?.id ?? null,
                                 })
@@ -371,6 +378,8 @@ export function UsersHierarchyTab({
                                       setEditing({
                                         id: agent.id,
                                         fullName: agent.full_name,
+                                        email: agent.email,
+                                        phone: agent.phone ?? "",
                                         role: "agent",
                                         currentAssignedUnderId: asp.id,
                                       })
@@ -407,6 +416,8 @@ export function UsersHierarchyTab({
                                   setEditing({
                                     id: agent.id,
                                     fullName: agent.full_name,
+                                    email: agent.email,
+                                    phone: agent.phone ?? "",
                                     role: "agent",
                                     currentAssignedUnderId: unit.unitManager?.id ?? null,
                                   })
@@ -463,12 +474,15 @@ function EditUserPanel({
   viewerRole,
   onDone,
 }: {
-  editing: { id: string; fullName: string; role: Role; currentAssignedUnderId: string | null };
+  editing: { id: string; fullName: string; email: string; phone: string; role: Role; currentAssignedUnderId: string | null };
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
   viewerRole: Role;
   onDone: () => void;
 }) {
   const router = useRouter();
+  const [fullName, setFullName] = useState(editing.fullName);
+  const [email, setEmail] = useState(editing.email);
+  const [phone, setPhone] = useState(editing.phone);
   const [newRole, setNewRole] = useState<Role>(editing.role);
   const [assignedUnderId, setAssignedUnderId] = useState(editing.currentAssignedUnderId ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -483,6 +497,9 @@ function EditUserPanel({
       try {
         const result = await updateUserAssignment({
           userId: editing.id,
+          fullName,
+          email,
+          phone,
           role: newRole,
           assignedUnderId: requiresAssignment ? assignedUnderId || null : null,
         });
@@ -507,9 +524,36 @@ function EditUserPanel({
           Cancel
         </button>
       </div>
-      <div className="mt-0.5 text-xs font-medium text-muted">Change their role or move them elsewhere in the hierarchy.</div>
+      <div className="mt-0.5 text-xs font-medium text-muted">
+        Update their details, role, or move them elsewhere in the hierarchy.
+      </div>
 
       <div className="mt-4 flex flex-col gap-3.5">
+        <Field label="Full name">
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-semibold text-navy outline-none focus:border-gold"
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
+          />
+          <p className="mt-1 text-[10.5px] font-medium text-taupe">Changing this changes their login email too.</p>
+        </Field>
+        <Field label="Phone">
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            type="tel"
+            placeholder="012-345 6789"
+            className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
+          />
+        </Field>
         <Field label="Role">
           <div className="grid grid-cols-2 gap-[7px]">
             {creatableRoles(viewerRole).map((r) => (
@@ -554,7 +598,7 @@ function EditUserPanel({
         <button
           type="button"
           onClick={handleSave}
-          disabled={pending || (requiresAssignment && !assignedUnderId)}
+          disabled={pending || !fullName.trim() || !email.trim() || !phone.trim() || (requiresAssignment && !assignedUnderId)}
           className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : "Save changes"}
@@ -639,17 +683,18 @@ function AddUserForm({
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [newRole, setNewRole] = useState<Role>("agent");
   const [assignedUnderId, setAssignedUnderId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
     fullName: string;
     email: string;
+    phone: string;
     tempPassword: string;
     emailSent: boolean;
     emailError: string | null;
   } | null>(null);
-  const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const availableRoles = creatableRoles(role);
@@ -669,6 +714,7 @@ function AddUserForm({
         const result = await inviteUser({
           fullName,
           email,
+          phone,
           role: newRole,
           assignedUnderId: requiresAssignment ? assignedUnderId || null : null,
         });
@@ -679,12 +725,14 @@ function AddUserForm({
         setSuccess({
           fullName,
           email: result.email!,
+          phone: result.phone!,
           tempPassword: result.tempPassword!,
           emailSent: result.emailSent ?? false,
           emailError: result.emailError ?? null,
         });
         setFullName("");
         setEmail("");
+        setPhone("");
         setAssignedUnderId("");
         router.refresh();
       } catch {
@@ -720,21 +768,17 @@ function AddUserForm({
           <div className="mt-1 select-all font-mono text-[15px] font-bold text-navy">{success.tempPassword}</div>
         </div>
 
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(shareMessage(success));
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            } catch {
-              setCopied(false);
-            }
-          }}
+        <a
+          href={waLink(success.phone, shareMessage(success))}
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-3 flex h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-green text-[13px] font-semibold text-white"
         >
-          {copied ? "Copied — paste into WhatsApp" : "Copy login details for WhatsApp"}
-        </button>
+          <svg width={15} height={15} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.29-1.39a9.9 9.9 0 0 0 4.75 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm0 18.11h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.14.82.84-3.06-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42-.14-.01-.31-.01-.47-.01a.9.9 0 0 0-.65.31c-.22.25-.86.84-.86 2.04 0 1.2.88 2.37 1 2.53.12.17 1.73 2.64 4.2 3.7.59.25 1.04.4 1.4.52.59.19 1.12.16 1.54.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28Z" />
+          </svg>
+          Share to WhatsApp
+        </a>
         <button
           type="button"
           onClick={() => setSuccess(null)}
@@ -773,6 +817,16 @@ function AddUserForm({
             type="email"
             className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
           />
+        </Field>
+        <Field label="Phone">
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="012-345 6789"
+            type="tel"
+            className="h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-medium text-navy outline-none focus:border-gold"
+          />
+          <p className="mt-1 text-[10.5px] font-medium text-taupe">Used for the &ldquo;Share to WhatsApp&rdquo; button below.</p>
         </Field>
         <Field label="Role">
           <div className="grid grid-cols-2 gap-[7px]">
@@ -817,7 +871,7 @@ function AddUserForm({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={pending || !fullName || !email || (requiresAssignment && !assignedUnderId)}
+          disabled={pending || !fullName || !email || !phone || (requiresAssignment && !assignedUnderId)}
           className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Creating…" : "Send Invitation"}

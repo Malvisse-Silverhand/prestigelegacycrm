@@ -50,9 +50,18 @@ function generateTempPassword() {
 type InviteInput = {
   fullName: string;
   email: string;
+  phone: string;
   role: Role;
   assignedUnderId: string | null; // unit_manager id (role=agent) or unit id (role=unit_manager)
 };
+
+// Loose on purpose: agents type numbers with spaces/dashes ("012-345 6789"),
+// and this only needs to be strict enough to build a wa.me link later
+// (waLink() strips non-digits itself). 9-11 digits covers Malaysian mobiles
+// with or without a leading 0.
+function isPlausiblePhone(v: string) {
+  return /^\d{9,11}$/.test(v.replace(/\D/g, ""));
+}
 
 type CallerProfile = { id: string; role: Role; unit_id: string | null };
 
@@ -153,8 +162,10 @@ export async function inviteUser(input: InviteInput) {
 
   const fullName = input.fullName.trim();
   const email = input.email.trim().toLowerCase();
+  const phone = input.phone.trim();
   if (fullName.length < 2) return { error: "Enter the new user's full name." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "Enter a valid email address." };
+  if (!isPlausiblePhone(phone)) return { error: "Enter a valid phone number." };
 
   // Rank-based: you can only create someone below you. resolveAssignment then
   // additionally pins where they land (a group manager inside their own units,
@@ -185,6 +196,7 @@ export async function inviteUser(input: InviteInput) {
     id: created.user.id,
     full_name: fullName,
     email,
+    phone,
     role: input.role,
     unit_id: unitId,
     parent_id: parentId,
@@ -235,11 +247,14 @@ export async function inviteUser(input: InviteInput) {
   if (emailError) console.error("inviteUser: invite email failed", emailError);
 
   revalidatePath("/settings");
-  return { error: null, email, tempPassword, emailSent, emailError };
+  return { error: null, email, phone, tempPassword, emailSent, emailError };
 }
 
 export async function updateUserAssignment(input: {
   userId: string;
+  fullName: string;
+  email: string;
+  phone: string;
   role: Role;
   assignedUnderId: string | null;
 }) {
@@ -250,8 +265,15 @@ export async function updateUserAssignment(input: {
     return { error: "You can't move a user into that role." };
   }
 
+  const fullName = input.fullName.trim();
+  const email = input.email.trim().toLowerCase();
+  const phone = input.phone.trim();
+  if (fullName.length < 2) return { error: "Enter a full name." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "Enter a valid email address." };
+  if (!isPlausiblePhone(phone)) return { error: "Enter a valid phone number." };
+
   const supabase = await createClient();
-  const { data: target } = await supabase.from("profiles").select("id, role").eq("id", input.userId).maybeSingle();
+  const { data: target } = await supabase.from("profiles").select("id, role, email").eq("id", input.userId).maybeSingle();
   if (!target) return { error: "That user could not be found." };
   // A superadmin has full reach over every other account, peers included.
   // Everyone else can only touch people who rank strictly below them, so a
@@ -265,9 +287,24 @@ export async function updateUserAssignment(input: {
   const { unitId, parentId } = assignment;
 
   const admin = createAdminClient();
+
+  // The login email lives on auth.users, not profiles -- profiles.email is a
+  // denormalised copy for display/search. Both have to change together or the
+  // person ends up unable to sign in with the address shown on screen.
+  if (email !== target.email) {
+    const { error: authError } = await admin.auth.admin.updateUserById(input.userId, { email });
+    if (authError) {
+      return {
+        error: authError.message.toLowerCase().includes("already been registered")
+          ? "A user with that email already exists."
+          : "Couldn't update this user's login email. Please try again.",
+      };
+    }
+  }
+
   const { data: updated, error } = await admin
     .from("profiles")
-    .update({ role: input.role, unit_id: unitId, parent_id: parentId })
+    .update({ full_name: fullName, email, phone, role: input.role, unit_id: unitId, parent_id: parentId })
     .eq("id", input.userId)
     .select("id")
     .maybeSingle();
