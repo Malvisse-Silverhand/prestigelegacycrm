@@ -49,11 +49,23 @@ export function LeadDistributionTab({ initial }: { initial: DistributionSettings
           onChange={() => toggle("roundRobinEnabled")}
         />
         <div className="flex items-center gap-[11px]">
-          <span className="flex h-[21px] w-[38px] flex-none items-center justify-end rounded-full bg-green px-[3px]">
+          {/* Always on -- there's no separate enabled flag, only the
+              threshold below, so this is a fixed status indicator, not a
+              switch. A real (disabled) button here, not a bare span, so it
+              doesn't read as a clickable toggle sitting next to the two that
+              actually are. */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked="true"
+            aria-label="Auto-flag lead stale (always on)"
+            disabled
+            className="flex h-[21px] w-[38px] flex-none items-center justify-end rounded-full bg-green px-[3px] disabled:opacity-70"
+          >
             <span className="h-[15px] w-[15px] rounded-full bg-white" />
-          </span>
+          </button>
           <div className="flex-1">
-            <div className="text-[12.5px] font-semibold text-navy">Auto-flag lead stale</div>
+            <div className="text-[12.5px] font-semibold text-navy">Auto-flag lead stale · Always on</div>
             <div className="flex items-center gap-1.5 text-[11px] text-taupe">
               No activity for over
               <input

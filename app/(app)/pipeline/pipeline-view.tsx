@@ -58,7 +58,7 @@ export function PipelineView({
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [dragLeadId, setDragLeadId] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [movePending, startTransition] = useTransition();
   const [mobileStage, setMobileStage] = useState<PipelineStage>("follow_up");
   const [view, setView] = useState<"board" | "table">("board");
   const [quoteModal, setQuoteModal] = useState<{ url: string; leadName: string } | null>(null);
@@ -222,6 +222,7 @@ export function PipelineView({
                     onDragEnd={() => setDragLeadId(null)}
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
+                    movePending={movePending}
                     staleAfterDays={staleAfterDays}
                     onOpenQuotation={() => openQuotation(lead)}
                     onOpenCustomizer={() => openCustomizer(lead)}
@@ -316,7 +317,8 @@ export function PipelineView({
                     <button
                       type="button"
                       onClick={() => moveStage(lead.id, nextStage.value)}
-                      className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream"
+                      disabled={movePending}
+                      className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream disabled:opacity-50"
                       aria-label={`Move to ${nextStage.label}`}
                     >
                       <ChevronRightIcon width={15} height={15} className="text-navy" />
@@ -477,7 +479,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, staleAfterDays, onOpenQuotation, onOpenCustomizer,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -488,6 +490,7 @@ function PipelineCard({
   onDragEnd: () => void;
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
+  movePending: boolean;
   staleAfterDays: number;
   onOpenQuotation: () => void;
   onOpenCustomizer: () => void;
@@ -497,15 +500,16 @@ function PipelineCard({
   const hasQuote = lead.quotations.length > 0;
   const staleDays = daysSinceLastActivity(lead);
   const stale = staleDays >= staleAfterDays;
+  const canDrag = canManageStage && !movePending;
 
   return (
     <div
-      draggable={canManageStage}
+      draggable={canDrag}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={
         "relative rounded-[14px] border bg-white p-3 transition-colors " +
-        (canManageStage ? "cursor-grab active:cursor-grabbing " : "") +
+        (canDrag ? "cursor-grab active:cursor-grabbing " : "") +
         (isDragging ? "border-gold bg-gold/10 opacity-70 shadow-elevated ring-2 ring-gold" : "border-sand")
       }
     >
@@ -600,8 +604,9 @@ function PipelineCard({
               <div className="px-2 pb-2">
                 <select
                   value={stage}
+                  disabled={movePending}
                   onChange={(e) => onMove(e.target.value as PipelineStage)}
-                  className="w-full rounded-[7px] border border-sand-2 bg-cream px-2 py-1.5 text-[10.5px] font-semibold text-navy outline-none focus:border-gold"
+                  className="w-full rounded-[7px] border border-sand-2 bg-cream px-2 py-1.5 text-[10.5px] font-semibold text-navy outline-none focus:border-gold disabled:opacity-70"
                 >
                   {STAGES.map((s) => (
                     <option key={s.value} value={s.value}>

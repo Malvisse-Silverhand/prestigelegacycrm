@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,22 +19,27 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(
-        "That email and password don't match our records. Try again, or contact your unit manager for help.",
-      );
+      if (signInError) {
+        setError(
+          "That email and password don't match our records. Try again, or contact your unit manager for help.",
+        );
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Couldn't connect. Check your internet connection and try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
@@ -113,33 +117,7 @@ export default function LoginPage() {
             </div>
           </label>
 
-          <div className="mt-[15px] flex items-center justify-between">
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                checked={keepSignedIn}
-                onChange={(event) => setKeepSignedIn(event.target.checked)}
-                className="peer sr-only"
-              />
-              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-[5px] bg-navy peer-focus-visible:ring-2 peer-focus-visible:ring-gold peer-focus-visible:ring-offset-2">
-                {keepSignedIn && (
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--color-gold)"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-              </span>
-              <span className="text-[12.5px] font-medium text-ink">
-                Keep me signed in
-              </span>
-            </label>
+          <div className="mt-[15px] flex items-center justify-end">
             <Link
               href="/forgot-password"
               className="text-[12.5px] font-semibold text-green"

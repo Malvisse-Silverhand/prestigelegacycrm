@@ -37,12 +37,7 @@ export type LeadRow = {
   profiles: { full_name: string } | null;
 };
 
-export async function getLeads(filters: LeadFilters) {
-  const supabase = await createClient();
-  const page = filters.page ?? 1;
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
+function filteredLeadsQuery(supabase: Awaited<ReturnType<typeof createClient>>, filters: LeadFilters) {
   let query = supabase
     .from("leads")
     .select(
@@ -67,9 +62,33 @@ export async function getLeads(filters: LeadFilters) {
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.agent) query = query.eq("agent_id", filters.agent);
 
-  const { data, count } = await query.range(from, to).returns<LeadRow[]>();
+  return query;
+}
+
+export async function getLeads(filters: LeadFilters) {
+  const supabase = await createClient();
+  const page = filters.page ?? 1;
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data, count } = await filteredLeadsQuery(supabase, filters).range(from, to).returns<LeadRow[]>();
 
   return { leads: data ?? [], total: count ?? 0, page };
+}
+
+// Same filters as getLeads but every matching row instead of one page --
+// used by "Export to CSV" so it exports what the agent is actually looking
+// at, not just the 20 rows currently on screen. Capped well above any real
+// unit's lead count so a runaway filter can't pull the whole table.
+const EXPORT_ROW_CAP = 20000;
+
+export async function getAllLeadsForExport(filters: LeadFilters) {
+  const supabase = await createClient();
+  const { data } = await filteredLeadsQuery(supabase, filters)
+    .range(0, EXPORT_ROW_CAP - 1)
+    .returns<LeadRow[]>();
+
+  return data ?? [];
 }
 
 export async function getFilterOptions() {

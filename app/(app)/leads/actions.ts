@@ -4,6 +4,15 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker } from "@/lib/lead-field-validation";
+import { getAllLeadsForExport, type LeadFilters } from "./data";
+
+export async function exportLeads(filters: LeadFilters) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "You don't have permission to do that.", leads: null };
+
+  const leads = await getAllLeadsForExport(filters);
+  return { error: null, leads };
+}
 
 export async function createLead(formData: FormData) {
   const profile = await getCurrentProfile();

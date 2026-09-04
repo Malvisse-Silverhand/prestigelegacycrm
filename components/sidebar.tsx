@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
+import { useSignOut } from "@/lib/use-sign-out";
 import { visibleNav } from "@/lib/nav";
 import { SignOutIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
@@ -11,15 +11,8 @@ import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
 
 export function Sidebar({ profile }: { profile: CurrentProfile }) {
   const pathname = usePathname();
-  const router = useRouter();
   const items = visibleNav(profile.role);
-
-  async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
-  }
+  const { signOut, pending, error } = useSignOut();
 
   return (
     <div className="hidden w-[226px] flex-none flex-col bg-navy py-[22px] lg:flex">
@@ -75,12 +68,14 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
       <div className="px-3">
         <button
           type="button"
-          onClick={handleSignOut}
-          className="mt-2 flex w-full items-center gap-2 rounded-[10px] px-[13px] py-[9px] text-[12px] font-medium text-white/50 transition-colors hover:bg-white/5 hover:text-white/85"
+          onClick={signOut}
+          disabled={pending}
+          className="mt-2 flex w-full items-center gap-2 rounded-[10px] px-[13px] py-[9px] text-[12px] font-medium text-white/50 transition-colors hover:bg-white/5 hover:text-white/85 disabled:opacity-60"
         >
           <SignOutIcon width={15} height={15} />
-          Sign Out
+          {pending ? "Signing out…" : "Sign Out"}
         </button>
+        {error && <div className="px-[13px] pt-1 text-[11px] font-medium text-alert-red">{error}</div>}
       </div>
     </div>
   );

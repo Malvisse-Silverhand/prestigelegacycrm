@@ -83,7 +83,7 @@ export default async function LeadsPage({
             {subtitleFor(profile.role)}
           </div>
         </div>
-        <ExportCsvButton leads={leads} />
+        <ExportCsvButton />
       </div>
 
       <LeadFiltersBar

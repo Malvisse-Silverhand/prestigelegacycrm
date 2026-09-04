@@ -426,7 +426,7 @@ export function LeadDetailContent({
             <div className="relative mt-2">
               <select
                 value={lead.pipeline_stage}
-                disabled={!canEditStage}
+                disabled={!canEditStage || pending}
                 onChange={(e) => handleStageChange(e.target.value)}
                 className="w-full appearance-none rounded-[10px] border border-sand-2 bg-cream py-[10px] pr-8 pl-3 text-[13px] font-semibold text-navy disabled:opacity-70"
               >
@@ -452,8 +452,9 @@ export function LeadDetailContent({
                 {canReassign ? (
                   <select
                     value={lead.agent_id ?? ""}
+                    disabled={pending}
                     onChange={(e) => e.target.value && handleReassign(e.target.value)}
-                    className="w-full rounded-[8px] border border-sand-2 bg-cream px-2 py-[5px] text-[13px] font-semibold text-navy"
+                    className="w-full rounded-[8px] border border-sand-2 bg-cream px-2 py-[5px] text-[13px] font-semibold text-navy disabled:opacity-70"
                   >
                     <option value="" disabled>Unassigned</option>
                     {reassignOptions.map((o) => (
@@ -476,7 +477,8 @@ export function LeadDetailContent({
               <button
                 type="button"
                 onClick={() => handleReassign(profile.id)}
-                className="mt-1.5 text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy"
+                disabled={pending}
+                className="mt-1.5 text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy disabled:opacity-60"
               >
                 Assign to me
               </button>
@@ -491,8 +493,9 @@ export function LeadDetailContent({
               <div className="relative mt-[3px]">
                 <select
                   value={lead.lead_source ?? ""}
+                  disabled={pending}
                   onChange={(e) => handleSourceChange(e.target.value)}
-                  className="w-full appearance-none rounded-[8px] border border-sand-2 bg-cream py-1.5 pr-7 pl-2 text-[13px] font-semibold text-navy"
+                  className="w-full appearance-none rounded-[8px] border border-sand-2 bg-cream py-1.5 pr-7 pl-2 text-[13px] font-semibold text-navy disabled:opacity-70"
                 >
                   <option value="" disabled>Choose…</option>
                   {LEAD_SOURCES.map((s) => (

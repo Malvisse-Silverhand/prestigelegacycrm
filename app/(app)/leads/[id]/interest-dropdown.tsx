@@ -45,17 +45,18 @@ export function InterestDropdown({ lead }: { lead: LeadDetail }) {
           return;
         }
         router.refresh();
+        // Only act on the new interest once the save actually lands --
+        // opening the quotation calculator (or "coming soon") beforehand
+        // could tag a quotation to an interest that never got saved.
+        if (option.tool) {
+          setModalUrl(quoteLauncherUrl(option.tool, lead));
+        } else {
+          setComingSoon(true);
+        }
       } catch {
         setError("Couldn't connect. Check your internet connection and try again.");
-        return;
       }
     });
-
-    if (option.tool) {
-      setModalUrl(quoteLauncherUrl(option.tool, lead));
-    } else {
-      setComingSoon(true);
-    }
   }
 
   return (

@@ -42,6 +42,7 @@ export function WaFlowView({
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<WaTemplate | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // "Manage templates" is SuperAdmin/Group Manager only per Section 3's
   // permission matrix -- Unit Manager and Agent both only "Use templates".
@@ -100,6 +101,7 @@ export function WaFlowView({
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this template?")) return;
+    setDeletingId(id);
     try {
       const result = await deleteTemplate(id);
       if (result.error) {
@@ -109,6 +111,8 @@ export function WaFlowView({
       router.refresh();
     } catch {
       alert("Couldn't connect. Check your internet connection and try again.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -197,7 +201,13 @@ export function WaFlowView({
                             <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
                           </svg>
                         </button>
-                        <button type="button" onClick={() => handleDelete(t.id)} aria-label="Delete template" className="flex h-8 w-8 items-center justify-center rounded-lg text-taupe hover:text-alert-red">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(t.id)}
+                          disabled={deletingId === t.id}
+                          aria-label="Delete template"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-taupe hover:text-alert-red disabled:opacity-50"
+                        >
                           <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                             <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
                           </svg>
