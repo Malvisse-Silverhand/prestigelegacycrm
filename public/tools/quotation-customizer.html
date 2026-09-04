@@ -109,6 +109,7 @@
   }
   #t4u-qc .btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(15,37,64,.12)}
   #t4u-qc .btn:active{transform:translateY(0)}
+  #t4u-qc .btn:disabled{opacity:.55; cursor:not-allowed; transform:none; box-shadow:none}
   #t4u-qc .btn svg{width:16px;height:16px;flex:0 0 auto}
   #t4u-qc .btn-primary{background:var(--navy); color:#fff; border-color:var(--navy)}
   #t4u-qc .btn-add{background:var(--gold); color:var(--navy); border-color:var(--gold)}
@@ -831,8 +832,23 @@
   const nameSafe=()=> state.active==='medical'?'Kad-Medikal':'Hibah';
   const fileStamp=()=> nameSafe()+'-'+Date.now();
 
+  // Export buttons share one busy-guard so a slow html2canvas capture (big
+  // tables can take a couple seconds) can't be double-fired by a fast
+  // double-click into two concurrent downloads/share sheets.
+  let exportBusy=false;
+  function withExportGuard(btnIds, fn){
+    return async ()=>{
+      if(exportBusy) return;
+      exportBusy=true;
+      const btns=btnIds.map(id=>document.getElementById(id));
+      btns.forEach(b=>{ if(b) b.disabled=true; });
+      try{ await fn(); }
+      finally{ exportBusy=false; btns.forEach(b=>{ if(b) b.disabled=false; }); }
+    };
+  }
+
   // ---- DOWNLOAD PDF ----
-  document.getElementById('btnPdf').addEventListener('click', async ()=>{
+  document.getElementById('btnPdf').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     const t=UI[state.lang];
     showToast(t.toastPdfPrep);
     try{
@@ -840,11 +856,11 @@
       const pdf=canvasToPdf(canvas);
       pdf.save(`Quotation-${fileStamp()}.pdf`);
       showToast(t.toastPdfOk,'ok');
-    }catch(err){ showToast(UI[state.lang].toastPdfErr+(err&&err.message?err.message:''),'err'); }
-  });
+    }catch(err){ showToast(UI[state.lang].toastPdfErr+(err&&err.message?err.message:''),'err'); CRM.reportError('download-pdf', err); }
+  }));
 
   // ---- DOWNLOAD JPEG ----
-  document.getElementById('btnJpeg').addEventListener('click', async ()=>{
+  document.getElementById('btnJpeg').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
     try{
       const canvas=await captureCanvas();
@@ -853,8 +869,8 @@
       link.href=canvas.toDataURL('image/jpeg',0.95);
       document.body.appendChild(link); link.click(); link.remove();
       showToast(L('JPEG berjaya dimuat turun ✅','JPEG downloaded successfully ✅'),'ok');
-    }catch(err){ showToast(L('Ralat JPEG: ','JPEG error: ')+(err&&err.message?err.message:''),'err'); }
-  });
+    }catch(err){ showToast(L('Ralat JPEG: ','JPEG error: ')+(err&&err.message?err.message:''),'err'); CRM.reportError('download-jpeg', err); }
+  }));
 
   // Normalkan nombor telefon MY ke format wa.me (cth 0116303... -> 60116303...)
   // Normalkan nombor telefon ke format Malaysia +60 (E.164).
@@ -870,7 +886,7 @@
   }
 
   // ---- HANTAR WHATSAPP (hantar fail PDF) ----
-  document.getElementById('btnWa').addEventListener('click', async ()=>{
+  document.getElementById('btnWa').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     const textMsg=waText();
     const numDigits=waNumber();
     showToast(L('Menyediakan PDF untuk WhatsApp…','Preparing PDF for WhatsApp…'));
@@ -905,9 +921,9 @@
       );
     }catch(err){
       if(err && err.name==='AbortError'){ /* user batal share sheet */ }
-      else showToast(L('Ralat kongsi: ','Share error: ')+(err&&err.message?err.message:''),'err');
+      else{ showToast(L('Ralat kongsi: ','Share error: ')+(err&&err.message?err.message:''),'err'); CRM.reportError('send-whatsapp', err); }
     }
-  });
+  }));
 
   /* ---------- CRM INTEGRATION ---------- */
   const CRM = (function(){
@@ -1004,7 +1020,14 @@
       }
     }
 
-    return { leadId, quotationId, prefill, restore, save };
+    // Surfaces failures the CRM can't otherwise see (this tool runs in its
+    // own iframe) so they show up in Sentry instead of only a toast the
+    // agent might not report.
+    function reportError(context, err){
+      post({ type:'t4u-tool-error', context, message:(err&&err.message)||String(err), stack: err&&err.stack });
+    }
+
+    return { leadId, quotationId, prefill, restore, save, reportError };
   })();
 
   /* ---------- INIT ---------- */

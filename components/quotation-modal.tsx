@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 // Same-origin iframe modal for the two standalone calculators in
 // public/tools/. Not a rebuild of the calculators as React components --
@@ -24,10 +25,20 @@ function QuotationModalPanel({ url, title, onClose }: { url: string; title: stri
     function onMessage(e: MessageEvent) {
       if (e.source !== iframeRef.current?.contentWindow) return;
       if (e.data?.type === "t4u-quote-dirty") setDirty(Boolean(e.data.dirty));
+      if (e.data?.type === "t4u-tool-error") {
+        // The tool runs in its own static-HTML iframe, outside the Sentry
+        // browser SDK, so failures (PDF/JPEG/WhatsApp export, etc.) are
+        // invisible unless it posts them here for us to report.
+        const { context, message, stack } = e.data as { context?: string; message?: string; stack?: string };
+        Sentry.captureException(new Error(`[quotation-customizer:${context ?? "unknown"}] ${message ?? "unknown error"}`), {
+          extra: { url, stack },
+          tags: { source: "quotation-tool-iframe", context },
+        });
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [url]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
