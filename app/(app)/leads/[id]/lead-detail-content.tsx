@@ -341,7 +341,11 @@ export function LeadDetailContent({
           </div>
 
           <div className="mt-[22px]">
-            <LeadQuotations quotations={quotations} onOpen={openQuotation} />
+            <LeadQuotations
+              quotations={quotations}
+              onOpen={openQuotation}
+              canDelete={profile.role !== "agent"}
+            />
           </div>
 
           <div className="mt-[22px] flex items-center justify-between">

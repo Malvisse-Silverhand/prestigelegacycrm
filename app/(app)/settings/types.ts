@@ -16,6 +16,7 @@ export type OrgGroupManager = {
   phone: string | null;
   units: OrgUnit[];
   directAgents: OrgPerson[];
+  directAspirants: OrgAspirant[];
 };
 export type OrgTree = {
   superadmins: OrgPerson[];

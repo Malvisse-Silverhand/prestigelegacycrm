@@ -232,7 +232,9 @@ export function UsersHierarchyTab({
                     {gm.units.reduce(
                       (s, u) => s + u.agents.length + u.aspirants.reduce((n, a) => n + a.agents.length, 0),
                       0,
-                    ) + gm.directAgents.length}{" "}
+                    ) +
+                      gm.directAgents.length +
+                      gm.directAspirants.reduce((n, a) => n + a.agents.length, 0)}{" "}
                     agents
                   </div>
                 </div>
@@ -285,6 +287,82 @@ export function UsersHierarchyTab({
                     ))}
                   </div>
                 )}
+
+                {/* Also reports straight to the Group Manager, but still runs their
+                    own team of agents -- same shape as an aspirant inside a unit. */}
+                {gm.directAspirants.map((asp) => (
+                  <div key={asp.id}>
+                    <div className="flex items-center gap-2.5 rounded-lg border border-[#e7dcc1] bg-warn-gold-bg px-3 py-2">
+                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-md bg-gold text-[9.5px] font-bold text-navy">
+                        {initialsOf(asp.full_name)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[12px] font-bold text-navy">{asp.full_name}</div>
+                        <div className="truncate text-[10.5px] text-taupe">
+                          {asp.agents.length} agent{asp.agents.length === 1 ? "" : "s"}
+                        </div>
+                      </div>
+                      <span className="flex-none rounded-[5px] bg-white px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                        ASPIRANT UM
+                      </span>
+                      <CollapseButton collapsed={!!collapsed[asp.id]} onClick={() => toggleCollapse(asp.id)} />
+                      {canEdit && (
+                        <EditButton
+                          onClick={() =>
+                            setEditing({
+                              id: asp.id,
+                              fullName: asp.full_name,
+                              email: asp.email,
+                              phone: asp.phone ?? "",
+                              role: "aspirant_unit_manager",
+                              currentAssignedUnderId: gm.id,
+                            })
+                          }
+                        />
+                      )}
+                      {canEdit && (
+                        <DeleteButton onClick={() => setConfirmDelete({ id: asp.id, name: asp.full_name })} />
+                      )}
+                    </div>
+                    {asp.agents.length > 0 && (
+                      <div className={`flex-col gap-1.5 pl-[22px] pt-1.5 ${collapsed[asp.id] ? "hidden" : "flex"}`}>
+                        {asp.agents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            className="flex items-center gap-2.5 rounded-lg border border-sand-3 bg-white px-3 py-2"
+                          >
+                            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sand-3 text-[9.5px] font-bold text-navy">
+                              {initialsOf(agent.full_name)}
+                            </div>
+                            <div className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-navy">
+                              {agent.full_name}
+                            </div>
+                            <span className="flex-none rounded-[5px] bg-warn-gold-bg px-[7px] py-[2px] text-[9px] font-bold text-warn-gold-text">
+                              AGENT
+                            </span>
+                            {canEdit && (
+                              <EditButton
+                                onClick={() =>
+                                  setEditing({
+                                    id: agent.id,
+                                    fullName: agent.full_name,
+                                    email: agent.email,
+                                    phone: agent.phone ?? "",
+                                    role: "agent",
+                                    currentAssignedUnderId: asp.id,
+                                  })
+                                }
+                              />
+                            )}
+                            {canEdit && (
+                              <DeleteButton onClick={() => setConfirmDelete({ id: agent.id, name: agent.full_name })} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
 
                 {gm.units.map((unit) => (
                   <div key={unit.id}>
@@ -354,6 +432,9 @@ export function UsersHierarchyTab({
                                 })
                               }
                             />
+                          )}
+                          {canEdit && (
+                            <DeleteButton onClick={() => setConfirmDelete({ id: asp.id, name: asp.full_name })} />
                           )}
                         </div>
                         {asp.agents.length > 0 && (

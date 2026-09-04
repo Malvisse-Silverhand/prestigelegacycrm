@@ -30,7 +30,8 @@ export type OrgUnit = {
   agents: OrgPerson[];
 };
 // People reporting straight to a Group Manager have no unit, so they hang off
-// the group manager itself rather than off one of its units.
+// the group manager itself rather than off one of its units. A directly
+// reporting Aspirant UM still runs their own agents, same as one inside a unit.
 export type OrgGroupManager = {
   id: string;
   full_name: string;
@@ -38,6 +39,7 @@ export type OrgGroupManager = {
   phone: string | null;
   units: OrgUnit[];
   directAgents: OrgPerson[];
+  directAspirants: OrgAspirant[];
 };
 export type OrgTree = {
   superadmins: OrgPerson[];
@@ -87,8 +89,25 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
         .order("full_name")
     : { data: [] as { id: string; full_name: string; email: string; phone: string | null; role: string; parent_id: string | null }[] };
 
+  // A direct-report Aspirant UM (no unit) still runs their own agents -- those
+  // agents also have unit_id = null but parent_id = the aspirant, not a GM, so
+  // neither query above catches them. Fetch them separately.
+  const directAspirantIds = (directReports ?? [])
+    .filter((r) => r.role === "aspirant_unit_manager")
+    .map((r) => r.id);
+  const { data: directAspirantAgents } = directAspirantIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, parent_id")
+        .in("parent_id", directAspirantIds)
+        .eq("role", "agent")
+        .is("unit_id", null)
+        .order("full_name")
+    : { data: [] as { id: string; full_name: string; email: string; phone: string | null; parent_id: string | null }[] };
+
   const groupManagers: OrgGroupManager[] = (allGroupManagers ?? []).map((gm) => {
     const gmUnits = units.filter((u) => u.group_manager_id === gm.id);
+    const gmDirectReports = (directReports ?? []).filter((r) => r.parent_id === gm.id);
     return {
       id: gm.id,
       full_name: gm.full_name,
@@ -118,9 +137,20 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
 
         return { id: u.id, name: u.name, unitManager, aspirants, agents };
       }),
-      directAgents: (directReports ?? [])
-        .filter((r) => r.parent_id === gm.id)
+      directAgents: gmDirectReports
+        .filter((r) => r.role === "agent")
         .map((r) => ({ id: r.id, full_name: r.full_name, email: r.email, phone: r.phone })),
+      directAspirants: gmDirectReports
+        .filter((r) => r.role === "aspirant_unit_manager")
+        .map((r) => ({
+          id: r.id,
+          full_name: r.full_name,
+          email: r.email,
+          phone: r.phone,
+          agents: (directAspirantAgents ?? [])
+            .filter((a) => a.parent_id === r.id)
+            .map((a) => ({ id: a.id, full_name: a.full_name, email: a.email, phone: a.phone })),
+        })),
     };
   });
 
@@ -133,7 +163,8 @@ export async function getOrgTree(profile: CurrentProfile): Promise<OrgTree> {
       (directReports ?? []).filter((r) => r.role === "aspirant_unit_manager").length,
     agent:
       all.filter((m) => m.role === "agent").length +
-      (directReports ?? []).filter((r) => r.role === "agent").length,
+      (directReports ?? []).filter((r) => r.role === "agent").length +
+      (directAspirantAgents ?? []).length,
   };
 
   return { superadmins: superadmins ?? [], groupManagers, roleCounts };
@@ -173,14 +204,28 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
   if (profile.role === "group_manager") gmQuery = gmQuery.eq("id", profile.id);
   const { data: groupManagers } = profile.role === "unit_manager" ? { data: [] } : await gmQuery;
 
+  // ...plus Aspirant UMs who themselves report straight to one of those Group
+  // Managers (no unit) -- they can still run agents. A unit manager never
+  // reaches this: their scope is their own unit, which these people aren't in.
+  const gmIdsInScope = (groupManagers ?? []).map((g) => g.id);
+  const { data: directAspirants } =
+    profile.role !== "unit_manager" && gmIdsInScope.length
+      ? await supabase
+          .from("profiles")
+          .select("id, full_name, unit_id, role")
+          .eq("role", "aspirant_unit_manager")
+          .in("parent_id", gmIdsInScope)
+          .is("unit_id", null)
+      : { data: [] as { id: string; full_name: string; unit_id: string | null; role: string }[] };
+
   const unitById = new Map(units.map((u) => [u.id, u.name]));
-  const all = [...(groupManagers ?? []), ...(unitSupervisors ?? [])];
+  const all = [...(groupManagers ?? []), ...(unitSupervisors ?? []), ...(directAspirants ?? [])];
 
   return {
     unitManagers: all.map((m) => ({
       id: m.id,
       full_name: m.full_name,
-      unitName: m.role === "group_manager" ? "" : unitById.get(m.unit_id ?? "") ?? "Unknown unit",
+      unitName: m.role === "group_manager" || !m.unit_id ? "" : unitById.get(m.unit_id) ?? "Unknown unit",
       role: m.role as "group_manager" | "unit_manager" | "aspirant_unit_manager",
     })),
     units: units.map((u) => ({ id: u.id, name: u.name, groupManagerName: null })),

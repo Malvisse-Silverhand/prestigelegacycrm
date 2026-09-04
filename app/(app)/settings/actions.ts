@@ -102,7 +102,7 @@ async function resolveAssignment(
     }
     const { data: supervisor } = await supabase
       .from("profiles")
-      .select("id, unit_id, role")
+      .select("id, unit_id, role, parent_id")
       .eq("id", assignedUnderId)
       .in("role", allowedSupervisorRoles)
       .maybeSingle();
@@ -121,7 +121,19 @@ async function resolveAssignment(
       return { unitId: null, parentId: supervisor.id, error: null };
     }
     if (!supervisor.unit_id) {
-      return { unitId: null, parentId: null, error: "That supervisor has no unit yet." };
+      // An Aspirant UM who themselves reports straight to a Group Manager (no
+      // unit) can still run agents -- everyone else at this point genuinely
+      // needs a unit.
+      if (supervisor.role !== "aspirant_unit_manager") {
+        return { unitId: null, parentId: null, error: "That supervisor has no unit yet." };
+      }
+      if (caller.role === "group_manager" && supervisor.parent_id !== caller.id) {
+        return { unitId: null, parentId: null, error: "That supervisor isn't in your downline." };
+      }
+      if (caller.role === "unit_manager") {
+        return { unitId: null, parentId: null, error: "That supervisor isn't in your unit." };
+      }
+      return { unitId: null, parentId: supervisor.id, error: null };
     }
     if (caller.role === "group_manager") {
       const { data: unit } = await supabase
