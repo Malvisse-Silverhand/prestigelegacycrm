@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_RANK, type CurrentProfile, type Role } from "@/lib/profile-types";
-import type { WebhookRow } from "./types";
+import type { WebhookRow, InviteLinkRow, JoinRequestRow } from "./types";
+
+// Mirrors can_review_invite() in SQL: the roles that can hold a recruitment
+// link and review who comes through it.
+function canReview(role: Role) {
+  return role === "superadmin" || role === "group_manager" || role === "unit_manager";
+}
 
 export type ScopeUnit = { id: string; name: string; group_manager_id: string | null };
 
@@ -455,4 +461,62 @@ export async function getWebhooks(profile: CurrentProfile): Promise<WebhookRow[]
     lastStatus: (w.last_status as string | null) ?? null,
     lastFiredAt: (w.last_fired_at as string | null) ?? null,
   }));
+}
+
+// Scoped by RLS to links the caller may review (can_review_invite): their own,
+// and those created by people beneath them.
+export async function getInviteLinks(profile: CurrentProfile): Promise<InviteLinkRow[]> {
+  if (!canReview(profile.role)) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("agent_invite_links")
+    .select(
+      "id, token, label, is_active, expires_at, created_at, profiles!agent_invite_links_assigned_under_id_fkey(full_name)",
+    )
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((l) => {
+    const under = l.profiles as unknown as { full_name: string } | null;
+    return {
+      id: l.id as string,
+      token: l.token as string,
+      label: (l.label as string | null) ?? null,
+      assignedUnderName: under?.full_name ?? "—",
+      isActive: l.is_active as boolean,
+      expiresAt: (l.expires_at as string | null) ?? null,
+      createdAt: l.created_at as string,
+    };
+  });
+}
+
+export async function getJoinRequests(profile: CurrentProfile): Promise<JoinRequestRow[]> {
+  if (!canReview(profile.role)) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("agent_registrations")
+    .select(
+      "id, full_name, email, phone, note, status, review_note, reviewed_at, created_at, agent_invite_links!inner(label, profiles!agent_invite_links_assigned_under_id_fkey(full_name))",
+    )
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  return (data ?? []).map((r) => {
+    const link = r.agent_invite_links as unknown as {
+      label: string | null;
+      profiles: { full_name: string } | null;
+    };
+    return {
+      id: r.id as string,
+      fullName: r.full_name as string,
+      email: r.email as string,
+      phone: r.phone as string,
+      note: (r.note as string | null) ?? null,
+      status: r.status as JoinRequestRow["status"],
+      reviewNote: (r.review_note as string | null) ?? null,
+      reviewedAt: (r.reviewed_at as string | null) ?? null,
+      createdAt: r.created_at as string,
+      linkLabel: link?.label ?? null,
+      assignedUnderName: link?.profiles?.full_name ?? "—",
+    };
+  });
 }

@@ -64,6 +64,30 @@ export type AuditEntry = {
 
 export type LeadSourceStat = { source: string; count: number; closedWon: number };
 
+export type InviteLinkRow = {
+  id: string;
+  token: string;
+  label: string | null;
+  assignedUnderName: string;
+  isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+};
+
+export type JoinRequestRow = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  note: string | null;
+  status: "pending" | "approved" | "denied";
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  linkLabel: string | null;
+  assignedUnderName: string;
+};
+
 export type WebhookRow = {
   id: string;
   name: string;

@@ -41,8 +41,13 @@ export async function updateSession(request: NextRequest) {
   // (never sent to the server) or as a ?code that only the browser can
   // exchange -- so gating them on `user` would bounce every reset to /login
   // before the page could run.
+  //
+  // /join/<token> is public by design: it is a recruitment link forwarded to
+  // people who have no account at all. The token in the path is the only
+  // credential, and the page validates it server-side.
   const PUBLIC_ROUTES = ["/", "/login", "/forgot-password", "/reset-password"];
-  const isPublicRoute = PUBLIC_ROUTES.includes(request.nextUrl.pathname);
+  const isPublicRoute =
+    PUBLIC_ROUTES.includes(request.nextUrl.pathname) || request.nextUrl.pathname.startsWith("/join/");
 
   if (!user && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone();

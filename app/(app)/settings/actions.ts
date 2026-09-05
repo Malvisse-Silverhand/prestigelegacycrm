@@ -205,6 +205,103 @@ async function resolveAssignment(
   return { unitId: null, parentId: caller.id, createdUnitId: null, error: null };
 }
 
+// Creates the auth account + profile and sends the "set your password" email.
+// Shared by the Add User form and by approving a join request, so a recruit
+// who came in through a shared link is provisioned exactly like an invited
+// one. Never throws: every failure path is rolled back and reported as text.
+async function provisionAccount(input: {
+  fullName: string;
+  email: string;
+  phone: string;
+  role: Role;
+  unitId: string | null;
+  // Nullable because `string` isn't a narrowable discriminant: resolveAssignment
+  // always fills this in on its success branch, but TS can't prove it (an empty
+  // string is falsy), and profiles.parent_id accepts null regardless.
+  parentId: string | null;
+  actorId: string;
+  auditAction: string;
+}) {
+  const admin = createAdminClient();
+  const tempPassword = generateTempPassword();
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email: input.email,
+    password: tempPassword,
+    email_confirm: true,
+    user_metadata: { full_name: input.fullName },
+  });
+  if (createError || !created?.user) {
+    return {
+      userId: null,
+      tempPassword: null,
+      emailSent: false,
+      error: createError?.message?.includes("already been registered")
+        ? "A user with that email already exists."
+        : "Couldn't create the account. Please try again.",
+    };
+  }
+
+  const { error: profileError } = await admin.from("profiles").insert({
+    id: created.user.id,
+    full_name: input.fullName,
+    email: input.email,
+    phone: input.phone,
+    role: input.role,
+    unit_id: input.unitId,
+    parent_id: input.parentId,
+    is_active: true,
+    avatar_initials: initialsFrom(input.fullName),
+    must_change_password: true,
+  });
+  if (profileError) {
+    Sentry.captureException(profileError, {
+      tags: { action: input.auditAction, step: "insert-profile" },
+      extra: { role: input.role, unitId: input.unitId, parentId: input.parentId },
+    });
+    // Roll back the orphaned auth user rather than leaving a login with no profile.
+    await admin.auth.admin.deleteUser(created.user.id);
+    return { userId: null, tempPassword: null, emailSent: false, error: "Couldn't set up this user's profile. Please try again." };
+  }
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: input.actorId,
+    target_id: created.user.id,
+    action: input.auditAction,
+    metadata: { role: input.role, unit_id: input.unitId },
+  });
+  if (auditError) console.error(`${input.auditAction}: audit_log insert failed`, auditError);
+
+  // Invite email goes out through Resend. Supabase's own mailer can't be used
+  // for this: it renders its own template and never sees the password we
+  // generated, so it could only ever send a bare link. Generating the recovery
+  // link ourselves lets the email carry a real "set your password" button and
+  // keeps the temp password as a fallback in the same message.
+  //
+  // A mail failure must not fail the invite -- the account already exists and
+  // works, and the temp password is shown on screen regardless.
+  const origin = await appOrigin();
+  let actionLink: string | null = null;
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email: input.email,
+    options: { redirectTo: `${origin}/reset-password` },
+  });
+  if (linkError) console.error(`${input.auditAction}: generateLink failed`, linkError);
+  else actionLink = linkData?.properties?.action_link ?? null;
+
+  const { subject, html } = inviteEmail({
+    fullName: input.fullName,
+    roleLabel: ROLE_LABEL[input.role],
+    actionLink,
+    tempPassword,
+    loginUrl: `${origin}/login`,
+  });
+  const { sent: emailSent, error: emailError } = await sendEmail({ to: input.email, subject, html });
+  if (emailError) console.error(`${input.auditAction}: invite email failed`, emailError);
+
+  return { userId: created.user.id, tempPassword, emailSent, emailError, error: null };
+}
+
 export async function inviteUser(input: InviteInput) {
   const profile = await getCurrentProfile();
   if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
@@ -230,88 +327,33 @@ export async function inviteUser(input: InviteInput) {
   if (assignment.error) return { error: assignment.error };
   const { unitId, parentId, createdUnitId } = assignment;
 
-  const admin = createAdminClient();
-  // Appointing a Unit Manager creates their unit up front. If the invite then
-  // fails, drop it again -- an empty unit would otherwise sit in the org tree
-  // forever as "No Unit Manager assigned".
-  const dropUnitIfCreated = async () => {
-    if (createdUnitId) await admin.from("units").delete().eq("id", createdUnitId);
-  };
-  const tempPassword = generateTempPassword();
-  const { data: created, error: createError } = await admin.auth.admin.createUser({
-    email,
-    password: tempPassword,
-    email_confirm: true,
-    user_metadata: { full_name: fullName },
-  });
-  if (createError || !created?.user) {
-    await dropUnitIfCreated();
-    return { error: createError?.message?.includes("already been registered")
-      ? "A user with that email already exists."
-      : "Couldn't create the account. Please try again." };
-  }
-
-  const { error: profileError } = await admin.from("profiles").insert({
-    id: created.user.id,
-    full_name: fullName,
+  const result = await provisionAccount({
+    fullName,
     email,
     phone,
     role: input.role,
-    unit_id: unitId,
-    parent_id: parentId,
-    is_active: true,
-    avatar_initials: initialsFrom(fullName),
-    must_change_password: true,
+    unitId,
+    parentId,
+    actorId: profile.id,
+    auditAction: "user_invited",
   });
-  if (profileError) {
-    Sentry.captureException(profileError, {
-      tags: { action: "inviteUser", step: "insert-profile" },
-      extra: { role: input.role, unitId, parentId },
-    });
-    // Roll back the orphaned auth user rather than leaving a login with no profile.
-    await admin.auth.admin.deleteUser(created.user.id);
-    await dropUnitIfCreated();
-    return { error: "Couldn't set up this user's profile. Please try again." };
+  if (result.error) {
+    // Appointing a Unit Manager creates their unit up front. If the invite then
+    // fails, drop it again -- an empty unit would otherwise sit in the org tree
+    // forever as "No Unit Manager assigned".
+    if (createdUnitId) await createAdminClient().from("units").delete().eq("id", createdUnitId);
+    return { error: result.error };
   }
 
-  const { error: auditError } = await admin.from("audit_log").insert({
-    actor_id: profile.id,
-    target_id: created.user.id,
-    action: "user_invited",
-    metadata: { role: input.role, unit_id: unitId },
-  });
-  if (auditError) console.error("inviteUser: audit_log insert failed", auditError);
-
-  // Invite email goes out through Resend. Supabase's own mailer can't be used
-  // for this: it renders its own template and never sees the password we
-  // generated, so it could only ever send a bare link. Generating the recovery
-  // link ourselves lets the email carry a real "set your password" button and
-  // keeps the temp password as a fallback in the same message.
-  //
-  // A mail failure must not fail the invite -- the account already exists and
-  // works, and the temp password is shown on screen regardless.
-  const origin = await appOrigin();
-  let actionLink: string | null = null;
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: "recovery",
-    email,
-    options: { redirectTo: `${origin}/reset-password` },
-  });
-  if (linkError) console.error("inviteUser: generateLink failed", linkError);
-  else actionLink = linkData?.properties?.action_link ?? null;
-
-  const { subject, html } = inviteEmail({
-    fullName,
-    roleLabel: ROLE_LABEL[input.role],
-    actionLink,
-    tempPassword,
-    loginUrl: `${origin}/login`,
-  });
-  const { sent: emailSent, error: emailError } = await sendEmail({ to: email, subject, html });
-  if (emailError) console.error("inviteUser: invite email failed", emailError);
-
   revalidatePath("/settings");
-  return { error: null, email, phone, tempPassword, emailSent, emailError };
+  return {
+    error: null,
+    email,
+    phone,
+    tempPassword: result.tempPassword,
+    emailSent: result.emailSent,
+    emailError: result.emailError,
+  };
 }
 
 export async function updateUserAssignment(input: {
@@ -627,6 +669,159 @@ export async function deleteWebhook(id: string) {
   const { error } = await supabase.from("webhooks").delete().eq("id", id);
   if (error) return { error: "Couldn't delete this webhook." };
 
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Shareable recruitment links (Settings > Join Requests)
+// ---------------------------------------------------------------------------
+
+// URL-safe, 32 chars of base64url from 24 random bytes (~144 bits). Long
+// enough that the link is the credential -- guessing one is not feasible.
+function generateInviteToken() {
+  return randomBytes(24).toString("base64url");
+}
+
+const INVITE_LINK_TTL_DAYS = 30;
+
+export async function createInviteLink(input: { label: string; assignedUnderId: string }) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) {
+    return { error: "You don't have permission to do that.", token: null };
+  }
+
+  const supabase = await createClient();
+  // Links only ever recruit agents, so the assignment resolves through the
+  // same path as the Add User form -- no unit is ever created here.
+  const assignment = await resolveAssignment(supabase, profile, "agent", input.assignedUnderId, {
+    fullName: "",
+    currentUnitId: null,
+  });
+  if (assignment.error) return { error: assignment.error, token: null };
+
+  const token = generateInviteToken();
+  const expiresAt = new Date(Date.now() + INVITE_LINK_TTL_DAYS * 86400_000).toISOString();
+  const { error } = await supabase.from("agent_invite_links").insert({
+    token,
+    label: input.label.trim() || null,
+    created_by: profile.id,
+    assigned_under_id: input.assignedUnderId,
+    unit_id: assignment.unitId,
+    expires_at: expiresAt,
+  });
+
+  if (error) {
+    Sentry.captureException(error, { tags: { action: "createInviteLink" } });
+    return { error: "Couldn't create this link. Please try again.", token: null };
+  }
+
+  revalidatePath("/settings");
+  return { error: null, token };
+}
+
+export async function setInviteLinkActive(id: string, isActive: boolean) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("agent_invite_links")
+    .update({ is_active: isActive })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't update this link." };
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+export async function deleteInviteLink(id: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("agent_invite_links").delete().eq("id", id);
+  if (error) return { error: "Couldn't delete this link." };
+
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+// Approving is where the account finally comes into existence -- everything
+// before this point is just a form submission from a stranger.
+export async function approveRegistration(id: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) {
+    return { error: "You don't have permission to do that.", tempPassword: null, emailSent: false };
+  }
+
+  const supabase = await createClient();
+  // RLS scopes this read to requests the caller may review, so a manager can't
+  // approve someone recruited into a part of the org they can't see.
+  const { data: row } = await supabase
+    .from("agent_registrations")
+    .select("id, full_name, email, phone, status, agent_invite_links!inner(assigned_under_id, unit_id)")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!row) return { error: "That request could not be found.", tempPassword: null, emailSent: false };
+  if (row.status !== "pending") {
+    return { error: "That request has already been reviewed.", tempPassword: null, emailSent: false };
+  }
+
+  const link = row.agent_invite_links as unknown as { assigned_under_id: string; unit_id: string | null };
+  const result = await provisionAccount({
+    fullName: row.full_name as string,
+    email: row.email as string,
+    phone: row.phone as string,
+    role: "agent",
+    unitId: link.unit_id,
+    parentId: link.assigned_under_id,
+    actorId: profile.id,
+    auditAction: "registration_approved",
+  });
+  // The request stays pending on failure, so it can be retried once the cause
+  // (usually "that email already has an account") is dealt with.
+  if (result.error) return { error: result.error, tempPassword: null, emailSent: false };
+
+  const { error: markError } = await supabase
+    .from("agent_registrations")
+    .update({
+      status: "approved",
+      reviewed_by: profile.id,
+      reviewed_at: new Date().toISOString(),
+      created_profile_id: result.userId,
+    })
+    .eq("id", id);
+  // The account exists and the email is sent; a failure to stamp the row would
+  // only make the request look pending, so report it rather than undoing it.
+  if (markError) Sentry.captureException(markError, { tags: { action: "approveRegistration", step: "mark" } });
+
+  revalidatePath("/settings");
+  return { error: null, tempPassword: result.tempPassword, emailSent: result.emailSent };
+}
+
+export async function denyRegistration(id: string, reason: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) return { error: "You don't have permission to do that." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("agent_registrations")
+    .update({
+      status: "denied",
+      reviewed_by: profile.id,
+      reviewed_at: new Date().toISOString(),
+      review_note: reason.trim() || null,
+    })
+    .eq("id", id)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't update this request." };
   revalidatePath("/settings");
   return { error: null };
 }

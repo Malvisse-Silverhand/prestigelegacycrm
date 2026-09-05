@@ -164,10 +164,14 @@ export function UsersHierarchyTab({
   role,
   orgTree,
   assignmentOptions,
+  onInviteViaLink,
 }: {
   role: Role;
   orgTree: OrgTree;
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
+  // Switches the page to the Join Requests tab, where the shareable
+  // recruitment link is generated.
+  onInviteViaLink: () => void;
 }) {
   const { superadmins, groupManagers, roleCounts } = orgTree;
   // Mirrors canManageSettings() in ../actions.
@@ -198,9 +202,12 @@ export function UsersHierarchyTab({
           </div>
           {canEdit && (
             <div className="flex flex-none items-center gap-2">
+              {/* Recruiting now goes through a shareable link the candidate
+                  fills in themselves, so this hands over to Join Requests.
+                  "+ Add user" still creates an account directly. */}
               <button
                 type="button"
-                onClick={() => setAddMode("agent")}
+                onClick={onInviteViaLink}
                 className="flex items-center gap-1.5 rounded-[10px] bg-gold px-3.5 py-2.5 text-[12.5px] font-bold text-navy shadow-sm hover:brightness-95"
               >
                 + Invite agent

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Role, OrgTree, UnitManagerOption, UnitOption, TargetRow, DistributionSettings, AuditEntry, LeadSourceStat, WebhookRow } from "./types";
+import type { Role, OrgTree, UnitManagerOption, UnitOption, TargetRow, DistributionSettings, AuditEntry, LeadSourceStat, WebhookRow, InviteLinkRow, JoinRequestRow } from "./types";
 import { UsersHierarchyTab } from "./tabs/users-hierarchy-tab";
 import { RolesPermissionsTab } from "./tabs/roles-permissions-tab";
 import { SetTargetTab } from "./tabs/set-target-tab";
@@ -9,9 +9,11 @@ import { LeadDistributionTab } from "./tabs/lead-distribution-tab";
 import { LeadSourcesTab } from "./tabs/lead-sources-tab";
 import { AuditLogTab } from "./tabs/audit-log-tab";
 import { WebhooksTab } from "./tabs/webhooks-tab";
+import { JoinRequestsTab } from "./tabs/join-requests-tab";
 
 const TABS = [
   "Users & Hierarchy",
+  "Join Requests",
   "Roles & Permissions",
   "Set Target",
   "Lead Distribution",
@@ -31,6 +33,9 @@ export function SettingsView({
   auditLog,
   leadSources,
   webhooks,
+  inviteLinks,
+  joinRequests,
+  currentUserId,
 }: {
   role: Role;
   orgTree: OrgTree;
@@ -41,6 +46,9 @@ export function SettingsView({
   auditLog: AuditEntry[] | null;
   leadSources: LeadSourceStat[];
   webhooks: WebhookRow[];
+  inviteLinks: InviteLinkRow[];
+  joinRequests: JoinRequestRow[];
+  currentUserId: string;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log stays
@@ -55,6 +63,17 @@ export function SettingsView({
         ? TABS.filter((t) => t !== "Audit Log")
         : TABS.filter((t) => t !== "Audit Log" && t !== "Webhooks");
   const [tab, setTab] = useState<Tab>(visibleTabs[0]);
+
+  const pendingJoinCount = joinRequests.filter((r) => r.status === "pending").length;
+  // Who an agent from a shared link may be filed under. Same rule the Add User
+  // form applies: a Unit Manager can't park someone under a Group Manager, and
+  // a Group Manager can only use themselves as a direct supervisor.
+  const supervisorOptions = assignmentOptions.unitManagers.filter((o) => {
+    if (o.role !== "group_manager") return true;
+    if (role === "unit_manager") return false;
+    if (role === "group_manager") return o.id === currentUserId;
+    return true;
+  });
 
   return (
     <div>
@@ -74,6 +93,11 @@ export function SettingsView({
               }`}
             >
               {t}
+              {t === "Join Requests" && pendingJoinCount > 0 && (
+                <span className="ml-1.5 rounded-full bg-alert-red px-1.5 py-[1px] text-[10px] font-bold text-white">
+                  {pendingJoinCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -81,7 +105,20 @@ export function SettingsView({
 
       <div className="px-5 lg:px-[30px] py-6">
         {tab === "Users & Hierarchy" && (
-          <UsersHierarchyTab role={role} orgTree={orgTree} assignmentOptions={assignmentOptions} />
+          <UsersHierarchyTab
+            role={role}
+            orgTree={orgTree}
+            assignmentOptions={assignmentOptions}
+            onInviteViaLink={() => setTab("Join Requests")}
+          />
+        )}
+        {tab === "Join Requests" && (
+          <JoinRequestsTab
+            inviteLinks={inviteLinks}
+            joinRequests={joinRequests}
+            supervisorOptions={supervisorOptions}
+            currentUserId={currentUserId}
+          />
         )}
         {tab === "Roles & Permissions" && <RolesPermissionsTab />}
         {tab === "Set Target" && <SetTargetTab monthDate={monthDate} initialTargets={targets} />}
