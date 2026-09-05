@@ -41,7 +41,28 @@ function daysAgoKey(n: number) {
 // is fetched and the widget clamps navigation to it.
 const CALENDAR_MONTHS = 13;
 
-export type CalendarDay = { key: string; leads: number; sales: number; activities: number };
+export type CalendarLeadItem = { id: string; fullName: string };
+export type CalendarActivityItem = { id: string; label: string; leadId: string | null; leadName: string | null };
+// Full items, not counts -- the calendar cell shows counts derived from these
+// (leads.length etc.), and clicking a day opens them in a modal without a
+// second round trip.
+export type CalendarDay = {
+  key: string;
+  leads: CalendarLeadItem[];
+  sales: CalendarLeadItem[];
+  activities: CalendarActivityItem[];
+};
+
+function activityLabel(activityType: string, content: string | null) {
+  switch (activityType) {
+    case "wa_sent": return "WhatsApp sent";
+    case "assigned": return content ?? "Reassigned";
+    case "stage_change": return content ?? "Stage changed";
+    case "created": return "Lead created";
+    case "quotation_created": return content ?? "Quotation created";
+    default: return content ?? "Note added";
+  }
+}
 
 export type MonitorScope = { agentId?: string; unitId?: string };
 
@@ -83,7 +104,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // the caller can already see, so no extra filtering is needed here.
       supabase
         .from("lead_activity")
-        .select("created_at, lead_id")
+        .select("id, created_at, lead_id, activity_type, content")
         .gte("created_at", calendarStartKey),
     ]);
 
@@ -186,27 +207,42 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   });
   const maxDaily = Math.max(1, ...dailyBuckets.flatMap((d) => [d.inCount, d.outCount]));
 
-  // Per-day totals for the activity calendar. Only days with something on them
+  // Per-day items for the activity calendar. Only days with something on them
   // are stored; the widget fills the gaps, so an empty year costs nothing.
   const calendarMap = new Map<string, CalendarDay>();
-  const bumpDay = (key: string, field: "leads" | "sales" | "activities") => {
-    if (key < calendarStartKey) return;
-    const entry = calendarMap.get(key) ?? { key, leads: 0, sales: 0, activities: 0 };
-    entry[field]++;
-    calendarMap.set(key, entry);
+  const dayEntry = (key: string) => {
+    let entry = calendarMap.get(key);
+    if (!entry) {
+      entry = { key, leads: [], sales: [], activities: [] };
+      calendarMap.set(key, entry);
+    }
+    return entry;
   };
+  const leadNameById = new Map(allLeads.map((l) => [l.id, l.full_name]));
   for (const l of allLeads) {
-    bumpDay(dayKey(l.created_at), "leads");
+    const createdKey = dayKey(l.created_at);
+    if (createdKey >= calendarStartKey) dayEntry(createdKey).leads.push({ id: l.id, fullName: l.full_name });
     // A closed-won lead counts as a sale on the day it was last moved -- the
     // closest thing to a close date without a dedicated column.
-    if (l.pipeline_stage === "closed_won") bumpDay(dayKey(l.updated_at), "sales");
+    const updatedKey = dayKey(l.updated_at);
+    if (l.pipeline_stage === "closed_won" && updatedKey >= calendarStartKey) {
+      dayEntry(updatedKey).sales.push({ id: l.id, fullName: l.full_name });
+    }
   }
   // Monitor scope narrows the leads query but not lead_activity, so drop
   // activity belonging to leads outside the scoped set.
   const visibleLeadIds = new Set(allLeads.map((l) => l.id));
   for (const a of activityRows ?? []) {
-    if (a.lead_id && !visibleLeadIds.has(a.lead_id as string)) continue;
-    bumpDay(dayKey(a.created_at as string), "activities");
+    const leadId = a.lead_id as string | null;
+    if (leadId && !visibleLeadIds.has(leadId)) continue;
+    const key = dayKey(a.created_at as string);
+    if (key < calendarStartKey) continue;
+    dayEntry(key).activities.push({
+      id: a.id as string,
+      label: activityLabel(a.activity_type as string, a.content as string | null),
+      leadId,
+      leadName: leadId ? (leadNameById.get(leadId) ?? null) : null,
+    });
   }
   const calendarDays = [...calendarMap.values()].sort((a, b) => a.key.localeCompare(b.key));
 

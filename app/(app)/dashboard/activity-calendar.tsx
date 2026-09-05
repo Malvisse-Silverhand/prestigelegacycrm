@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { CalendarDay } from "./data";
+import Link from "next/link";
+import type { CalendarDay, CalendarLeadItem, CalendarActivityItem } from "./data";
 
 type Granularity = "year" | "month" | "week" | "day";
 
@@ -45,14 +46,17 @@ function startOfWeek(d: Date) {
 type Cell = {
   key: string;
   label: string;
-  leads: number;
-  sales: number;
-  activities: number;
+  leads: CalendarLeadItem[];
+  sales: CalendarLeadItem[];
+  activities: CalendarActivityItem[];
   outside?: boolean; // padding day from an adjacent month
+  // Month cells in year view aggregate a whole month's worth of days --
+  // "click a date cell" doesn't apply to those, so they open nothing.
+  clickable?: boolean;
 };
 
-function emptyTotals() {
-  return { leads: 0, sales: 0, activities: 0 };
+function emptyDay(): Pick<Cell, "leads" | "sales" | "activities"> {
+  return { leads: [], sales: [], activities: [] };
 }
 
 export function ActivityCalendar({
@@ -67,30 +71,27 @@ export function ActivityCalendar({
   const [granularity, setGranularity] = useState<Granularity>("month");
   // 0 = the period containing today, -1 = the one before it, etc.
   const [offset, setOffset] = useState(0);
+  const [openCell, setOpenCell] = useState<Cell | null>(null);
 
   const byDay = useMemo(() => new Map(days.map((d) => [d.key, d])), [days]);
 
   const { cells, title, columns, canGoBack } = useMemo(() => {
     const now = new Date();
-    // Counts only -- callers supply their own `key`, so this must not carry one.
-    const get = (key: string) => {
-      const hit = byDay.get(key);
-      return { leads: hit?.leads ?? 0, sales: hit?.sales ?? 0, activities: hit?.activities ?? 0 };
-    };
+    const get = (key: string) => byDay.get(key) ?? { leads: [], sales: [], activities: [] };
 
     if (granularity === "year") {
       const year = now.getFullYear() + offset;
       const monthCells: Cell[] = MONTH_SHORT.map((label, m) => {
-        const totals = emptyTotals();
+        const agg = emptyDay();
         const prefix = `${year}-${String(m + 1).padStart(2, "0")}`;
         for (const d of days) {
           if (d.key.startsWith(prefix)) {
-            totals.leads += d.leads;
-            totals.sales += d.sales;
-            totals.activities += d.activities;
+            agg.leads.push(...d.leads);
+            agg.sales.push(...d.sales);
+            agg.activities.push(...d.activities);
           }
         }
-        return { key: prefix, label, ...totals };
+        return { key: prefix, label, ...agg, clickable: false };
       });
       return {
         cells: monthCells,
@@ -109,11 +110,11 @@ export function ActivityCalendar({
 
       const monthCells: Cell[] = [];
       for (let i = 0; i < lead; i++) {
-        monthCells.push({ key: `pad-${i}`, label: "", ...emptyTotals(), outside: true });
+        monthCells.push({ key: `pad-${i}`, label: "", ...emptyDay(), outside: true });
       }
       for (let day = 1; day <= daysInMonth; day++) {
         const key = keyOf(new Date(year, month, day));
-        monthCells.push({ key, label: String(day), ...get(key) });
+        monthCells.push({ key, label: String(day), ...get(key), clickable: true });
       }
       const prevMonthEnd = keyOf(new Date(year, month, 0));
       return {
@@ -131,7 +132,7 @@ export function ActivityCalendar({
         const d = new Date(anchor);
         d.setDate(d.getDate() + i);
         const key = keyOf(d);
-        return { key, label: `${WEEKDAY_SHORT[i]} ${d.getDate()}`, ...get(key) };
+        return { key, label: `${WEEKDAY_SHORT[i]} ${d.getDate()}`, ...get(key), clickable: true };
       });
       const end = new Date(anchor);
       end.setDate(end.getDate() + 6);
@@ -154,7 +155,7 @@ export function ActivityCalendar({
     const prev = new Date(d);
     prev.setDate(prev.getDate() - 1);
     return {
-      cells: [{ key, label: `${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`, ...get(key) }],
+      cells: [{ key, label: `${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`, ...get(key), clickable: true }],
       title: `${d.getDate()} ${MONTH_LONG[d.getMonth()]} ${d.getFullYear()}`,
       columns: 1,
       canGoBack: keyOf(prev) >= startKey,
@@ -163,23 +164,25 @@ export function ActivityCalendar({
 
   const totals = cells.reduce(
     (acc, c) => {
-      acc.leads += c.leads;
-      acc.sales += c.sales;
-      acc.activities += c.activities;
+      acc.leads += c.leads.length;
+      acc.sales += c.sales.length;
+      acc.activities += c.activities.length;
       return acc;
     },
-    emptyTotals(),
+    { leads: 0, sales: 0, activities: 0 },
   );
 
   const todayKey = keyOf(new Date());
 
   return (
-    <div className={`rounded-[18px] border border-sand bg-white dark:border-white/10 dark:bg-[#12283f] ${compact ? "p-4" : "p-5 pb-[22px]"}`}>
+    <div className={`rounded-[18px] border border-sand bg-white dark:border-white/10 dark:bg-[#12283f] ${compact ? "p-4" : "p-3.5"}`}>
+      {openCell && <DayModal cell={openCell} onClose={() => setOpenCell(null)} />}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className={`font-bold text-navy dark:text-[#eef3f8] ${compact ? "text-[13.5px]" : "text-[15.5px]"}`}>
+        <div className={`font-bold text-navy dark:text-[#eef3f8] ${compact ? "text-[13.5px]" : "text-[13px]"}`}>
           Activity calendar
         </div>
-        <div className="flex rounded-[10px] border border-sand-2 bg-cream p-[3px] dark:border-white/10 dark:bg-[#0b1a2b]">
+        <div className="flex rounded-[9px] border border-sand-2 bg-cream p-[2px] dark:border-white/10 dark:bg-[#0b1a2b]">
           {GRANULARITIES.map((g) => (
             <button
               key={g.value}
@@ -188,7 +191,7 @@ export function ActivityCalendar({
                 setGranularity(g.value);
                 setOffset(0);
               }}
-              className={`rounded-[7px] px-2.5 py-[5px] text-[11px] font-semibold ${
+              className={`rounded-[6px] px-2 py-[3px] text-[10.5px] font-semibold ${
                 granularity === g.value
                   ? "bg-navy text-white dark:bg-gold dark:text-navy"
                   : "text-taupe dark:text-[#7f93aa]"
@@ -200,34 +203,34 @@ export function ActivityCalendar({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-2 flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={() => setOffset((o) => o - 1)}
           disabled={!canGoBack}
           aria-label="Previous period"
-          className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"
+          className="flex h-6 w-6 items-center justify-center rounded-[7px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"
         >
-          <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
-        <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">{title}</div>
+        <div className="text-[11.5px] font-bold text-navy dark:text-[#eef3f8]">{title}</div>
         <button
           type="button"
           onClick={() => setOffset((o) => Math.min(0, o + 1))}
           disabled={offset >= 0}
           aria-label="Next period"
-          className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"
+          className="flex h-6 w-6 items-center justify-center rounded-[7px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"
         >
-          <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
       </div>
 
       {granularity === "month" && (
-        <div className="mt-2.5 grid grid-cols-7 gap-1 text-center text-[9.5px] font-bold tracking-[0.04em] text-taupe-2 uppercase dark:text-[#7f93aa]">
+        <div className="mt-1.5 grid grid-cols-7 gap-[3px] text-center text-[8.5px] font-bold tracking-[0.04em] text-taupe-2 uppercase dark:text-[#7f93aa]">
           {WEEKDAY_SHORT.map((w) => (
             <div key={w}>{w}</div>
           ))}
@@ -235,19 +238,25 @@ export function ActivityCalendar({
       )}
 
       <div
-        className={`mt-1.5 grid gap-1 ${
+        className={`mt-1 grid gap-[3px] ${
           columns === 7 ? "grid-cols-7" : columns === 4 ? "grid-cols-4" : "grid-cols-1"
         }`}
       >
         {cells.map((c) => (
-          <CalendarCell key={c.key} cell={c} isToday={c.key === todayKey} big={columns === 1} />
+          <CalendarCell
+            key={c.key}
+            cell={c}
+            isToday={c.key === todayKey}
+            big={columns === 1}
+            onOpen={() => setOpenCell(c)}
+          />
         ))}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 border-t border-sand-3 pt-2.5 dark:border-white/10">
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-sand-3 pt-2 dark:border-white/10">
         {LEGEND.map((l) => (
-          <span key={l.key} className="flex items-center gap-1.5 text-[10.5px] font-semibold text-muted dark:text-[#7f93aa]">
-            <span className="h-[9px] w-[9px] rounded-[3px]" style={{ background: l.light }} />
+          <span key={l.key} className="flex items-center gap-1.5 text-[10px] font-semibold text-muted dark:text-[#7f93aa]">
+            <span className="h-[8px] w-[8px] rounded-[3px]" style={{ background: l.light }} />
             {l.label}
             <span className="font-extrabold text-navy dark:text-[#eef3f8]">{totals[l.key]}</span>
           </span>
@@ -257,56 +266,185 @@ export function ActivityCalendar({
   );
 }
 
-function CalendarCell({ cell, isToday, big }: { cell: Cell; isToday: boolean; big?: boolean }) {
+function CalendarCell({
+  cell, isToday, big, onOpen,
+}: {
+  cell: Cell; isToday: boolean; big?: boolean; onOpen: () => void;
+}) {
   if (cell.outside) return <div />;
+
+  const leadCount = cell.leads.length;
+  const salesCount = cell.sales.length;
+  const activityCount = cell.activities.length;
 
   // Most significant thing that happened decides the fill; nothing at all
   // leaves it white/blank.
   const fill =
-    cell.sales > 0
+    salesCount > 0
       ? LEGEND[0]
-      : cell.leads > 0
+      : leadCount > 0
         ? LEGEND[1]
-        : cell.activities > 0
+        : activityCount > 0
           ? LEGEND[2]
           : null;
 
-  const total = cell.sales + cell.leads + cell.activities;
   const onDark = fill?.key === "sales" || fill?.key === "leads";
+  const hasAnything = leadCount + salesCount + activityCount > 0;
 
   const title = [
     cell.label || cell.key,
-    `${cell.leads} lead${cell.leads === 1 ? "" : "s"}`,
-    `${cell.sales} closed`,
-    `${cell.activities} activit${cell.activities === 1 ? "y" : "ies"}`,
+    `${leadCount} lead${leadCount === 1 ? "" : "s"}`,
+    `${salesCount} closed`,
+    `${activityCount} activit${activityCount === 1 ? "y" : "ies"}`,
   ].join(" · ");
 
   return (
-    <div
+    <button
+      type="button"
       title={title}
-      className={`flex flex-col items-center justify-center rounded-[7px] border ${
-        big ? "aspect-auto py-6" : "aspect-square"
+      onClick={cell.clickable && hasAnything ? onOpen : undefined}
+      disabled={!cell.clickable || !hasAnything}
+      className={`flex flex-col items-center justify-center rounded-[6px] border ${
+        big ? "h-14" : "h-8"
       } ${
         isToday ? "border-gold ring-1 ring-gold" : "border-sand-2 dark:border-white/10"
-      }`}
+      } ${cell.clickable && hasAnything ? "cursor-pointer hover:brightness-95" : "cursor-default"}`}
       style={fill ? { background: fill.light, borderColor: fill.light } : undefined}
     >
       <span
-        className={`text-[10px] font-bold leading-none ${
+        className={`text-[9.5px] font-bold leading-none ${
           onDark ? "text-white/90" : "text-navy dark:text-[#eef3f8]"
         }`}
       >
         {cell.label}
       </span>
-      {total > 0 && (
+      {/* Only the lead count, smaller than the date above it -- sales/activity
+          counts still drive the fill colour, and the full breakdown is one
+          click away in the modal. */}
+      {leadCount > 0 && (
         <span
-          className={`mt-0.5 text-[9px] font-extrabold leading-none ${
-            onDark ? "text-white" : "text-navy dark:text-[#eef3f8]"
+          className={`mt-0.5 text-[7px] font-semibold leading-none ${
+            onDark ? "text-white/85" : "text-taupe-2 dark:text-[#9fb2c4]"
           }`}
         >
-          {total}
+          {leadCount} lead{leadCount === 1 ? "" : "s"}
         </span>
       )}
+    </button>
+  );
+}
+
+function Section({
+  title, count, color, defaultOpen, children,
+}: {
+  title: string; count: number; color: string; defaultOpen: boolean; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-[12px] border border-sand-2 dark:border-white/10">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2.5 px-3.5 py-3"
+      >
+        <span className="h-[9px] w-[9px] flex-none rounded-[3px]" style={{ background: color }} />
+        <span className="flex-1 text-left text-[13px] font-bold text-navy dark:text-[#eef3f8]">{title}</span>
+        <span className="text-[12px] font-extrabold text-navy dark:text-[#eef3f8]">{count}</span>
+        <svg
+          width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}
+          strokeLinecap="round" strokeLinejoin="round"
+          className={`flex-none text-taupe transition-transform dark:text-[#7f93aa] ${open ? "rotate-180" : ""}`}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="border-t border-sand-3 px-3.5 py-2.5 dark:border-white/10">
+          {count === 0 ? (
+            <p className="py-1 text-[12px] text-muted dark:text-[#7f93aa]">Nothing here.</p>
+          ) : (
+            <div className="flex flex-col gap-1.5">{children}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// cell.label is deliberately short in-grid ("1", "Mo 1") -- the modal needs
+// the actual date, parsed from the key rather than local-midnight new Date()
+// on "YYYY-MM-DD" (which some engines read as UTC and can shift by a day).
+function fullDateLabel(key: string) {
+  const [y, m, d] = key.split("-").map(Number);
+  if (!y || !m || !d) return key;
+  return `${d} ${MONTH_LONG[m - 1]} ${y}`;
+}
+
+function DayModal({ cell, onClose }: { cell: Cell; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-navy/55 p-4" onClick={onClose}>
+      <div
+        className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-5 shadow-elevated dark:bg-[#12283f]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-[15px] font-bold text-navy dark:text-[#eef3f8]">{fullDateLabel(cell.key)}</div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-7 w-7 items-center justify-center rounded-[8px] text-taupe hover:bg-cream dark:text-[#7f93aa] dark:hover:bg-white/5"
+          >
+            <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="mt-3.5 flex flex-col gap-2.5">
+          <Section title="Leads" count={cell.leads.length} color={LEGEND[1].light} defaultOpen={cell.leads.length > 0}>
+            {cell.leads.map((l) => (
+              <Link
+                key={l.id}
+                href={`/leads/${l.id}`}
+                className="rounded-[9px] bg-cream px-3 py-2 text-[12.5px] font-semibold text-navy hover:underline dark:bg-white/5 dark:text-[#eef3f8]"
+              >
+                {l.fullName}
+              </Link>
+            ))}
+          </Section>
+
+          <Section title="Closed clients" count={cell.sales.length} color={LEGEND[0].light} defaultOpen={cell.sales.length > 0 && cell.leads.length === 0}>
+            {cell.sales.map((l) => (
+              <Link
+                key={l.id}
+                href={`/leads/${l.id}`}
+                className="rounded-[9px] bg-cream px-3 py-2 text-[12.5px] font-semibold text-navy hover:underline dark:bg-white/5 dark:text-[#eef3f8]"
+              >
+                {l.fullName}
+              </Link>
+            ))}
+          </Section>
+
+          <Section
+            title="Activities"
+            count={cell.activities.length}
+            color={LEGEND[2].light}
+            defaultOpen={cell.activities.length > 0 && cell.leads.length === 0 && cell.sales.length === 0}
+          >
+            {cell.activities.map((a) => (
+              <div key={a.id} className="rounded-[9px] bg-cream px-3 py-2 dark:bg-white/5">
+                <div className="text-[12.5px] font-semibold text-navy dark:text-[#eef3f8]">{a.label}</div>
+                {a.leadName && a.leadId && (
+                  <Link href={`/leads/${a.leadId}`} className="text-[11px] font-medium text-taupe hover:underline dark:text-[#7f93aa]">
+                    {a.leadName}
+                  </Link>
+                )}
+              </div>
+            ))}
+          </Section>
+        </div>
+      </div>
     </div>
   );
 }
