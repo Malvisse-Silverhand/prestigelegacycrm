@@ -6,6 +6,7 @@ import { ChevronDownIcon, ShieldIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
 import { StopPropagationLink } from "./stop-propagation-link";
+import { ActiveToggle } from "./active-toggle";
 
 function initialsOf(name: string, given: string | null) {
   return given || name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
@@ -119,7 +120,10 @@ export function TeamLeague({
                       {row.staleCount}
                     </span>
                   </div>
-                  <div className="flex justify-end gap-1.5">
+                  <div className="flex items-center justify-end gap-2">
+                    {/* ActiveToggle stops the click itself -- this sits inside
+                        a <summary>, which would otherwise also toggle the row. */}
+                    <ActiveToggle memberId={row.league.unitManager.id} initialActive={row.league.unitManager.is_active} compact />
                     <StopPropagationLink
                       href={`/dashboard?monitor=${row.league.unitManager.id}`}
                       className="rounded-[9px] border border-sand-2 bg-cream px-3.5 py-2 text-xs font-semibold text-navy"
@@ -131,35 +135,44 @@ export function TeamLeague({
 
                 <div className="bg-cream px-[22px] py-3.5 pl-[60px]">
                   <div className="pb-2 text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
-                    Agents under {row.league.unitManager.full_name.split(" ")[0]} — click to open an agent dashboard
+                    Team under {row.league.unitManager.full_name.split(" ")[0]} — click a name to open their dashboard
                   </div>
                   {row.league.agents.length === 0 ? (
-                    <p className="text-[12.5px] text-muted">No agents in this unit yet.</p>
+                    <p className="text-[12.5px] text-muted">Nobody in this unit yet.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
                       {row.league.agents.map((agent) => {
                         const m = agentMetrics.get(agent.id) ?? emptyMetrics();
                         return (
-                          <Link
+                          <div
                             key={agent.id}
-                            href={`/dashboard?monitor=${agent.id}`}
                             className={
                               m.staleCount > 0
                                 ? "rounded-xl border-[1.5px] border-[#f6d5cf] bg-white p-[11px]"
                                 : "rounded-xl border border-sand-2 bg-white p-[11px]"
                             }
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-navy text-[9.5px] font-bold text-gold">
-                                {initialsOf(agent.full_name, agent.avatar_initials)}
-                              </span>
-                              <span className="truncate text-xs font-bold text-navy">{agent.full_name}</span>
+                            <Link href={`/dashboard?monitor=${agent.id}`} className="block">
+                              <div className="flex items-center gap-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-navy text-[9.5px] font-bold text-gold">
+                                  {initialsOf(agent.full_name, agent.avatar_initials)}
+                                </span>
+                                <span className="truncate text-xs font-bold text-navy">{agent.full_name}</span>
+                              </div>
+                              <div className="mt-[9px] flex items-center gap-2.5 text-[11px] font-semibold text-muted-2">
+                                <span>{m.leadCount} leads</span>
+                                <span className={m.convRate < 20 ? "text-[#b06d1c]" : "text-green"}>{m.convRate}%</span>
+                                {agent.role === "aspirant_unit_manager" && (
+                                  <span className="rounded-[5px] bg-warn-gold-bg px-[5px] py-[1px] text-[8.5px] font-bold text-warn-gold-text">
+                                    AUM
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                            <div className="mt-2 border-t border-sand-3 pt-2">
+                              <ActiveToggle memberId={agent.id} initialActive={agent.is_active} compact />
                             </div>
-                            <div className="mt-[9px] flex gap-2.5 text-[11px] font-semibold text-muted-2">
-                              <span>{m.leadCount} leads</span>
-                              <span className={m.convRate < 20 ? "text-[#b06d1c]" : "text-green"}>{m.convRate}%</span>
-                            </div>
-                          </Link>
+                          </div>
                         );
                       })}
                     </div>

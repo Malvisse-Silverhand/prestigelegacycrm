@@ -110,6 +110,10 @@ export type ReassignOption = { id: string; full_name: string; role: string };
 // viewer's level" includes the viewer's own level, so the list always
 // includes the viewer themself -- that's what makes "assign to Self" mean
 // anything for an unassigned lead.
+//
+// Deactivated people are filtered out: My Team's active toggle is what
+// decides who can take new leads, and reassignLead() re-checks against this
+// same list, so a lead can't be handed to someone switched off.
 export async function getReassignableUsers(profile: CurrentProfile): Promise<ReassignOption[]> {
   const supabase = await createClient();
 
@@ -124,6 +128,7 @@ export async function getReassignableUsers(profile: CurrentProfile): Promise<Rea
       .select("id, full_name, role")
       .eq("unit_id", profile.unit_id)
       .in("role", ["aspirant_unit_manager", "agent"])
+      .eq("is_active", true)
       .order("full_name");
     const rows = data ?? [];
     return rows.some((r) => r.id === profile.id)
@@ -137,6 +142,7 @@ export async function getReassignableUsers(profile: CurrentProfile): Promise<Rea
       .select("id, full_name, role")
       .eq("unit_id", profile.unit_id)
       .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
+      .eq("is_active", true)
       .order("full_name");
     return data ?? [];
   }
@@ -150,12 +156,17 @@ export async function getReassignableUsers(profile: CurrentProfile): Promise<Rea
           .select("id, full_name, role")
           .in("unit_id", unitIds)
           .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
+          .eq("is_active", true)
           .order("full_name")
       : { data: [] as ReassignOption[] };
     return [{ id: profile.id, full_name: profile.full_name, role: "group_manager" }, ...(scoped.data ?? [])];
   }
 
-  // superadmin: anyone
-  const { data } = await supabase.from("profiles").select("id, full_name, role").order("full_name");
+  // superadmin: anyone still active
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, role")
+    .eq("is_active", true)
+    .order("full_name");
   return data ?? [];
 }

@@ -468,6 +468,15 @@ export function LeadDetailContent({
                     className="w-full rounded-[8px] border border-sand-2 bg-cream px-2 py-[5px] text-[13px] font-semibold text-navy disabled:opacity-70"
                   >
                     <option value="" disabled>Unassigned</option>
+                    {/* The owner may since have been deactivated, which drops
+                        them from reassignOptions -- show them anyway (disabled)
+                        so the picker reflects who actually holds the lead
+                        instead of rendering blank. */}
+                    {lead.agent_id && !reassignOptions.some((o) => o.id === lead.agent_id) && (
+                      <option value={lead.agent_id} disabled>
+                        {lead.profiles?.full_name ?? "Current owner"} (inactive)
+                      </option>
+                    )}
                     {reassignOptions.map((o) => (
                       <option key={o.id} value={o.id}>
                         {o.full_name}{o.id === profile.id ? " (Self)" : ""}

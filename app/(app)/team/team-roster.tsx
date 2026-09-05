@@ -16,6 +16,14 @@ function timeAgo(iso: string | null) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+// Same reason timeAgo() exists as a helper: reading the clock directly in the
+// component body trips the purity rule, even though this renders once per
+// request on the server.
+function needsAttentionSince(iso: string | null) {
+  if (!iso) return true;
+  return Date.now() - new Date(iso).getTime() > 48 * 3600000;
+}
+
 function initialsOf(name: string, given: string | null) {
   return given || name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
 }
@@ -70,9 +78,7 @@ export function TeamRoster({
             {members.map((m) => {
               const stats = metrics.get(m.id) ?? emptyMetrics();
               const stale = stats.staleCount > 0;
-              const needsAttention = m.last_activity_at
-                ? Date.now() - new Date(m.last_activity_at).getTime() > 48 * 3600000
-                : true;
+              const needsAttention = needsAttentionSince(m.last_activity_at);
               return (
                 <div
                   key={m.id}

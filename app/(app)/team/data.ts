@@ -121,7 +121,9 @@ export async function getGroupManagerLeague(profile: CurrentProfile) {
     .from("profiles")
     .select("id, full_name, email, role, unit_id, is_active, avatar_initials, created_at, last_activity_at")
     .in("unit_id", unitIds)
-    .in("role", ["unit_manager", "agent"])
+    // Aspirant UMs run their own agents, so the league has to show (and be
+    // able to deactivate) them too -- not just Unit Managers and agents.
+    .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
     .order("full_name")
     .returns<TeamMember[]>();
 
@@ -131,7 +133,9 @@ export async function getGroupManagerLeague(profile: CurrentProfile) {
   for (const unit of units ?? []) {
     const unitManager = (members ?? []).find((m) => m.role === "unit_manager" && m.unit_id === unit.id);
     if (!unitManager) continue;
-    const agents = (members ?? []).filter((m) => m.role === "agent" && m.unit_id === unit.id);
+    const agents = (members ?? []).filter(
+      (m) => (m.role === "agent" || m.role === "aspirant_unit_manager") && m.unit_id === unit.id,
+    );
     leagues.push({ unitManager, unitId: unit.id, unitName: unit.name, agents });
   }
 
