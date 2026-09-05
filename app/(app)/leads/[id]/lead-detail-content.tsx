@@ -302,7 +302,7 @@ export function LeadDetailContent({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-navy hover:underline"
+                className="flex items-center gap-1.5 rounded-[9px] bg-gold px-3.5 py-2 text-[12px] font-bold text-navy shadow-sm hover:brightness-95"
               >
                 {editPencil}
                 Edit

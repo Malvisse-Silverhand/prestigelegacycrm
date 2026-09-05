@@ -29,8 +29,8 @@ function needsAssignment(role: Role) {
   return role === "unit_manager" || role === "aspirant_unit_manager" || role === "agent";
 }
 
-function assignmentLabel(role: Role) {
-  if (role === "agent") return "Assigned under (supervisor)";
+function assignmentLabel(role: Role, restrictedToGmUm?: boolean) {
+  if (role === "agent") return restrictedToGmUm ? "Assigned under (Unit or Group Manager)" : "Assigned under (supervisor)";
   if (role === "aspirant_unit_manager") return "Assigned under (Group or Unit Manager)";
   return "Assigned under (Group Manager)";
 }
@@ -46,16 +46,21 @@ const SUPERVISOR_SUFFIX: Record<string, string> = {
 function assignmentChoicesFor(
   role: Role,
   opts: { unitManagers: UnitManagerOption[]; units: UnitOption[] },
+  // Overrides the default supervisor roles for this target role -- used by
+  // the "+ Invite agent" shortcut, which only offers Unit/Group Manager
+  // (an Aspirant UM is still a valid supervisor via the full Add User form).
+  restrictToRoles?: string[],
 ): { id: string; label: string }[] {
   // An agent may report to a Group Manager, a Unit Manager or an Aspirant UM;
   // an Aspirant UM to a Group Manager or a Unit Manager. A Unit Manager only
   // ever reports to a Group Manager -- their own unit follows them there.
   const supervisorRoles =
-    role === "agent"
+    restrictToRoles ??
+    (role === "agent"
       ? ["group_manager", "unit_manager", "aspirant_unit_manager"]
       : role === "aspirant_unit_manager"
         ? ["group_manager", "unit_manager"]
-        : ["group_manager"];
+        : ["group_manager"]);
 
   if (role === "agent" || role === "aspirant_unit_manager" || role === "unit_manager") {
     return opts.unitManagers
@@ -170,7 +175,9 @@ export function UsersHierarchyTab({
   const [editing, setEditing] = useState<
     { id: string; fullName: string; email: string; phone: string; role: Role; currentAssignedUnderId: string | null } | null
   >(null);
-  const [adding, setAdding] = useState(false);
+  // "agent" opens the dedicated Invite Agent shortcut (role locked, no picker);
+  // "any" opens the full Add User form with the role picker.
+  const [addMode, setAddMode] = useState<"agent" | "any" | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   // Collapsed by id; everything starts expanded so the tree still reads as a
   // tree, and long branches can be folded away.
@@ -190,13 +197,22 @@ export function UsersHierarchyTab({
             </div>
           </div>
           {canEdit && (
-            <button
-              type="button"
-              onClick={() => setAdding(true)}
-              className="flex flex-none items-center gap-1.5 rounded-[10px] bg-navy px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
-            >
-              + Add user
-            </button>
+            <div className="flex flex-none items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAddMode("agent")}
+                className="flex items-center gap-1.5 rounded-[10px] bg-gold px-3.5 py-2.5 text-[12.5px] font-bold text-navy shadow-sm hover:brightness-95"
+              >
+                + Invite agent
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddMode("any")}
+                className="flex items-center gap-1.5 rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy hover:border-navy"
+              >
+                + Add user
+              </button>
+            </div>
           )}
         </div>
 
@@ -538,10 +554,15 @@ export function UsersHierarchyTab({
         </div>
       )}
 
-      {adding && (
+      {addMode && (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-elevated">
-            <AddUserForm role={role} assignmentOptions={assignmentOptions} onClose={() => setAdding(false)} />
+            <AddUserForm
+              role={role}
+              assignmentOptions={assignmentOptions}
+              lockedRole={addMode === "agent" ? "agent" : undefined}
+              onClose={() => setAddMode(null)}
+            />
           </div>
         </div>
       )}
@@ -762,17 +783,21 @@ function DeleteUserDialog({
 function AddUserForm({
   role,
   assignmentOptions,
+  lockedRole,
   onClose,
 }: {
   role: Role;
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
+  // Set by the "+ Invite agent" shortcut: pins the role and hides the picker,
+  // so inviting an agent is name/phone/email/supervisor and nothing else.
+  lockedRole?: Role;
   onClose: () => void;
 }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [newRole, setNewRole] = useState<Role>("agent");
+  const [newRole, setNewRole] = useState<Role>(lockedRole ?? "agent");
   const [assignedUnderId, setAssignedUnderId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
@@ -787,7 +812,12 @@ function AddUserForm({
 
   const availableRoles = creatableRoles(role);
   const requiresAssignment = needsAssignment(newRole);
-  const assignmentChoices = assignmentChoicesFor(newRole, assignmentOptions);
+  const restrictToGmUm = lockedRole === "agent";
+  const assignmentChoices = assignmentChoicesFor(
+    newRole,
+    assignmentOptions,
+    restrictToGmUm ? ["group_manager", "unit_manager"] : undefined,
+  );
 
   function handleRoleChange(r: Role) {
     setNewRole(r);
@@ -881,12 +911,16 @@ function AddUserForm({
   return (
     <div className="px-[22px] pb-[22px] pt-5">
       <div className="flex items-center justify-between">
-        <div className="text-[15px] font-bold text-navy">Add a new user</div>
+        <div className="text-[15px] font-bold text-navy">{lockedRole === "agent" ? "Invite agent" : "Add a new user"}</div>
         <button type="button" onClick={onClose} className="text-[12px] font-semibold text-muted">
           Cancel
         </button>
       </div>
-      <div className="mt-0.5 text-xs font-medium text-muted">Creates a real login — share the temporary password with them directly.</div>
+      <div className="mt-0.5 text-xs font-medium text-muted">
+        {lockedRole === "agent"
+          ? "Creates a real login for an agent and assigns them to a Unit or Group Manager — share the temporary password with them directly."
+          : "Creates a real login — share the temporary password with them directly."}
+      </div>
 
       <div className="mt-4 flex flex-col gap-3.5">
         <Field label="Full name">
@@ -916,24 +950,26 @@ function AddUserForm({
           />
           <p className="mt-1 text-[10.5px] font-medium text-taupe">Used for the &ldquo;Share to WhatsApp&rdquo; button below.</p>
         </Field>
-        <Field label="Role">
-          <div className="grid grid-cols-2 gap-[7px]">
-            {availableRoles.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => handleRoleChange(r)}
-                className={`rounded-[9px] border px-[9px] py-2.5 text-center text-xs font-semibold transition-colors ${
-                  newRole === r ? "border-navy bg-navy text-white" : "border-sand-2 bg-cream text-muted"
-                }`}
-              >
-                {ROLE_LABEL[r]}
-              </button>
-            ))}
-          </div>
-        </Field>
+        {!lockedRole && (
+          <Field label="Role">
+            <div className="grid grid-cols-2 gap-[7px]">
+              {availableRoles.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => handleRoleChange(r)}
+                  className={`rounded-[9px] border px-[9px] py-2.5 text-center text-xs font-semibold transition-colors ${
+                    newRole === r ? "border-navy bg-navy text-white" : "border-sand-2 bg-cream text-muted"
+                  }`}
+                >
+                  {ROLE_LABEL[r]}
+                </button>
+              ))}
+            </div>
+          </Field>
+        )}
         {requiresAssignment && (
-          <Field label={assignmentLabel(newRole)}>
+          <Field label={assignmentLabel(newRole, restrictToGmUm)}>
             <select
               value={assignedUnderId}
               onChange={(e) => setAssignedUnderId(e.target.value)}
