@@ -220,6 +220,12 @@
   #t4u-qc.pdf .qc-toolbar{display:none!important}
   #t4u-qc.pdf .qc-toast{display:none!important}
   #t4u-qc.pdf{padding-bottom:14px}
+  /* Tandatangan ejen: hanya muncul dalam eksport, di hujung quotation. */
+  #t4u-qc .qc-signoff{display:none}
+  #t4u-qc.pdf .qc-signoff{
+    display:block; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);
+    text-align:center; font-size:12px; font-weight:600; color:var(--muted);
+  }
 
   @media (max-width:560px){
     #t4u-qc{padding:10px 8px 50px}
@@ -333,6 +339,9 @@
       <table class="qc-table"></table>
     </div>
   </div>
+
+  <!-- Tandatangan ejen — hanya kelihatan dalam eksport (PDF/JPEG), bukan di skrin -->
+  <div class="qc-signoff" id="qcSignoff"></div>
 
   <!-- ACTION BAR (bawah) -->
   <div class="qc-toolbar">
@@ -823,6 +832,13 @@
     });
   }
 
+  // Lebar "desktop" tetap untuk eksport. Tanpa ini, eksport dari telefon
+  // ikut lebar viewport (~400px): media query @max-width:560px masih terpakai,
+  // jadual kekal dalam bekas overflow-x, dan lajur kanan terpotong. Dengan
+  // lebar tetap + windowWidth yang sama, html2canvas menyusun klon dokumen
+  // pada lebar itu, jadi telefon dan desktop hasilkan fail yang serupa.
+  const EXPORT_WIDTH = 1100;
+
   // Tangkap quotation seperti yang dipapar: header, profil pelanggan & jadual
   // penuh. Kelas .pdf membuka sticky/scroll jadual DAN menyembunyikan toolbar
   // (butang bawah) + butang padam lajur, supaya eksport bersih tanpa butang.
@@ -831,39 +847,84 @@
     syncFormAttributes(root);
     root.classList.add('pdf');
     const prevW=root.style.width;
+    const prevMaxW=root.style.maxWidth;
     try{
-      // pastikan lebar cukup utk jadual penuh (jika jadual lebih lebar dari container)
+      // Kunci lebar pada EXPORT_WIDTH dahulu, BUKAN root.scrollWidth: scrollWidth
+      // ialah lebar viewport, jadi memasukkannya bermakna telefon dan desktop
+      // hasilkan saiz kanvas berbeza (dan bilangan page PDF berbeza) untuk
+      // quotation yang sama.
+      root.style.width=EXPORT_WIDTH+'px';
+      root.style.maxWidth='none';
+      // Baru selepas susun atur lebar-desktop itu, ukur jadual: hanya lebarkan
+      // lagi jika jadual (banyak lajur pelan) memang perlukan lebih.
       const tbl=root.querySelector('table.qc-table');
-      const needW=Math.max(root.scrollWidth, (tbl?tbl.scrollWidth:0)+40);
-      root.style.width=needW+'px';
+      const needW=Math.max(EXPORT_WIDTH, (tbl?tbl.scrollWidth:0)+40);
+      if(needW>EXPORT_WIDTH) root.style.width=needW+'px';
       // beri masa font/img/layout settle dulu
       if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
       await new Promise(r=>setTimeout(r,80));
       return await window.html2canvas(root, {
         scale:2, useCORS:true, backgroundColor:'#fbf4e4',
-        windowWidth:needW, scrollX:0, scrollY:0,
+        // windowWidth/Height saiz tetingkap klon: media query dinilai semula
+        // pada saiz ini, jadi susun atur desktop terpakai walau di telefon.
+        windowWidth:needW,
+        windowHeight:Math.max(window.innerHeight, root.scrollHeight),
+        width:needW,
+        scrollX:0, scrollY:0,
         ignoreElements: el => el.classList && (el.classList.contains('qc-toast') || el.classList.contains('qc-toolbar')),
       });
     } finally {
       root.style.width=prevW;
+      root.style.maxWidth=prevMaxW;
       root.classList.remove('pdf');
     }
   }
 
-  // Bina PDF: SATU page A4 menegak (portrait), keseluruhan quotation muat di
-  // dalamnya. (Dulu A4 landscape + dipecah kepada beberapa page mengikut
-  // ketinggian, jadi satu quotation keluar sebagai 3 page berasingan.)
-  // Imej diskala "contain" -- muat penuh dalam page tanpa memotong apa-apa,
-  // dan nisbahnya dikekalkan supaya jadual tidak herot.
+  // Bina PDF A4 menegak (portrait), imej melebar penuh dari tepi ke tepi.
+  // Sebelum ini imej diskala "contain", jadi quotation yang tinggi mengecil
+  // dan tinggal ruang putih besar di kiri/kanan. Sekarang lebar dahulu:
+  //   muat 1 page  -> satu page
+  //   lebih tinggi -> dipotong kepada 2 page (maksimum)
+  //   masih lebih  -> diskala turun supaya tepat muat dalam 2 page
+  const MAX_PDF_PAGES = 2;
+
   function canvasToPdf(canvas){
     const pdf=new window.jspdf.jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
     const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
-    const margin=6, availW=pw-margin*2, availH=ph-margin*2;
-    const scale=Math.min(availW/canvas.width, availH/canvas.height);
-    const imgW=canvas.width*scale, imgH=canvas.height*scale;
-    // Tengah secara melintang; mula dari atas supaya ruang kosong (jika ada)
-    // jatuh di bawah, bukan memisahkan header dari jadual.
-    pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',(pw-imgW)/2,margin,imgW,imgH);
+    const margin=4, availW=pw-margin*2, availH=ph-margin*2;
+
+    // Lebar penuh dahulu; tinggi ikut nisbah asal supaya jadual tidak herot.
+    let imgW=availW;
+    let imgH=canvas.height*(imgW/canvas.width);
+
+    if(imgH<=availH){
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,imgH);
+      return pdf;
+    }
+
+    // Terlalu tinggi untuk satu page. Jika lebih daripada MAX_PDF_PAGES pun
+    // tak muat, kecilkan sedikit supaya keseluruhannya masuk dalam had itu --
+    // lebih baik teks kecil sedikit daripada quotation terpotong.
+    const maxH=availH*MAX_PDF_PAGES;
+    if(imgH>maxH){
+      const shrink=maxH/imgH;
+      imgW*=shrink; imgH*=shrink;
+    }
+
+    // Potong canvas mengikut ketinggian satu page, dalam piksel canvas.
+    const pxPerMm=canvas.width/imgW;
+    const slicePx=Math.ceil(availH*pxPerMm);
+    const x=(pw-imgW)/2;
+    let sy=0, page=0;
+    while(sy<canvas.height && page<MAX_PDF_PAGES){
+      const sliceH=Math.min(slicePx, canvas.height-sy);
+      const c2=document.createElement('canvas');
+      c2.width=canvas.width; c2.height=sliceH;
+      c2.getContext('2d').drawImage(canvas,0,sy,canvas.width,sliceH,0,0,canvas.width,sliceH);
+      if(page>0) pdf.addPage();
+      pdf.addImage(c2.toDataURL('image/jpeg',0.95),'JPEG',x,margin,imgW,sliceH/pxPerMm);
+      sy+=sliceH; page++;
+    }
     return pdf;
   }
 
@@ -974,6 +1035,22 @@
 
     function post(msg){ try{ if(window.parent!==window) window.parent.postMessage(msg,'*'); }catch(e){} }
 
+    // Sign the exported PDF/JPEG with the agent who produced it. The name
+    // comes from /api/me (same-origin, the CRM session) rather than a URL
+    // param, so every launch path gets it without threading a prop through
+    // each one. Standalone (no CRM session) just leaves the line off.
+    async function loadSignoff(){
+      const el = document.getElementById('qcSignoff');
+      if(!el) return;
+      try{
+        const res = await fetch('/api/me', { headers:{ 'Accept':'application/json' } });
+        if(!res.ok) return;
+        const { fullName } = await res.json();
+        if(!fullName) return;
+        el.textContent = `Quotation disediakan oleh ${fullName}, Great Eastern Takaful Berhad`;
+      }catch(err){ /* offline / standalone — the sign-off simply stays empty */ }
+    }
+
     // Prefill the customer card from the lead the CRM opened this for.
     function prefill(){
       const name = q.get('name'), dob = q.get('dob'), phone = q.get('phone');
@@ -1067,13 +1144,14 @@
       post({ type:'t4u-tool-error', context, message:(err&&err.message)||String(err), stack: err&&err.stack });
     }
 
-    return { leadId, quotationId, prefill, restore, save, reportError };
+    return { leadId, quotationId, prefill, restore, save, reportError, loadSignoff };
   })();
 
   /* ---------- INIT ---------- */
   render();
   CRM.prefill();
   CRM.restore();
+  CRM.loadSignoff();
 })();
 </script>
 

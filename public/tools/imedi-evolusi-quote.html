@@ -606,6 +606,15 @@
     prefillSmoker=q.get('smoker')||''; // 'true' | 'false'
   })();
   var capturedQuotationId=null; // set once capture-quotation's insert responds
+  // Agent who produced the quotation, for the sign-off line on the PDF. Comes
+  // from the CRM session (same-origin /api/me); standalone just leaves it off.
+  var agentName='';
+  try{
+    fetch('/api/me',{headers:{'Accept':'application/json'}})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(j){ if(j&&j.fullName) agentName=j.fullName; })
+      .catch(function(){});
+  }catch(e){}
   var $=function(id){return document.getElementById(id)};
   var formEl=$('mq-form'),resEl=$('mq-result');
 
@@ -929,6 +938,7 @@
       +'table.b tr.grp td{background:#f5eee3;font-weight:bold;font-size:9.5px;text-transform:uppercase;padding:5px 6px}'
       +'.nt{font-size:8px;color:#b7791f;font-weight:bold}'
       +'.dc{margin-top:14px;font-size:8.5px;color:#8b8271;line-height:1.5;border-top:1px solid #e7ded0;padding-top:8px}'
+      +'.sg{margin-top:10px;text-align:center;font-size:9.5px;font-weight:bold;color:#5f6f81}'
       +'<\/style><\/head><body>'
       +'<div class="hd"><div><h1>QuickQuote — '+(L?'i-Medi Evolusi Medical Card':'Kad Perubatan i-Medi Evolusi')+'<\/h1>'
         +'<div class="sub">Great Eastern Takaful Berhad (916257-H)<\/div><\/div>'
@@ -953,6 +963,7 @@
       +'<table class="b"><thead><tr><th>'+t('colBenefit')+'<\/th><th class="c">'+t('opt1')+'<\/th><th class="c">'+t('opt2')+'<\/th><\/tr><\/thead><tbody>'
       +rowsHTML+'<\/tbody><\/table>'
       +'<div class="dc">'+t('disc')+'<\/div>'
+      +(agentName?'<div class="sg">Quotation disediakan oleh '+esc(agentName)+', Great Eastern Takaful Berhad<\/div>':'')
       +'<\/body><\/html>');
     w.document.close();
     setTimeout(function(){try{w.focus();w.print();}catch(e){}},450);
