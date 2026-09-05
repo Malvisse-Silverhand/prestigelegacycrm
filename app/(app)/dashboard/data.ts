@@ -22,8 +22,13 @@ type LeadRow = {
 
 const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted"];
 
-function dayKey(iso: string) {
-  return iso.slice(0, 10);
+// created_at/updated_at are nullable in the schema -- they carry defaults, not
+// NOT NULL -- and rows do exist with a null updated_at. Returning "" rather
+// than throwing keeps one such row from taking the whole dashboard down: ""
+// sorts before every real key, so those rows simply fall outside every
+// period comparison instead of landing in the wrong bucket.
+function dayKey(iso: string | null | undefined) {
+  return iso ? iso.slice(0, 10) : "";
 }
 
 function todayKey() {
@@ -223,10 +228,13 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     const createdKey = dayKey(l.created_at);
     if (createdKey >= calendarStartKey) dayEntry(createdKey).leads.push({ id: l.id, fullName: l.full_name });
     // A closed-won lead counts as a sale on the day it was last moved -- the
-    // closest thing to a close date without a dedicated column.
-    const updatedKey = dayKey(l.updated_at);
-    if (l.pipeline_stage === "closed_won" && updatedKey >= calendarStartKey) {
-      dayEntry(updatedKey).sales.push({ id: l.id, fullName: l.full_name });
+    // closest thing to a close date without a dedicated column. Only read
+    // updated_at for those: most leads have never been moved and carry null.
+    if (l.pipeline_stage === "closed_won") {
+      const updatedKey = dayKey(l.updated_at);
+      if (updatedKey >= calendarStartKey) {
+        dayEntry(updatedKey).sales.push({ id: l.id, fullName: l.full_name });
+      }
     }
   }
   // Monitor scope narrows the leads query but not lead_activity, so drop
