@@ -32,7 +32,7 @@ function needsAssignment(role: Role) {
 function assignmentLabel(role: Role) {
   if (role === "agent") return "Assigned under (supervisor)";
   if (role === "aspirant_unit_manager") return "Assigned under (Group or Unit Manager)";
-  return "Assigned under (Unit)";
+  return "Assigned under (Group Manager)";
 }
 
 // Normalised to {id,label} so the <select> renders the same either way,
@@ -48,13 +48,16 @@ function assignmentChoicesFor(
   opts: { unitManagers: UnitManagerOption[]; units: UnitOption[] },
 ): { id: string; label: string }[] {
   // An agent may report to a Group Manager, a Unit Manager or an Aspirant UM;
-  // an Aspirant UM to a Group Manager or a Unit Manager.
+  // an Aspirant UM to a Group Manager or a Unit Manager. A Unit Manager only
+  // ever reports to a Group Manager -- their own unit follows them there.
   const supervisorRoles =
     role === "agent"
       ? ["group_manager", "unit_manager", "aspirant_unit_manager"]
-      : ["group_manager", "unit_manager"];
+      : role === "aspirant_unit_manager"
+        ? ["group_manager", "unit_manager"]
+        : ["group_manager"];
 
-  if (role === "agent" || role === "aspirant_unit_manager") {
+  if (role === "agent" || role === "aspirant_unit_manager" || role === "unit_manager") {
     return opts.unitManagers
       .filter((m) => supervisorRoles.includes(m.role))
       .map((m) => ({
@@ -62,7 +65,6 @@ function assignmentChoicesFor(
         label: `${m.full_name}${m.unitName ? ` — ${m.unitName}` : ""}${SUPERVISOR_SUFFIX[m.role] ?? ""}`,
       }));
   }
-  if (role === "unit_manager") return opts.units.map((u) => ({ id: u.id, label: u.name }));
   return [];
 }
 
@@ -177,7 +179,7 @@ export function UsersHierarchyTab({
     setCollapsed((c) => ({ ...c, [id]: !c[id] }));
 
   return (
-    <div className="grid grid-cols-1 items-start gap-[22px] lg:grid-cols-[1fr_360px]">
+    <div>
       <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-6 pt-5 shadow-[0_1px_2px_rgba(15,37,64,.05)]">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -393,7 +395,7 @@ export function UsersHierarchyTab({
                               email: unit.unitManager!.email,
                               phone: unit.unitManager!.phone ?? "",
                               role: "unit_manager",
-                              currentAssignedUnderId: unit.id,
+                              currentAssignedUnderId: gm.id,
                             })
                           }
                         />
@@ -520,16 +522,21 @@ export function UsersHierarchyTab({
         </div>
       </div>
 
-      <div className="flex flex-col gap-[18px]">
-        {editing && (
-          <EditUserPanel
-            editing={editing}
-            assignmentOptions={assignmentOptions}
-            viewerRole={role}
-            onDone={() => setEditing(null)}
-          />
-        )}
-      </div>
+      {editing && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-elevated">
+            <EditUserPanel
+              // Remount on a different user so the fields reset to theirs
+              // instead of keeping whatever was typed for the previous one.
+              key={editing.id}
+              editing={editing}
+              assignmentOptions={assignmentOptions}
+              viewerRole={role}
+              onDone={() => setEditing(null)}
+            />
+          </div>
+        </div>
+      )}
 
       {adding && (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
@@ -598,7 +605,7 @@ function EditUserPanel({
   }
 
   return (
-    <div className="rounded-[18px] border-2 border-navy bg-white px-[22px] pb-[22px] pt-5">
+    <div className="px-[22px] pb-[22px] pt-5">
       <div className="flex items-center justify-between">
         <div className="text-[15px] font-bold text-navy">Edit {editing.fullName}</div>
         <button type="button" onClick={onDone} className="text-[12px] font-semibold text-muted">
@@ -941,7 +948,9 @@ function AddUserForm({
             </select>
             {assignmentChoices.length === 0 && (
               <div className="mt-1.5 text-[11px] font-medium text-alert-red">
-                {newRole === "unit_manager" ? "No units available yet." : "No supervisors available to assign under yet."}
+                {newRole === "unit_manager"
+                  ? "No Group Managers available to assign under yet."
+                  : "No supervisors available to assign under yet."}
               </div>
             )}
           </Field>

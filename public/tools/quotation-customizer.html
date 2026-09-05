@@ -215,6 +215,11 @@
   #t4u-qc.pdf .qc-table td.lbl,#t4u-qc.pdf .qc-table th.lbl,
   #t4u-qc.pdf .qc-table td.desc,#t4u-qc.pdf .qc-table th.desc{position:static; box-shadow:none}
   #t4u-qc.pdf .col-del{display:none!important}
+  /* Butang (BM/EN, Tambah Column, PDF/JPEG/WhatsApp/Simpan) & toast bukan
+     sebahagian quotation — sembunyi semasa tangkapan supaya eksport bersih. */
+  #t4u-qc.pdf .qc-toolbar{display:none!important}
+  #t4u-qc.pdf .qc-toast{display:none!important}
+  #t4u-qc.pdf{padding-bottom:14px}
 
   @media (max-width:560px){
     #t4u-qc{padding:10px 8px 50px}
@@ -763,71 +768,119 @@
   });
 
   /* =================== EKSPORT PDF / JPEG / WHATSAPP =================== */
-  let pdfLoading=false;
-  function ensureHtml2pdf(){
+  // The whole tool's CSS is scoped under #t4u-qc, so the capture has to happen
+  // on the live element, in place. html2canvas clones the entire document to
+  // render, which keeps those scoped rules matching. (html2pdf's .from() route
+  // can't be used here: it lifts a clone of the source into its own container
+  // on document.body, where every "#t4u-qc ..." rule stops applying.)
+  function loadScript(src){
     return new Promise((res,rej)=>{
-      if(window.html2pdf) return res();
-      if(pdfLoading){ const i=setInterval(()=>{ if(window.html2pdf){clearInterval(i);res();} },120); return; }
-      pdfLoading=true; const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      s.onload=res; s.onerror=()=>rej(new Error('Failed to load PDF library')); document.head.appendChild(s);
+      const s=document.createElement('script');
+      s.src=src; s.onload=()=>res(); s.onerror=()=>rej(new Error('Failed to load '+src));
+      document.head.appendChild(s);
     });
   }
 
-  // cloneNode(true) only copies each <input>/<select>'s `value`/`checked` ATTRIBUTE
-  // (whatever was last baked into the HTML by render()), not the live DOM property --
-  // so typing into a number/text field fires `recalc()` only (never a full render())
-  // and a naive clone taken right after would still show the pre-edit figure. Walk the
-  // two trees in lockstep (cloneNode preserves order) and copy the current property.
-  function syncLiveFormValues(liveRoot, clonedRoot){
-    const liveEls=liveRoot.querySelectorAll('input, select, textarea');
-    const clonedEls=clonedRoot.querySelectorAll('input, select, textarea');
-    liveEls.forEach((el,i)=>{
-      const c=clonedEls[i]; if(!c) return;
-      if(el.type==='checkbox' || el.type==='radio') c.checked=el.checked;
-      else c.value=el.value;
+  // html2pdf's *bundle* keeps html2canvas and jsPDF webpack-internal -- it only
+  // ever defines window.html2pdf, so the old `window.html2canvas(...)` call was
+  // a guaranteed "is not a function". Load the two libraries directly instead:
+  // these builds do define window.html2canvas and window.jspdf.jsPDF. One
+  // shared promise, so two quick clicks can't start two downloads.
+  let libsPromise=null;
+  function libsReady(){ return !!(window.html2canvas && window.jspdf && window.jspdf.jsPDF); }
+  function ensureLibs(){
+    if(libsReady()) return Promise.resolve();
+    if(!libsPromise){
+      libsPromise=Promise.all([
+        window.html2canvas ? null : loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+        (window.jspdf && window.jspdf.jsPDF) ? null : loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
+      ]).then(()=>{
+        if(!libsReady()) throw new Error('PDF libraries loaded but unavailable');
+      }).catch(err=>{ libsPromise=null; throw err; });
+    }
+    return libsPromise;
+  }
+
+  // html2canvas renders from a clone of the document, and cloneNode() copies an
+  // input's `value`/`checked` ATTRIBUTE -- not the live property that a user's
+  // typing sets. Typing only fires recalc() (never a full render()), so without
+  // this the export can show the figure from before the edit. Writing the
+  // attribute of an already-dirty field doesn't change what it displays, so
+  // this is safe to leave behind.
+  function syncFormAttributes(scope){
+    scope.querySelectorAll('input').forEach(el=>{
+      if(el.type==='checkbox' || el.type==='radio'){
+        if(el.checked) el.setAttribute('checked','checked'); else el.removeAttribute('checked');
+      } else {
+        el.setAttribute('value', el.value);
+      }
+    });
+    scope.querySelectorAll('textarea').forEach(el=>{ el.textContent=el.value; });
+    scope.querySelectorAll('select').forEach(sel=>{
+      Array.from(sel.options).forEach(o=>{
+        if(o.selected) o.setAttribute('selected','selected'); else o.removeAttribute('selected');
+      });
     });
   }
 
-  // Bina kawasan tangkapan: HEADER (jenama/logo/tajuk) + PROFIL (medan pelanggan) + JADUAL
-  // (baris akhir = "Caruman Bulanan"). Toolbar/butang TIDAK disertakan. Diklon & dilekap
-  // di dalam #t4u-qc (luar skrin) supaya CSS terhad tetap terpakai, kemudian dibuang lepas tangkap.
-  function buildCaptureWrap(){
-    const node=document.getElementById('qcExport');
-    const profileEl=document.getElementById('qcProfile');
-    const w=Math.max(node.scrollWidth, 900);
-    const wrap=document.createElement('div');
-    wrap.style.cssText='position:absolute;left:-10000px;top:0;width:'+w+'px;background:#fff;padding:10px';
-    const brandClone=document.getElementById('qc-brand').cloneNode(true);
-    brandClone.style.border='none'; brandClone.style.boxShadow='none'; brandClone.style.marginBottom='10px';
-    const profileClone=profileEl.cloneNode(true);
-    profileClone.style.border='none'; profileClone.style.boxShadow='none'; profileClone.style.marginTop='0'; profileClone.style.marginBottom='10px'; profileClone.style.padding='8px 0';
-    syncLiveFormValues(profileEl, profileClone);
-    const tableClone=node.cloneNode(true);
-    tableClone.style.overflow='visible';
-    syncLiveFormValues(node, tableClone);
-    const scrollInner=tableClone.querySelector('.qc-scroll');
-    if(scrollInner) scrollInner.style.overflow='visible';
-    // The "remove column" × control is chrome, not quotation content -- strip it
-    // from the export the same way the old capture path hid it via CSS.
-    tableClone.querySelectorAll('.col-del').forEach(el=>el.remove());
-    wrap.appendChild(brandClone); wrap.appendChild(profileClone); wrap.appendChild(tableClone);
-    root.appendChild(wrap);
-    return wrap;
+  // Tangkap quotation seperti yang dipapar: header, profil pelanggan & jadual
+  // penuh. Kelas .pdf membuka sticky/scroll jadual DAN menyembunyikan toolbar
+  // (butang bawah) + butang padam lajur, supaya eksport bersih tanpa butang.
+  async function captureCanvas(){
+    await ensureLibs();
+    syncFormAttributes(root);
+    root.classList.add('pdf');
+    const prevW=root.style.width;
+    try{
+      // pastikan lebar cukup utk jadual penuh (jika jadual lebih lebar dari container)
+      const tbl=root.querySelector('table.qc-table');
+      const needW=Math.max(root.scrollWidth, (tbl?tbl.scrollWidth:0)+40);
+      root.style.width=needW+'px';
+      // beri masa font/img/layout settle dulu
+      if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+      await new Promise(r=>setTimeout(r,80));
+      return await window.html2canvas(root, {
+        scale:2, useCORS:true, backgroundColor:'#fbf4e4',
+        windowWidth:needW, scrollX:0, scrollY:0,
+        ignoreElements: el => el.classList && (el.classList.contains('qc-toast') || el.classList.contains('qc-toolbar')),
+      });
+    } finally {
+      root.style.width=prevW;
+      root.classList.remove('pdf');
+    }
   }
 
-  function exportOpt(wrap, filename){
-    return {
-      margin:[8,8,8,8], filename,
-      image:{type:'jpeg', quality:0.98},
-      html2canvas:{scale:2, useCORS:true, backgroundColor:'#ffffff', windowWidth:wrap.scrollWidth},
-      jsPDF:{unit:'mm', format:'a4', orientation:'landscape'},
-      pagebreak:{mode:['css','legacy']}
-    };
+  // Bina PDF (A4 landscape) drpd canvas — pecah ke banyak page jika panjang
+  function canvasToPdf(canvas){
+    const pdf=new window.jspdf.jsPDF({unit:'mm', format:'a4', orientation:'landscape'});
+    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+    const margin=8, availW=pw-margin*2, availH=ph-margin*2;
+    const imgW=availW, imgH=canvas.height*(availW/canvas.width);
+    if(imgH<=availH){
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,imgH);
+      return pdf;
+    }
+    // pecah page: hirisan mengikut ketinggian
+    const pxPerMm=canvas.width/imgW;
+    const sliceHpx=availH*pxPerMm;
+    let sy=0, page=0;
+    while(sy<canvas.height){
+      const c2=document.createElement('canvas');
+      c2.width=canvas.width; c2.height=Math.min(sliceHpx, canvas.height-sy);
+      c2.getContext('2d').drawImage(canvas,0,sy,canvas.width,c2.height,0,0,canvas.width,c2.height);
+      if(page>0) pdf.addPage();
+      pdf.addImage(c2.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,c2.height/pxPerMm);
+      sy+=c2.height; page++;
+    }
+    return pdf;
   }
 
-  const nameSafe=()=> state.active==='medical'?'Kad-Medikal':'Hibah';
-  const fileStamp=()=> nameSafe()+'-'+Date.now();
+  const productName=()=> state.active==='medical' ? 'Medical Card' : 'Hibah';
+  // "[Lead Name]-Quotation [Product Name]", minus anything a filesystem rejects.
+  function fileBase(){
+    const name=String(state.profile.name||'').replace(/[\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim();
+    return (name ? name+'-' : '') + 'Quotation ' + productName();
+  }
 
   // Export buttons share one busy-guard so a slow html2canvas capture (big
   // tables can take a couple seconds) can't be double-fired by a fast
@@ -848,31 +901,24 @@
   document.getElementById('btnPdf').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     const t=UI[state.lang];
     showToast(t.toastPdfPrep);
-    let wrap=null;
     try{
-      await ensureHtml2pdf();
-      wrap=buildCaptureWrap();
-      await window.html2pdf().set(exportOpt(wrap, `Quotation-${fileStamp()}.pdf`)).from(wrap).save();
+      const pdf=canvasToPdf(await captureCanvas());
+      pdf.save(`${fileBase()}.pdf`);
       showToast(t.toastPdfOk,'ok');
     }catch(err){ showToast(t.toastPdfErr+(err&&err.message?err.message:''),'err'); CRM.reportError('download-pdf', err); }
-    finally{ if(wrap&&wrap.parentNode) wrap.parentNode.removeChild(wrap); }
   }));
 
   // ---- DOWNLOAD JPEG ----
   document.getElementById('btnJpeg').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
-    let wrap=null;
     try{
-      await ensureHtml2pdf();
-      wrap=buildCaptureWrap();
-      const canvas=await window.html2pdf().set(exportOpt(wrap, `Quotation-${fileStamp()}.jpg`)).from(wrap).toCanvas();
+      const canvas=await captureCanvas();
       const link=document.createElement('a');
-      link.download=`Quotation-${fileStamp()}.jpg`;
+      link.download=`${fileBase()}.jpg`;
       link.href=canvas.toDataURL('image/jpeg',0.95);
       document.body.appendChild(link); link.click(); link.remove();
       showToast(L('JPEG berjaya dimuat turun ✅','JPEG downloaded successfully ✅'),'ok');
     }catch(err){ showToast(L('Ralat JPEG: ','JPEG error: ')+(err&&err.message?err.message:''),'err'); CRM.reportError('download-jpeg', err); }
-    finally{ if(wrap&&wrap.parentNode) wrap.parentNode.removeChild(wrap); }
   }));
 
   // Normalkan nombor telefon MY ke format wa.me (cth 0116303... -> 60116303...)
@@ -893,17 +939,15 @@
     const textMsg=waText();
     const numDigits=waNumber();
     showToast(L('Menyediakan PDF untuk WhatsApp…','Preparing PDF for WhatsApp…'));
-    let wrap=null;
     try{
-      await ensureHtml2pdf();
-      wrap=buildCaptureWrap();
-      const filename=`Quotation-${fileStamp()}.pdf`;
-      const blob=await window.html2pdf().set(exportOpt(wrap, filename)).from(wrap).outputPdf('blob');
+      const pdf=canvasToPdf(await captureCanvas());
+      const blob=pdf.output('blob');
+      const filename=`${fileBase()}.pdf`;
       const file=new File([blob],filename,{type:'application/pdf'});
 
       // Cara terbaik hantar FAIL: Web Share API (mobile) — buka share sheet, user pilih chat WhatsApp
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({ files:[file], title:'Quotation '+nameSafe(), text:textMsg });
+        await navigator.share({ files:[file], title:'Quotation '+productName(), text:textMsg });
         showToast(L('Kongsi berjaya ✅','Shared successfully ✅'),'ok');
         return;
       }
@@ -926,8 +970,6 @@
     }catch(err){
       if(err && err.name==='AbortError'){ /* user batal share sheet */ }
       else{ showToast(L('Ralat kongsi: ','Share error: ')+(err&&err.message?err.message:''),'err'); CRM.reportError('send-whatsapp', err); }
-    } finally{
-      if(wrap&&wrap.parentNode) wrap.parentNode.removeChild(wrap);
     }
   }));
 

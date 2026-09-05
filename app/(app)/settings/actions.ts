@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
@@ -52,7 +53,7 @@ type InviteInput = {
   email: string;
   phone: string;
   role: Role;
-  assignedUnderId: string | null; // unit_manager id (role=agent) or unit id (role=unit_manager)
+  assignedUnderId: string | null; // the supervisor's profile id -- a Group Manager for role=unit_manager
 };
 
 // Loose on purpose: agents type numbers with spaces/dashes ("012-345 6789"),
@@ -65,13 +66,9 @@ function isPlausiblePhone(v: string) {
 
 type CallerProfile = { id: string; role: Role; unit_id: string | null };
 
-// When the org has exactly one Group Manager, new Unit Managers roll up to
-// them without anyone having to pick. Returns null once there is more than
-// one, since then it genuinely is a choice.
-async function soleGroupManagerId(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data } = await supabase.from("profiles").select("id").eq("role", "group_manager").limit(2);
-  return data && data.length === 1 ? data[0].id : null;
-}
+// Who the assignment is being resolved *for*. A Unit Manager's unit is named
+// after them, and an existing one is moved rather than replaced.
+type AssignmentTarget = { fullName: string; currentUnitId: string | null };
 
 // Shared by invite (new user) and edit (existing user): resolves the
 // "assigned under" selection into an actual unit_id/parent_id pair, scoped so
@@ -81,7 +78,11 @@ async function resolveAssignment(
   caller: CallerProfile,
   role: Role,
   assignedUnderId: string | null,
-): Promise<{ unitId: string | null; parentId: string; error: null } | { unitId: null; parentId: null; error: string }> {
+  target: AssignmentTarget,
+): Promise<
+  | { unitId: string | null; parentId: string; createdUnitId: string | null; error: null }
+  | { unitId: null; parentId: null; createdUnitId: null; error: string }
+> {
   // An agent may report to a Unit Manager or an Aspirant Unit Manager; an
   // Aspirant Unit Manager only to a Unit Manager.
   if (role === "agent" || role === "aspirant_unit_manager") {
@@ -94,6 +95,7 @@ async function resolveAssignment(
       return {
         unitId: null,
         parentId: null,
+        createdUnitId: null,
         error:
           role === "agent"
             ? "Choose who this agent reports to."
@@ -107,33 +109,33 @@ async function resolveAssignment(
       .in("role", allowedSupervisorRoles)
       .maybeSingle();
     if (!supervisor) {
-      return { unitId: null, parentId: null, error: "That supervisor could not be found." };
+      return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor could not be found." };
     }
     // Reporting straight to a Group Manager means no unit -- the group
     // manager RLS policies cover direct reports via my_downline().
     if (supervisor.role === "group_manager") {
       if (caller.role === "group_manager" && supervisor.id !== caller.id) {
-        return { unitId: null, parentId: null, error: "You can only assign people under yourself." };
+        return { unitId: null, parentId: null, createdUnitId: null, error: "You can only assign people under yourself." };
       }
       if (caller.role === "unit_manager") {
-        return { unitId: null, parentId: null, error: "You can't assign someone under a Group Manager." };
+        return { unitId: null, parentId: null, createdUnitId: null, error: "You can't assign someone under a Group Manager." };
       }
-      return { unitId: null, parentId: supervisor.id, error: null };
+      return { unitId: null, parentId: supervisor.id, createdUnitId: null, error: null };
     }
     if (!supervisor.unit_id) {
       // An Aspirant UM who themselves reports straight to a Group Manager (no
       // unit) can still run agents -- everyone else at this point genuinely
       // needs a unit.
       if (supervisor.role !== "aspirant_unit_manager") {
-        return { unitId: null, parentId: null, error: "That supervisor has no unit yet." };
+        return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor has no unit yet." };
       }
       if (caller.role === "group_manager" && supervisor.parent_id !== caller.id) {
-        return { unitId: null, parentId: null, error: "That supervisor isn't in your downline." };
+        return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor isn't in your downline." };
       }
       if (caller.role === "unit_manager") {
-        return { unitId: null, parentId: null, error: "That supervisor isn't in your unit." };
+        return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor isn't in your unit." };
       }
-      return { unitId: null, parentId: supervisor.id, error: null };
+      return { unitId: null, parentId: supervisor.id, createdUnitId: null, error: null };
     }
     if (caller.role === "group_manager") {
       const { data: unit } = await supabase
@@ -142,30 +144,64 @@ async function resolveAssignment(
         .eq("id", supervisor.unit_id)
         .eq("group_manager_id", caller.id)
         .maybeSingle();
-      if (!unit) return { unitId: null, parentId: null, error: "That supervisor isn't in one of your units." };
+      if (!unit) return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor isn't in one of your units." };
     }
     // A unit manager can only ever place people inside their own unit.
     if (caller.role === "unit_manager" && supervisor.unit_id !== caller.unit_id) {
-      return { unitId: null, parentId: null, error: "That supervisor isn't in your unit." };
+      return { unitId: null, parentId: null, createdUnitId: null, error: "That supervisor isn't in your unit." };
     }
-    return { unitId: supervisor.unit_id, parentId: supervisor.id, error: null };
+    return { unitId: supervisor.unit_id, parentId: supervisor.id, createdUnitId: null, error: null };
   }
+  // A Unit Manager is assigned under a Group Manager -- never under a unit.
+  // The unit they run is just the container for their own team, and it is
+  // owned by that Group Manager; that ownership is what places them in the
+  // right branch of the org tree.
   if (role === "unit_manager") {
-    if (!assignedUnderId) return { unitId: null, parentId: null, error: "Choose which unit this manager will run." };
-    let unitQuery = supabase.from("units").select("id, group_manager_id").eq("id", assignedUnderId);
-    if (caller.role === "group_manager") unitQuery = unitQuery.eq("group_manager_id", caller.id);
-    const { data: unit } = await unitQuery.maybeSingle();
-    if (!unit) return { unitId: null, parentId: null, error: "That unit could not be found." };
-    // Every Unit Manager should roll up to a Group Manager. Normally that's
-    // whoever owns the unit; when the unit has none (superadmin-created), fall
-    // back to the sole Group Manager if there is exactly one, so unit managers
-    // land under them automatically instead of hanging off the superadmin.
-    let parentId = unit.group_manager_id;
-    if (!parentId) parentId = await soleGroupManagerId(supabase);
-    return { unitId: unit.id, parentId: parentId ?? caller.id, error: null };
+    if (!assignedUnderId) {
+      return { unitId: null, parentId: null, createdUnitId: null, error: "Choose which Group Manager this Unit Manager reports to." };
+    }
+    const { data: gm } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", assignedUnderId)
+      .eq("role", "group_manager")
+      .maybeSingle();
+    if (!gm) return { unitId: null, parentId: null, createdUnitId: null, error: "That Group Manager could not be found." };
+    if (caller.role === "group_manager" && gm.id !== caller.id) {
+      return { unitId: null, parentId: null, createdUnitId: null, error: "You can only assign people under yourself." };
+    }
+
+    // units has no insert/update RLS policy (select only), so this goes through
+    // the service role -- after the permission checks above have passed.
+    const admin = createAdminClient();
+    if (target.currentUnitId) {
+      // Already runs a unit: move that unit to the chosen Group Manager rather
+      // than stranding their agents in a unit under the previous one.
+      const { error: moveError } = await admin
+        .from("units")
+        .update({ group_manager_id: gm.id })
+        .eq("id", target.currentUnitId);
+      if (moveError) {
+        Sentry.captureException(moveError, { tags: { action: "resolveAssignment", step: "move-unit" } });
+        return { unitId: null, parentId: null, createdUnitId: null, error: "Couldn't move this Unit Manager's unit. Please try again." };
+      }
+      return { unitId: target.currentUnitId, parentId: gm.id, createdUnitId: null, error: null };
+    }
+    const { data: createdUnit, error: unitError } = await admin
+      .from("units")
+      .insert({ name: `${target.fullName} Unit`, group_manager_id: gm.id })
+      .select("id")
+      .maybeSingle();
+    if (unitError || !createdUnit) {
+      Sentry.captureException(unitError ?? new Error("unit insert returned no row"), {
+        tags: { action: "resolveAssignment", step: "create-unit" },
+      });
+      return { unitId: null, parentId: null, createdUnitId: null, error: "Couldn't set up a unit for this Unit Manager. Please try again." };
+    }
+    return { unitId: createdUnit.id, parentId: gm.id, createdUnitId: createdUnit.id, error: null };
   }
   // group_manager / superadmin roles: no unit, parent is the acting superadmin.
-  return { unitId: null, parentId: caller.id, error: null };
+  return { unitId: null, parentId: caller.id, createdUnitId: null, error: null };
 }
 
 export async function inviteUser(input: InviteInput) {
@@ -186,11 +222,20 @@ export async function inviteUser(input: InviteInput) {
   if (!allowedRoles.includes(input.role)) return { error: "You can't create a user with that role." };
 
   const supabase = await createClient();
-  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId);
+  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId, {
+    fullName,
+    currentUnitId: null,
+  });
   if (assignment.error) return { error: assignment.error };
-  const { unitId, parentId } = assignment;
+  const { unitId, parentId, createdUnitId } = assignment;
 
   const admin = createAdminClient();
+  // Appointing a Unit Manager creates their unit up front. If the invite then
+  // fails, drop it again -- an empty unit would otherwise sit in the org tree
+  // forever as "No Unit Manager assigned".
+  const dropUnitIfCreated = async () => {
+    if (createdUnitId) await admin.from("units").delete().eq("id", createdUnitId);
+  };
   const tempPassword = generateTempPassword();
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
@@ -199,6 +244,7 @@ export async function inviteUser(input: InviteInput) {
     user_metadata: { full_name: fullName },
   });
   if (createError || !created?.user) {
+    await dropUnitIfCreated();
     return { error: createError?.message?.includes("already been registered")
       ? "A user with that email already exists."
       : "Couldn't create the account. Please try again." };
@@ -217,8 +263,13 @@ export async function inviteUser(input: InviteInput) {
     must_change_password: true,
   });
   if (profileError) {
+    Sentry.captureException(profileError, {
+      tags: { action: "inviteUser", step: "insert-profile" },
+      extra: { role: input.role, unitId, parentId },
+    });
     // Roll back the orphaned auth user rather than leaving a login with no profile.
     await admin.auth.admin.deleteUser(created.user.id);
+    await dropUnitIfCreated();
     return { error: "Couldn't set up this user's profile. Please try again." };
   }
 
@@ -285,7 +336,11 @@ export async function updateUserAssignment(input: {
   if (!isPlausiblePhone(phone)) return { error: "Enter a valid phone number." };
 
   const supabase = await createClient();
-  const { data: target } = await supabase.from("profiles").select("id, role, email").eq("id", input.userId).maybeSingle();
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("id, role, email, unit_id")
+    .eq("id", input.userId)
+    .maybeSingle();
   if (!target) return { error: "That user could not be found." };
   // A superadmin has full reach over every other account, peers included.
   // Everyone else can only touch people who rank strictly below them, so a
@@ -294,7 +349,12 @@ export async function updateUserAssignment(input: {
     return { error: "You can only edit users below your own level." };
   }
 
-  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId);
+  const assignment = await resolveAssignment(supabase, profile, input.role, input.assignedUnderId, {
+    fullName,
+    // Only reuse the unit when they already run one -- an agent being promoted
+    // sits in someone else's unit, which must not be hijacked.
+    currentUnitId: target.role === "unit_manager" ? target.unit_id : null,
+  });
   if (assignment.error) return { error: assignment.error };
   const { unitId, parentId } = assignment;
 
@@ -320,7 +380,13 @@ export async function updateUserAssignment(input: {
     .eq("id", input.userId)
     .select("id")
     .maybeSingle();
-  if (error || !updated) return { error: "Couldn't update this user. Please try again." };
+  if (error || !updated) {
+    Sentry.captureException(error ?? new Error("profile update matched no row"), {
+      tags: { action: "updateUserAssignment", step: "update-profile" },
+      extra: { userId: input.userId, role: input.role, unitId, parentId },
+    });
+    return { error: "Couldn't update this user. Please try again." };
+  }
 
   const { error: auditError } = await admin.from("audit_log").insert({
     actor_id: profile.id,
@@ -446,7 +512,10 @@ export async function deleteUser(userId: string) {
   // Deleting the auth user cascades to the profile row (profiles.id
   // references auth.users on delete cascade).
   const { error } = await admin.auth.admin.deleteUser(userId);
-  if (error) return { error: "Couldn't delete this user. Please try again." };
+  if (error) {
+    Sentry.captureException(error, { tags: { action: "deleteUser" }, extra: { userId } });
+    return { error: "Couldn't delete this user. Please try again." };
+  }
 
   const { error: auditError } = await admin.from("audit_log").insert({
     actor_id: profile.id,
