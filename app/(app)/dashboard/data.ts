@@ -36,6 +36,13 @@ function daysAgoKey(n: number) {
   return d.toISOString().slice(0, 10);
 }
 
+// How far back the activity calendar can look. A year view needs 12 months,
+// and the widget can page back one step from there, so 13 months of history
+// is fetched and the widget clamps navigation to it.
+const CALENDAR_MONTHS = 13;
+
+export type CalendarDay = { key: string; leads: number; sales: number; activities: number };
+
 export type MonitorScope = { agentId?: string; unitId?: string };
 
 export async function getDashboardStats(profile: CurrentProfile, monitorScope?: MonitorScope) {
@@ -50,8 +57,19 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
   else if (monitorScope?.unitId) leadsQuery = leadsQuery.eq("unit_id", monitorScope.unitId);
 
-  const [{ data: leads }, { data: quotations }, { data: targets }, { data: teamProfiles }] =
-    await Promise.all([
+  // Window for the activity calendar, as a date the DB can compare against.
+  const calendarStart = new Date();
+  calendarStart.setMonth(calendarStart.getMonth() - CALENDAR_MONTHS);
+  calendarStart.setDate(1);
+  const calendarStartKey = calendarStart.toISOString().slice(0, 10);
+
+  const [
+    { data: leads },
+    { data: quotations },
+    { data: targets },
+    { data: teamProfiles },
+    { data: activityRows },
+  ] = await Promise.all([
       leadsQuery.returns<LeadRow[]>(),
       supabase
         .from("quotations")
@@ -61,6 +79,12 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         .select("agent_id, noc_target")
         .eq("month", `${new Date().toISOString().slice(0, 7)}-01`),
       supabase.from("profiles").select("id"),
+      // RLS ("activity visible if lead visible") scopes this to the same leads
+      // the caller can already see, so no extra filtering is needed here.
+      supabase
+        .from("lead_activity")
+        .select("created_at, lead_id")
+        .gte("created_at", calendarStartKey),
     ]);
 
   const allLeads = leads ?? [];
@@ -162,6 +186,30 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   });
   const maxDaily = Math.max(1, ...dailyBuckets.flatMap((d) => [d.inCount, d.outCount]));
 
+  // Per-day totals for the activity calendar. Only days with something on them
+  // are stored; the widget fills the gaps, so an empty year costs nothing.
+  const calendarMap = new Map<string, CalendarDay>();
+  const bumpDay = (key: string, field: "leads" | "sales" | "activities") => {
+    if (key < calendarStartKey) return;
+    const entry = calendarMap.get(key) ?? { key, leads: 0, sales: 0, activities: 0 };
+    entry[field]++;
+    calendarMap.set(key, entry);
+  };
+  for (const l of allLeads) {
+    bumpDay(dayKey(l.created_at), "leads");
+    // A closed-won lead counts as a sale on the day it was last moved -- the
+    // closest thing to a close date without a dedicated column.
+    if (l.pipeline_stage === "closed_won") bumpDay(dayKey(l.updated_at), "sales");
+  }
+  // Monitor scope narrows the leads query but not lead_activity, so drop
+  // activity belonging to leads outside the scoped set.
+  const visibleLeadIds = new Set(allLeads.map((l) => l.id));
+  for (const a of activityRows ?? []) {
+    if (a.lead_id && !visibleLeadIds.has(a.lead_id as string)) continue;
+    bumpDay(dayKey(a.created_at as string), "activities");
+  }
+  const calendarDays = [...calendarMap.values()].sort((a, b) => a.key.localeCompare(b.key));
+
   const agentMap = new Map<
     string,
     { name: string; initials: string; count: number }
@@ -207,6 +255,8 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     leadSources,
     dailyBuckets,
     maxDaily,
+    calendarDays,
+    calendarStartKey,
     assignment,
     unassignedPool,
     isManager: profile.role !== "agent",

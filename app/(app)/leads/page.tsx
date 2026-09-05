@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getLeads, getFilterOptions, PAGE_SIZE, type LeadFilters } from "./data";
+import { getLeads, getFilterOptions, PAGE_SIZE, isLeadView, type LeadFilters } from "./data";
 import { LeadFiltersBar } from "./filters";
 import { StatusBadge } from "./status-badge";
 import { AddLeadButton } from "./add-lead-button";
@@ -60,6 +60,7 @@ export default async function LeadsPage({
     to: params.to,
     status: params.status,
     agent: params.agent,
+    view: params.view,
     page: params.page ? Number(params.page) : 1,
   };
 
@@ -68,7 +69,9 @@ export default async function LeadsPage({
     getFilterOptions(),
   ]);
 
-  const hasFilters = Boolean(filters.q || filters.from || filters.to || filters.status || filters.agent);
+  const hasFilters = Boolean(
+    filters.q || filters.from || filters.to || filters.status || filters.agent || isLeadView(filters.view),
+  );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const canManage = profile.role !== "agent";
 
@@ -87,7 +90,7 @@ export default async function LeadsPage({
       </div>
 
       <LeadFiltersBar
-        key={`${filters.q ?? ""}|${filters.from ?? ""}|${filters.to ?? ""}|${filters.status ?? ""}|${filters.agent ?? ""}`}
+        key={`${filters.q ?? ""}|${filters.from ?? ""}|${filters.to ?? ""}|${filters.status ?? ""}|${filters.agent ?? ""}|${filters.view ?? ""}`}
         agents={agents}
         showAgentFilter={canManage}
       />

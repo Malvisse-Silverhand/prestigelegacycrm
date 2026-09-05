@@ -22,7 +22,7 @@ export default async function AppLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <main className="min-h-0 flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
         <div className="fixed inset-x-0 bottom-0 z-10">
-          <MobileNav />
+          <MobileNav profile={profile} />
         </div>
       </div>
       {modal}

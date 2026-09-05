@@ -44,6 +44,7 @@ export function ExportCsvButton() {
         to: searchParams.get("to") ?? undefined,
         status: searchParams.get("status") ?? undefined,
         agent: searchParams.get("agent") ?? undefined,
+        view: searchParams.get("view") ?? undefined,
       });
       if (result.error || !result.leads) {
         setError(result.error ?? "Couldn't export leads. Please try again.");

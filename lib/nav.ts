@@ -8,7 +8,6 @@ import {
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
-  MeIcon,
 } from "@/components/icons";
 
 export type NavItem = {
@@ -47,12 +46,17 @@ export const SIDEBAR_NAV: NavItem[] = [
   },
 ];
 
-export const MOBILE_NAV = [
+// Four tabs, not five: the middle slot of the bottom bar is the Menu button,
+// which opens the full desktop nav as an off-canvas drawer. Two items sit
+// either side of it.
+export const MOBILE_NAV_LEFT = [
   { href: "/dashboard", label: "Home", icon: DashboardIcon },
   { href: "/leads", label: "Leads", icon: LeadsIcon },
+];
+
+export const MOBILE_NAV_RIGHT = [
   { href: "/pipeline", label: "Pipeline", icon: PipelineIcon },
   { href: "/quotations", label: "Quote", icon: QuotationIcon },
-  { href: "/me", label: "Me", icon: MeIcon },
 ];
 
 export function visibleNav(role: Role) {

@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import type { DashboardStats } from "./data";
 import { SunIcon, MoonIcon, AlertIcon, ClockIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
 import { useTheme } from "@/components/theme";
+import { ActivityCalendar } from "./activity-calendar";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -145,8 +147,8 @@ export function DashboardView({
                   ? `leads · oldest ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"}`
                   : "leads"
               }
-              cta="Open in pipeline"
-              href="/pipeline"
+              cta="Open these leads"
+              href="/leads?view=overdue"
             />
             <AlertCard
               tone="blue"
@@ -155,7 +157,7 @@ export function DashboardView({
               value={stats.followUpTodayCount}
               detail="leads to reach"
               cta="Start calling"
-              href="/pipeline"
+              href="/leads?view=followup_today"
             />
             <AlertCard
               tone="gold"
@@ -164,10 +166,12 @@ export function DashboardView({
               value={stats.noQuotationCount}
               detail="contacted leads"
               cta="Build estimate"
-              href="/pipeline"
+              href="/leads?view=no_quotation"
               solid
             />
           </div>
+
+          <ActivityCalendar days={stats.calendarDays} startKey={stats.calendarStartKey} />
 
           <div className="grid grid-cols-2 gap-[18px]">
             <div className="rounded-[18px] border border-sand bg-white p-5 pb-[22px] dark:border-white/10 dark:bg-[#12283f]">
@@ -404,11 +408,15 @@ export function DashboardView({
         </div>
 
         <div className="flex flex-col gap-[11px] px-5 pt-4">
-          <MobileAlert tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
-          <MobileAlert tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
-          <MobileAlert tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
+          <MobileAlert href="/leads?view=overdue" tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
+          <MobileAlert href="/leads?view=followup_today" tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
+          <MobileAlert href="/leads?view=no_quotation" tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
 
-          <div className="mt-0.5 rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
+          <div className="mt-0.5">
+            <ActivityCalendar days={stats.calendarDays} startKey={stats.calendarStartKey} compact />
+          </div>
+
+          <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
             <div className="text-[13.5px] font-bold text-navy dark:text-[#eef3f8]">Lead status</div>
             <div className="mt-3 flex items-center gap-4">
               <div className="relative h-[84px] w-[84px] flex-none">
@@ -542,12 +550,12 @@ function AlertCard({
         <span className={`text-[28px] font-extrabold tracking-[-0.03em] ${t.value}`}>{value}</span>
         <span className={`text-xs font-semibold ${t.detail}`}>{detail}</span>
       </div>
-      <a
+      <Link
         href={href}
         className={`mt-3 inline-flex rounded-[9px] border px-[15px] py-2.5 text-[12.5px] font-semibold ${solid ? t.cta : `bg-white ${t.cta}`}`}
       >
         {cta}
-      </a>
+      </Link>
     </div>
   );
 }
@@ -562,19 +570,19 @@ function MobileStat({ value, label }: { value: number; label: string }) {
 }
 
 function MobileAlert({
-  tone, value, title, detail,
+  tone, value, title, detail, href,
 }: {
-  tone: keyof typeof ALERT_TONES; value: number; title: string; detail: string;
+  tone: keyof typeof ALERT_TONES; value: number; title: string; detail: string; href: string;
 }) {
   const t = ALERT_TONES[tone];
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border p-3.5 ${t.bg}`}>
+    <Link href={href} className={`flex items-center gap-3 rounded-2xl border p-3.5 ${t.bg}`}>
       <span className={`text-[26px] font-extrabold tracking-[-0.03em] ${t.value}`}>{value}</span>
       <div className="flex-1">
         <div className={`text-[13.5px] font-bold ${t.title}`}>{title}</div>
         <div className={`text-[11.5px] font-medium ${t.detail}`}>{detail}</div>
       </div>
       <ChevronRightIcon width={17} height={17} className={t.value} />
-    </div>
+    </Link>
   );
 }
