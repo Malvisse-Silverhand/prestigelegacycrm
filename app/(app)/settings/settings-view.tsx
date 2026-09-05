@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { Role, OrgTree, UnitManagerOption, UnitOption, TargetRow, DistributionSettings, AuditEntry, LeadSourceStat } from "./types";
+import type { Role, OrgTree, UnitManagerOption, UnitOption, TargetRow, DistributionSettings, AuditEntry, LeadSourceStat, WebhookRow } from "./types";
 import { UsersHierarchyTab } from "./tabs/users-hierarchy-tab";
 import { RolesPermissionsTab } from "./tabs/roles-permissions-tab";
 import { SetTargetTab } from "./tabs/set-target-tab";
 import { LeadDistributionTab } from "./tabs/lead-distribution-tab";
 import { LeadSourcesTab } from "./tabs/lead-sources-tab";
 import { AuditLogTab } from "./tabs/audit-log-tab";
+import { WebhooksTab } from "./tabs/webhooks-tab";
 
 const TABS = [
   "Users & Hierarchy",
@@ -15,6 +16,7 @@ const TABS = [
   "Set Target",
   "Lead Distribution",
   "Lead Sources",
+  "Webhooks",
   "Audit Log",
 ] as const;
 type Tab = (typeof TABS)[number];
@@ -28,6 +30,7 @@ export function SettingsView({
   distribution,
   auditLog,
   leadSources,
+  webhooks,
 }: {
   role: Role;
   orgTree: OrgTree;
@@ -37,16 +40,20 @@ export function SettingsView({
   distribution: DistributionSettings;
   auditLog: AuditEntry[] | null;
   leadSources: LeadSourceStat[];
+  webhooks: WebhookRow[];
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log stays
-  // SuperAdmin-only.
+  // SuperAdmin-only, and Webhooks is org-wide integration config, so it
+  // matches its RLS audience: superadmin + group managers.
   const isManager = role === "superadmin" || role === "group_manager" || role === "unit_manager";
   const visibleTabs = !isManager
     ? (["Set Target"] as const as readonly Tab[])
     : role === "superadmin"
       ? TABS
-      : TABS.filter((t) => t !== "Audit Log");
+      : role === "group_manager"
+        ? TABS.filter((t) => t !== "Audit Log")
+        : TABS.filter((t) => t !== "Audit Log" && t !== "Webhooks");
   const [tab, setTab] = useState<Tab>(visibleTabs[0]);
 
   return (
@@ -80,6 +87,7 @@ export function SettingsView({
         {tab === "Set Target" && <SetTargetTab monthDate={monthDate} initialTargets={targets} />}
         {tab === "Lead Distribution" && <LeadDistributionTab initial={distribution} />}
         {tab === "Lead Sources" && <LeadSourcesTab stats={leadSources} />}
+        {tab === "Webhooks" && <WebhooksTab webhooks={webhooks} />}
         {tab === "Audit Log" && role === "superadmin" && <AuditLogTab entries={auditLog ?? []} />}
       </div>
     </div>

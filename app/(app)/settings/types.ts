@@ -64,4 +64,14 @@ export type AuditEntry = {
 
 export type LeadSourceStat = { source: string; count: number; closedWon: number };
 
+export type WebhookRow = {
+  id: string;
+  name: string;
+  url: string;
+  event: string;
+  isEnabled: boolean;
+  lastStatus: string | null;
+  lastFiredAt: string | null;
+};
+
 export type { Role };

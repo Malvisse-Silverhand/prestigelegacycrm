@@ -10,6 +10,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getTargetableMembers } from "./data";
 import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
 import { sendEmail, inviteEmail } from "@/lib/email";
+import { isWebhookEvent } from "@/lib/webhook-events";
 
 // Unit Managers can now invite into their own unit too ("Superadmin, Group
 // Manager & Unit Manager boleh assign agent under mereka"). An Aspirant Unit
@@ -523,6 +524,108 @@ export async function deleteUser(userId: string) {
     metadata: { deleted_name: target.full_name, role: target.role },
   });
   if (auditError) console.error("deleteUser: audit_log insert failed", auditError);
+
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Webhooks (Settings > Webhooks)
+// ---------------------------------------------------------------------------
+
+// Same audience as Lead Distribution: these are org-wide integration settings,
+// not per-unit ones. RLS enforces it too -- this is the friendly error.
+function canManageWebhooks(role: Role) {
+  return role === "superadmin" || role === "group_manager";
+}
+
+// Rejects anything that isn't an ordinary https endpoint. http is allowed only
+// for localhost so a webhook can be tried against a local listener during
+// setup; everything else must be TLS, since lead details go over it.
+function validateWebhookUrl(raw: string): { url: string; error: null } | { url: null; error: string } {
+  const trimmed = raw.trim();
+  if (!trimmed) return { url: null, error: "Enter the webhook URL." };
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return { url: null, error: "That doesn't look like a valid URL." };
+  }
+  const isLocal = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && isLocal)) {
+    return { url: null, error: "Use an https:// URL — lead details are sent over it." };
+  }
+  return { url: parsed.toString(), error: null };
+}
+
+export async function saveWebhook(input: {
+  id: string | null;
+  name: string;
+  url: string;
+  event: string;
+}) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageWebhooks(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const name = input.name.trim();
+  if (!name) return { error: "Give this webhook a name." };
+  if (!isWebhookEvent(input.event)) return { error: "Pick which event should fire it." };
+
+  const checked = validateWebhookUrl(input.url);
+  if (checked.error) return { error: checked.error };
+
+  const supabase = await createClient();
+  const payload = { name, url: checked.url, event: input.event };
+
+  const { data, error } = input.id
+    ? await supabase.from("webhooks").update(payload).eq("id", input.id).select("id").maybeSingle()
+    : await supabase
+        .from("webhooks")
+        .insert({ ...payload, created_by: profile.id })
+        .select("id")
+        .maybeSingle();
+
+  if (error || !data) {
+    Sentry.captureException(error ?? new Error("webhook save matched no row"), {
+      tags: { action: "saveWebhook" },
+    });
+    return { error: "Couldn't save this webhook. Please try again." };
+  }
+
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+export async function setWebhookEnabled(id: string, isEnabled: boolean) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageWebhooks(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("webhooks")
+    .update({ is_enabled: isEnabled })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't update this webhook." };
+  revalidatePath("/settings");
+  return { error: null };
+}
+
+export async function deleteWebhook(id: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageWebhooks(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("webhooks").delete().eq("id", id);
+  if (error) return { error: "Couldn't delete this webhook." };
 
   revalidatePath("/settings");
   return { error: null };

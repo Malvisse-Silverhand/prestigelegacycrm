@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_RANK, type CurrentProfile, type Role } from "@/lib/profile-types";
+import type { WebhookRow } from "./types";
 
 export type ScopeUnit = { id: string; name: string; group_manager_id: string | null };
 
@@ -433,4 +434,25 @@ export async function getLeadSourceStats(profile: CurrentProfile): Promise<LeadS
     map.set(key, entry);
   }
   return [...map.values()].sort((a, b) => b.count - a.count);
+}
+
+// Admin-only by RLS (superadmin/group_manager); anyone else gets an empty
+// list rather than an error, and the tab isn't offered to them anyway.
+export async function getWebhooks(profile: CurrentProfile): Promise<WebhookRow[]> {
+  if (profile.role !== "superadmin" && profile.role !== "group_manager") return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("webhooks")
+    .select("id, name, url, event, is_enabled, last_status, last_fired_at")
+    .order("created_at", { ascending: true });
+
+  return (data ?? []).map((w) => ({
+    id: w.id as string,
+    name: w.name as string,
+    url: w.url as string,
+    event: w.event as string,
+    isEnabled: w.is_enabled as boolean,
+    lastStatus: (w.last_status as string | null) ?? null,
+    lastFiredAt: (w.last_fired_at as string | null) ?? null,
+  }));
 }

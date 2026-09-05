@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker, pickOccupationClass } from "@/lib/lead-field-validation";
 import { getAllLeadsForExport, type LeadFilters } from "./data";
+import { dispatchWebhook } from "@/lib/dispatch-webhook";
 
 export async function exportLeads(filters: LeadFilters) {
   const profile = await getCurrentProfile();
@@ -32,7 +33,7 @@ export async function createLead(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("leads").insert({
+  const { data: created, error } = await supabase.from("leads").insert({
     full_name,
     phone,
     email: String(formData.get("email") ?? "").trim() || null,
@@ -52,11 +53,16 @@ export async function createLead(formData: FormData) {
     // A manager creating a lead by hand is the natural first owner --
     // reassignable afterwards from Lead Detail (see updateLeadOwner).
     agent_id: profile.id,
-  });
+  })
+    .select("id, full_name, phone, email, lead_source, interest, status, created_at")
+    .maybeSingle();
 
   if (error) {
     return { error: "Couldn't save this lead. Please try again." };
   }
+
+  // Never blocks the save: dispatchWebhook swallows its own failures.
+  if (created) await dispatchWebhook("lead_created", { ...created, source: "manual" });
 
   revalidatePath("/leads");
   return { error: null };

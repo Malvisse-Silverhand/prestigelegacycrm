@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { dispatchWebhook } from "@/lib/dispatch-webhook";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { csvToObjects } from "@/lib/csv-parse";
 import { MALAYSIAN_STATES, LEAD_SOURCES } from "@/lib/lead-constants";
@@ -245,11 +246,21 @@ export async function confirmImport(url: string, mapping: ColumnMapping): Promis
   });
 
   if (toInsert.length > 0) {
-    const { error, count } = await supabase.from("leads").insert(toInsert, { count: "exact" });
+    const { data: inserted, error, count } = await supabase
+      .from("leads")
+      .insert(toInsert, { count: "exact" })
+      .select("id, full_name, phone, email, lead_source, interest, status, created_at");
     if (error) {
       return { error: "Import failed while saving to the database. Nothing was imported -- please try again." };
     }
     summary.imported = count ?? toInsert.length;
+
+    // One event per imported lead, same shape as a manual create. Sequential
+    // rather than in parallel so a 200-row import doesn't open 200 sockets at
+    // once; each call swallows its own failures.
+    for (const lead of inserted ?? []) {
+      await dispatchWebhook("lead_created", { ...lead, source: "import" });
+    }
   }
 
   revalidatePath("/leads");

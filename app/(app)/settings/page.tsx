@@ -7,6 +7,7 @@ import {
   getDistributionSettings,
   getAuditLog,
   getLeadSourceStats,
+  getWebhooks,
 } from "./data";
 import { SettingsView } from "./settings-view";
 
@@ -42,7 +43,7 @@ export default async function SettingsPage() {
   // queries backing the tabs they can't open.
   const isManager =
     profile.role === "superadmin" || profile.role === "group_manager" || profile.role === "unit_manager";
-  const [orgTree, assignmentOptions, targets, distribution, auditLog, leadSources] = await Promise.all([
+  const [orgTree, assignmentOptions, targets, distribution, auditLog, leadSources, webhooks] = await Promise.all([
     isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
     isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
     getTargetsForMonth(profile, monthDate),
@@ -50,6 +51,7 @@ export default async function SettingsPage() {
     // Audit Log is SuperAdmin-only -- don't even fetch it for a Group Manager.
     profile.role === "superadmin" ? getAuditLog(profile) : Promise.resolve(null),
     isManager ? getLeadSourceStats(profile) : Promise.resolve([]),
+    getWebhooks(profile),
   ]);
 
   return (
@@ -62,6 +64,7 @@ export default async function SettingsPage() {
       distribution={distribution}
       auditLog={auditLog}
       leadSources={leadSources}
+      webhooks={webhooks}
     />
   );
 }

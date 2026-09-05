@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { dispatchWebhook } from "@/lib/dispatch-webhook";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getReassignableUsers } from "./data";
 import { LEAD_SOURCES } from "@/lib/lead-constants";
@@ -135,6 +136,13 @@ export async function updateStage(leadId: string, newStage: string, stageLabel: 
     content: `Moved to ${stageLabel}`,
   });
   if (activityError) console.error("updateStage: lead_activity insert failed", activityError);
+
+  await dispatchWebhook("lead_stage_changed", {
+    id: leadId,
+    stage: newStage,
+    stageLabel,
+    movedBy: profile.full_name,
+  });
 
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/leads");
