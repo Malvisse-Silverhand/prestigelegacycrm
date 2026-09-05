@@ -850,28 +850,20 @@
     }
   }
 
-  // Bina PDF (A4 landscape) drpd canvas — pecah ke banyak page jika panjang
+  // Bina PDF: SATU page A4 menegak (portrait), keseluruhan quotation muat di
+  // dalamnya. (Dulu A4 landscape + dipecah kepada beberapa page mengikut
+  // ketinggian, jadi satu quotation keluar sebagai 3 page berasingan.)
+  // Imej diskala "contain" -- muat penuh dalam page tanpa memotong apa-apa,
+  // dan nisbahnya dikekalkan supaya jadual tidak herot.
   function canvasToPdf(canvas){
-    const pdf=new window.jspdf.jsPDF({unit:'mm', format:'a4', orientation:'landscape'});
+    const pdf=new window.jspdf.jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
     const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
-    const margin=8, availW=pw-margin*2, availH=ph-margin*2;
-    const imgW=availW, imgH=canvas.height*(availW/canvas.width);
-    if(imgH<=availH){
-      pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,imgH);
-      return pdf;
-    }
-    // pecah page: hirisan mengikut ketinggian
-    const pxPerMm=canvas.width/imgW;
-    const sliceHpx=availH*pxPerMm;
-    let sy=0, page=0;
-    while(sy<canvas.height){
-      const c2=document.createElement('canvas');
-      c2.width=canvas.width; c2.height=Math.min(sliceHpx, canvas.height-sy);
-      c2.getContext('2d').drawImage(canvas,0,sy,canvas.width,c2.height,0,0,canvas.width,c2.height);
-      if(page>0) pdf.addPage();
-      pdf.addImage(c2.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,c2.height/pxPerMm);
-      sy+=c2.height; page++;
-    }
+    const margin=6, availW=pw-margin*2, availH=ph-margin*2;
+    const scale=Math.min(availW/canvas.width, availH/canvas.height);
+    const imgW=canvas.width*scale, imgH=canvas.height*scale;
+    // Tengah secara melintang; mula dari atas supaya ruang kosong (jika ada)
+    // jatuh di bawah, bukan memisahkan header dari jadual.
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',(pw-imgW)/2,margin,imgW,imgH);
     return pdf;
   }
 
