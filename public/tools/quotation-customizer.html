@@ -839,6 +839,34 @@
   // pada lebar itu, jadi telefon dan desktop hasilkan fail yang serupa.
   const EXPORT_WIDTH = 1100;
 
+  // Semua <a href> dalam elemen yang diberi, dengan kedudukan relatif kepada
+  // sudut kiri-atasnya.
+  //
+  // PENTING: ini mesti dijalankan pada KLON html2canvas, bukan dokumen hidup.
+  // Media query dinilai mengikut lebar VIEWPORT, bukan lebar elemen -- jadi di
+  // telefon dokumen hidup kekal dalam susun atur mudah alih walaupun root
+  // dilebarkan ke 1122px, sedangkan klon (windowWidth 1122) disusun sebagai
+  // desktop. Mengukur pada dokumen hidup memberi baris pada kedudukan yang
+  // sama sekali berbeza daripada imej yang terhasil.
+  function collectLinks(el){
+    const rootRect = el.getBoundingClientRect();
+    const out = [];
+    el.querySelectorAll('a[href]').forEach(a=>{
+      const href = a.href;
+      if(!href || /^javascript:/i.test(href)) return;
+      const r = a.getBoundingClientRect();
+      if(r.width<=0 || r.height<=0) return;          // toolbar tersembunyi dll.
+      out.push({
+        href,
+        x: r.left - rootRect.left,
+        y: r.top - rootRect.top,
+        w: r.width,
+        h: r.height,
+      });
+    });
+    return { links: out, width: rootRect.width, height: rootRect.height };
+  }
+
   // Tangkap quotation seperti yang dipapar: header, profil pelanggan & jadual
   // penuh. Kelas .pdf membuka sticky/scroll jadual DAN menyembunyikan toolbar
   // (butang bawah) + butang padam lajur, supaya eksport bersih tanpa butang.
@@ -863,7 +891,10 @@
       // beri masa font/img/layout settle dulu
       if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
       await new Promise(r=>setTimeout(r,80));
-      return await window.html2canvas(root, {
+      // Pautan diukur di dalam KLON (lihat collectLinks) supaya koordinatnya
+      // datang daripada susun atur yang sama yang dilukis ke kanvas.
+      let measured = null;
+      const canvas = await window.html2canvas(root, {
         scale:2, useCORS:true, backgroundColor:'#fbf4e4',
         // windowWidth/Height saiz tetingkap klon: media query dinilai semula
         // pada saiz ini, jadi susun atur desktop terpakai walau di telefon.
@@ -872,7 +903,21 @@
         width:needW,
         scrollX:0, scrollY:0,
         ignoreElements: el => el.classList && (el.classList.contains('qc-toast') || el.classList.contains('qc-toolbar')),
+        onclone: (doc, el) => { measured = collectLinks(el); },
       });
+      // html2canvas hasilkan imej sahaja, jadi "Buka Portal"/"Panel Locator"
+      // jadi piksel mati dalam PDF -- canvasToPdf() guna senarai ini untuk
+      // menampal anotasi pautan sebenar di atas imej. Tukar kepada ruang
+      // piksel kanvas di sini supaya canvasToPdf hanya perlu tahu pxPerMm.
+      const links = measured ? measured.links : [];
+      if(measured && measured.width>0 && measured.height>0){
+        const fx = canvas.width / measured.width;
+        const fy = canvas.height / measured.height;
+        links.forEach(l=>{
+          l.cx = l.x*fx; l.cy = l.y*fy; l.cw = l.w*fx; l.ch = l.h*fy;
+        });
+      }
+      return { canvas, links };
     } finally {
       root.style.width=prevW;
       root.style.maxWidth=prevMaxW;
@@ -888,7 +933,10 @@
   //   masih lebih  -> diskala turun supaya tepat muat dalam 2 page
   const MAX_PDF_PAGES = 2;
 
-  function canvasToPdf(canvas){
+  // shot = { canvas, links } drpd captureCanvas(); pautan dalam ruang piksel kanvas.
+  function canvasToPdf(shot){
+    const canvas = shot.canvas || shot;               // toleran jika dipanggil dgn canvas sahaja
+    const links = shot.links || [];
     const pdf=new window.jspdf.jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
     const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
     const margin=4, availW=pw-margin*2, availH=ph-margin*2;
@@ -899,6 +947,7 @@
 
     if(imgH<=availH){
       pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,imgW,imgH);
+      addLinkAnnotations(pdf, links, canvas.width/imgW, margin, margin, [{page:0, topMm:0, heightMm:imgH}], imgH);
       return pdf;
     }
 
@@ -915,6 +964,7 @@
     const pxPerMm=canvas.width/imgW;
     const slicePx=Math.ceil(availH*pxPerMm);
     const x=(pw-imgW)/2;
+    const pages=[];
     let sy=0, page=0;
     while(sy<canvas.height && page<MAX_PDF_PAGES){
       const sliceH=Math.min(slicePx, canvas.height-sy);
@@ -923,9 +973,42 @@
       c2.getContext('2d').drawImage(canvas,0,sy,canvas.width,sliceH,0,0,canvas.width,sliceH);
       if(page>0) pdf.addPage();
       pdf.addImage(c2.toDataURL('image/jpeg',0.95),'JPEG',x,margin,imgW,sliceH/pxPerMm);
+      // Julat imej (dalam mm dari atas imej penuh) yang page ini tunjukkan.
+      pages.push({ page, topMm: sy/pxPerMm, heightMm: sliceH/pxPerMm });
       sy+=sliceH; page++;
     }
+    addLinkAnnotations(pdf, links, pxPerMm, x, margin, pages, imgH);
     return pdf;
+  }
+
+  // Tampal anotasi pautan sebenar di atas imej. Tanpa ini pautan dalam PDF
+  // hanya piksel: ia kelihatan seperti pautan tetapi tidak boleh diklik.
+  // Pautan masuk dalam ruang piksel kanvas (l.cx/cy/cw/ch), jadi pxPerMm
+  // menukarnya kepada mm -- pemetaan yang sama seperti imej itu sendiri.
+  function addLinkAnnotations(pdf, links, pxPerMm, xOffset, yOffset, pages, imgHmm){
+    if(!links || !links.length) return 0;
+    let placed = 0;
+    links.forEach(l=>{
+      const topMm = l.cy/pxPerMm;
+      const hMm = l.ch/pxPerMm;
+      if(topMm >= imgHmm) return;                       // di luar imej
+      // Page yang mengandungi tengah pautan -- pautan yang tepat di sempadan
+      // page tidak berpecah dua, ia ikut bahagian yang paling banyak kelihatan.
+      const midMm = Math.min(topMm + hMm/2, imgHmm - 0.01);
+      const target = pages.find(p => midMm >= p.topMm && midMm < p.topMm + p.heightMm)
+        || pages[pages.length - 1];
+      pdf.setPage(target.page + 1);
+      pdf.link(
+        xOffset + l.cx/pxPerMm,
+        yOffset + (topMm - target.topMm),
+        l.cw/pxPerMm,
+        hMm,
+        { url: l.href },
+      );
+      placed++;
+    });
+    pdf.setPage(1);
+    return placed;
   }
 
   const productName=()=> state.active==='medical' ? 'Medical Card' : 'Hibah';
@@ -965,7 +1048,9 @@
   document.getElementById('btnJpeg').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
     showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
     try{
-      const canvas=await captureCanvas();
+      // JPEG ialah imej tulen -- pautan tidak boleh dibawa masuk, jadi
+      // hanya canvas yang diperlukan di sini.
+      const { canvas }=await captureCanvas();
       const link=document.createElement('a');
       link.download=`${fileBase()}.jpg`;
       link.href=canvas.toDataURL('image/jpeg',0.95);
