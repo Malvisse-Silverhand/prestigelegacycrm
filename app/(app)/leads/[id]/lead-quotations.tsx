@@ -110,7 +110,9 @@ export function LeadQuotations({
                     </div>
                   </div>
                   <div className="mt-0.5 text-[11px] font-medium text-taupe">
-                    {fmtWhen(q.created_at)} · {q.quotation_plans.length} plan
+                    {/* A resave overwrites this same row (one live document per
+                        lead+product+tool), so this is "last saved", not "created". */}
+                    {fmtWhen(q.updated_at)} · {q.quotation_plans.length} plan
                     {q.quotation_plans.length === 1 ? "" : "s"}
                     {q.language ? ` · ${q.language.toUpperCase()}` : ""}
                   </div>
@@ -170,7 +172,7 @@ export function LeadQuotations({
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-elevated">
             <div className="text-[15px] font-bold text-navy">Delete this quotation?</div>
             <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-              {PRODUCT_LABEL[confirming.product] ?? confirming.product} · {fmtWhen(confirming.created_at)}.
+              {PRODUCT_LABEL[confirming.product] ?? confirming.product} · {fmtWhen(confirming.updated_at)}.
               This also removes the saved plan options. It can&apos;t be undone.
             </p>
             <div className="mt-5 flex justify-end gap-2.5">

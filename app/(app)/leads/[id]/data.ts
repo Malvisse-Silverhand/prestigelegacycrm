@@ -47,6 +47,11 @@ export type QuotationRow = {
   language: string | null;
   status: string;
   created_at: string;
+  // A resave overwrites the same quotation (capture-quotation upserts by
+  // lead+product+tool) rather than creating a new row, so this -- not
+  // created_at -- is "when was this last touched", which is also what
+  // quotationForActivity matches a timeline entry against.
+  updated_at: string;
   // Only the marker is read here -- a customizer-authored quotation is the
   // one that can be reopened for editing. The full payload stays server-side
   // until the tool asks for it via /api/quotations/[id].
@@ -83,10 +88,10 @@ export async function getLeadQuotations(leadId: string): Promise<QuotationRow[]>
   const { data } = await supabase
     .from("quotations")
     .select(
-      "id, product, language, status, created_at, raw_payload, quotation_plans(sort_order, plan_label, monthly_contribution, annual_contribution)",
+      "id, product, language, status, created_at, updated_at, raw_payload, quotation_plans(sort_order, plan_label, monthly_contribution, annual_contribution)",
     )
     .eq("lead_id", leadId)
-    .order("created_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .returns<QuotationRow[]>();
 
   return (data ?? []).map((q) => ({

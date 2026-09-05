@@ -67,15 +67,17 @@ const editPencil = (
 );
 
 // lead_activity has no quotation_id column, so a timeline row is matched to
-// its quotation by creation time: capture-quotation inserts both in the same
-// request, milliseconds apart. The 2-minute window keeps that reliable while
-// refusing to guess when nothing sits near it.
+// its quotation by timestamp: capture-quotation writes the activity entry and
+// bumps the quotation's updated_at in the same request, milliseconds apart --
+// on a resave too, since that's an upsert onto the existing row rather than a
+// new one. The 2-minute window keeps that reliable while refusing to guess
+// when nothing sits near it.
 function quotationForActivity(a: ActivityRow, quotations: QuotationRow[]) {
   const at = new Date(a.created_at).getTime();
   let best: QuotationRow | null = null;
   let bestGap = Infinity;
   for (const q of quotations) {
-    const gap = Math.abs(new Date(q.created_at).getTime() - at);
+    const gap = Math.abs(new Date(q.updated_at).getTime() - at);
     if (gap < bestGap) {
       bestGap = gap;
       best = q;
