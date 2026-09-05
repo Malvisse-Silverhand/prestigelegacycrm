@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentProfile, getProfileById, ROLE_LABEL } from "@/lib/supabase/profile";
 import { getDashboardStats } from "./data";
+import { getNotifications } from "@/app/(app)/notifications/actions";
 import { DashboardView } from "./dashboard-view";
 import { createClient } from "@/lib/supabase/server";
 import { ShieldIcon } from "@/components/icons";
@@ -56,7 +57,9 @@ export default async function DashboardPage({
           </Link>
         </div>
       )}
-      <DashboardView profile={monitorTarget ?? profile} stats={stats} />
+      {/* The bell is always the signed-in user's own -- monitor mode changes
+          whose figures are shown, never whose notifications. */}
+      <DashboardView profile={monitorTarget ?? profile} stats={stats} notifications={await getNotifications()} />
     </div>
   );
 }

@@ -13,6 +13,8 @@ import { addNote, reassignLead, updateStage, updateSource } from "./actions";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { InterestDropdown } from "./interest-dropdown";
 import { LeadQuotations } from "./lead-quotations";
+import { LeadAppointments } from "./lead-appointments";
+import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
 import { QuotationModal } from "@/components/quotation-modal";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
@@ -96,6 +98,7 @@ export function LeadDetailContent({
   quotations,
   profile,
   reassignOptions,
+  appointments,
   onClose,
   isModal,
 }: {
@@ -104,6 +107,7 @@ export function LeadDetailContent({
   quotations: QuotationRow[];
   profile: CurrentProfile;
   reassignOptions: ReassignOption[];
+  appointments: AppointmentRow[];
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -346,6 +350,8 @@ export function LeadDetailContent({
               </p>
             </div>
           </div>
+
+          <LeadAppointments leadId={lead.id} leadName={lead.full_name} appointments={appointments} />
 
           <div className="mt-[22px]">
             <LeadQuotations

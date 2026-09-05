@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { CalendarDay, CalendarLeadItem, CalendarActivityItem } from "./data";
+import type {
+  CalendarDay,
+  CalendarLeadItem,
+  CalendarActivityItem,
+  CalendarAppointmentItem,
+} from "./data";
 
 type Granularity = "year" | "month" | "week" | "day";
 
@@ -24,9 +29,12 @@ const WEEKDAY_SHORT = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 // new lead, which outranks bare activity. A cell with nothing stays white.
 const LEGEND = [
   { key: "sales" as const, label: "Closed client", light: "#0f4c35", dark: "#2e8f68" },
+  { key: "appointments" as const, label: "Appointments", light: "#c9552f", dark: "#ef8b6c" },
   { key: "leads" as const, label: "Leads", light: "#1c3f66", dark: "#5b8fc7" },
   { key: "activities" as const, label: "Activities", light: "#d8d2c6", dark: "#4a5a6b" },
 ];
+// Index into LEGEND, so the fill order and the modal sections can't drift.
+const L_SALES = 0, L_APPT = 1, L_LEADS = 2, L_ACTIVITY = 3;
 
 function keyOf(d: Date) {
   // Local date, not toISOString() -- that shifts to UTC and can land on the
@@ -49,14 +57,15 @@ type Cell = {
   leads: CalendarLeadItem[];
   sales: CalendarLeadItem[];
   activities: CalendarActivityItem[];
+  appointments: CalendarAppointmentItem[];
   outside?: boolean; // padding day from an adjacent month
   // Month cells in year view aggregate a whole month's worth of days --
   // "click a date cell" doesn't apply to those, so they open nothing.
   clickable?: boolean;
 };
 
-function emptyDay(): Pick<Cell, "leads" | "sales" | "activities"> {
-  return { leads: [], sales: [], activities: [] };
+function emptyDay(): Pick<Cell, "leads" | "sales" | "activities" | "appointments"> {
+  return { leads: [], sales: [], activities: [], appointments: [] };
 }
 
 export function ActivityCalendar({
@@ -77,7 +86,8 @@ export function ActivityCalendar({
 
   const { cells, title, columns, canGoBack } = useMemo(() => {
     const now = new Date();
-    const get = (key: string) => byDay.get(key) ?? { leads: [], sales: [], activities: [] };
+    const get = (key: string) =>
+      byDay.get(key) ?? { leads: [], sales: [], activities: [], appointments: [] };
 
     if (granularity === "year") {
       const year = now.getFullYear() + offset;
@@ -89,6 +99,7 @@ export function ActivityCalendar({
             agg.leads.push(...d.leads);
             agg.sales.push(...d.sales);
             agg.activities.push(...d.activities);
+            agg.appointments.push(...d.appointments);
           }
         }
         return { key: prefix, label, ...agg, clickable: false };
@@ -167,9 +178,10 @@ export function ActivityCalendar({
       acc.leads += c.leads.length;
       acc.sales += c.sales.length;
       acc.activities += c.activities.length;
+      acc.appointments += c.appointments.length;
       return acc;
     },
-    { leads: 0, sales: 0, activities: 0 },
+    { leads: 0, sales: 0, activities: 0, appointments: 0 },
   );
 
   const todayKey = keyOf(new Date());
@@ -276,24 +288,29 @@ function CalendarCell({
   const leadCount = cell.leads.length;
   const salesCount = cell.sales.length;
   const activityCount = cell.activities.length;
+  const apptCount = cell.appointments.length;
 
   // Most significant thing that happened decides the fill; nothing at all
-  // leaves it white/blank.
+  // leaves it white/blank. A booked meeting outranks a new lead -- it is the
+  // thing on that day the agent actually has to turn up for.
   const fill =
     salesCount > 0
-      ? LEGEND[0]
-      : leadCount > 0
-        ? LEGEND[1]
-        : activityCount > 0
-          ? LEGEND[2]
-          : null;
+      ? LEGEND[L_SALES]
+      : apptCount > 0
+        ? LEGEND[L_APPT]
+        : leadCount > 0
+          ? LEGEND[L_LEADS]
+          : activityCount > 0
+            ? LEGEND[L_ACTIVITY]
+            : null;
 
-  const onDark = fill?.key === "sales" || fill?.key === "leads";
-  const hasAnything = leadCount + salesCount + activityCount > 0;
+  const onDark = fill?.key === "sales" || fill?.key === "leads" || fill?.key === "appointments";
+  const hasAnything = leadCount + salesCount + activityCount + apptCount > 0;
 
   const title = [
     cell.label || cell.key,
     `${leadCount} lead${leadCount === 1 ? "" : "s"}`,
+    `${apptCount} appointment${apptCount === 1 ? "" : "s"}`,
     `${salesCount} closed`,
     `${activityCount} activit${activityCount === 1 ? "y" : "ies"}`,
   ].join(" · ");
@@ -321,13 +338,15 @@ function CalendarCell({
       {/* Only the lead count, smaller than the date above it -- sales/activity
           counts still drive the fill colour, and the full breakdown is one
           click away in the modal. */}
-      {leadCount > 0 && (
+      {(apptCount > 0 || leadCount > 0) && (
         <span
           className={`mt-0.5 text-[7px] font-semibold leading-none ${
             onDark ? "text-white/85" : "text-taupe-2 dark:text-[#9fb2c4]"
           }`}
         >
-          {leadCount} lead{leadCount === 1 ? "" : "s"}
+          {apptCount > 0
+            ? `${apptCount} appt${apptCount === 1 ? "" : "s"}`
+            : `${leadCount} lead${leadCount === 1 ? "" : "s"}`}
         </span>
       )}
     </button>
@@ -402,7 +421,36 @@ function DayModal({ cell, onClose }: { cell: Cell; onClose: () => void }) {
         </div>
 
         <div className="mt-3.5 flex flex-col gap-2.5">
-          <Section title="Leads" count={cell.leads.length} color={LEGEND[1].light} defaultOpen={cell.leads.length > 0}>
+          <Section
+            title="Appointments"
+            count={cell.appointments.length}
+            color={LEGEND[L_APPT].light}
+            defaultOpen={cell.appointments.length > 0}
+          >
+            {cell.appointments.map((a) => (
+              <Link
+                key={a.id}
+                href={`/leads/${a.leadId}`}
+                className="rounded-[9px] bg-cream px-3 py-2 dark:bg-white/5"
+              >
+                <span className="block text-[12.5px] font-semibold text-navy dark:text-[#eef3f8]">
+                  {a.time} · {a.leadName}
+                </span>
+                {a.location && (
+                  <span className="mt-0.5 block text-[11px] font-medium text-taupe dark:text-[#7f93aa]">
+                    {a.location}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </Section>
+
+          <Section
+            title="Leads"
+            count={cell.leads.length}
+            color={LEGEND[L_LEADS].light}
+            defaultOpen={cell.leads.length > 0 && cell.appointments.length === 0}
+          >
             {cell.leads.map((l) => (
               <Link
                 key={l.id}
@@ -414,7 +462,12 @@ function DayModal({ cell, onClose }: { cell: Cell; onClose: () => void }) {
             ))}
           </Section>
 
-          <Section title="Closed clients" count={cell.sales.length} color={LEGEND[0].light} defaultOpen={cell.sales.length > 0 && cell.leads.length === 0}>
+          <Section
+            title="Closed clients"
+            count={cell.sales.length}
+            color={LEGEND[L_SALES].light}
+            defaultOpen={cell.sales.length > 0 && cell.leads.length === 0 && cell.appointments.length === 0}
+          >
             {cell.sales.map((l) => (
               <Link
                 key={l.id}
@@ -429,8 +482,13 @@ function DayModal({ cell, onClose }: { cell: Cell; onClose: () => void }) {
           <Section
             title="Activities"
             count={cell.activities.length}
-            color={LEGEND[2].light}
-            defaultOpen={cell.activities.length > 0 && cell.leads.length === 0 && cell.sales.length === 0}
+            color={LEGEND[L_ACTIVITY].light}
+            defaultOpen={
+              cell.activities.length > 0 &&
+              cell.leads.length === 0 &&
+              cell.sales.length === 0 &&
+              cell.appointments.length === 0
+            }
           >
             {cell.activities.map((a) => (
               <div key={a.id} className="rounded-[9px] bg-cream px-3 py-2 dark:bg-white/5">

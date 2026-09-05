@@ -5,6 +5,7 @@ import {
   PipelineIcon,
   TeamIcon,
   QuotationIcon,
+  CalendarIcon,
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
@@ -21,6 +22,7 @@ export const SIDEBAR_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/leads", label: "Leads Manager", icon: LeadsIcon },
   { href: "/pipeline", label: "Sales Pipeline", icon: PipelineIcon },
+  { href: "/appointments", label: "Appointment", icon: CalendarIcon },
   {
     href: "/team",
     label: "My Team",

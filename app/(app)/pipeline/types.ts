@@ -50,8 +50,12 @@ export function parseBudget(v: string | null): number {
 
 // Per-lead version of the same rule, for contexts (Table view, sorting) that
 // need one lead's figure rather than a column's sum.
+// Quoted, Appointment and Closed Won all sit downstream of a real quotation,
+// so all three report the quoted premium rather than the indicated budget.
+const HAS_REAL_QUOTE = ["quoted", "appointment", "closed_won"];
+
 export function leadPotentialValue(lead: PipelineLead): number {
-  if (lead.pipeline_stage === "closed_won" || lead.pipeline_stage === "quoted") return realQuoteValue(lead);
+  if (HAS_REAL_QUOTE.includes(lead.pipeline_stage)) return realQuoteValue(lead);
   if (lead.pipeline_stage === "closed_lost") return 0;
   return parseBudget(lead.budget_indicated);
 }
@@ -61,7 +65,7 @@ export function leadPotentialValue(lead: PipelineLead): number {
 // figure there. Quoted and Closed Won both have a real number instead: the
 // accepted/sent quotation's actual monthly contribution.
 export function stagePotentialValue(stage: string, cards: PipelineLead[]): number {
-  if (stage === "closed_won" || stage === "quoted") {
+  if (HAS_REAL_QUOTE.includes(stage)) {
     return cards.reduce((sum, l) => sum + realQuoteValue(l), 0);
   }
   if (stage === "closed_lost") return 0;

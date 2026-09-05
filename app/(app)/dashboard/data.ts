@@ -48,6 +48,13 @@ const CALENDAR_MONTHS = 13;
 
 export type CalendarLeadItem = { id: string; fullName: string };
 export type CalendarActivityItem = { id: string; label: string; leadId: string | null; leadName: string | null };
+export type CalendarAppointmentItem = {
+  id: string;
+  leadId: string;
+  leadName: string;
+  time: string;
+  location: string | null;
+};
 // Full items, not counts -- the calendar cell shows counts derived from these
 // (leads.length etc.), and clicking a day opens them in a modal without a
 // second round trip.
@@ -56,6 +63,7 @@ export type CalendarDay = {
   leads: CalendarLeadItem[];
   sales: CalendarLeadItem[];
   activities: CalendarActivityItem[];
+  appointments: CalendarAppointmentItem[];
 };
 
 function activityLabel(activityType: string, content: string | null) {
@@ -95,6 +103,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     { data: targets },
     { data: teamProfiles },
     { data: activityRows },
+    { data: appointmentRows },
   ] = await Promise.all([
       leadsQuery.returns<LeadRow[]>(),
       supabase
@@ -111,6 +120,13 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         .from("lead_activity")
         .select("id, created_at, lead_id, activity_type, content")
         .gte("created_at", calendarStartKey),
+      // Same story for appointments: their RLS is inherited from leads, so the
+      // caller only ever sees the ones on leads they can already open.
+      supabase
+        .from("appointments")
+        .select("id, lead_id, scheduled_at, location, status, leads(full_name)")
+        .neq("status", "cancelled")
+        .gte("scheduled_at", calendarStartKey),
     ]);
 
   const allLeads = leads ?? [];
@@ -218,7 +234,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const dayEntry = (key: string) => {
     let entry = calendarMap.get(key);
     if (!entry) {
-      entry = { key, leads: [], sales: [], activities: [] };
+      entry = { key, leads: [], sales: [], activities: [], appointments: [] };
       calendarMap.set(key, entry);
     }
     return entry;
@@ -252,6 +268,21 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       leadName: leadId ? (leadNameById.get(leadId) ?? null) : null,
     });
   }
+  for (const a of appointmentRows ?? []) {
+    const key = dayKey(a.scheduled_at as string);
+    if (key < calendarStartKey) continue;
+    const lead = a.leads as unknown as { full_name: string } | null;
+    dayEntry(key).appointments.push({
+      id: a.id as string,
+      leadId: a.lead_id as string,
+      leadName: lead?.full_name ?? "Unknown lead",
+      time: new Date(a.scheduled_at as string).toLocaleTimeString("en-MY", {
+        hour: "numeric", minute: "2-digit", hour12: true,
+      }),
+      location: (a.location as string | null) ?? null,
+    });
+  }
+
   const calendarDays = [...calendarMap.values()].sort((a, b) => a.key.localeCompare(b.key));
 
   const agentMap = new Map<

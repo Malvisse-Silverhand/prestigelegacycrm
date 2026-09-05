@@ -5,6 +5,8 @@ import type { CurrentProfile } from "@/lib/supabase/profile";
 import type { DashboardStats } from "./data";
 import { SunIcon, MoonIcon, AlertIcon, ClockIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
 import { useTheme } from "@/components/theme";
+import { NotificationBell } from "@/components/notification-bell";
+import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
 
 const STATUS_META = [
@@ -55,9 +57,11 @@ const MONTH_NAMES = [
 export function DashboardView({
   profile,
   stats,
+  notifications,
 }: {
   profile: CurrentProfile;
   stats: DashboardStats;
+  notifications: NotificationRow[];
 }) {
   // Theme is system-wide now: the class lives on <html> and is shared with
   // every other screen, so this only reads it (for the donut's colours) and
@@ -81,6 +85,7 @@ export function DashboardView({
               {subtitleFor(profile)}
             </div>
           </div>
+          <NotificationBell initial={notifications} />
           <ThemeToggle dark={dark} onChange={toggleTheme} />
           <div
             title="Historical periods aren't wired up yet — showing the current year"
@@ -392,6 +397,7 @@ export function DashboardView({
               </div>
               <div className="text-[15.5px] font-bold">Dashboard</div>
             </div>
+            <NotificationBell initial={notifications} compact />
             <ThemeToggle dark={dark} onChange={toggleTheme} compact />
           </div>
           <div className="mt-4 flex gap-2">
