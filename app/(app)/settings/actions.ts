@@ -7,7 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getTargetableAgents } from "./data";
+import { getTargetableMembers } from "./data";
 import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
 import { sendEmail, inviteEmail } from "@/lib/email";
 
@@ -402,16 +402,16 @@ export async function updateUserAssignment(input: {
 
 export async function saveTargets(monthDate: string, rows: { agentId: string; ancTarget: number | null; nocTarget: number | null }[]) {
   const profile = await getCurrentProfile();
-  // Aspirant Unit Managers run agents without Settings access generally, but
-  // they do own their agents' targets -- so this checks target scope rather
-  // than canManageSettings.
+  // Every role can set targets for themselves and their downline, so this
+  // checks target scope rather than canManageSettings -- see
+  // getTargetableMembers, which mirrors the can_set_target_for() policy.
   if (!profile) return { error: "You don't have permission to do that." };
-  const allowed = new Set((await getTargetableAgents(profile)).map((a) => a.id));
+  const allowed = new Set((await getTargetableMembers(profile)).map((a) => a.id));
   if (allowed.size === 0) return { error: "You don't have permission to do that." };
-  // The form only renders allowed agents, but this is a Server Action -- it
-  // can be called with any agent id, so re-check server-side.
+  // The form only renders allowed members, but this is a Server Action -- it
+  // can be called with any profile id, so re-check server-side.
   if (rows.some((r) => !allowed.has(r.agentId))) {
-    return { error: "You can only set targets for agents assigned to you." };
+    return { error: "You can only set targets for yourself and your own team." };
   }
 
   const supabase = await createClient();

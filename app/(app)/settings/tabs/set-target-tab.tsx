@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { TargetRow } from "../types";
 import { saveTargets } from "../actions";
+import { ROLE_LABEL } from "@/lib/profile-types";
 
 function monthLabel(monthDate: string) {
   const [y, m] = monthDate.split("-").map(Number);
@@ -51,23 +52,30 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
           {monthLabel(monthDate)}
         </span>
       </div>
-      <div className="mt-[3px] text-[11.5px] font-medium text-taupe">Monthly ANC and number of cases (NOC) per agent</div>
+      <div className="mt-[3px] text-[11.5px] font-medium text-taupe">
+        Monthly ANC and number of cases (NOC) — yourself and everyone at or below your level
+      </div>
 
       {rows.length === 0 ? (
         <div className="mt-5 rounded-xl border border-dashed border-taupe px-4 py-6 text-center text-[12.5px] font-medium text-taupe-2">
-          No agents in scope yet.
+          Nobody in scope yet.
         </div>
       ) : (
         <>
           <div className="mt-4 grid grid-cols-[1fr_84px_68px] items-center gap-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-taupe">
-            <div>Agent</div>
+            <div>Member</div>
             <div className="text-right">ANC (RM)</div>
             <div className="text-right">NOC</div>
           </div>
           <div className="mt-2 flex flex-col gap-2">
             {rows.map((row) => (
               <div key={row.agentId} className="grid grid-cols-[1fr_84px_68px] items-center gap-2.5">
-                <div className="truncate text-[12.5px] font-semibold text-navy">{row.fullName}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-[12.5px] font-semibold text-navy">{row.fullName}</div>
+                  <div className="truncate text-[10px] font-semibold uppercase tracking-[0.06em] text-taupe-2">
+                    {ROLE_LABEL[row.role]}
+                  </div>
+                </div>
                 <input
                   type="number"
                   value={row.ancTarget ?? ""}

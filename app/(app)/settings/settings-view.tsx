@@ -38,9 +38,16 @@ export function SettingsView({
   auditLog: AuditEntry[] | null;
   leadSources: LeadSourceStat[];
 }) {
-  const [tab, setTab] = useState<Tab>("Users & Hierarchy");
-  // Audit Log is SuperAdmin-only -- Group Managers get the other five tabs.
-  const visibleTabs = role === "superadmin" ? TABS : TABS.filter((t) => t !== "Audit Log");
+  // Set Target is the one tab open to every role (own + downline targets);
+  // everything else is hierarchy administration. Audit Log stays
+  // SuperAdmin-only.
+  const isManager = role === "superadmin" || role === "group_manager" || role === "unit_manager";
+  const visibleTabs = !isManager
+    ? (["Set Target"] as const as readonly Tab[])
+    : role === "superadmin"
+      ? TABS
+      : TABS.filter((t) => t !== "Audit Log");
+  const [tab, setTab] = useState<Tab>(visibleTabs[0]);
 
   return (
     <div>

@@ -38,7 +38,13 @@ export type UnitManagerOption = {
 };
 export type UnitOption = { id: string; name: string; groupManagerName: string | null };
 
-export type TargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };
+export type TargetRow = {
+  agentId: string;
+  fullName: string;
+  role: Role;
+  ancTarget: number | null;
+  nocTarget: number | null;
+};
 
 export type DistributionSettings = {
   id: string | null;

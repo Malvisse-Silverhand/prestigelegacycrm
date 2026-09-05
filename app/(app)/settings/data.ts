@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CurrentProfile } from "@/lib/profile-types";
+import { ROLE_RANK, type CurrentProfile, type Role } from "@/lib/profile-types";
 
 export type ScopeUnit = { id: string; name: string; group_manager_id: string | null };
 
@@ -232,45 +232,99 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
   };
 }
 
-export type TargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };
+export type TargetRow = {
+  agentId: string;
+  fullName: string;
+  role: Role;
+  ancTarget: number | null;
+  nocTarget: number | null;
+};
 
-// Whose targets this profile may set. Superadmin and Group Managers cover
-// everyone in their scope; a Unit Manager or Aspirant Unit Manager may only
-// set targets for the agents reporting directly to them, not for everyone
-// who happens to share their unit.
-export async function getTargetableAgents(
-  profile: CurrentProfile,
-): Promise<{ id: string; full_name: string }[]> {
+type TargetableMember = { id: string; full_name: string; role: Role };
+
+// Whose targets this profile may set: themselves, plus anyone at or below
+// their own rank inside the scope they can already see. Mirrors
+// can_set_target_for() in 20260905145546 -- that function is the enforcement,
+// this is what the picker offers, and the two must agree.
+//   superadmin        -> everyone
+//   group_manager     -> self + their units + their direct reports
+//   unit_manager      -> self + UM/AUM/Agent in their own unit
+//   aspirant_unit_mgr -> self + the agents reporting to them
+//   agent             -> self only
+export async function getTargetableMembers(profile: CurrentProfile): Promise<TargetableMember[]> {
   const supabase = await createClient();
+  const self: TargetableMember = { id: profile.id, full_name: profile.full_name, role: profile.role };
 
-  if (profile.role === "unit_manager" || profile.role === "aspirant_unit_manager") {
+  // Rank order first, then name, so the list reads GM -> UM -> AUM -> Agent.
+  const sort = (rows: TargetableMember[]) =>
+    [...rows].sort(
+      (a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role] || a.full_name.localeCompare(b.full_name),
+    );
+  // The scoped queries can return the caller themselves (a UM shares a unit
+  // with their own row); dedupe rather than showing them twice.
+  const withSelf = (rows: TargetableMember[]) =>
+    sort(rows.some((r) => r.id === profile.id) ? rows : [self, ...rows]);
+
+  if (profile.role === "agent") return [self];
+
+  if (profile.role === "aspirant_unit_manager") {
     const { data } = await supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, role")
       .eq("role", "agent")
-      .eq("parent_id", profile.id)
-      .order("full_name");
-    return data ?? [];
+      .eq("parent_id", profile.id);
+    return withSelf((data ?? []) as TargetableMember[]);
   }
 
+  if (profile.role === "unit_manager") {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("unit_id", profile.unit_id)
+      .in("role", ["unit_manager", "aspirant_unit_manager", "agent"]);
+    return withSelf((data ?? []) as TargetableMember[]);
+  }
+
+  if (profile.role === "superadmin") {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .in("role", ["group_manager", "unit_manager", "aspirant_unit_manager", "agent"]);
+    return sort((data ?? []) as TargetableMember[]);
+  }
+
+  // group_manager: everyone inside their units, plus anyone reporting straight
+  // to them (those carry no unit_id), plus themselves.
   const units = await unitsInScope(profile);
   const unitIds = units.map((u) => u.id);
-  if (unitIds.length === 0) return [];
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, full_name")
-    .eq("role", "agent")
-    .in("unit_id", unitIds)
-    .order("full_name");
-  return data ?? [];
+  const [{ data: inUnits }, { data: directReports }] = await Promise.all([
+    unitIds.length
+      ? supabase
+          .from("profiles")
+          .select("id, full_name, role")
+          .in("unit_id", unitIds)
+          .in("role", ["unit_manager", "aspirant_unit_manager", "agent"])
+      : Promise.resolve({ data: [] as TargetableMember[] }),
+    supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("parent_id", profile.id)
+      .in("role", ["aspirant_unit_manager", "agent"]),
+  ]);
+
+  const byId = new Map<string, TargetableMember>();
+  for (const m of [...(inUnits ?? []), ...(directReports ?? [])] as TargetableMember[]) {
+    byId.set(m.id, m);
+  }
+  return withSelf([...byId.values()]);
 }
 
 export async function getTargetsForMonth(profile: CurrentProfile, monthDate: string): Promise<TargetRow[]> {
   const supabase = await createClient();
-  const agents = await getTargetableAgents(profile);
-  if (agents.length === 0) return [];
+  const members = await getTargetableMembers(profile);
+  if (members.length === 0) return [];
 
-  const agentIds = agents.map((a) => a.id);
+  const agentIds = members.map((a) => a.id);
   let targets: { agent_id: string; anc_target: number | null; noc_target: number | null }[] = [];
   if (agentIds.length > 0) {
     const { data } = await supabase
@@ -282,9 +336,10 @@ export async function getTargetsForMonth(profile: CurrentProfile, monthDate: str
   }
   const byAgent = new Map(targets.map((t) => [t.agent_id, t]));
 
-  return agents.map((a) => ({
+  return members.map((a) => ({
     agentId: a.id,
     fullName: a.full_name,
+    role: a.role,
     ancTarget: byAgent.get(a.id)?.anc_target ?? null,
     nocTarget: byAgent.get(a.id)?.noc_target ?? null,
   }));

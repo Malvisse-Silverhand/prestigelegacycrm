@@ -41,8 +41,9 @@ export const SIDEBAR_NAV: NavItem[] = [
     href: "/settings",
     label: "Settings",
     icon: SettingsIcon,
-    // Unit managers can now invite/assign inside their own unit.
-    roles: ["superadmin", "group_manager", "unit_manager"],
+    // No role filter: Set Target is open to everyone (their own targets and
+    // their downline's), and SettingsView hides the administration tabs from
+    // anyone below a Unit Manager.
   },
 ];
 
