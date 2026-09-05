@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { INTEREST_OPTIONS } from "@/lib/product-interest";
-import { MALAYSIAN_STATES, LEAD_SOURCES } from "@/lib/lead-constants";
+import { MALAYSIAN_STATES, LEAD_SOURCES, OCCUPATION_CLASSES, OCCUPATION_DIRECTORY_URL } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
 
 export type LeadFormDefaults = {
@@ -13,6 +13,7 @@ export type LeadFormDefaults = {
   gender?: "male" | "female" | null;
   is_smoker?: boolean | null;
   occupation?: string | null;
+  occupation_class?: string | null;
   interest?: string | null;
   address?: string | null;
   postcode?: string | null;
@@ -98,23 +99,47 @@ export function LeadFormFields({ defaults }: { defaults: LeadFormDefaults }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Occupation" name="occupation" defaultValue={defaults.occupation ?? ""} />
+        <div>
+          <Field label="Occupation" name="occupation" defaultValue={defaults.occupation ?? ""} />
+          <a
+            href={OCCUPATION_DIRECTORY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy"
+          >
+            Link to occupation directory
+          </a>
+        </div>
         <label className="block">
-          <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">Status</span>
+          <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">Occupation Class</span>
           <select
-            name="status"
-            defaultValue={defaults.status ?? "warm"}
+            name="occupation_class"
+            defaultValue={defaults.occupation_class ?? ""}
             className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
           >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{cap(s)}</option>
+            <option value="">Unknown</option>
+            {OCCUPATION_CLASSES.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
             ))}
-            {defaults.status && !(STATUS_OPTIONS as readonly string[]).includes(defaults.status) && (
-              <option value={defaults.status}>{cap(defaults.status)}</option>
-            )}
           </select>
         </label>
       </div>
+
+      <label className="block">
+        <span className="text-[11px] font-bold tracking-[0.08em] text-taupe-2 uppercase">Status</span>
+        <select
+          name="status"
+          defaultValue={defaults.status ?? "warm"}
+          className="mt-1.5 w-full rounded-[10px] border border-sand-2 bg-white px-3 py-2.5 text-[13px] font-medium text-navy"
+        >
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{cap(s)}</option>
+          ))}
+          {defaults.status && !(STATUS_OPTIONS as readonly string[]).includes(defaults.status) && (
+            <option value={defaults.status}>{cap(defaults.status)}</option>
+          )}
+        </select>
+      </label>
 
       <Field label="Address" name="address" defaultValue={defaults.address ?? ""} />
 

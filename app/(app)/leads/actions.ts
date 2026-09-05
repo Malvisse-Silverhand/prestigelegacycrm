@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker } from "@/lib/lead-field-validation";
+import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker, pickOccupationClass } from "@/lib/lead-field-validation";
 import { getAllLeadsForExport, type LeadFilters } from "./data";
 
 export async function exportLeads(filters: LeadFilters) {
@@ -41,6 +41,7 @@ export async function createLead(formData: FormData) {
     is_smoker: pickSmoker(String(formData.get("is_smoker") ?? "").trim()),
     state: pickState(String(formData.get("state") ?? "").trim()),
     occupation: String(formData.get("occupation") ?? "").trim() || null,
+    occupation_class: pickOccupationClass(String(formData.get("occupation_class") ?? "").trim()),
     address: String(formData.get("address") ?? "").trim() || null,
     postcode: postcode || null,
     lead_source: pickLeadSource(String(formData.get("lead_source") ?? "").trim()),
@@ -95,6 +96,7 @@ export async function updateLead(leadId: string, formData: FormData) {
       date_of_birth: String(formData.get("date_of_birth") ?? "").trim() || null,
       state: pickState(String(formData.get("state") ?? "").trim()),
       occupation: String(formData.get("occupation") ?? "").trim() || null,
+      occupation_class: pickOccupationClass(String(formData.get("occupation_class") ?? "").trim()),
       address: String(formData.get("address") ?? "").trim() || null,
       postcode: postcode || null,
       lead_source: pickLeadSource(String(formData.get("lead_source") ?? "").trim()),

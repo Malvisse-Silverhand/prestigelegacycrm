@@ -33,6 +33,7 @@ export type LeadRow = {
   date_of_birth: string | null;
   state: MalaysianState | null;
   occupation: string | null;
+  occupation_class: string | null;
   address: string | null;
   postcode: string | null;
   agent_remark: string | null;
@@ -67,7 +68,7 @@ function filteredLeadsQuery(
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, state, occupation, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
+      "id, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });

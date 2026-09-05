@@ -13,6 +13,7 @@ export type LeadDetail = {
   agent_remark: string | null;
   date_of_birth: string | null;
   occupation: string | null;
+  occupation_class: string | null;
   gender: "male" | "female" | null;
   is_smoker: boolean | null;
   lead_source: LeadSource | null;
@@ -66,7 +67,7 @@ export async function getLeadDetail(id: string) {
     supabase
       .from("leads")
       .select(
-        "id, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
+        "id, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
       )
       .eq("id", id)
       .single<LeadDetail>(),

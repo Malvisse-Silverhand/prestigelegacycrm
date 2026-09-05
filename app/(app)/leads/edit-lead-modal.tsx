@@ -17,6 +17,7 @@ type EditableLead = {
   date_of_birth: string | null;
   state: string | null;
   occupation: string | null;
+  occupation_class: string | null;
   lead_source: string | null;
   interest: string | null;
   address: string | null;
@@ -99,6 +100,7 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
               gender: lead.gender,
               is_smoker: lead.is_smoker,
               occupation: lead.occupation,
+              occupation_class: lead.occupation_class,
               interest: lead.interest,
               address: lead.address,
               postcode: lead.postcode,

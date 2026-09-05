@@ -6,7 +6,7 @@ import type { CurrentProfile } from "@/lib/profile-types";
 import type { LeadDetail, ActivityRow, ReassignOption } from "./data";
 import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
-import { LEAD_SOURCES } from "@/lib/lead-constants";
+import { LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage, updateSource } from "./actions";
@@ -40,6 +40,10 @@ function genderSmokerLabel(lead: LeadDetail) {
   const gender = lead.gender === "male" ? "Male" : lead.gender === "female" ? "Female" : "—";
   const smoker = lead.is_smoker === true ? "Smoker" : lead.is_smoker === false ? "Non-smoker" : "Unknown";
   return `${gender} · ${smoker}`;
+}
+
+function occupationClassLabel(value: string | null) {
+  return OCCUPATION_CLASSES.find((o) => o.value === value)?.label ?? null;
 }
 
 function activityIcon(type: string) {
@@ -312,6 +316,7 @@ export function LeadDetailContent({
               <Detail label="Date of birth" value={dobValue} />
               <Detail label="Gender · smoker status" value={genderSmokerLabel(lead)} />
               <Detail label="Occupation" value={lead.occupation} />
+              <Detail label="Occupation class" value={occupationClassLabel(lead.occupation_class)} />
               <Detail label="Location" value={lead.address ?? lead.state} />
               <InterestDropdown lead={lead} />
               <Detail label="Source" value={lead.lead_source} />

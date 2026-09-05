@@ -1,4 +1,4 @@
-import { MALAYSIAN_STATES, LEAD_SOURCES } from "@/lib/lead-constants";
+import { MALAYSIAN_STATES, LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
 import { INTEREST_OPTIONS } from "@/lib/product-interest";
 
 // Shared field validation/normalization for anything that writes to `leads`
@@ -24,4 +24,7 @@ export function pickGender(v: string) {
 }
 export function pickSmoker(v: string) {
   return v === "" ? null : v === "true";
+}
+export function pickOccupationClass(v: string) {
+  return OCCUPATION_CLASSES.some((o) => o.value === v) ? v : null;
 }
