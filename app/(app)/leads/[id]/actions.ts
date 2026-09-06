@@ -120,7 +120,11 @@ export async function updateStage(leadId: string, newStage: string, stageLabel: 
   }
 
   const patch: { pipeline_stage: string; status?: "closed" } = { pipeline_stage: newStage };
-  if (newStage === "closed_won" || newStage === "closed_lost") patch.status = "closed";
+  // Servicing means the policy is already inforced, so the lead is closed in
+  // the same sense as Closed Won -- it is no longer something to chase.
+  if (newStage === "closed_won" || newStage === "closed_lost" || newStage === "servicing") {
+    patch.status = "closed";
+  }
 
   // A plain .update() without .select() reports success even when RLS
   // filters the WHERE down to zero matching rows -- e.g. the lead was

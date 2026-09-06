@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import type { DashboardStats } from "./data";
 import { SunIcon, MoonIcon, AlertIcon, ClockIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
@@ -8,6 +9,7 @@ import { useTheme } from "@/components/theme";
 import { NotificationBell } from "@/components/notification-bell";
 import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
+import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -45,6 +47,12 @@ function donutArcs(counts: DashboardStats["statusCounts"], total: number, dark: 
   });
 }
 
+function deltaPct(current: number, previous: number) {
+  if (previous === 0) return current === 0 ? "\u2014" : "new";
+  const pct = Math.round(((current - previous) / previous) * 100);
+  return `${pct > 0 ? "+" : ""}${pct}%`;
+}
+
 function fmtRM(n: number) {
   return `RM ${n >= 1000 ? (n / 1000).toFixed(1) + "k" : n.toFixed(0)}`;
 }
@@ -68,6 +76,24 @@ export function DashboardView({
   // writes through the same helper the sidebar toggle uses.
   const { dark, setDark } = useTheme();
   const toggleTheme = setDark;
+
+  // The calendar's period drives the headline cards: paging it back to August
+  // makes them report August. All four figures are derived from the same
+  // per-day rows the grid draws, so a card can never contradict the calendar.
+  const [granularity, setGranularity] = useState<Granularity>("month");
+  const [offset, setOffset] = useState(0);
+  const period = useMemo(
+    () => periodStats(stats.calendarDays, anchorFor(granularity, offset)),
+    [stats.calendarDays, granularity, offset],
+  );
+  const calendarProps = {
+    days: stats.calendarDays,
+    startKey: stats.calendarStartKey,
+    granularity,
+    offset,
+    onGranularityChange: setGranularity,
+    onOffsetChange: (updater: (o: number) => number) => setOffset(updater),
+  };
 
   const now = new Date();
   const arcs = donutArcs(stats.statusCounts, stats.statusTotal, dark);
@@ -102,27 +128,33 @@ export function DashboardView({
         </div>
 
         <div className="flex flex-col gap-[18px] px-[30px] py-[22px] pb-[30px]">
-          <div className="grid grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-5 gap-3">
             <StatCard
-              label="Leads today"
-              value={stats.todayCount}
+              label={period.dayLabel}
+              value={period.dayCount}
               delta={
-                stats.todayDelta === 0
-                  ? "Same as yesterday"
-                  : `${stats.todayDelta > 0 ? "+" : ""}${stats.todayDelta} vs yesterday`
+                period.dayCount - period.dayPrevCount === 0
+                  ? "Same as the day before"
+                  : `${period.dayCount > period.dayPrevCount ? "+" : ""}${period.dayCount - period.dayPrevCount} vs day before`
               }
-              positive={stats.todayDelta >= 0}
+              positive={period.dayCount >= period.dayPrevCount}
             />
             <StatCard
-              label="This week"
-              value={stats.weekCount}
-              delta={stats.weekDeltaPct === null ? "—" : `${stats.weekDeltaPct > 0 ? "+" : ""}${stats.weekDeltaPct}%`}
-              positive={(stats.weekDeltaPct ?? 0) >= 0}
+              label={period.weekLabel}
+              value={period.weekCount}
+              delta={deltaPct(period.weekCount, period.weekPrevCount)}
+              positive={period.weekCount >= period.weekPrevCount}
             />
             <StatCard
-              label="This month"
-              value={stats.monthCount}
+              label={period.monthLabel}
+              value={period.monthCount}
               delta={stats.monthTarget > 0 ? `target ${stats.monthTarget}` : "no target set"}
+              muted
+            />
+            <StatCard
+              label={period.closedLabel}
+              value={period.closedCount}
+              delta="policies inforced"
               muted
             />
             <div className="rounded-2xl bg-navy p-4 pb-[18px] dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
@@ -133,10 +165,13 @@ export function DashboardView({
                 </span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-[30px] font-extrabold tracking-[-0.03em] text-white">
+                <span className="text-[26px] font-extrabold tracking-[-0.03em] text-white">
                   {fmtRM(stats.pipelineValue)}
                 </span>
-                <span className="text-[11.5px] font-bold text-gold">/month</span>
+                <span className="text-[11.5px] font-bold text-gold">ANC</span>
+              </div>
+              <div className="mt-0.5 text-[10.5px] font-medium text-white/45">
+                Potential ANC · monthly x 12
               </div>
             </div>
           </div>
@@ -176,7 +211,7 @@ export function DashboardView({
             />
           </div>
 
-          <ActivityCalendar days={stats.calendarDays} startKey={stats.calendarStartKey} />
+          <ActivityCalendar {...calendarProps} />
 
           <div className="grid grid-cols-2 gap-[18px]">
             <div className="rounded-[18px] border border-sand bg-white p-5 pb-[22px] dark:border-white/10 dark:bg-[#12283f]">
@@ -400,16 +435,19 @@ export function DashboardView({
             <NotificationBell initial={notifications} compact />
             <ThemeToggle dark={dark} onChange={toggleTheme} compact />
           </div>
-          <div className="mt-4 flex gap-2">
-            <MobileStat value={stats.todayCount} label="Today" />
-            <MobileStat value={stats.weekCount} label="This week" />
-            <MobileStat value={stats.monthCount} label="Month" />
-            <div className="flex-1 rounded-[13px] bg-gold px-3 py-[11px] text-navy">
-              <div className="text-[22px] font-extrabold tracking-[-0.03em]">
-                {stats.conversionRatePct}%
-              </div>
-              <div className="text-[10px] font-semibold text-[#5c4a1c]">Conv.</div>
-            </div>
+          {/* Four counts across, then ANC on its own row -- five tiles in one
+              line is unreadable on a phone. */}
+          <div className="mt-4 grid grid-cols-4 gap-2">
+            <MobileStat value={period.dayCount} label="Day" />
+            <MobileStat value={period.weekCount} label="Week" />
+            <MobileStat value={period.monthCount} label="Month" />
+            <MobileStat value={period.closedCount} label="Closed" />
+          </div>
+          <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-gold px-3.5 py-2.5 text-navy">
+            <span className="text-[10.5px] font-bold text-[#5c4a1c]">Pipeline value · ANC</span>
+            <span className="text-[19px] font-extrabold tracking-[-0.03em]">
+              {fmtRM(stats.pipelineValue)}
+            </span>
           </div>
         </div>
 
@@ -419,7 +457,7 @@ export function DashboardView({
           <MobileAlert href="/leads?view=no_quotation" tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
 
           <div className="mt-0.5">
-            <ActivityCalendar days={stats.calendarDays} startKey={stats.calendarStartKey} compact />
+            <ActivityCalendar {...calendarProps} compact />
           </div>
 
           <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">

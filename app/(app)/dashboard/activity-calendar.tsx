@@ -9,7 +9,13 @@ import type {
   CalendarAppointmentItem,
 } from "./data";
 
-type Granularity = "year" | "month" | "week" | "day";
+import {
+  keyOf,
+  startOfWeek,
+  MONTH_SHORT,
+  MONTH_LONG,
+  type Granularity,
+} from "./calendar-period";
 
 const GRANULARITIES: { value: Granularity; label: string }[] = [
   { value: "year", label: "Year" },
@@ -18,11 +24,6 @@ const GRANULARITIES: { value: Granularity; label: string }[] = [
   { value: "day", label: "Day" },
 ];
 
-const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MONTH_LONG = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 const WEEKDAY_SHORT = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 // What a filled cell means, most significant first: a closed sale outranks a
@@ -35,21 +36,6 @@ const LEGEND = [
 ];
 // Index into LEGEND, so the fill order and the modal sections can't drift.
 const L_SALES = 0, L_APPT = 1, L_LEADS = 2, L_ACTIVITY = 3;
-
-function keyOf(d: Date) {
-  // Local date, not toISOString() -- that shifts to UTC and can land on the
-  // previous day for anyone east of Greenwich (this CRM runs in UTC+8).
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function startOfWeek(d: Date) {
-  const out = new Date(d);
-  // Monday-first, matching WEEKDAY_SHORT.
-  const shift = (out.getDay() + 6) % 7;
-  out.setDate(out.getDate() - shift);
-  out.setHours(0, 0, 0, 0);
-  return out;
-}
 
 type Cell = {
   key: string;
@@ -72,14 +58,22 @@ export function ActivityCalendar({
   days,
   startKey,
   compact,
+  granularity,
+  offset,
+  onGranularityChange,
+  onOffsetChange,
 }: {
   days: CalendarDay[];
   startKey: string;
   compact?: boolean;
-}) {
-  const [granularity, setGranularity] = useState<Granularity>("month");
+  // The visible period is owned by the dashboard, because the headline cards
+  // above the calendar report on whatever period is showing here.
+  granularity: Granularity;
   // 0 = the period containing today, -1 = the one before it, etc.
-  const [offset, setOffset] = useState(0);
+  offset: number;
+  onGranularityChange: (g: Granularity) => void;
+  onOffsetChange: (updater: (o: number) => number) => void;
+}) {
   const [openCell, setOpenCell] = useState<Cell | null>(null);
 
   const byDay = useMemo(() => new Map(days.map((d) => [d.key, d])), [days]);
@@ -200,8 +194,8 @@ export function ActivityCalendar({
               key={g.value}
               type="button"
               onClick={() => {
-                setGranularity(g.value);
-                setOffset(0);
+                onGranularityChange(g.value);
+                onOffsetChange(() => 0);
               }}
               className={`rounded-[6px] px-2 py-[3px] text-[10.5px] font-semibold ${
                 granularity === g.value
@@ -218,7 +212,7 @@ export function ActivityCalendar({
       <div className="mt-2 flex items-center justify-between gap-2">
         <button
           type="button"
-          onClick={() => setOffset((o) => o - 1)}
+          onClick={() => onOffsetChange((o) => o - 1)}
           disabled={!canGoBack}
           aria-label="Previous period"
           className="flex h-6 w-6 items-center justify-center rounded-[7px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"
@@ -230,7 +224,7 @@ export function ActivityCalendar({
         <div className="text-[11.5px] font-bold text-navy dark:text-[#eef3f8]">{title}</div>
         <button
           type="button"
-          onClick={() => setOffset((o) => Math.min(0, o + 1))}
+          onClick={() => onOffsetChange((o) => Math.min(0, o + 1))}
           disabled={offset >= 0}
           aria-label="Next period"
           className="flex h-6 w-6 items-center justify-center rounded-[7px] border border-sand-2 text-navy disabled:opacity-35 dark:border-white/10 dark:text-[#eef3f8]"

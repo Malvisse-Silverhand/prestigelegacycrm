@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { UnitLeague } from "./data";
 import { computeAgentMetrics, emptyMetrics, type MinimalLead, type MinimalActivity } from "./metrics";
 import { daysSinceLastActivity } from "@/lib/staleness";
+import { WON_STAGES } from "@/lib/pipeline-stages";
 import { ChevronDownIcon, ShieldIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
@@ -38,7 +39,7 @@ export function TeamLeague({
     const unitActivities = activities.filter((a) => unitLeads.some((l) => l.id === a.lead_id));
     // Roll a unit manager's row up from their agents' per-lead numbers directly,
     // rather than re-deriving from the (per-agent) metrics map.
-    const closedWon = unitLeads.filter((l) => l.pipeline_stage === "closed_won").length;
+    const closedWon = unitLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
     const perAgent = computeAgentMetrics(unitLeads, unitActivities, staleAfterDays);
     const responseValues = [...perAgent.values()].map((m) => m.avgResponseHours).filter((v): v is number => v !== null);
     const avgResponse = responseValues.length > 0 ? responseValues.reduce((a, b) => a + b, 0) / responseValues.length : null;

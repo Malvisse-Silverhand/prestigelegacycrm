@@ -1,3 +1,4 @@
+import { WON_STAGES } from "@/lib/pipeline-stages";
 import { daysSinceLastActivity } from "@/lib/staleness";
 
 export type MinimalLead = {
@@ -44,7 +45,7 @@ export function computeAgentMetrics(
 
   const result = new Map<string, AgentMetrics>();
   for (const [agentId, agentLeads] of byAgent) {
-    const closedWon = agentLeads.filter((l) => l.pipeline_stage === "closed_won").length;
+    const closedWon = agentLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
     const responseTimes: number[] = [];
     for (const lead of agentLeads) {
       const first = firstActivityByLead.get(lead.id);

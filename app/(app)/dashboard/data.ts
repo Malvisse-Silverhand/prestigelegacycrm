@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
+import { toAnc } from "@/app/(app)/pipeline/types";
 
 type LeadRow = {
   id: string;
@@ -10,7 +11,9 @@ type LeadRow = {
     | "contacted"
     | "follow_up"
     | "quoted"
+    | "appointment"
     | "closed_won"
+    | "servicing"
     | "closed_lost";
   agent_id: string | null;
   lead_source: string | null;
@@ -20,7 +23,10 @@ type LeadRow = {
   profiles: { full_name: string; avatar_initials: string | null } | null;
 };
 
-const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted"];
+const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted", "appointment"];
+// Business already won. Servicing counts too -- that client was still closed,
+// they have simply moved on to being looked after.
+const WON_STAGES = ["closed_won", "servicing"];
 
 // created_at/updated_at are nullable in the schema -- they carry defaults, not
 // NOT NULL -- and rows do exist with a null updated_at. Returning "" rather
@@ -158,13 +164,16 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const openLeadIds = new Set(
     allLeads.filter((l) => OPEN_STAGES.includes(l.pipeline_stage)).map((l) => l.id),
   );
-  const pipelineValue = (quotations ?? []).reduce((sum, q) => {
+  const pipelineMonthly = (quotations ?? []).reduce((sum, q) => {
     if (!openLeadIds.has(q.lead_id)) return sum;
     const plans = (q.quotation_plans ?? []) as { sort_order: number; monthly_contribution: number | null }[];
     if (plans.length === 0) return sum;
     const primary = [...plans].sort((a, b) => a.sort_order - b.sort_order)[0];
     return sum + (primary.monthly_contribution ?? 0);
   }, 0);
+  // Annual New Contribution -- the same monthly x 12 definition the pipeline
+  // board uses, so the two screens can never quote different figures.
+  const pipelineValue = toAnc(pipelineMonthly);
 
   const overdue = allLeads.filter(
     (l) => l.follow_up_date && l.follow_up_date < today && OPEN_STAGES.includes(l.pipeline_stage),
@@ -187,7 +196,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       !quotedLeadIds.has(l.id),
   );
 
-  const closedWonCount = allLeads.filter((l) => l.pipeline_stage === "closed_won").length;
+  const closedWonCount = allLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
   const conversionRatePct =
     allLeads.length > 0 ? Math.round((closedWonCount / allLeads.length) * 100) : 0;
 
@@ -204,7 +213,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     const key = l.lead_source || "Unknown";
     const entry = sourceMap.get(key) ?? { count: 0, closed: 0 };
     entry.count++;
-    if (l.pipeline_stage === "closed_won") entry.closed++;
+    if (WON_STAGES.includes(l.pipeline_stage)) entry.closed++;
     sourceMap.set(key, entry);
   }
   const maxSourceCount = Math.max(1, ...[...sourceMap.values()].map((v) => v.count));
@@ -222,7 +231,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     const key = daysAgoKey(13 - i);
     const inCount = allLeads.filter((l) => dayKey(l.created_at) === key).length;
     const outCount = allLeads.filter(
-      (l) => l.pipeline_stage === "closed_won" && dayKey(l.updated_at) === key,
+      (l) => WON_STAGES.includes(l.pipeline_stage) && dayKey(l.updated_at) === key,
     ).length;
     return { key, day: new Date(key).getDate(), inCount, outCount };
   });
@@ -246,7 +255,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     // A closed-won lead counts as a sale on the day it was last moved -- the
     // closest thing to a close date without a dedicated column. Only read
     // updated_at for those: most leads have never been moved and carry null.
-    if (l.pipeline_stage === "closed_won") {
+    if (WON_STAGES.includes(l.pipeline_stage)) {
       const updatedKey = dayKey(l.updated_at);
       if (updatedKey >= calendarStartKey) {
         dayEntry(updatedKey).sales.push({ id: l.id, fullName: l.full_name });

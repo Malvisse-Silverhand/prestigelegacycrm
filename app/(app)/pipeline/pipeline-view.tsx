@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
-import { STAGES, type PipelineStage } from "@/lib/pipeline-stages";
+import { STAGES, WON_STAGES, type PipelineStage } from "@/lib/pipeline-stages";
 import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
 import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
@@ -194,9 +194,11 @@ export function PipelineView({
                     <span className="text-[11px] font-bold text-taupe">{cards.length}</span>
                   </div>
                   <div
-                    className={`mt-[3px] text-[10.5px] font-semibold ${stage.value === "closed_won" ? "text-green" : "text-taupe"}`}
+                    className={`mt-[3px] text-[10.5px] font-semibold ${WON_STAGES.includes(stage.value) ? "text-green" : "text-taupe"}`}
                   >
-                    {stage.value === "closed_won"
+                    {/* Won business reports ANC outright; everything still in
+                        play is only potential. */}
+                    {WON_STAGES.includes(stage.value)
                       ? `${fmtRM(toAnc(value))} ANC`
                       : stage.value === "closed_lost"
                         ? "Reason required"
@@ -544,12 +546,12 @@ function PipelineCard({
         </div>
       )}
 
-      {hasQuote && (stage === "quoted" || stage === "closed_won") && quoteValue !== null && (
+      {hasQuote && (stage === "quoted" || WON_STAGES.includes(stage)) && quoteValue !== null && (
         <div className="mt-2.5 flex items-baseline justify-between border-t border-sand-3 pt-2.5">
           <span className="text-[10px] font-semibold text-taupe">
-            {stage === "closed_won" ? "Policy active" : "Quote sent"}
+            {WON_STAGES.includes(stage) ? "Policy active" : "Quote sent"}
           </span>
-          <span className={`text-[12.5px] font-extrabold ${stage === "closed_won" ? "text-gold" : "text-green"}`}>
+          <span className={`text-[12.5px] font-extrabold ${WON_STAGES.includes(stage) ? "text-gold" : "text-green"}`}>
             {fmtRM(quoteValue)}<span className="text-[9px] text-taupe">/mo</span>
           </span>
         </div>

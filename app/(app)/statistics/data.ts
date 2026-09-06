@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { computeAgentMetrics, type MinimalLead, type MinimalActivity } from "@/app/(app)/team/metrics";
+import { WON_STAGES } from "@/lib/pipeline-stages";
 
 type QuotationRow = {
   id: string;
@@ -73,8 +74,6 @@ export async function getStatisticsData(profile: CurrentProfile) {
   };
 }
 
-const OPEN_OR_CLOSED_WON = new Set(["contacted", "follow_up", "quoted", "closed_won", "closed_lost"]);
-
 export function monthKey(iso: string) {
   return iso.slice(0, 7);
 }
@@ -89,8 +88,8 @@ export function computeTopStats(
   const prevMonthLeads = leads.filter((l) => monthKey(l.created_at) === prevMonthKeyStr);
   const thisMonthQuotes = quotations.filter((q) => monthKey(q.created_at) === monthKeyStr && q.status !== "draft");
   const prevMonthQuotes = quotations.filter((q) => monthKey(q.created_at) === prevMonthKeyStr && q.status !== "draft");
-  const thisMonthClosed = thisMonthLeads.filter((l) => l.pipeline_stage === "closed_won").length;
-  const prevMonthClosed = prevMonthLeads.filter((l) => l.pipeline_stage === "closed_won").length;
+  const thisMonthClosed = thisMonthLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
+  const prevMonthClosed = prevMonthLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
   const thisConv = thisMonthLeads.length > 0 ? (thisMonthClosed / thisMonthLeads.length) * 100 : 0;
   const prevConv = prevMonthLeads.length > 0 ? (prevMonthClosed / prevMonthLeads.length) * 100 : 0;
 
@@ -176,10 +175,14 @@ export function computeResponseBuckets(leads: MinimalLead[], activities: Minimal
 export function computeStageFunnel(leads: MinimalLead[]) {
   const total = leads.length || 1;
   const atOrPast = (stages: string[]) => leads.filter((l) => stages.includes(l.pipeline_stage)).length;
-  const contactedPlus = atOrPast(["contacted", "follow_up", "quoted", "closed_won", "closed_lost"]);
-  const fuPlus = atOrPast(["follow_up", "quoted", "closed_won", "closed_lost"]);
-  const quotedPlus = atOrPast(["quoted", "closed_won", "closed_lost"]);
-  const won = atOrPast(["closed_won"]);
+  // Every stage downstream of the one being measured counts as "reached
+  // it", so Appointment and Servicing have to appear in these lists too --
+  // otherwise booking a meeting would make a lead vanish from the funnel.
+  const DOWNSTREAM = ["appointment", "closed_won", "servicing", "closed_lost"];
+  const contactedPlus = atOrPast(["contacted", "follow_up", "quoted", ...DOWNSTREAM]);
+  const fuPlus = atOrPast(["follow_up", "quoted", ...DOWNSTREAM]);
+  const quotedPlus = atOrPast(["quoted", ...DOWNSTREAM]);
+  const won = atOrPast(WON_STAGES);
 
   return [
     { label: "New → Contact", pct: Math.round((contactedPlus / total) * 100), color: "#0f2540" },
@@ -201,7 +204,7 @@ export function computeLeague(
       const unitLeads = leads.filter((l) => l.unit_id === row.unitId);
       const unitLeadIds = new Set(unitLeads.map((l) => l.id));
       const unitActivities = activities.filter((a) => unitLeadIds.has(a.lead_id));
-      const closed = unitLeads.filter((l) => l.pipeline_stage === "closed_won").length;
+      const closed = unitLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage)).length;
       const quoted = quotations.filter((q) => unitLeadIds.has(q.lead_id)).length;
       const perAgent = computeAgentMetrics(unitLeads, unitActivities, staleAfterDays);
       const responseValues = [...perAgent.values()].map((m) => m.avgResponseHours).filter((v): v is number => v !== null);

@@ -50,9 +50,9 @@ export function parseBudget(v: string | null): number {
 
 // Per-lead version of the same rule, for contexts (Table view, sorting) that
 // need one lead's figure rather than a column's sum.
-// Quoted, Appointment and Closed Won all sit downstream of a real quotation,
-// so all three report the quoted premium rather than the indicated budget.
-const HAS_REAL_QUOTE = ["quoted", "appointment", "closed_won"];
+// Everything from Quoted onwards sits downstream of a real quotation, so it
+// reports the quoted premium rather than the indicated budget.
+const HAS_REAL_QUOTE = ["quoted", "appointment", "closed_won", "servicing"];
 
 export function leadPotentialValue(lead: PipelineLead): number {
   if (HAS_REAL_QUOTE.includes(lead.pipeline_stage)) return realQuoteValue(lead);
