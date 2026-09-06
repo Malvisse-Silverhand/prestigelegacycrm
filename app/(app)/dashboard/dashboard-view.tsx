@@ -10,6 +10,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
+import { RebalanceButton } from "./rebalance-button";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -363,14 +364,7 @@ export function DashboardView({
                 <div className="text-[15.5px] font-bold text-navy dark:text-[#eef3f8]">
                   Lead assignment
                 </div>
-                {stats.isManager && (
-                  <span
-                    title="Coming soon — no rebalancing logic yet"
-                    className="cursor-not-allowed text-xs font-semibold text-taupe opacity-60 dark:text-[#7f93aa]"
-                  >
-                    Rebalance
-                  </span>
-                )}
+                {stats.isManager && <RebalanceButton />}
               </div>
               {!stats.isManager ? (
                 <p className="mt-4 text-[13px] text-muted dark:text-[#7f93aa]">

@@ -14,6 +14,9 @@ import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { InterestDropdown } from "./interest-dropdown";
 import { LeadQuotations } from "./lead-quotations";
 import { LeadAppointments } from "./lead-appointments";
+import { LeadWaFlow } from "./lead-wa-flow";
+import type { WaTemplate } from "@/app/(app)/wa-flow/types";
+import type { FillableLead } from "@/lib/wa-template-fill";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
 import { QuotationModal } from "@/components/quotation-modal";
@@ -99,6 +102,8 @@ export function LeadDetailContent({
   profile,
   reassignOptions,
   appointments,
+  waTemplates,
+  waLead,
   onClose,
   isModal,
 }: {
@@ -108,6 +113,10 @@ export function LeadDetailContent({
   profile: CurrentProfile;
   reassignOptions: ReassignOption[];
   appointments: AppointmentRow[];
+  waTemplates: WaTemplate[];
+  // The lead again, but shaped for template filling (it carries the
+  // quotation plans the placeholders read from).
+  waLead: FillableLead | null;
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -350,6 +359,14 @@ export function LeadDetailContent({
               </p>
             </div>
           </div>
+
+          {waLead && (
+            <LeadWaFlow
+              lead={waLead}
+              agentName={lead.profiles?.full_name ?? profile.full_name}
+              templates={waTemplates}
+            />
+          )}
 
           <LeadAppointments leadId={lead.id} leadName={lead.full_name} appointments={appointments} />
 

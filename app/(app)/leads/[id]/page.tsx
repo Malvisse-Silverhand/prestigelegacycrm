@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getLeadDetail, getLeadQuotations, getReassignableUsers } from "./data";
 import { getLeadAppointments } from "@/app/(app)/appointments/data";
+import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { LeadDetailContent } from "./lead-detail-content";
 
 export default async function LeadDetailPage({
@@ -16,10 +17,12 @@ export default async function LeadDetailPage({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const [reassignOptions, quotations, appointments] = await Promise.all([
+  const [reassignOptions, quotations, appointments, waTemplates, waLead] = await Promise.all([
     getReassignableUsers(profile),
     getLeadQuotations(id),
     getLeadAppointments(id),
+    getTemplates(),
+    getLeadForFill(id),
   ]);
 
   return (
@@ -31,6 +34,8 @@ export default async function LeadDetailPage({
         profile={profile}
         reassignOptions={reassignOptions}
         appointments={appointments}
+        waTemplates={waTemplates}
+        waLead={waLead}
       />
     </div>
   );
