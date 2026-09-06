@@ -457,33 +457,27 @@ export async function saveTargets(monthDate: string, rows: { agentId: string; an
     return { error: "You can only set targets for yourself and your own team." };
   }
 
-  const supabase = await createClient();
-  for (const row of rows) {
-    const { data: existing } = await supabase
-      .from("targets")
-      .select("id")
-      .eq("agent_id", row.agentId)
-      .eq("month", monthDate)
-      .maybeSingle();
-
-    if (existing) {
-      const { data, error } = await supabase
-        .from("targets")
-        .update({ anc_target: row.ancTarget, noc_target: row.nocTarget })
-        .eq("id", existing.id)
-        .select("id")
-        .maybeSingle();
-      if (error || !data) return { error: "Couldn't save targets. Please try again." };
-    } else {
-      const { error } = await supabase.from("targets").insert({
-        agent_id: row.agentId,
-        month: monthDate,
-        anc_target: row.ancTarget,
-        noc_target: row.nocTarget,
-      });
-      if (error) return { error: "Couldn't save targets. Please try again." };
-    }
+  if (rows.length === 0) {
+    revalidatePath("/settings");
+    return { error: null };
   }
+
+  // One statement for every row rather than a per-row check-then-update-or-
+  // insert loop (which was up to 2 sequential network round trips per team
+  // member): targets_agent_id_month_key makes "one row per agent per month"
+  // a real constraint upsert can target, instead of the app checking for an
+  // existing row itself.
+  const supabase = await createClient();
+  const { error } = await supabase.from("targets").upsert(
+    rows.map((row) => ({
+      agent_id: row.agentId,
+      month: monthDate,
+      anc_target: row.ancTarget,
+      noc_target: row.nocTarget,
+    })),
+    { onConflict: "agent_id,month" },
+  );
+  if (error) return { error: "Couldn't save targets. Please try again." };
 
   revalidatePath("/settings");
   return { error: null };
