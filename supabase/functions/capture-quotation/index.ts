@@ -27,6 +27,15 @@
 // there. The only thing this endpoint can do is write rows tied to a
 // lead_id the caller supplies; there's no read path and no way to touch
 // any other lead's data.
+//
+// lead_id is a UUID (unguessable), but it is not a secret in the same sense
+// a session token is: it travels in a URL, and URLs leak in ways sessions
+// don't (history, referrers, a forwarded link). If one does leak, the
+// remaining exposure is bounded rather than open-ended: lead_id must be a
+// well-formed UUID that actually resolves to a lead, payload sizes and plan
+// counts are capped at generous multiples of what a real quotation ever
+// contains, contribution figures must be finite and in a sane range, and a
+// single lead_id can only be written a limited number of times per hour.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -53,6 +62,33 @@ type CaptureBody = {
 };
 
 const VALID_PRODUCTS = ["imedi_evolusi", "hibah_nova", "hibah_chinta", "hibah_mixed"];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// This endpoint is deployed --no-verify-jwt (the calculators are bare static
+// pages with no CRM session to attach) and writes with the service role, so
+// lead_id is the only thing standing between "the agent who has this link
+// saves a real quote" and "anyone who obtained the link writes anything they
+// like onto that lead". These limits don't change what a legitimate save
+// looks like -- a real quotation is a handful of plans with modest figures --
+// they only bound what a leaked link can be used for: not an unlimited
+// firehose of arbitrarily large, arbitrarily numbered writes.
+const MAX_PLANS = 12;
+const MAX_JSON_CHARS = 20_000; // per raw_payload / per plan's coverage_detail
+const MAX_CONTRIBUTION = 1_000_000; // RM -- generous; real premiums are far below this
+const RATE_LIMIT_MAX_WRITES = 30; // per lead_id
+const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
+
+function jsonSize(v: unknown) {
+  try {
+    return JSON.stringify(v ?? {}).length;
+  } catch {
+    return Infinity;
+  }
+}
+
+function isSaneContribution(v: number | null | undefined) {
+  return v === null || v === undefined || (Number.isFinite(v) && v >= 0 && v <= MAX_CONTRIBUTION);
+}
 
 function jsonResponse(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {
@@ -78,20 +114,49 @@ Deno.serve(async (req) => {
 
   const { lead_id, product, language, raw_payload, plans } = body;
 
-  if (!lead_id || typeof lead_id !== "string") {
+  if (!lead_id || typeof lead_id !== "string" || !UUID_RE.test(lead_id)) {
     return jsonResponse({ error: "lead_id is required" }, 400);
   }
   if (!product || !VALID_PRODUCTS.includes(product)) {
     return jsonResponse({ error: "product must be one of " + VALID_PRODUCTS.join(", ") }, 400);
   }
-  if (!Array.isArray(plans) || plans.length === 0) {
-    return jsonResponse({ error: "plans must be a non-empty array" }, 400);
+  if (!Array.isArray(plans) || plans.length === 0 || plans.length > MAX_PLANS) {
+    return jsonResponse({ error: `plans must be a non-empty array of at most ${MAX_PLANS}` }, 400);
+  }
+  if (jsonSize(raw_payload) > MAX_JSON_CHARS) {
+    return jsonResponse({ error: "raw_payload is too large" }, 400);
+  }
+  for (const p of plans) {
+    if (!isSaneContribution(p?.monthly_contribution) || !isSaneContribution(p?.annual_contribution)) {
+      return jsonResponse({ error: "plan contribution figures are out of range" }, 400);
+    }
+    if (jsonSize(p?.coverage_detail) > MAX_JSON_CHARS) {
+      return jsonResponse({ error: "a plan's coverage_detail is too large" }, 400);
+    }
   }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  // Bounds how many times a single lead_id can be written in a window --
+  // the only real defence available once a link has leaked, since the
+  // endpoint itself has no session to revoke. A legitimate agent tweaking a
+  // quote live on a call never approaches this; a script replaying a leaked
+  // link does.
+  const rateLimitSince = new Date(Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000).toISOString();
+  await supabase.from("rate_limits").delete().eq("bucket", "capture-quotation").lt("created_at", rateLimitSince);
+  const { count: recentWrites } = await supabase
+    .from("rate_limits")
+    .select("id", { count: "exact", head: true })
+    .eq("bucket", "capture-quotation")
+    .eq("subject", lead_id)
+    .gte("created_at", rateLimitSince);
+  if ((recentWrites ?? 0) >= RATE_LIMIT_MAX_WRITES) {
+    return jsonResponse({ error: "Too many saves for this quotation just now. Please wait a moment and try again." }, 429);
+  }
+  await supabase.from("rate_limits").insert({ bucket: "capture-quotation", subject: lead_id });
 
   const { data: lead, error: leadError } = await supabase
     .from("leads")

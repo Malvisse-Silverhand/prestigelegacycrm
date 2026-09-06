@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, resetPasswordEmail } from "@/lib/email";
+import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 
 async function appOrigin() {
   const h = await headers();
@@ -24,6 +25,17 @@ export async function requestPasswordReset(email: string) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(address)) {
     return { error: "Enter a valid email address." };
   }
+
+  // Two windows: per-address (stops one target being email-bombed) and
+  // per-IP (stops one source hammering many addresses). Both fail the same
+  // way as "no such user" below -- silently -- so a throttled request is
+  // indistinguishable from one for an address that doesn't exist, which is
+  // the whole point of this endpoint answering identically either way.
+  const [addressOk, ipOk] = await Promise.all([
+    checkRateLimit("password-reset-email", address, 3, 15 * 60),
+    checkRateLimit("password-reset-ip", await clientIp(), 12, 15 * 60),
+  ]);
+  if (!addressOk || !ipOk) return { error: null };
 
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.generateLink({

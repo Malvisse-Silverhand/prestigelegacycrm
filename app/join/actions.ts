@@ -3,6 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkInviteToken } from "@/lib/join-invite";
+import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 
 // Submitted by someone with no account and no session, so the token in the URL
 // is the only authorisation -- it is re-validated here rather than trusted
@@ -18,6 +19,13 @@ export async function submitRegistration(input: {
   phone: string;
   note: string;
 }) {
+  // No account and no session exist yet at this point, so the only thing
+  // slowing down a script pointed at a leaked link is this: a handful of
+  // submissions per source per hour, well above anything a real applicant
+  // would ever hit (the form is filled in once).
+  const allowed = await checkRateLimit("join-submit-ip", await clientIp(), 8, 60 * 60);
+  if (!allowed) return { error: "Too many attempts from this connection. Please try again later." };
+
   const invite = await checkInviteToken(input.token);
   if (!invite.ok) return { error: "This link is no longer accepting registrations." };
 
