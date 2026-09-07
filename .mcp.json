@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "meta-ads-official": {
+      "type": "http",
+      "url": "https://mcp.facebook.com/ads"
+    }
+  }
+}
