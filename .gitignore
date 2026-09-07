@@ -42,3 +42,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Seeded design-canvas output: a ~2.5MB editor payload regenerated from the
+# .dc.html source beside it, so it is a build artifact, not source.
+design/**/lead-generation-landing-page.html

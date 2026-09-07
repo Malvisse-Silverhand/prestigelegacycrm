@@ -22,6 +22,11 @@ function quoteToolFor(lead: { interest: string | null }) {
   return INTEREST_OPTIONS.find((o) => o.label === lead.interest)?.tool ?? null;
 }
 
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return (((parts[0] || "")[0] || "") + ((parts.length > 1 ? parts[parts.length - 1] : "")[0] || "")).toUpperCase();
+}
+
 function fmtRM(n: number) {
   return n >= 1000 ? `RM ${(n / 1000).toFixed(1)}k` : `RM ${n.toFixed(0)}`;
 }
@@ -70,6 +75,11 @@ export function PipelineView({
   // see on this board is one they're also allowed to move (an agent's board
   // only ever contains their own leads).
   const canManageStage = true;
+  // pipeline/page.tsx passes an empty agents list to a plain agent, so a
+  // non-empty one means this viewer manages other people -- the only case
+  // where "whose lead is this?" is a question worth answering on the card.
+  const agentNameById = useMemo(() => new Map(agents.map((a) => [a.id, a.full_name])), [agents]);
+  const showsOwner = agents.length > 0;
   const canAddLead = profile.role !== "agent";
 
   function openQuotation(lead: PipelineLead) {
@@ -224,6 +234,7 @@ export function PipelineView({
                     onDragEnd={() => setDragLeadId(null)}
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
+                    ownerName={showsOwner ? (agentNameById.get(lead.agent_id ?? "") ?? null) : null}
                     movePending={movePending}
                     staleAfterDays={staleAfterDays}
                     onOpenQuotation={() => openQuotation(lead)}
@@ -481,7 +492,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, ownerName, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -492,6 +503,8 @@ function PipelineCard({
   onDragEnd: () => void;
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
+  // Null for an agent's own board -- they already know every lead is theirs.
+  ownerName: string | null;
   movePending: boolean;
   staleAfterDays: number;
   onOpenQuotation: () => void;
@@ -524,6 +537,15 @@ function PipelineCard({
         </button>
       </div>
       <div className="mt-0.5 text-[11.5px] font-medium text-muted-2">{lead.phone}</div>
+
+      {ownerName && (
+        <div className="mt-2 flex items-center gap-1.5 rounded-[8px] bg-info-blue-bg-2 px-2 py-1.5">
+          <span className="flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[6px] bg-navy text-[8px] font-bold text-gold">
+            {initialsOf(ownerName)}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[10.5px] font-semibold text-info-blue-text">{ownerName}</span>
+        </div>
+      )}
 
       {stale && (
         <span className="mt-2 inline-block rounded-[5px] bg-alert-red-bg px-[6px] py-[3px] text-[8.5px] font-bold text-alert-red">

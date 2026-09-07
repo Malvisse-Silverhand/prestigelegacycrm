@@ -18,7 +18,7 @@ export const MALAYSIAN_STATES = [
 ] as const;
 export type MalaysianState = (typeof MALAYSIAN_STATES)[number];
 
-export const LEAD_SOURCES = ["Meta Ads", "Google Ads", "Threads", "Referral", "Direct Approach", "WhatsApp", "Other"] as const;
+export const LEAD_SOURCES = ["Meta Ads", "Google Ads", "Threads", "Landing Page", "Referral", "Direct Approach", "WhatsApp", "Other"] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 // Takaful risk-rating band for the lead's job -- same scale and wording the

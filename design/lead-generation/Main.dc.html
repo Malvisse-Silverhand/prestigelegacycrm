@@ -1,0 +1,500 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+  <style>
+    body { margin: 0; font-family: Poppins, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #0f4c35; text-decoration: none; }
+    a:hover { color: #0a3524; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="background: #fdf9f3; color: #0f2540; width: 1440px;">
+
+  <!-- ============ NAV ============ -->
+  <div style="display: flex; align-items: center; gap: 14px; padding: 18px 80px; background: #0f2540;">
+    <div style="width: 34px; height: 34px; border-radius: 11px; background: #fac748; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3.6v5.2c0 4.5-3.1 8.2-7.5 9.2-4.4-1-7.5-4.7-7.5-9.2V6.6z"/></svg>
+    </div>
+    <div style="font-size: 15.5px; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Prestige Legacy</div>
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,.18);"></div>
+    <div style="font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,.55);">Ejen Berdaftar Great Eastern Takaful</div>
+    <div style="flex: 1;"></div>
+    <a href="#" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: #0f4c35; color: #ffffff; font-size: 12.5px; font-weight: 600;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.6 14.2c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2 0 .4 0 .5l-.4.5-.3.3c-.1.1-.2.3 0 .5l.9 1.4c.6.8 1.2 1.1 1.5 1.3.3.1.4.1.6-.1l.7-.9c.2-.2.3-.2.5-.1l1.8.9c.2.1.4.2.4.3.1.1.1.5-.1 1z"/></svg>
+      WhatsApp Saya
+    </a>
+  </div>
+
+  <!-- ============ HERO ============ -->
+  <div style="background: #0f2540; padding: 60px 80px 76px;">
+    <div style="display: flex; gap: 64px; align-items: flex-start;">
+
+      <div style="flex: 1.15; padding-top: 8px;">
+        <sc-if value="{{isMedical}}" hint-placeholder-val="{{ true }}">
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: 999px; background: rgba(250,199,72,.14); margin-bottom: 22px;">
+            <span style="width: 6px; height: 6px; border-radius: 999px; background: #fac748;"></span>
+            <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fac748;">Medical Card &middot; i-Medi Evolusi</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{isHibah}}" hint-placeholder-val="{{ false }}">
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: 999px; background: rgba(250,199,72,.14); margin-bottom: 22px;">
+            <span style="width: 6px; height: 6px; border-radius: 999px; background: #fac748;"></span>
+            <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fac748;">Hibah &middot; i-Great Nova</span>
+          </div>
+        </sc-if>
+
+        <h1 style="margin: 0; font-size: 52px; line-height: 1.1; font-weight: 800; letter-spacing: -0.03em; color: #ffffff; text-wrap: pretty;">
+          Tak suka kena <span style="color: #fac748;">push</span> ejen?<br>Kira sendiri dulu.
+        </h1>
+
+        <p style="margin: 22px 0 0; font-size: 16.5px; line-height: 1.65; font-weight: 400; color: rgba(255,255,255,.72); max-width: 30em; text-wrap: pretty;">
+          Semak anggaran caruman anda dalam 60 saat &mdash; tanpa panggilan, tanpa tekanan.
+          Bila anda dah selesa dengan angka tu, barulah kita berbual.
+        </p>
+
+        <div style="display: flex; gap: 12px; margin-top: 32px;">
+          <a href="#kira" style="display: flex; align-items: center; gap: 9px; padding: 15px 26px; border-radius: 12px; background: #fac748; color: #0f2540; font-size: 14.5px; font-weight: 700;">
+            Kira Anggaran Saya
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#" style="display: flex; align-items: center; gap: 9px; padding: 15px 24px; border-radius: 12px; background: rgba(255,255,255,.08); color: #ffffff; font-size: 14.5px; font-weight: 600; border: 1px solid rgba(255,255,255,.16);">
+            Tanya dulu di WhatsApp
+          </a>
+        </div>
+
+        <div style="display: flex; gap: 26px; margin-top: 34px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,.8);">Tiada panggilan automatik</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,.8);">Anggaran serta-merta</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,.8);">Ejen berdaftar, bukan call centre</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent identity card -->
+      <div style="flex: 0 0 356px; background: #ffffff; border-radius: 20px; padding: 26px; box-shadow: 0 24px 50px -18px rgba(0,0,0,.5);">
+        <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #9a8f7c;">Ejen anda</div>
+        <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
+          <div style="width: 54px; height: 54px; border-radius: 16px; background: #fac748; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #0f2540; flex: 0 0 auto;">{{agentInitials}}</div>
+          <div style="min-width: 0;">
+            <div style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540;">{{agentName}}</div>
+            <div style="font-size: 12.5px; font-weight: 500; color: #8b8271; margin-top: 2px;">Great Eastern Takaful Berhad</div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: #efe7da; margin: 20px 0;"></div>
+
+        <div style="display: flex; flex-direction: column; gap: 13px;">
+          <div style="display: flex; align-items: center; gap: 11px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+            <span style="font-size: 13.5px; font-weight: 600; color: #0f2540;">[NOMBOR TELEFON EJEN]</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 11px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+            <span style="font-size: 13.5px; font-weight: 500; color: #5c5648;">[EMEL EJEN]</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 11px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span style="font-size: 13.5px; font-weight: 500; color: #5c5648;">[KAWASAN LIPUTAN]</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 13px 15px; border-radius: 12px; background: #e8f2ec; display: flex; gap: 10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 1px;"><path d="M12 3l7.5 3.6v5.2c0 4.5-3.1 8.2-7.5 9.2-4.4-1-7.5-4.7-7.5-9.2V6.6z"/><path d="M9.5 12l1.8 1.8 3.4-3.6"/></svg>
+          <div style="font-size: 11.5px; line-height: 1.55; font-weight: 500; color: #0f4c35;">
+            Maklumat anda dihantar terus kepada {{agentFirstName}} sahaja. Tiada pihak ketiga.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PRODUCT SWITCH ============ -->
+  <div id="kira" style="padding: 54px 80px 0;">
+    <div style="text-align: center;">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #9a8f7c;">Langkah 01</div>
+      <h2 style="margin: 10px 0 0; font-size: 34px; line-height: 1.2; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Pilih perlindungan yang anda cari</h2>
+      <p style="margin: 12px auto 0; font-size: 15px; line-height: 1.6; font-weight: 400; color: #8b8271; max-width: 44em;">
+        Dua kalkulator, satu borang. Tukar bila-bila &mdash; anggaran dikira semula serta-merta.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 16px; justify-content: center; margin-top: 28px;">
+      <div onClick="{{pickMedical}}" style="{{medicalCardStyle}}">
+        <div style="display: flex; align-items: center; gap: 13px;">
+          <div style="{{medicalIconStyle}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6M12 11v5M9.5 13.5h5"/></svg>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540;">Medical Card</div>
+            <div style="font-size: 12.5px; font-weight: 500; color: #8b8271; margin-top: 1px;">Kad perubatan &amp; hospital</div>
+          </div>
+        </div>
+      </div>
+
+      <div onClick="{{pickHibah}}" style="{{hibahCardStyle}}">
+        <div style="display: flex; align-items: center; gap: 13px;">
+          <div style="{{hibahIconStyle}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10a4.2 4.2 0 0 1 7.5-2.6A4.2 4.2 0 0 1 19.5 10.5c0 5.4-7.5 10-7.5 10z"/></svg>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540;">Hibah</div>
+            <div style="font-size: 12.5px; font-weight: 500; color: #8b8271; margin-top: 1px;">Perlindungan keluarga</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CALCULATOR ============ -->
+  <div style="padding: 34px 80px 0;">
+    <div style="display: flex; gap: 22px; align-items: flex-start;">
+
+      <!-- inputs -->
+      <div style="flex: 1.1; background: #ffffff; border: 1px solid #efe7da; border-radius: 20px; padding: 28px; box-shadow: 0 1px 2px rgba(15,37,64,.05), 0 8px 20px -12px rgba(15,37,64,.16);">
+        <div style="font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540;">Kira anggaran caruman anda</div>
+        <div style="font-size: 12.5px; font-weight: 500; color: #8b8271; margin-top: 4px;">Empat maklumat sahaja. Tiada IC, tiada dokumen.</div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px;">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c;">Tarikh lahir</div>
+            <div style="margin-top: 7px; height: 46px; border: 1px solid #e7ded0; border-radius: 12px; background: #fdf9f3; display: flex; align-items: center; padding: 0 14px; font-size: 14px; font-weight: 600; color: #0f2540;">14 / 03 / 1994</div>
+            <div style="font-size: 11px; font-weight: 500; color: #a29883; margin-top: 6px;">ANB 33 tahun</div>
+          </div>
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c;">Jantina</div>
+            <div style="display: flex; gap: 8px; margin-top: 7px;">
+              <div style="flex: 1; height: 46px; border-radius: 12px; background: #0f2540; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600;">Lelaki</div>
+              <div style="flex: 1; height: 46px; border-radius: 12px; border: 1px solid #e7ded0; background: #fdf9f3; color: #5c5648; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 500;">Perempuan</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c;">Status merokok</div>
+            <div style="display: flex; gap: 8px; margin-top: 7px;">
+              <div style="flex: 1; height: 46px; border-radius: 12px; background: #0f2540; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600;">Tidak</div>
+              <div style="flex: 1; height: 46px; border-radius: 12px; border: 1px solid #e7ded0; background: #fdf9f3; color: #5c5648; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 500;">Merokok</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c;">{{fourthLabel}}</div>
+            <div style="margin-top: 7px; height: 46px; border: 1px solid #e7ded0; border-radius: 12px; background: #fdf9f3; display: flex; align-items: center; justify-content: space-between; padding: 0 14px;">
+              <span style="font-size: 14px; font-weight: 600; color: #0f2540;">{{fourthValue}}</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 22px; padding: 14px 16px; border-radius: 12px; background: #eef3f8; display: flex; gap: 11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1c3f66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 1px;"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.6"/></svg>
+          <div style="font-size: 11.5px; line-height: 1.6; font-weight: 500; color: #1c3f66;">
+            Anggaran sahaja. Sumbangan sebenar tertakluk kepada terma produk, underwriting dan kelulusan pengendali takaful.
+          </div>
+        </div>
+      </div>
+
+      <!-- locked result -->
+      <div style="flex: 1; background: #ffffff; border: 2px solid #fac748; border-radius: 20px; padding: 28px; box-shadow: 0 1px 2px rgba(15,37,64,.05), 0 8px 20px -12px rgba(15,37,64,.16);">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5c14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+          <div style="font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540;">Anggaran anda dah siap</div>
+        </div>
+
+        <div style="margin-top: 18px; padding: 20px; border-radius: 14px; background: #fdf9f3; border: 1px dashed #e7ded0; text-align: center;">
+          <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c;">Anggaran caruman bulanan</div>
+          <div style="display: flex; align-items: baseline; justify-content: center; gap: 4px; margin-top: 8px;">
+            <span style="font-size: 20px; font-weight: 700; color: #0f2540;">RM</span>
+            <span style="font-size: 44px; font-weight: 800; letter-spacing: -0.03em; color: #0f2540; filter: blur(9px);">168</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 500; color: #8b8271; margin-top: 6px;">sebulan &middot; {{planLabel}}</div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; justify-content: center;">
+          <span style="padding: 6px 12px; border-radius: 999px; background: #f5eee3; font-size: 11.5px; font-weight: 600; color: #5c5648;">Pecahan penuh</span>
+          <span style="padding: 6px 12px; border-radius: 999px; background: #f5eee3; font-size: 11.5px; font-weight: 600; color: #5c5648;">Jadual manfaat</span>
+          <span style="padding: 6px 12px; border-radius: 999px; background: #f5eee3; font-size: 11.5px; font-weight: 600; color: #5c5648;">PDF quotation</span>
+        </div>
+
+        <div style="height: 1px; background: #efe7da; margin: 20px 0;"></div>
+
+        <div style="font-size: 13px; font-weight: 600; color: #0f2540;">Masukkan maklumat untuk buka anggaran penuh</div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+          <div style="height: 46px; border: 1px solid #e7ded0; border-radius: 12px; background: #fdf9f3; display: flex; align-items: center; padding: 0 14px; font-size: 13.5px; font-weight: 400; color: #a29883;">Nama penuh</div>
+          <div style="height: 46px; border: 1px solid #e7ded0; border-radius: 12px; background: #fdf9f3; display: flex; align-items: center; padding: 0 14px; font-size: 13.5px; font-weight: 400; color: #a29883;">Nombor WhatsApp</div>
+          <div style="height: 46px; border: 1px solid #e7ded0; border-radius: 12px; background: #fdf9f3; display: flex; align-items: center; padding: 0 14px; font-size: 13.5px; font-weight: 400; color: #a29883;">Emel</div>
+        </div>
+
+        <div style="margin-top: 16px; height: 52px; border-radius: 12px; background: #fac748; display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 14.5px; font-weight: 700; color: #0f2540;">
+          Buka Anggaran Penuh
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+
+        <div style="font-size: 11px; line-height: 1.55; font-weight: 500; color: #a29883; margin-top: 12px; text-align: center;">
+          Kami guna maklumat ini untuk hantar quotation anda sahaja.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WHY ============ -->
+  <div style="padding: 64px 80px 0;">
+    <div style="text-align: center;">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #9a8f7c;">Kenapa pelan ini</div>
+      <h2 style="margin: 10px 0 0; font-size: 32px; line-height: 1.2; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Yang orang paling risau, kami jawab dulu</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 30px;">
+      <div style="background: #ffffff; border: 1px solid #efe7da; border-radius: 20px; padding: 26px;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: #e8f2ec; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0f4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>
+        </div>
+        <div style="font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540; margin-top: 16px;">Annual limit tinggi</div>
+        <div style="font-size: 13.5px; line-height: 1.65; font-weight: 400; color: #8b8271; margin-top: 8px;">
+          Had tahunan sehingga <span style="display: inline-block; padding: 1px 7px; border-radius: 6px; border: 1px dashed #c9a227; background: #fdf3dd; font-weight: 600; color: #7a5c14;">[HAD TAHUNAN]</span> untuk kos hospital &amp; pembedahan.
+        </div>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #efe7da; border-radius: 20px; padding: 26px;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: #e9edf3; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#1c3f66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+        </div>
+        <div style="font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540; margin-top: 16px;">Anda yang kawal</div>
+        <div style="font-size: 13.5px; line-height: 1.65; font-weight: 400; color: #8b8271; margin-top: 8px;">
+          Kira sendiri, baca sendiri, putuskan sendiri. Kami hanya hubungi bila anda minta.
+        </div>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #efe7da; border-radius: 20px; padding: 26px;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: #fdf3dd; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#7a5c14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3.6v5.2c0 4.5-3.1 8.2-7.5 9.2-4.4-1-7.5-4.7-7.5-9.2V6.6z"/><path d="M9.5 12l1.8 1.8 3.4-3.6"/></svg>
+        </div>
+        <div style="font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540; margin-top: 16px;">Ejen berdaftar</div>
+        <div style="font-size: 13.5px; line-height: 1.65; font-weight: 400; color: #8b8271; margin-top: 8px;">
+          {{agentName}} berdaftar dengan Great Eastern Takaful Berhad. Bukan broker, bukan call centre.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PROOF ============ -->
+  <div style="padding: 64px 80px 0;">
+    <div style="text-align: center;">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #9a8f7c;">Apa kata mereka</div>
+      <h2 style="margin: 10px 0 0; font-size: 32px; line-height: 1.2; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Klien yang mula dengan kalkulator ini</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 30px;">
+      <sc-for list="{{testimonials}}" as="t" hint-placeholder-count="3">
+        <div style="background: #ffffff; border: 1px solid #efe7da; border-radius: 20px; padding: 24px;">
+          <div style="display: flex; gap: 3px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#fac748"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#fac748"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#fac748"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#fac748"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#fac748"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+          </div>
+          <div style="font-size: 14px; line-height: 1.7; font-weight: 400; color: #5c5648; margin-top: 14px; text-wrap: pretty;">&ldquo;{{t.quote}}&rdquo;</div>
+          <div style="display: flex; align-items: center; gap: 11px; margin-top: 18px;">
+            <div style="width: 34px; height: 34px; border-radius: 11px; background: #f5eee3; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; color: #5c5648;">{{t.initials}}</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 600; color: #0f2540;">{{t.name}}</div>
+              <div style="font-size: 11.5px; font-weight: 500; color: #a29883;">{{t.meta}}</div>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="font-size: 11px; line-height: 1.6; font-weight: 500; color: #a29883; margin-top: 16px; text-align: center; max-width: 62em; margin-left: auto; margin-right: auto;">
+      Testimoni menggambarkan pengalaman individu dan bukan jaminan keputusan yang sama. Gantikan dengan testimoni sebenar klien anda sebelum halaman ini disiarkan.
+    </div>
+  </div>
+
+  <!-- ============ FAQ ============ -->
+  <div style="padding: 64px 80px 0;">
+    <div style="text-align: center;">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #9a8f7c;">Soalan lazim</div>
+      <h2 style="margin: 10px 0 0; font-size: 32px; line-height: 1.2; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Sebelum anda isi apa-apa</h2>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 28px; max-width: 900px; margin-left: auto; margin-right: auto;">
+      <sc-for list="{{faqs}}" as="f" hint-placeholder-count="4">
+        <div style="background: #ffffff; border: 1px solid #efe7da; border-radius: 14px; padding: 20px 22px;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="flex: 1;">
+              <div style="font-size: 14.5px; font-weight: 600; color: #0f2540;">{{f.q}}</div>
+              <div style="font-size: 13.5px; line-height: 1.65; font-weight: 400; color: #8b8271; margin-top: 7px;">{{f.a}}</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 3px;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ FINAL CTA ============ -->
+  <div style="padding: 64px 80px 0;">
+    <div style="background: #0f2540; border-radius: 24px; padding: 52px 60px; display: flex; align-items: center; gap: 48px;">
+      <div style="flex: 1;">
+        <h2 style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800; letter-spacing: -0.025em; color: #ffffff; text-wrap: pretty;">Ambil 60 saat. Lepas tu terpulang.</h2>
+        <p style="margin: 14px 0 0; font-size: 15px; line-height: 1.65; font-weight: 400; color: rgba(255,255,255,.68); max-width: 34em;">
+          Tiada obligasi, tiada bayaran di halaman ini. Anda dapat anggaran, kami dapat tahu macam mana nak bantu.
+        </p>
+      </div>
+      <a href="#kira" style="flex: 0 0 auto; display: flex; align-items: center; gap: 9px; padding: 17px 30px; border-radius: 12px; background: #fac748; color: #0f2540; font-size: 15px; font-weight: 700;">
+        Kira Anggaran Saya
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <div style="padding: 44px 80px 48px;">
+    <div style="height: 1px; background: #efe7da;"></div>
+    <div style="display: flex; gap: 48px; margin-top: 28px; align-items: flex-start;">
+      <div style="flex: 0 0 300px;">
+        <div style="display: flex; align-items: center; gap: 11px;">
+          <div style="width: 30px; height: 30px; border-radius: 10px; background: #0f2540; display: flex; align-items: center; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3.6v5.2c0 4.5-3.1 8.2-7.5 9.2-4.4-1-7.5-4.7-7.5-9.2V6.6z"/></svg>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; color: #0f2540;">Prestige Legacy</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.7; font-weight: 500; color: #8b8271; margin-top: 12px;">
+          {{agentName}}<br>
+          [NOMBOR TELEFON EJEN]<br>
+          [EMEL EJEN]
+        </div>
+      </div>
+      <div style="flex: 1; font-size: 11.5px; line-height: 1.75; font-weight: 400; color: #a29883;">
+        Halaman ini bersifat penerangan dan anggaran sahaja, dan bukan kontrak takaful. Sumbangan dan manfaat sebenar tertakluk kepada terma produk, underwriting dan kelulusan Great Eastern Takaful Berhad. Menghantar borang di halaman ini tidak bermakna perlindungan telah bermula.
+        <br><br>
+        Sila rujuk Product Disclosure Sheet dan kontrak sijil sebelum membuat keputusan. Great Eastern Takaful Berhad dikawal selia oleh Bank Negara Malaysia.
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "agentName": {"editor": "text", "default": "Kamal Husaini", "section": "Ejen"},
+  "product": {"editor": "enum", "default": "medical", "options": ["medical", "hibah"], "section": "Kandungan"},
+  "$preview": {"width": 1440, "height": 3720}
+}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { product: null };
+  }
+
+  cardStyle(active) {
+    return [
+      'display: flex',
+      'align-items: center',
+      'width: 320px',
+      'padding: 18px 22px',
+      'border-radius: 16px',
+      'cursor: pointer',
+      'background: #ffffff',
+      active ? 'border: 2px solid #0f2540' : 'border: 2px solid #efe7da',
+      active
+        ? 'box-shadow: 0 1px 2px rgba(15,37,64,.05), 0 8px 20px -12px rgba(15,37,64,.16)'
+        : 'box-shadow: none',
+    ].join('; ');
+  }
+
+  iconStyle(active, tint) {
+    return [
+      'width: 42px',
+      'height: 42px',
+      'border-radius: 13px',
+      'display: flex',
+      'align-items: center',
+      'justify-content: center',
+      'flex: 0 0 auto',
+      'background: ' + (active ? tint.on : '#f5eee3'),
+      'color: ' + (active ? tint.fg : '#a29883'),
+    ].join('; ');
+  }
+
+  renderVals() {
+    const product = this.state.product ?? this.props.product ?? 'medical';
+    const isMedical = product === 'medical';
+    const agentName = this.props.agentName ?? 'Kamal Husaini';
+    const parts = String(agentName).trim().split(/\s+/);
+    const initials = ((parts[0] || '')[0] || '') + ((parts.length > 1 ? parts[parts.length - 1] : '')[0] || '');
+
+    return {
+      isMedical,
+      isHibah: !isMedical,
+      agentName,
+      agentFirstName: parts[0] || agentName,
+      agentInitials: initials.toUpperCase() || 'KH',
+      pickMedical: () => this.setState({ product: 'medical' }),
+      pickHibah: () => this.setState({ product: 'hibah' }),
+      medicalCardStyle: this.cardStyle(isMedical),
+      hibahCardStyle: this.cardStyle(!isMedical),
+      medicalIconStyle: this.iconStyle(isMedical, { on: '#e8f2ec', fg: '#0f4c35' }),
+      hibahIconStyle: this.iconStyle(!isMedical, { on: '#e9edf3', fg: '#1c3f66' }),
+      fourthLabel: isMedical ? 'Had tahunan' : 'Jumlah perlindungan',
+      fourthValue: isMedical ? '[HAD TAHUNAN]' : '[JUMLAH LINDUNG]',
+      planLabel: isMedical ? 'i-Medi Evolusi' : 'Hibah i-Great Nova',
+      testimonials: [
+        {
+          quote: 'Saya suka sebab boleh tengok anggaran dulu sebelum decide. Tak rasa terdesak langsung.',
+          name: 'Syaliza A.',
+          initials: 'SA',
+          meta: 'Medical Card',
+        },
+        {
+          quote: 'Isi sendiri malam-malam lepas anak tidur. Esoknya baru ejen follow up. Itu yang saya nak.',
+          name: 'Aiman M.',
+          initials: 'AM',
+          meta: 'Medical Card',
+        },
+        {
+          quote: 'Dah lama tangguh sebab malas layan ejen. Kalkulator ni buat saya settle dalam satu petang.',
+          name: 'Fathul G.',
+          initials: 'FG',
+          meta: 'Hibah',
+        },
+      ],
+      faqs: [
+        {
+          q: 'Harga yang keluar tu muktamad ke?',
+          a: 'Tidak. Itu anggaran berdasarkan umur, jantina dan status merokok sahaja. Sumbangan sebenar ditentukan selepas underwriting.',
+        },
+        {
+          q: 'Kenapa perokok bayar lebih?',
+          a: 'Kadar takaful mengambil kira risiko kesihatan jangka panjang. Status merokok adalah salah satu faktor kadar yang standard.',
+        },
+        {
+          q: 'Perlu upload IC di halaman ini?',
+          a: 'Tidak perlu. Halaman ini hanya untuk anggaran. Pengesahan identiti dibuat kemudian melalui saluran rasmi pengendali takaful.',
+        },
+        {
+          q: 'Lepas saya isi, apa jadi?',
+          a: 'Anggaran penuh dibuka serta-merta dan dihantar ke emel anda. ' + (parts[0] || 'Ejen') + ' akan hubungi hanya bila anda nak teruskan.',
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

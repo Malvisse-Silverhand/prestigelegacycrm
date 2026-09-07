@@ -192,3 +192,11 @@ export const BellIcon = (p: IconProps) =>
       <path d="M13.7 20.5a2 2 0 0 1-3.4 0" />
     </>,
   );
+
+export const FunnelIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <path d="M3 4.5h18l-7 8.2v6.1l-4 2.2v-8.3z" />
+    </>,
+  );

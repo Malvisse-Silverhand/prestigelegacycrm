@@ -6,6 +6,7 @@ import {
   TeamIcon,
   QuotationIcon,
   CalendarIcon,
+  FunnelIcon,
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
@@ -22,6 +23,9 @@ export const SIDEBAR_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/leads", label: "Leads Manager", icon: LeadsIcon },
   { href: "/pipeline", label: "Sales Pipeline", icon: PipelineIcon },
+  // Sits directly under Sales Pipeline: a landing page is the top of that
+  // same funnel, and its leads land in the pipeline's first column.
+  { href: "/lead-generation", label: "Lead Generation", icon: FunnelIcon },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
   {
     href: "/team",

@@ -1,0 +1,46 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 3720, "title": "Landing page — desktop", "is_interactive": true },
+    { "file": "Mobile.dc.html", "x": 1540, "y": 0, "w": 390, "h": 3560, "title": "Landing page — mobile" },
+    { "file": "Builder.dc.html", "x": 0, "y": 3980, "w": 1440, "h": 980, "title": "CRM — Lead Generation › Landing Page" },
+    { "file": "LeadRouting.dc.html", "x": 1540, "y": 3980, "w": 1080, "h": 720, "title": "Lead routing & agent tag" }
+  ],
+  "annotations": [
+    {
+      "id": "funnel-note",
+      "x": 0,
+      "y": -200,
+      "w": 460,
+      "text": "The funnel in one line: calculate → estimate appears blurred → name/WhatsApp/email unlocks it → that submit IS the lead.\n\nThe gate mirrors the real tool (mq-gate / qqhGate) so the landing page and the in-CRM calculators behave the same way.\n\nThe Medical Card / Hibah switch is live — click either card."
+    },
+    {
+      "id": "mobile-note",
+      "x": 1540,
+      "y": -200,
+      "w": 390,
+      "text": "Meta ads land on mobile, so this is the view that actually converts. Both products stay visible; the gate sits directly under the estimate."
+    },
+    {
+      "id": "placeholder-note",
+      "x": 2000,
+      "y": -200,
+      "w": 420,
+      "text": "Anything in [BRACKETS] with a gold dashed outline is a real fact I could not verify — annual limit, agent phone/email/coverage area. Fill those before this goes live.\n\nRM168 is a sample estimate so the locked-result state reads correctly."
+    },
+    {
+      "id": "routing-note",
+      "x": 0,
+      "y": 3800,
+      "w": 460,
+      "text": "Lead Generation sits under Sales Pipeline in the sidebar, with Landing Page as its submenu.\n\nEach landing page belongs to one agent — leads land in that agent's pipeline as New Lead, source Landing Page. No round-robin."
+    },
+    {
+      "id": "tag-note",
+      "x": 1540,
+      "y": 3800,
+      "w": 420,
+      "text": "Same lead card, one extra row: the assigned-agent tag renders only for SuperAdmin / Group Manager / Unit Manager — the agent's own board stays uncluttered."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -46,8 +46,21 @@ export async function updateSession(request: NextRequest) {
   // people who have no account at all. The token in the path is the only
   // credential, and the page validates it server-side.
   const PUBLIC_ROUTES = ["/", "/login", "/forgot-password", "/reset-password"];
+  //
+  // /p/<slug> is an agent's public landing page -- the whole point is that
+  // strangers who have no account can open it from an ad or a WhatsApp
+  // forward, calculate an estimate and become a lead.
+  //
+  // /tools/* are the standalone calculator files that landing page embeds in
+  // an iframe. They are static pages with no CRM session of their own (they
+  // already run unauthenticated as WordPress embeds), and without this a
+  // signed-out visitor's iframe is redirected to /login -- which then refuses
+  // to be framed, so the calculator silently never appears.
   const isPublicRoute =
-    PUBLIC_ROUTES.includes(request.nextUrl.pathname) || request.nextUrl.pathname.startsWith("/join/");
+    PUBLIC_ROUTES.includes(request.nextUrl.pathname) ||
+    request.nextUrl.pathname.startsWith("/join/") ||
+    request.nextUrl.pathname.startsWith("/p/") ||
+    request.nextUrl.pathname.startsWith("/tools/");
 
   if (!user && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone();
