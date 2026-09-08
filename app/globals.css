@@ -103,3 +103,67 @@ body {
 /* The sidebar is navy in both themes by design, so its own white-on-navy
    text must not be dimmed by the rules above. */
 .dark .bg-navy .text-navy { color: #0f2540; }
+
+/* ---------------------------------------------------------------------------
+   INTERACTION FEEDBACK
+   Two small things, deliberately kept to CSS: a press response on anything
+   clickable, and the route-change progress bar in components/route-progress.
+   No animation library -- the whole point is that this stays cheap.
+
+   Everything here is disabled under prefers-reduced-motion: a press that
+   moves and a bar that slides are exactly what that setting is about.
+   --------------------------------------------------------------------------- */
+
+/* Buttons, links and menu items get a quick, shallow press. `.press` opts an
+   element in explicitly; the element selectors cover the rest of the app
+   without every button needing to be touched. */
+button:not(:disabled),
+a[href],
+[role="button"]:not([aria-disabled="true"]),
+summary,
+.press {
+  transition: transform 120ms cubic-bezier(.2, 0, .2, 1), filter 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+button:not(:disabled):active,
+a[href]:active,
+[role="button"]:not([aria-disabled="true"]):active,
+summary:active,
+.press:active {
+  transform: scale(.975);
+}
+
+/* A menu/panel that appears should arrive, not blink into place. */
+@keyframes pl-rise {
+  from { opacity: 0; transform: translateY(-4px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-rise { animation: pl-rise 140ms cubic-bezier(.2, 0, .2, 1); }
+
+/* Modal overlays: the scrim fades, the dialog rises with it. */
+@keyframes pl-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade { animation: pl-fade 150ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a[href],
+  [role="button"],
+  summary,
+  .press {
+    transition: none;
+  }
+  button:active,
+  a[href]:active,
+  [role="button"]:active,
+  summary:active,
+  .press:active {
+    transform: none;
+  }
+  .animate-rise,
+  .animate-fade {
+    animation: none;
+  }
+}

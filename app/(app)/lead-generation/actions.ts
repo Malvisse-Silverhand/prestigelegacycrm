@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { slugify, DEFAULT_CONTENT, type LandingContent, type LandingProduct } from "@/lib/landing-content";
+import { slugify, DEFAULT_CONTENT, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 const PRODUCTS: LandingProduct[] = ["medical", "hibah", "both"];
 
@@ -27,12 +27,17 @@ async function freeSlug(
   return `${base}-${Date.now().toString(36)}`;
 }
 
-export async function createLandingPage(input: { name: string; product: string; ownerId: string }) {
+export async function createLandingPage(input: {
+  name: string;
+  product: string;
+  ownerId: string;
+  layout?: LandingLayout;
+}) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in.", id: null };
 
   const name = input.name.trim();
-  if (name.length < 2) return { error: "Beri nama untuk landing page ini.", id: null };
+  if (name.length < 2) return { error: "Give this landing page a name.", id: null };
   const product = PRODUCTS.includes(input.product as LandingProduct)
     ? (input.product as LandingProduct)
     : "both";
@@ -45,7 +50,14 @@ export async function createLandingPage(input: { name: string; product: string; 
 
   const { data, error } = await supabase
     .from("landing_pages")
-    .insert({ agent_id: ownerId, slug, name, product, content: DEFAULT_CONTENT })
+    .insert({
+      agent_id: ownerId,
+      slug,
+      name,
+      product,
+      layout: input.layout === "quickquote" ? "quickquote" : "full",
+      content: DEFAULT_CONTENT,
+    })
     .select("id")
     .maybeSingle();
 
@@ -53,7 +65,7 @@ export async function createLandingPage(input: { name: string; product: string; 
     Sentry.captureException(error ?? new Error("landing page insert matched no row"), {
       tags: { action: "createLandingPage" },
     });
-    return { error: "Tidak dapat cipta landing page. Cuba lagi.", id: null };
+    return { error: "Couldn't create this landing page. Please try again.", id: null };
   }
 
   revalidatePath("/lead-generation");
@@ -72,7 +84,7 @@ export async function saveLandingContent(id: string, content: LandingContent) {
     .select("id, slug")
     .maybeSingle();
 
-  if (error || !data) return { error: "Tidak dapat simpan perubahan." };
+  if (error || !data) return { error: "Couldn't save your changes." };
 
   revalidatePath("/lead-generation");
   revalidatePath(`/lead-generation/${id}`);
@@ -90,7 +102,7 @@ export async function saveLandingSettings(input: {
   if (!profile) return { error: "Not signed in.", slug: null };
 
   const name = input.name.trim();
-  if (name.length < 2) return { error: "Beri nama untuk landing page ini.", slug: null };
+  if (name.length < 2) return { error: "Give this landing page a name.", slug: null };
   const product = PRODUCTS.includes(input.product as LandingProduct)
     ? (input.product as LandingProduct)
     : "both";
@@ -105,7 +117,7 @@ export async function saveLandingSettings(input: {
     .select("id")
     .maybeSingle();
 
-  if (error || !data) return { error: "Tidak dapat simpan tetapan.", slug: null };
+  if (error || !data) return { error: "Couldn't save these settings.", slug: null };
 
   revalidatePath("/lead-generation");
   revalidatePath(`/lead-generation/${input.id}`);
@@ -124,7 +136,7 @@ export async function setLandingPublished(id: string, isPublished: boolean) {
     .select("id, slug")
     .maybeSingle();
 
-  if (error || !data) return { error: "Tidak dapat kemas kini status." };
+  if (error || !data) return { error: "Couldn't update the status." };
 
   revalidatePath("/lead-generation");
   revalidatePath(`/p/${data.slug as string}`);
@@ -137,7 +149,7 @@ export async function deleteLandingPage(id: string) {
 
   const supabase = await createClient();
   const { error } = await supabase.from("landing_pages").delete().eq("id", id);
-  if (error) return { error: "Tidak dapat padam landing page ini." };
+  if (error) return { error: "Couldn't delete this landing page." };
 
   revalidatePath("/lead-generation");
   return { error: null };

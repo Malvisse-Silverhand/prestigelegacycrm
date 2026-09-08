@@ -17,6 +17,9 @@ export type NavItem = {
   label: string;
   icon: typeof DashboardIcon;
   roles?: Role[];
+  // Rendered indented under the parent, and shown whenever the parent section
+  // is the one you are in. Only Lead Generation has these today.
+  children?: { href: string; label: string }[];
 };
 
 export const SIDEBAR_NAV: NavItem[] = [
@@ -25,7 +28,15 @@ export const SIDEBAR_NAV: NavItem[] = [
   { href: "/pipeline", label: "Sales Pipeline", icon: PipelineIcon },
   // Sits directly under Sales Pipeline: a landing page is the top of that
   // same funnel, and its leads land in the pipeline's first column.
-  { href: "/lead-generation", label: "Lead Generation", icon: FunnelIcon },
+  {
+    href: "/lead-generation",
+    label: "Lead Generation",
+    icon: FunnelIcon,
+    children: [
+      { href: "/lead-generation", label: "Landing Page" },
+      { href: "/lead-generation/quickquote", label: "QuickQuote Form" },
+    ],
+  },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
   {
     href: "/team",

@@ -49,6 +49,10 @@ export type LeadRow = {
   pipeline_stage: string;
   agent_id: string | null;
   profiles: { full_name: string } | null;
+  // Only ever set on rows in the SuperAdmin-only Deleted view.
+  deleted_at: string | null;
+  deleted_by: string | null;
+  deleted_by_profile: { full_name: string } | null;
 };
 
 // Lead ids that already have a quotation. Fetched by the callers rather than
@@ -68,10 +72,19 @@ function filteredLeadsQuery(
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, profiles(full_name)",
+      "id, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, deleted_at, deleted_by, profiles!leads_agent_id_fkey(full_name), deleted_by_profile:profiles!leads_deleted_by_fkey(full_name)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
+
+  // RLS already hides soft-deleted leads from everyone below SuperAdmin. A
+  // SuperAdmin can see them, so their ordinary lists have to say so here --
+  // and the Deleted view is the one place that asks for the opposite.
+  if (filters.view === "deleted") {
+    query = query.not("deleted_at", "is", null).order("deleted_at", { ascending: false });
+  } else {
+    query = query.is("deleted_at", null);
+  }
 
   if (isLeadView(filters.view)) {
     const today = new Date().toISOString().slice(0, 10);

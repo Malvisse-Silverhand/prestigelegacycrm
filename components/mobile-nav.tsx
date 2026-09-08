@@ -135,22 +135,45 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
 
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 text-[13.5px]">
           {items.map((item) => {
-            const active = isActive(pathname, item.href);
+            const inSection = isActive(pathname, item.href);
             const Icon = item.icon;
+            // See the sidebar: with a submenu open the parent marks the
+            // section and the child marks the page.
+            const active = inSection && !(item.children && item.children.some((c) => c.href === pathname));
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={
-                  active
-                    ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[11px] font-semibold text-gold"
-                    : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[11px] font-medium text-white/65"
-                }
-              >
-                <Icon width={17} height={17} />
-                {item.label}
-              </Link>
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onClose}
+                  className={
+                    active
+                      ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[11px] font-semibold text-gold"
+                      : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[11px] font-medium text-white/65"
+                  }
+                >
+                  <Icon width={17} height={17} />
+                  {item.label}
+                </Link>
+
+                {item.children && inSection && (
+                  <div className="animate-rise mt-0.5 mb-1 flex flex-col gap-0.5 pl-[30px]">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={onClose}
+                        className={
+                          pathname === child.href
+                            ? "rounded-[9px] bg-gold px-[11px] py-2 text-[13px] font-bold text-navy"
+                            : "rounded-[9px] px-[11px] py-2 text-[13px] font-medium text-white/55"
+                        }
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

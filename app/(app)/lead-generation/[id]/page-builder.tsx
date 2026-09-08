@@ -15,10 +15,10 @@ type Tab = "hero" | "benefits" | "testimonials" | "faq" | "settings";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "hero", label: "Hero" },
-  { key: "benefits", label: "Manfaat" },
-  { key: "testimonials", label: "Testimoni" },
+  { key: "benefits", label: "Benefits" },
+  { key: "testimonials", label: "Testimonials" },
   { key: "faq", label: "FAQ" },
-  { key: "settings", label: "Tetapan" },
+  { key: "settings", label: "Settings" },
 ];
 
 export function PageBuilder({ page }: { page: LandingPageDetail }) {
@@ -59,7 +59,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
         setSaved(true);
         router.refresh();
       } catch {
-        setError("Tidak dapat sambung. Semak sambungan internet anda.");
+        setError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }
@@ -86,13 +86,13 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
             ← Lead Generation
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2.5">
-            <span className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">{name || "Tanpa nama"}</span>
+            <span className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">{name || "Untitled"}</span>
             <span
               className={`rounded-[6px] px-2 py-[3px] text-[9.5px] font-bold ${
                 published ? "bg-success-bg text-green" : "bg-sand-3 text-taupe-2"
               }`}
             >
-              {published ? "AKTIF" : "DRAF"}
+              {published ? "LIVE" : "DRAFT"}
             </span>
           </div>
           <div className="mt-1 font-mono text-[12px] font-medium text-muted">/p/{slug}</div>
@@ -106,7 +106,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
               rel="noopener noreferrer"
               className="rounded-[11px] border border-sand-2 bg-white px-4 py-3 text-[12.5px] font-semibold text-navy"
             >
-              Lihat halaman
+              View page
             </a>
           )}
           <button
@@ -115,7 +115,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
             onClick={togglePublish}
             className="rounded-[11px] border border-sand-2 bg-white px-4 py-3 text-[12.5px] font-semibold text-navy disabled:opacity-60"
           >
-            {published ? "Nyahaktifkan" : "Aktifkan"}
+            {published ? "Unpublish" : "Publish"}
           </button>
           <button
             type="button"
@@ -123,7 +123,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
             onClick={save}
             className="rounded-[11px] bg-gold px-[17px] py-3 text-[12.5px] font-bold text-navy shadow-sm disabled:opacity-50"
           >
-            {pending ? "Menyimpan…" : saved && !dirty ? "Tersimpan" : "Simpan"}
+            {pending ? "Saving…" : saved && !dirty ? "Saved" : "Save"}
           </button>
         </div>
       </div>
@@ -156,34 +156,34 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
 
         <div className="max-w-[760px]">
           {tab === "hero" && (
-            <Card title="Hero" hint="Perkara pertama pelawat baca. Buat ia berbunyi macam anda.">
+            <Card title="Hero" hint="The first thing a visitor reads. Written in Malay — make it sound like you.">
               <Text label="Eyebrow" value={content.heroEyebrow} onChange={(v) => edit("heroEyebrow", v)} />
-              <Text label="Tajuk" value={content.heroHeadline} onChange={(v) => edit("heroHeadline", v)} />
-              <Text label="Tajuk (baris emas)" value={content.heroHighlight} onChange={(v) => edit("heroHighlight", v)} />
-              <Area label="Ayat pembuka" value={content.heroBody} onChange={(v) => edit("heroBody", v)} rows={3} />
-              <Text label="Teks butang" value={content.heroCta} onChange={(v) => edit("heroCta", v)} />
+              <Text label="Headline" value={content.heroHeadline} onChange={(v) => edit("heroHeadline", v)} />
+              <Text label="Headline (gold line)" value={content.heroHighlight} onChange={(v) => edit("heroHighlight", v)} />
+              <Area label="Opening line" value={content.heroBody} onChange={(v) => edit("heroBody", v)} rows={3} />
+              <Text label="Button text" value={content.heroCta} onChange={(v) => edit("heroCta", v)} />
               <List
-                label="Poin ringkas"
+                label="Quick points"
                 items={content.heroPoints}
                 onChange={(v) => edit("heroPoints", v)}
                 blank=""
-                render={(item, set) => <Text label="Poin" value={item} onChange={set} />}
+                render={(item, set) => <Text label="Point" value={item} onChange={set} />}
               />
             </Card>
           )}
 
           {tab === "benefits" && (
-            <Card title="Manfaat" hint="Tiga kebimbangan terbesar prospek anda — jawab awal-awal.">
-              <Text label="Tajuk seksyen" value={content.benefitsTitle} onChange={(v) => edit("benefitsTitle", v)} />
+            <Card title="Benefits" hint="Your prospect's three biggest worries — answered up front.">
+              <Text label="Section heading" value={content.benefitsTitle} onChange={(v) => edit("benefitsTitle", v)} />
               <List
-                label="Manfaat"
+                label="Benefit"
                 items={content.benefits}
                 onChange={(v) => edit("benefits", v)}
                 blank={{ title: "", body: "" }}
                 render={(item, set) => (
                   <>
-                    <Text label="Tajuk" value={item.title} onChange={(v) => set({ ...item, title: v })} />
-                    <Area label="Penerangan" value={item.body} onChange={(v) => set({ ...item, body: v })} rows={2} />
+                    <Text label="Headline" value={item.title} onChange={(v) => set({ ...item, title: v })} />
+                    <Area label="Description" value={item.body} onChange={(v) => set({ ...item, body: v })} rows={2} />
                   </>
                 )}
               />
@@ -191,23 +191,23 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
           )}
 
           {tab === "testimonials" && (
-            <Card title="Testimoni" hint="Guna testimoni sebenar klien anda. Kosongkan senarai untuk sembunyikan seksyen ini.">
+            <Card title="Testimonials" hint="Use your own clients' words. Empty the list to hide this section.">
               <Text
-                label="Tajuk seksyen"
+                label="Section heading"
                 value={content.testimonialsTitle}
                 onChange={(v) => edit("testimonialsTitle", v)}
               />
               <List
-                label="Testimoni"
+                label="Testimonial"
                 items={content.testimonials}
                 onChange={(v) => edit("testimonials", v)}
                 blank={{ quote: "", name: "", meta: "" }}
                 render={(item, set) => (
                   <>
-                    <Area label="Kata-kata" value={item.quote} onChange={(v) => set({ ...item, quote: v })} rows={2} />
+                    <Area label="Quote" value={item.quote} onChange={(v) => set({ ...item, quote: v })} rows={2} />
                     <div className="grid grid-cols-2 gap-3">
-                      <Text label="Nama" value={item.name} onChange={(v) => set({ ...item, name: v })} />
-                      <Text label="Produk / tarikh" value={item.meta} onChange={(v) => set({ ...item, meta: v })} />
+                      <Text label="Name" value={item.name} onChange={(v) => set({ ...item, name: v })} />
+                      <Text label="Product / date" value={item.meta} onChange={(v) => set({ ...item, meta: v })} />
                     </div>
                   </>
                 )}
@@ -216,31 +216,31 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
           )}
 
           {tab === "faq" && (
-            <Card title="FAQ" hint="Soalan yang prospek tanya sebelum mereka isi borang.">
-              <Text label="Tajuk seksyen" value={content.faqTitle} onChange={(v) => edit("faqTitle", v)} />
+            <Card title="FAQ" hint="What people ask before they fill anything in.">
+              <Text label="Section heading" value={content.faqTitle} onChange={(v) => edit("faqTitle", v)} />
               <List
-                label="Soalan"
+                label="Question"
                 items={content.faqs}
                 onChange={(v) => edit("faqs", v)}
                 blank={{ q: "", a: "" }}
                 render={(item, set) => (
                   <>
-                    <Text label="Soalan" value={item.q} onChange={(v) => set({ ...item, q: v })} />
-                    <Area label="Jawapan" value={item.a} onChange={(v) => set({ ...item, a: v })} rows={2} />
+                    <Text label="Question" value={item.q} onChange={(v) => set({ ...item, q: v })} />
+                    <Area label="Answer" value={item.a} onChange={(v) => set({ ...item, a: v })} rows={2} />
                   </>
                 )}
               />
               <div className="mt-5 border-t border-sand pt-4">
-                <Text label="Tajuk penutup" value={content.closingTitle} onChange={(v) => edit("closingTitle", v)} />
-                <Area label="Ayat penutup" value={content.closingBody} onChange={(v) => edit("closingBody", v)} rows={2} />
+                <Text label="Closing heading" value={content.closingTitle} onChange={(v) => edit("closingTitle", v)} />
+                <Area label="Closing line" value={content.closingBody} onChange={(v) => edit("closingBody", v)} rows={2} />
               </div>
             </Card>
           )}
 
           {tab === "settings" && (
-            <Card title="Tetapan" hint="Nama untuk rujukan anda; slug ialah pautan awam.">
+            <Card title="Settings" hint="The name is for you; the slug is the public link.">
               <Text
-                label="Nama (dalaman)"
+                label="Name (internal)"
                 value={name}
                 onChange={(v) => {
                   setName(v);
@@ -249,7 +249,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                 }}
               />
               <label className="mt-3.5 block">
-                <span className={LABEL}>Pautan awam</span>
+                <span className={LABEL}>Public link</span>
                 <div className="mt-1.5 flex items-center gap-0 overflow-hidden rounded-[10px] border border-sand-2 bg-cream">
                   <span className="px-3.5 py-2.5 font-mono text-[12.5px] text-taupe">/p/</span>
                   <input
@@ -263,11 +263,11 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                   />
                 </div>
                 <span className="mt-1.5 block text-[11px] font-medium text-taupe">
-                  Huruf kecil dan tanda sengkang sahaja. Jika sudah digunakan, nombor akan ditambah automatik.
+                  Lowercase and dashes. If it&rsquo;s already taken, a number is added automatically.
                 </span>
               </label>
               <label className="mt-3.5 block">
-                <span className={LABEL}>Kalkulator</span>
+                <span className={LABEL}>Calculators</span>
                 <select
                   value={product}
                   onChange={(e) => {
@@ -277,17 +277,17 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                   }}
                   className={FIELD}
                 >
-                  <option value="both">Medical Card + Hibah (tab)</option>
-                  <option value="medical">Medical Card sahaja</option>
-                  <option value="hibah">Hibah sahaja</option>
+                  <option value="both">Medical Card + Hibah (tabs)</option>
+                  <option value="medical">Medical Card only</option>
+                  <option value="hibah">Hibah only</option>
                 </select>
               </label>
 
               <div className="mt-5 rounded-[12px] bg-info-blue-bg-2 px-4 py-3.5">
-                <div className="text-[12.5px] font-bold text-info-blue-text">Lead pergi kepada {page.agentName}</div>
+                <div className="text-[12.5px] font-bold text-info-blue-text">Leads go to {page.agentName}</div>
                 <div className="mt-1 text-[11.5px] font-medium leading-relaxed text-info-blue-text/80">
-                  Nombor WhatsApp pada butang &ldquo;Hantar kepada Ejen&rdquo; dan setiap lead dari halaman ini
-                  ditugaskan kepada pemilik halaman. Untuk tukar pemilik, cipta halaman baharu di bawah nama mereka.
+                  The WhatsApp number on the &ldquo;Hantar kepada Ejen&rdquo; button, and every lead this page captures,
+                  belong to the page owner. To change owner, create a new page under their name.
                 </div>
               </div>
             </Card>
@@ -365,7 +365,7 @@ function List<T>({
           onClick={() => onChange([...items, blank])}
           className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy"
         >
-          + Tambah
+          + Add
         </button>
       </div>
 
@@ -384,7 +384,7 @@ function List<T>({
                     onChange(next);
                   }}
                   className="rounded-[7px] border border-sand-2 bg-white px-2 py-1 text-[11px] font-semibold text-navy disabled:opacity-40"
-                  aria-label="Naik"
+                  aria-label="Move up"
                 >
                   ↑
                 </button>
@@ -397,7 +397,7 @@ function List<T>({
                     onChange(next);
                   }}
                   className="rounded-[7px] border border-sand-2 bg-white px-2 py-1 text-[11px] font-semibold text-navy disabled:opacity-40"
-                  aria-label="Turun"
+                  aria-label="Move down"
                 >
                   ↓
                 </button>
@@ -406,7 +406,7 @@ function List<T>({
                   onClick={() => onChange(items.filter((_, j) => j !== i))}
                   className="rounded-[7px] border border-[#f6d5cf] bg-white px-2 py-1 text-[11px] font-semibold text-alert-red"
                 >
-                  Buang
+                  Remove
                 </button>
               </div>
             </div>
@@ -421,7 +421,7 @@ function List<T>({
         ))}
         {items.length === 0 && (
           <p className="rounded-[10px] border border-dashed border-sand-2 px-3.5 py-4 text-center text-[11.5px] font-medium text-taupe">
-            Kosong — seksyen ini tidak akan dipaparkan.
+            Empty &mdash; this section won&rsquo;t be shown.
           </p>
         )}
       </div>

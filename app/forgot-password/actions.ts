@@ -1,16 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { appOrigin } from "@/lib/app-url";
 import { sendEmail, resetPasswordEmail } from "@/lib/email";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
-
-async function appOrigin() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 // Sends the reset link through Resend rather than Supabase's built-in mailer,
 // which is rate limited to a handful of sends per hour and documented as not

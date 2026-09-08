@@ -13,6 +13,10 @@ import { captureLandingLead } from "../actions";
 // unlocks their estimate.
 export function LandingPageView({ page }: { page: PublicLandingPage }) {
   const tabs = tabsFor(page.product);
+  // A QuickQuote form is the calculators and the agent's card, nothing else --
+  // it is sent into a chat that already has the context a landing page has to
+  // build from scratch.
+  const isQuickQuote = page.layout === "quickquote";
   const [active, setActive] = useState(tabs[0].key);
   const [captured, setCaptured] = useState(false);
   const calcRef = useRef<HTMLDivElement>(null);
@@ -89,6 +93,33 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
       {/* HERO */}
       <div className="bg-navy px-5 pb-12 pt-7 lg:px-20 lg:pb-[76px] lg:pt-[60px]">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-10 lg:flex-row lg:gap-16">
+          {isQuickQuote ? (
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 rounded-full bg-gold/[.14] px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                <span className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
+                  {content.heroEyebrow}
+                </span>
+              </div>
+              <h1 className="mt-5 text-[28px] font-extrabold leading-[1.15] tracking-[-0.03em] text-white text-pretty lg:text-[38px]">
+                Kira anggaran caruman anda
+              </h1>
+              <p className="mt-3.5 max-w-[30em] text-[14.5px] font-normal leading-relaxed text-white/70">
+                Isi maklumat asas, dapat anggaran serta-merta. Tiada IC, tiada dokumen &mdash; dan tiada sesiapa akan
+                hubungi anda melainkan anda minta.
+              </p>
+              {waHref && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex h-[50px] items-center justify-center rounded-control border border-white/[.16] bg-white/[.08] px-6 text-[14px] font-semibold text-white"
+                >
+                  Tanya dulu di WhatsApp
+                </a>
+              )}
+            </div>
+          ) : (
           <div className="flex-1">
             <div className="inline-flex items-center gap-2 rounded-full bg-gold/[.14] px-3 py-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -137,6 +168,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
               ))}
             </div>
           </div>
+          )}
 
           {/* Agent card */}
           <div className="w-full flex-none rounded-card bg-white p-[26px] shadow-elevated lg:w-[356px]">
@@ -234,7 +266,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
       </div>
 
       {/* BENEFITS */}
-      <Section title={content.benefitsTitle} eyebrow="Kenapa pelan ini">
+      {!isQuickQuote && <Section title={content.benefitsTitle} eyebrow="Kenapa pelan ini">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {content.benefits.map((b, i) => (
             <div key={i} className="rounded-card border border-sand bg-white p-[26px]">
@@ -246,10 +278,10 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
             </div>
           ))}
         </div>
-      </Section>
+      </Section>}
 
       {/* TESTIMONIALS */}
-      {content.testimonials.length > 0 && (
+      {!isQuickQuote && content.testimonials.length > 0 && (
         <Section title={content.testimonialsTitle} eyebrow="Apa kata mereka">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {content.testimonials.map((t, i) => (
@@ -281,7 +313,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
       )}
 
       {/* FAQ */}
-      {content.faqs.length > 0 && (
+      {!isQuickQuote && content.faqs.length > 0 && (
         <Section title={content.faqTitle} eyebrow="Soalan lazim">
           <div className="mx-auto flex max-w-[900px] flex-col gap-2.5">
             {content.faqs.map((f, i) => (

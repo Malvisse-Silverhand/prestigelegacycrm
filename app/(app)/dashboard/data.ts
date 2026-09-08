@@ -91,7 +91,10 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   let leadsQuery = supabase
     .from("leads")
     .select(
-      "id, full_name, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles(full_name, avatar_initials)",
+      // leads now has two FKs to profiles (agent_id and deleted_by), so the
+      // embed has to name which one -- a bare profiles(...) is ambiguous and
+      // PostgREST returns nothing at all for it.
+      "id, full_name, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
     )
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);

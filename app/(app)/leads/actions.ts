@@ -125,6 +125,15 @@ export async function updateLead(leadId: string, formData: FormData) {
   return { error: null };
 }
 
+// A soft delete. The lead drops out of every screen -- the RLS select policy
+// hides a row with deleted_at set from everyone below SuperAdmin, so the
+// pipeline, dashboard counts, statistics and its own quotations/appointments
+// all follow without each query having to remember. The row itself stays, and
+// a SuperAdmin can find it under Leads Manager → Deleted and restore it.
+//
+// Deletion is the one destructive action available this far down the
+// hierarchy, and a lead carries a real person's contact details, so it is
+// recoverable by design rather than gone.
 export async function deleteLead(leadId: string) {
   const profile = await getCurrentProfile();
   if (!profile || profile.role === "agent") {
@@ -136,11 +145,63 @@ export async function deleteLead(leadId: string) {
   // manager, own units for a group manager, any for superadmin). No row
   // matching the WHERE means either it doesn't exist or the caller can't
   // touch it -- same "not found vs not allowed" ambiguity as updateLead.
-  const { data, error } = await supabase.from("leads").delete().eq("id", leadId).select("id").maybeSingle();
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ deleted_at: new Date().toISOString(), deleted_by: profile.id })
+    .eq("id", leadId)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
 
   if (error || !data) return { error: "Couldn't delete this lead. Please try again." };
 
   revalidatePath("/leads");
   revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/pipeline");
+  return { error: null };
+}
+
+// SuperAdmin only, from the Deleted list: puts the lead back exactly where it
+// was -- stage, owner and history are untouched by a soft delete.
+export async function restoreLead(leadId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") {
+    return { error: "Only a SuperAdmin can restore a deleted lead." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ deleted_at: null, deleted_by: null })
+    .eq("id", leadId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't restore this lead." };
+
+  revalidatePath("/leads");
+  revalidatePath("/pipeline");
+  return { error: null };
+}
+
+// The only way a lead actually leaves the database. SuperAdmin only, and only
+// for something already in the Deleted list -- so it always takes two
+// deliberate steps by two different levels of authority.
+export async function purgeLead(leadId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") {
+    return { error: "Only a SuperAdmin can permanently delete a lead." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("leads")
+    .delete()
+    .eq("id", leadId)
+    .not("deleted_at", "is", null);
+
+  if (error) return { error: "Couldn't permanently delete this lead." };
+
+  revalidatePath("/leads");
   return { error: null };
 }

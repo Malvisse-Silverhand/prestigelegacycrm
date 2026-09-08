@@ -7,6 +7,10 @@ export const LEAD_VIEWS = {
   overdue: "Overdue follow-up",
   followup_today: "Follow up today",
   no_quotation: "No quotation yet",
+  // SuperAdmin only -- the recycle bin for soft-deleted leads. Every other
+  // view (and every other screen) excludes them; this is the one that asks
+  // for them. Gated in the UI and again in data.ts.
+  deleted: "Deleted leads",
 } as const;
 
 export type LeadView = keyof typeof LEAD_VIEWS;

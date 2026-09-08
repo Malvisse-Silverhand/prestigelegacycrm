@@ -1,12 +1,13 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { withDefaults, type LandingContent, type LandingProduct } from "@/lib/landing-content";
+import { withDefaults, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 export type PublicLandingPage = {
   id: string;
   slug: string;
   product: LandingProduct;
+  layout: LandingLayout;
   content: LandingContent;
   agent: {
     id: string;
@@ -38,7 +39,7 @@ export async function getPublicLandingPage(slug: string): Promise<PublicLandingP
   const admin = createAdminClient();
   const { data } = await admin
     .from("landing_pages")
-    .select("id, slug, product, content, is_published, profiles!landing_pages_agent_id_fkey(id, full_name, phone, email)")
+    .select("id, slug, product, layout, content, is_published, profiles!landing_pages_agent_id_fkey(id, full_name, phone, email)")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -60,6 +61,7 @@ export async function getPublicLandingPage(slug: string): Promise<PublicLandingP
     id: data.id as string,
     slug: data.slug as string,
     product: (data.product as LandingProduct) ?? "both",
+    layout: (data.layout as LandingLayout) ?? "full",
     content: withDefaults(data.content),
     agent: {
       id: agent.id,

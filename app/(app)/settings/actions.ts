@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { appOrigin } from "@/lib/app-url";
 import { getTargetableMembers } from "./data";
 import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
 import { sendEmail, inviteEmail } from "@/lib/email";
@@ -31,16 +31,6 @@ function initialsFrom(name: string) {
   const first = parts[0]?.[0] ?? "";
   const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
   return (first + last).toUpperCase() || "?";
-}
-
-// Absolute origin for links inside auth emails. Derived from the incoming
-// request rather than hard-coded so local, preview, and production each send
-// links back to themselves.
-async function appOrigin() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
 }
 
 function generateTempPassword() {

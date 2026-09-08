@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/profile-types";
-import { withDefaults, type LandingContent, type LandingProduct } from "@/lib/landing-content";
+import { withDefaults, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 export type LandingPageRow = {
   id: string;
   slug: string;
   name: string;
   product: LandingProduct;
+  layout: LandingLayout;
   isPublished: boolean;
   viewCount: number;
   leadCount: number;
@@ -23,7 +24,7 @@ export async function getLandingPages(): Promise<LandingPageRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("landing_pages")
-    .select("id, slug, name, product, is_published, view_count, lead_count, agent_id, created_at, profiles!landing_pages_agent_id_fkey(full_name)")
+    .select("id, slug, name, product, layout, is_published, view_count, lead_count, agent_id, created_at, profiles!landing_pages_agent_id_fkey(full_name)")
     .order("created_at", { ascending: false });
 
   return (data ?? []).map(toRow);
@@ -33,7 +34,7 @@ export async function getLandingPage(id: string): Promise<LandingPageDetail | nu
   const supabase = await createClient();
   const { data } = await supabase
     .from("landing_pages")
-    .select("id, slug, name, product, is_published, view_count, lead_count, agent_id, content, created_at, profiles!landing_pages_agent_id_fkey(full_name)")
+    .select("id, slug, name, product, layout, is_published, view_count, lead_count, agent_id, content, created_at, profiles!landing_pages_agent_id_fkey(full_name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -78,6 +79,7 @@ type RawRow = {
   slug: string;
   name: string;
   product: string;
+  layout?: string;
   is_published: boolean;
   view_count: number;
   lead_count: number;
@@ -93,6 +95,7 @@ function toRow(data: RawRow): LandingPageRow {
     slug: data.slug,
     name: data.name,
     product: (data.product as LandingProduct) ?? "both",
+    layout: (data.layout as LandingLayout) ?? "full",
     isPublished: data.is_published,
     viewCount: data.view_count ?? 0,
     leadCount: data.lead_count ?? 0,

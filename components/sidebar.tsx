@@ -29,21 +29,44 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
 
       <nav className="flex flex-col gap-0.5 px-3 text-[13px]">
         {items.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const inSection = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
+          // With a submenu open, the parent marks the section and the child
+          // marks the page -- highlighting both would say you are in two
+          // places at once.
+          const active = inSection && !(item.children && item.children.some((c) => c.href === pathname));
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                active
-                  ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[10px] font-semibold text-gold"
-                  : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[10px] font-medium text-white/65 hover:bg-white/5 hover:text-white/90"
-              }
-            >
-              <Icon width={17} height={17} />
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className={
+                  active
+                    ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[10px] font-semibold text-gold"
+                    : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[10px] font-medium text-white/65 hover:bg-white/5 hover:text-white/90"
+                }
+              >
+                <Icon width={17} height={17} />
+                {item.label}
+              </Link>
+
+              {item.children && inSection && (
+                <div className="animate-rise mt-0.5 mb-1 flex flex-col gap-0.5 pl-[30px]">
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className={
+                        pathname === child.href
+                          ? "rounded-[9px] bg-gold px-[11px] py-[7px] text-[12.5px] font-bold text-navy"
+                          : "rounded-[9px] px-[11px] py-[7px] text-[12.5px] font-medium text-white/55 hover:bg-white/5 hover:text-white/85"
+                      }
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>

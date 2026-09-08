@@ -5,6 +5,11 @@
 
 export type LandingProduct = "medical" | "hibah" | "both";
 
+// How much page wraps the calculators. A QuickQuote form is the same
+// funnel with the marketing removed -- same ownership, capture, counters
+// and RLS -- so it is a layout rather than a second system.
+export type LandingLayout = "full" | "quickquote";
+
 export type LandingBenefit = { title: string; body: string };
 export type LandingTestimonial = { quote: string; name: string; meta: string };
 export type LandingFaq = { q: string; a: string };

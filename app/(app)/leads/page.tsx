@@ -7,6 +7,7 @@ import { AddLeadButton } from "./add-lead-button";
 import { ImportButton } from "./import/import-button";
 import { ExportCsvButton } from "./export-csv-button";
 import { LeadRowActions } from "./lead-row-actions";
+import { DeletedRowActions } from "./deleted-row-actions";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
@@ -60,7 +61,10 @@ export default async function LeadsPage({
     to: params.to,
     status: params.status,
     agent: params.agent,
-    view: params.view,
+    // The Deleted view is SuperAdmin-only. RLS already hides soft-deleted
+    // rows from everyone else, so forcing ?view=deleted would just show an
+    // empty list -- dropping it here sends them to the normal list instead.
+    view: params.view === "deleted" && profile.role !== "superadmin" ? undefined : params.view,
     page: params.page ? Number(params.page) : 1,
   };
 
@@ -74,6 +78,8 @@ export default async function LeadsPage({
   );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const canManage = profile.role !== "agent";
+  const isSuperAdmin = profile.role === "superadmin";
+  const viewingDeleted = filters.view === "deleted";
 
   return (
     <div>
@@ -95,6 +101,14 @@ export default async function LeadsPage({
         showAgentFilter={canManage}
       />
       <div className="flex flex-wrap justify-end gap-2.5 px-5 lg:px-[30px] pb-4">
+        {isSuperAdmin && (
+          <Link
+            href={viewingDeleted ? "/leads" : "/leads?view=deleted"}
+            className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-white px-[17px] py-3 text-[13px] font-semibold text-navy"
+          >
+            {viewingDeleted ? "Back to all leads" : "Deleted leads"}
+          </Link>
+        )}
         <ImportButton />
         {canManage && <AddLeadButton />}
       </div>
@@ -132,7 +146,7 @@ export default async function LeadsPage({
                 <div>Occupation</div>
                 <div>Created</div>
                 <div>Status</div>
-                <div>Agent</div>
+                <div>{viewingDeleted ? "Deleted by" : "Agent"}</div>
                 <div>FU Date</div>
                 <div className="text-right">Actions</div>
               </div>
@@ -153,23 +167,29 @@ export default async function LeadsPage({
                     <div className="font-medium">{fmtCreated(lead.created_at)}</div>
                     <div><StatusBadge status={lead.status} /></div>
                     <div className="truncate font-semibold text-green">
-                      {lead.profiles?.full_name ?? "—"}
+                      {viewingDeleted
+                        ? (lead.deleted_by_profile?.full_name ?? "—")
+                        : (lead.profiles?.full_name ?? "—")}
                     </div>
                     <div className={`font-medium ${fu.overdue ? "text-alert-red" : ""}`}>
                       {fu.text}
                     </div>
-                    <div className="flex justify-end gap-1.5">
-                      <a
-                        href={waLink(lead.phone)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-green"
-                        aria-label="Message on WhatsApp"
-                      >
-                        <WhatsAppIcon width={13} height={13} fill="#fff" />
-                      </a>
-                      <LeadRowActions lead={lead} canManage={canManage} />
-                    </div>
+                    {viewingDeleted ? (
+                      <DeletedRowActions lead={lead} />
+                    ) : (
+                      <div className="flex justify-end gap-1.5">
+                        <a
+                          href={waLink(lead.phone)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-green"
+                          aria-label="Message on WhatsApp"
+                        >
+                          <WhatsAppIcon width={13} height={13} fill="#fff" />
+                        </a>
+                        <LeadRowActions lead={lead} canManage={canManage} />
+                      </div>
+                    )}
                   </div>
                 );
               })}
