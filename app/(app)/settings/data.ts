@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_RANK, type CurrentProfile, type Role } from "@/lib/profile-types";
-import type { WebhookRow, InviteLinkRow, JoinRequestRow } from "./types";
+import type { WebhookRow, InviteLinkRow, JoinRequestRow, TrackingCodeSettings, TrackablePage } from "./types";
 
 // Mirrors can_review_invite() in SQL: the roles that can hold a recruitment
 // link and review who comes through it.
@@ -519,4 +519,43 @@ export async function getJoinRequests(profile: CurrentProfile): Promise<JoinRequ
       assignedUnderName: link?.profiles?.full_name ?? "—",
     };
   });
+}
+
+// SuperAdmin only, matching the RLS on site_settings. Anyone else gets the
+// empty shape and never sees the tab.
+export async function getTrackingCode(profile: CurrentProfile): Promise<TrackingCodeSettings> {
+  if (profile.role !== "superadmin") return { head: "", body: "", footer: "", enabled: true };
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("site_settings")
+    .select("tracking_head, tracking_body, tracking_footer, tracking_enabled")
+    .eq("id", true)
+    .maybeSingle();
+
+  return {
+    head: (data?.tracking_head as string) ?? "",
+    body: (data?.tracking_body as string) ?? "",
+    footer: (data?.tracking_footer as string) ?? "",
+    enabled: (data?.tracking_enabled as boolean) ?? true,
+  };
+}
+
+// The published pages the tracking code actually lands on, so the load test
+// has something concrete to hit.
+export async function getTrackablePages(profile: CurrentProfile): Promise<TrackablePage[]> {
+  if (profile.role !== "superadmin") return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("landing_pages")
+    .select("id, name, slug, layout, is_published, profiles!landing_pages_agent_id_fkey(full_name)")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((p) => ({
+    id: p.id as string,
+    name: p.name as string,
+    slug: p.slug as string,
+    layout: (p.layout as string) ?? "full",
+    agentName: (p.profiles as unknown as { full_name: string } | null)?.full_name ?? "—",
+  }));
 }

@@ -98,4 +98,34 @@ export type WebhookRow = {
   lastFiredAt: string | null;
 };
 
+export type TrackingCodeSettings = {
+  head: string;
+  body: string;
+  footer: string;
+  enabled: boolean;
+};
+
+// One published page, as offered for a load test.
+export type TrackablePage = {
+  id: string;
+  name: string;
+  slug: string;
+  layout: string;
+  agentName: string;
+};
+
+export type PageTestResult = {
+  slug: string;
+  name: string;
+  url: string;
+  ok: boolean;
+  status: number | null;
+  ms: number;
+  bytes: number;
+  headFound: boolean;
+  bodyFound: boolean;
+  footerFound: boolean;
+  error: string | null;
+};
+
 export type { Role };

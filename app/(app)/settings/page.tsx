@@ -10,6 +10,8 @@ import {
   getWebhooks,
   getInviteLinks,
   getJoinRequests,
+  getTrackingCode,
+  getTrackablePages,
 } from "./data";
 import { SettingsView } from "./settings-view";
 
@@ -45,8 +47,19 @@ export default async function SettingsPage() {
   // queries backing the tabs they can't open.
   const isManager =
     profile.role === "superadmin" || profile.role === "group_manager" || profile.role === "unit_manager";
-  const [orgTree, assignmentOptions, targets, distribution, auditLog, leadSources, webhooks, inviteLinks, joinRequests] =
-    await Promise.all([
+  const [
+    orgTree,
+    assignmentOptions,
+    targets,
+    distribution,
+    auditLog,
+    leadSources,
+    webhooks,
+    inviteLinks,
+    joinRequests,
+    trackingCode,
+    trackablePages,
+  ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
       getTargetsForMonth(profile, monthDate),
@@ -57,6 +70,10 @@ export default async function SettingsPage() {
       getWebhooks(profile),
       getInviteLinks(profile),
       getJoinRequests(profile),
+      // Tracking code is SuperAdmin-only, like the audit log -- both getters
+      // return an empty shape for anyone else, so skip the round trip.
+      getTrackingCode(profile),
+      getTrackablePages(profile),
     ]);
 
   return (
@@ -72,6 +89,8 @@ export default async function SettingsPage() {
       webhooks={webhooks}
       inviteLinks={inviteLinks}
       joinRequests={joinRequests}
+      trackingCode={trackingCode}
+      trackablePages={trackablePages}
       currentUserId={profile.id}
     />
   );

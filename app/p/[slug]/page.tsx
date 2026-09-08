@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPublicLandingPage, recordLandingView } from "@/lib/landing-public";
 import { LandingPageView } from "./landing-view";
+import { TrackingCode } from "@/components/tracking-code";
 
 export async function generateMetadata({
   params,
@@ -37,5 +38,16 @@ export default async function PublicLandingPage({
   // Fire-and-forget: a visit counter must never delay or break the page.
   void recordLandingView(page.id);
 
-  return <LandingPageView page={page} />;
+  return (
+    <>
+      {/* Page components render inside <body>, so "head" here means the top of
+          the document body -- first thing parsed, before any content. That is
+          early enough for a pixel to fire; it is not literally inside <head>,
+          and the Settings screen says so. */}
+      <TrackingCode slot="head" />
+      <TrackingCode slot="body" />
+      <LandingPageView page={page} />
+      <TrackingCode slot="footer" />
+    </>
+  );
 }

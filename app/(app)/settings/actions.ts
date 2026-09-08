@@ -809,3 +809,159 @@ export async function denyRegistration(id: string, reason: string) {
   revalidatePath("/settings");
   return { error: null };
 }
+
+// ===== Tracking code on the public landing pages =====
+//
+// SuperAdmin only, and checked here as well as in RLS. What gets saved is
+// executed in the browser of every visitor to every landing page, so this is
+// the narrowest gate in the app that still leaves the feature usable -- the
+// same trust level as pasting a tag into Google Tag Manager.
+//
+// The snippets are stored verbatim. Sanitising them would defeat the point (a
+// pixel IS a <script> tag), so the control is who may write them, not what
+// they may write.
+const TRACKING_MAX_CHARS = 20000;
+
+export async function saveTrackingCode(input: {
+  head: string;
+  body: string;
+  footer: string;
+  enabled: boolean;
+}) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") {
+    return { error: "Only a SuperAdmin can change the site tracking code." };
+  }
+
+  const head = input.head.trim();
+  const body = input.body.trim();
+  const footer = input.footer.trim();
+  if (head.length > TRACKING_MAX_CHARS || body.length > TRACKING_MAX_CHARS || footer.length > TRACKING_MAX_CHARS) {
+    return { error: `Each snippet must be under ${TRACKING_MAX_CHARS.toLocaleString()} characters.` };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("site_settings")
+    .update({
+      tracking_head: head,
+      tracking_body: body,
+      tracking_footer: footer,
+      tracking_enabled: input.enabled,
+      updated_at: new Date().toISOString(),
+      updated_by: profile.id,
+    })
+    .eq("id", true);
+
+  if (error) {
+    Sentry.captureException(error);
+    return { error: "Couldn't save the tracking code. Please try again." };
+  }
+
+  const { error: auditError } = await supabase.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "tracking_code_updated",
+    metadata: {
+      enabled: input.enabled,
+      head_chars: head.length,
+      body_chars: body.length,
+      footer_chars: footer.length,
+    },
+  });
+  if (auditError) console.error("saveTrackingCode: audit_log insert failed", auditError);
+
+  revalidatePath("/settings");
+  // The landing pages read this on render, so they have to be re-rendered.
+  revalidatePath("/p", "layout");
+  return { error: null };
+}
+
+// Fetches each published landing page over real HTTP and reports what came
+// back. The point is to answer "is the pixel actually on the page", which you
+// cannot tell by looking at the settings form -- a snippet can save fine and
+// still never reach a visitor.
+export async function testLandingPages() {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") {
+    return { error: "Only a SuperAdmin can run this test.", results: [] };
+  }
+
+  const supabase = await createClient();
+  const [{ data: pages }, { data: settings }] = await Promise.all([
+    supabase
+      .from("landing_pages")
+      .select("name, slug")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("site_settings")
+      .select("tracking_head, tracking_body, tracking_footer, tracking_enabled")
+      .eq("id", true)
+      .maybeSingle(),
+  ]);
+
+  if (!pages || pages.length === 0) {
+    return { error: "No published landing pages to test yet.", results: [] };
+  }
+
+  const origin = await appOrigin();
+  const enabled = (settings?.tracking_enabled as boolean) ?? true;
+  // Match on a distinctive line from each snippet rather than the whole thing:
+  // the HTML that comes back is the rendered page, and an exact full-text
+  // match would be defeated by any whitespace handling along the way.
+  const marker = (snippet: string | null) => {
+    if (!enabled) return null;
+    const line = (snippet ?? "")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 12)
+      .sort((a, b) => b.length - a.length)[0];
+    return line ?? null;
+  };
+  const headMark = marker(settings?.tracking_head as string | null);
+  const bodyMark = marker(settings?.tracking_body as string | null);
+  const footMark = marker(settings?.tracking_footer as string | null);
+
+  const results = await Promise.all(
+    pages.map(async (p) => {
+      const url = `${origin}/p/${p.slug}`;
+      const started = Date.now();
+      try {
+        const res = await fetch(url, { cache: "no-store", redirect: "follow" });
+        const html = await res.text();
+        return {
+          slug: p.slug as string,
+          name: p.name as string,
+          url,
+          ok: res.ok,
+          status: res.status,
+          ms: Date.now() - started,
+          bytes: html.length,
+          // A slot with nothing in it counts as present -- there is nothing to
+          // find, and reporting it as missing would be a false alarm.
+          headFound: headMark === null || html.includes(headMark),
+          bodyFound: bodyMark === null || html.includes(bodyMark),
+          footerFound: footMark === null || html.includes(footMark),
+          error: null as string | null,
+        };
+      } catch (err) {
+        return {
+          slug: p.slug as string,
+          name: p.name as string,
+          url,
+          ok: false,
+          status: null,
+          ms: Date.now() - started,
+          bytes: 0,
+          headFound: false,
+          bodyFound: false,
+          footerFound: false,
+          error: err instanceof Error ? err.message : "Request failed",
+        };
+      }
+    }),
+  );
+
+  return { error: null, results };
+}
