@@ -18,11 +18,20 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The recovery link can land here in two shapes, so both are handled:
-  //  - implicit: #access_token=...&type=recovery -- createBrowserClient's
-  //    detectSessionInUrl consumes this on load, so a session just exists.
-  //  - PKCE: ?code=... -- needs an explicit exchange, and only works in the
-  //    same browser that asked for the reset (the verifier is stored locally).
+  // The recovery link can land here in two shapes, and an invite always
+  // arrives as the first one:
+  //
+  //  - implicit: #access_token=...&refresh_token=...&type=recovery. This is
+  //    what Supabase issues for a link minted server-side (admin.generateLink),
+  //    which is exactly how an invite is created -- by the person doing the
+  //    inviting, in their browser, not the new agent's.
+  //  - PKCE: ?code=... -- needs an exchange, and only works in the same
+  //    browser that asked for the reset, because the verifier is stored there.
+  //
+  // The implicit tokens have to be handed to setSession explicitly:
+  // createBrowserClient (@supabase/ssr) runs the PKCE flow by default, so it
+  // ignores the fragment and leaves no session -- which is why a perfectly
+  // valid invite link used to render "invalid or has expired".
   useEffect(() => {
     const supabase = createClient();
 
@@ -33,6 +42,25 @@ export default function ResetPasswordPage() {
       const linkErr = params.get("error_description") ?? hash.get("error_description");
       if (linkErr) {
         setLinkError(linkErr);
+        setLinkState("invalid");
+        return;
+      }
+
+      const accessToken = hash.get("access_token");
+      const refreshToken = hash.get("refresh_token");
+      if (accessToken && refreshToken) {
+        const { error: setError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (!setError) {
+          // Take the tokens back out of the address bar once they're in the
+          // session -- they shouldn't sit in history or get copied out of it.
+          window.history.replaceState(null, "", window.location.pathname);
+          setLinkState("ready");
+          return;
+        }
+        setLinkError(setError.message);
         setLinkState("invalid");
         return;
       }
