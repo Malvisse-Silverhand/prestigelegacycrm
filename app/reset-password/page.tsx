@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -10,7 +9,6 @@ import { setNewPassword } from "@/app/change-password/actions";
 type LinkState = "checking" | "ready" | "invalid";
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const [linkState, setLinkState] = useState<LinkState>("checking");
   const [linkError, setLinkError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
@@ -106,8 +104,14 @@ export default function ResetPasswordPage() {
         setLoading(false);
         return;
       }
-      router.push("/dashboard");
-      router.refresh();
+      // A full document load, not router.push. The password change rotated
+      // the auth cookies server-side, and a hard navigation is the one way
+      // every server component and the middleware are guaranteed to read the
+      // new ones. It also avoids a race that left people stranded here:
+      // router.refresh() fired straight after router.push() aborted the
+      // pending navigation, so the dashboard rendered but the URL never
+      // moved off /reset-password and the button sat on "Saving…".
+      window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");
       setLoading(false);

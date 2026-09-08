@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { setNewPassword } from "./actions";
 
 export default function ChangePasswordPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,8 +25,10 @@ export default function ChangePasswordPage() {
         setLoading(false);
         return;
       }
-      router.push("/dashboard");
-      router.refresh();
+      // Hard navigation, for the same reason as the reset page: the auth
+      // cookies were just rotated, and router.refresh() after router.push()
+      // aborts the push -- leaving the button stuck on "Saving…".
+      window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");
       setLoading(false);

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,16 +28,22 @@ export default function LoginPage() {
         setError(
           "That email and password don't match our records. Try again, or contact your unit manager for help.",
         );
+        setLoading(false);
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Sign-in just wrote fresh auth cookies, so hand the whole document to
+      // the server rather than pushing client-side: same push/refresh race as
+      // the password pages, and the middleware gets a clean request to route
+      // on (including sending a first-time agent to /change-password).
+      window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");
-    } finally {
       setLoading(false);
     }
+    // Deliberately no finally: on success the browser is already loading the
+    // dashboard, and re-enabling the button mid-navigation invites a second
+    // sign-in attempt.
   }
 
   return (
