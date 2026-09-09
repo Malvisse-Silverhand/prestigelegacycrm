@@ -545,6 +545,7 @@ function DetailDialog({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function run(fn: () => Promise<{ error: string | null }>) {
     setBusy(true);
@@ -614,14 +615,35 @@ function DetailDialog({
               Mark done
             </button>
           )}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => run(() => deleteAppointment(appointment.id))}
-            className="ml-auto rounded-[9px] border border-[#f6d5cf] px-3 py-2 text-[12px] font-semibold text-alert-red disabled:opacity-60"
-          >
-            Delete
-          </button>
+          {confirmDelete ? (
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-[11.5px] font-semibold text-alert-red">Delete this appointment?</span>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-[9px] border border-sand-2 px-3 py-2 text-[12px] font-semibold text-navy dark:border-white/10 dark:text-[#eef3f8]"
+              >
+                Keep
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => run(() => deleteAppointment(appointment.id))}
+                className="rounded-[9px] bg-alert-red px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-60"
+              >
+                {busy ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmDelete(true)}
+              className="ml-auto rounded-[9px] border border-[#f6d5cf] px-3 py-2 text-[12px] font-semibold text-alert-red disabled:opacity-60"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
     </div>

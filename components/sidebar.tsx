@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSignOut } from "@/lib/use-sign-out";
 import { visibleNav } from "@/lib/nav";
-import { SignOutIcon } from "@/components/icons";
+import { SignOutIcon, ChevronDownIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
 import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
 
@@ -13,6 +14,11 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
   const pathname = usePathname();
   const items = visibleNav(profile.role);
   const { signOut, pending, error } = useSignOut();
+  // A submenu is open whenever the current page is in it (so arriving on
+  // /wa-flow/scripts shows the group it belongs to), or whenever it has been
+  // toggled open by hand -- which also lets a section be reached from
+  // anywhere, not only after first navigating into its parent page.
+  const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
 
   return (
     <div className="hidden w-[226px] flex-none flex-col bg-navy py-[22px] lg:flex">
@@ -35,21 +41,38 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
           // marks the page -- highlighting both would say you are in two
           // places at once.
           const active = inSection && !(item.children && item.children.some((c) => c.href === pathname));
+          const isOpen = openOverride[item.href] ?? inSection;
           return (
             <div key={item.href}>
-              <Link
-                href={item.href}
+              <div
                 className={
                   active
-                    ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[10px] font-semibold text-gold"
-                    : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[10px] font-medium text-white/65 hover:bg-white/5 hover:text-white/90"
+                    ? "flex items-center rounded-[10px] bg-gold/[.14] py-[2px] pr-[6px] pl-[13px] font-semibold text-gold"
+                    : "flex items-center rounded-[10px] py-[2px] pr-[6px] pl-[13px] font-medium text-white/65 hover:bg-white/5 hover:text-white/90"
                 }
               >
-                <Icon width={17} height={17} />
-                {item.label}
-              </Link>
+                <Link href={item.href} className="flex flex-1 items-center gap-[11px] py-[8px]">
+                  <Icon width={17} height={17} />
+                  {item.label}
+                </Link>
+                {item.children && (
+                  <button
+                    type="button"
+                    onClick={() => setOpenOverride((o) => ({ ...o, [item.href]: !isOpen }))}
+                    aria-expanded={isOpen}
+                    aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
+                    className="flex h-7 w-7 flex-none items-center justify-center rounded-[7px] hover:bg-white/10"
+                  >
+                    <ChevronDownIcon
+                      width={13}
+                      height={13}
+                      className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                )}
+              </div>
 
-              {item.children && inSection && (
+              {item.children && isOpen && (
                 <div className="animate-rise mt-0.5 mb-1 flex flex-col gap-0.5 pl-[30px]">
                   {item.children.map((child) => (
                     <Link

@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
+import { malaysiaToday } from "@/lib/malaysia-date";
 import { leadPotentialAnc } from "@/lib/lead-anc";
 import { AncBadge } from "@/components/anc-badge";
 import { LeadNo } from "@/components/lead-no";
@@ -44,7 +45,10 @@ function fmtCreated(iso: string) {
 
 function fmtFollowUp(dateStr: string | null) {
   if (!dateStr) return { text: "—", overdue: false };
-  const today = new Date().toISOString().slice(0, 10);
+  // Malaysia calendar day -- see lib/malaysia-date. This has to agree with
+  // the "Overdue" filter in ./data, or a lead could show the red badge here
+  // and then not show up under Leads Manager > Overdue, or the reverse.
+  const today = malaysiaToday();
   if (dateStr < today) return { text: "Overdue", overdue: true };
   const d = new Date(dateStr);
   return { text: `${d.getDate()}/${d.getMonth() + 1}`, overdue: false };
@@ -98,7 +102,11 @@ export default async function LeadsPage({
             {subtitleFor(profile.role)}
           </div>
         </div>
-        <ExportCsvButton />
+        {/* On mobile this moves to the bottom of the list instead -- see the
+            "bottom" variant below the pagination row. */}
+        <div className="hidden lg:block">
+          <ExportCsvButton total={total} />
+        </div>
       </div>
 
       <LeadFiltersBar
@@ -288,6 +296,12 @@ export default async function LeadsPage({
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* The header's icon-only button crowded the title on a phone
+                screen, so on mobile this is the only place it appears. */}
+            <div className="mt-4 lg:hidden">
+              <ExportCsvButton total={total} variant="bottom" />
             </div>
           </>
         )}

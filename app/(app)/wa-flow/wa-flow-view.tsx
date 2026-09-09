@@ -42,6 +42,7 @@ export function WaFlowView({
   const [editing, setEditing] = useState<WaTemplate | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // "Manage templates" is SuperAdmin/Group Manager only per Section 3's
   // permission matrix -- Unit Manager and Agent both only "Use templates".
@@ -93,7 +94,6 @@ export function WaFlowView({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this template?")) return;
     setDeletingId(id);
     try {
       const result = await deleteTemplate(id);
@@ -101,6 +101,7 @@ export function WaFlowView({
         alert(result.error);
         return;
       }
+      setConfirmDeleteId(null);
       router.refresh();
     } catch {
       alert("Couldn't connect. Check your internet connection and try again.");
@@ -201,7 +202,7 @@ export function WaFlowView({
                         onCopy={() => handleCopy(t)}
                         onSend={() => handleSend(t)}
                         onEdit={() => { setEditing(t); setModalOpen(true); }}
-                        onDelete={() => handleDelete(t.id)}
+                        onDelete={() => setConfirmDeleteId(t.id)}
                         compact
                       />
                     ))
@@ -272,7 +273,7 @@ export function WaFlowView({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDelete(t.id)}
+                                onClick={() => setConfirmDeleteId(t.id)}
                                 disabled={deletingId === t.id}
                                 aria-label="Delete template"
                                 className="flex h-8 w-8 items-center justify-center rounded-lg text-taupe hover:text-alert-red disabled:opacity-50"
@@ -298,6 +299,35 @@ export function WaFlowView({
           template={editing}
           onClose={() => setModalOpen(false)}
         />
+      )}
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-elevated">
+            <div className="text-[15px] font-bold text-navy">Delete this template?</div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+              {templates.find((t) => t.id === confirmDeleteId)?.title ?? "This template"} will no longer be
+              available to send. It can&apos;t be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(null)}
+                className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId === confirmDeleteId}
+                onClick={() => handleDelete(confirmDeleteId)}
+                className="rounded-[10px] bg-alert-red px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+              >
+                {deletingId === confirmDeleteId ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

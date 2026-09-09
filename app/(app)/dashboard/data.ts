@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
-import { toAnc } from "@/app/(app)/pipeline/types";
+import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
+import { malaysiaDayKey, malaysiaDaysAgo } from "@/lib/malaysia-date";
 import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays";
 
 type LeadRow = {
@@ -27,6 +28,16 @@ type LeadRow = {
   profiles: { full_name: string; avatar_initials: string | null } | null;
 };
 
+// Enough of a quotation to work out one lead's potential ANC without
+// dragging the whole calculator payload along -- see lib/lead-anc.
+type QuotationForPipeline = {
+  id: string;
+  lead_id: string;
+  updated_at: string;
+  is_customizer: string | null;
+  quotation_plans: { sort_order: number; monthly_contribution: number | null; annual_contribution: number | null }[];
+};
+
 const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted", "appointment"];
 // Business already won. Servicing counts too -- that client was still closed,
 // they have simply moved on to being looked after.
@@ -37,18 +48,23 @@ const WON_STAGES = ["closed_won", "servicing"];
 // than throwing keeps one such row from taking the whole dashboard down: ""
 // sorts before every real key, so those rows simply fall outside every
 // period comparison instead of landing in the wrong bucket.
+// Every key here is a Malaysia calendar day, not a UTC one. This app's
+// server functions run on Vercel in UTC, and Malaysia is UTC+8 -- the old
+// toISOString().slice(0, 10) shortcut reported yesterday's date for the
+// first eight hours of every Malaysian day, so a lead created at 7am in KL
+// landed in yesterday's bucket and a follow-up due today did not read as due
+// yet. See lib/malaysia-date for the one shared definition of "what day is
+// it" the rest of the app uses too.
 function dayKey(iso: string | null | undefined) {
-  return iso ? iso.slice(0, 10) : "";
+  return iso ? malaysiaDayKey(iso) : "";
 }
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  return malaysiaDayKey();
 }
 
 function daysAgoKey(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  return malaysiaDaysAgo(n);
 }
 
 // How far back the activity calendar can look. A year view needs 12 months,
@@ -121,11 +137,14 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       leadsQuery.returns<LeadRow[]>(),
       supabase
         .from("quotations")
-        .select("id, lead_id, quotation_plans(sort_order, monthly_contribution)"),
+        .select(
+          "id, lead_id, updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution)",
+        )
+        .returns<QuotationForPipeline[]>(),
       supabase
         .from("targets")
         .select("agent_id, noc_target")
-        .eq("month", `${new Date().toISOString().slice(0, 7)}-01`),
+        .eq("month", `${todayKey().slice(0, 7)}-01`),
       supabase.from("profiles").select("id"),
       // RLS ("activity visible if lead visible") scopes this to the same leads
       // the caller can already see, so no extra filtering is needed here.
@@ -171,16 +190,35 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const openLeadIds = new Set(
     allLeads.filter((l) => OPEN_STAGES.includes(l.pipeline_stage)).map((l) => l.id),
   );
-  const pipelineMonthly = (quotations ?? []).reduce((sum, q) => {
-    if (!openLeadIds.has(q.lead_id)) return sum;
-    const plans = (q.quotation_plans ?? []) as { sort_order: number; monthly_contribution: number | null }[];
-    if (plans.length === 0) return sum;
-    const primary = [...plans].sort((a, b) => a.sort_order - b.sort_order)[0];
-    return sum + (primary.monthly_contribution ?? 0);
-  }, 0);
-  // Annual New Contribution -- the same monthly x 12 definition the pipeline
-  // board uses, so the two screens can never quote different figures.
-  const pipelineValue = toAnc(pipelineMonthly);
+  // One figure per lead, not per quotation. This used to sum every quotation
+  // row regardless of which lead it belonged to, so a lead carrying both a
+  // calculator estimate and a customizer quotation (or a couple of resaves
+  // of either) had its contribution counted twice. leadPotentialAnc picks
+  // the single winning quotation per lead -- the customizer one over the
+  // estimate, most recent within either kind -- the same rule every lead
+  // card and the pipeline board already use, so this figure can no longer
+  // disagree with them for that reason. (It can still differ from the
+  // pipeline board's own total: this counts only leads still open --
+  // OPEN_STAGES above -- on purpose, as "potential" money not yet closed
+  // either way, where the board's total also includes what has already
+  // closed.)
+  const quotationsByLead = new Map<string, AncQuotation[]>();
+  for (const q of quotations ?? []) {
+    if (!openLeadIds.has(q.lead_id)) continue;
+    const entry: AncQuotation = {
+      is_customizer: q.is_customizer,
+      updated_at: q.updated_at,
+      quotation_plans: q.quotation_plans ?? [],
+    };
+    const list = quotationsByLead.get(q.lead_id);
+    if (list) list.push(entry);
+    else quotationsByLead.set(q.lead_id, [entry]);
+  }
+  let pipelineValue = 0;
+  for (const leadQuotations of quotationsByLead.values()) {
+    const potential = leadPotentialAnc(leadQuotations);
+    if (potential) pipelineValue += potential.anc;
+  }
 
   const overdue = allLeads.filter(
     (l) => l.follow_up_date && l.follow_up_date < today && OPEN_STAGES.includes(l.pipeline_stage),

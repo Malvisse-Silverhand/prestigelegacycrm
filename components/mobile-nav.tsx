@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { MOBILE_NAV_LEFT, MOBILE_NAV_RIGHT, visibleNav } from "@/lib/nav";
-import { SignOutIcon } from "@/components/icons";
+import { SignOutIcon, ChevronDownIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
 import { useSignOut } from "@/lib/use-sign-out";
 import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
@@ -102,6 +102,10 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
   const pathname = usePathname();
   const items = visibleNav(profile.role);
   const { signOut, pending, error } = useSignOut();
+  // Same rule as the desktop sidebar: open when the current page is in that
+  // section, or when toggled open by hand so a submenu is reachable from
+  // anywhere in the drawer, not only after already being on its parent page.
+  const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
 
   return (
     <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
@@ -140,22 +144,38 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
             // See the sidebar: with a submenu open the parent marks the
             // section and the child marks the page.
             const active = inSection && !(item.children && item.children.some((c) => c.href === pathname));
+            const isOpen = openOverride[item.href] ?? inSection;
             return (
               <div key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onClose}
+                <div
                   className={
                     active
-                      ? "flex items-center gap-[11px] rounded-[10px] bg-gold/[.14] px-[13px] py-[11px] font-semibold text-gold"
-                      : "flex items-center gap-[11px] rounded-[10px] px-[13px] py-[11px] font-medium text-white/65"
+                      ? "flex items-center rounded-[10px] bg-gold/[.14] py-[2px] pr-[6px] pl-[13px] font-semibold text-gold"
+                      : "flex items-center rounded-[10px] py-[2px] pr-[6px] pl-[13px] font-medium text-white/65"
                   }
                 >
-                  <Icon width={17} height={17} />
-                  {item.label}
-                </Link>
+                  <Link href={item.href} onClick={onClose} className="flex flex-1 items-center gap-[11px] py-[9px]">
+                    <Icon width={17} height={17} />
+                    {item.label}
+                  </Link>
+                  {item.children && (
+                    <button
+                      type="button"
+                      onClick={() => setOpenOverride((o) => ({ ...o, [item.href]: !isOpen }))}
+                      aria-expanded={isOpen}
+                      aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
+                      className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] hover:bg-white/10"
+                    >
+                      <ChevronDownIcon
+                        width={14}
+                        height={14}
+                        className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  )}
+                </div>
 
-                {item.children && inSection && (
+                {item.children && isOpen && (
                   <div className="animate-rise mt-0.5 mb-1 flex flex-col gap-0.5 pl-[30px]">
                     {item.children.map((child) => (
                       <Link

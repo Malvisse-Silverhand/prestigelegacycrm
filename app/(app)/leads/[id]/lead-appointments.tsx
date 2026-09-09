@@ -51,6 +51,7 @@ export function LeadAppointments({
   const [draft, setDraft] = useState<AppointmentDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const { upcoming, past } = splitByTime(appointments);
 
@@ -166,14 +167,34 @@ export function LeadAppointments({
                         Mark done
                       </button>
                     )}
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => run(() => deleteAppointment(a.id))}
-                      className="rounded-[8px] border border-[#f6d5cf] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-alert-red disabled:opacity-60"
-                    >
-                      Delete
-                    </button>
+                    {confirmDeleteId === a.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy"
+                        >
+                          Keep
+                        </button>
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => run(() => deleteAppointment(a.id))}
+                          className="rounded-[8px] bg-alert-red px-2.5 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
+                        >
+                          {pending ? "Deleting…" : "Yes, delete"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => setConfirmDeleteId(a.id)}
+                        className="rounded-[8px] border border-[#f6d5cf] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-alert-red disabled:opacity-60"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

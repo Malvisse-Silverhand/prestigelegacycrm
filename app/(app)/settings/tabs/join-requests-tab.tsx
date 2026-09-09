@@ -53,6 +53,7 @@ export function JoinRequestsTab({
   const [denying, setDenying] = useState<JoinRequestRow | null>(null);
   const [denyReason, setDenyReason] = useState("");
   const [approved, setApproved] = useState<{ name: string; emailSent: boolean } | null>(null);
+  const [confirmDeleteLink, setConfirmDeleteLink] = useState<InviteLinkRow | null>(null);
 
   const pendingRequests = joinRequests.filter((r) => r.status === "pending");
   const reviewed = joinRequests.filter((r) => r.status !== "pending");
@@ -333,7 +334,7 @@ export function JoinRequestsTab({
                       <button
                         type="button"
                         disabled={pending}
-                        onClick={() => run(() => deleteInviteLink(l.id))}
+                        onClick={() => setConfirmDeleteLink(l)}
                         className="rounded-[9px] border border-[#f6d5cf] bg-white px-3 py-1.5 text-[11.5px] font-semibold text-alert-red disabled:opacity-60"
                       >
                         Delete
@@ -403,6 +404,37 @@ export function JoinRequestsTab({
                 className="rounded-[10px] bg-alert-red px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
               >
                 {pending ? "Denying…" : "Deny"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------- Delete link confirmation ---------- */}
+      {confirmDeleteLink && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-navy/55 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-elevated">
+            <div className="text-[15px] font-bold text-navy">Delete this invite link?</div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+              {confirmDeleteLink.label ?? "This recruitment link"} stops working immediately. Anyone who already has
+              the URL can no longer use it to sign up, and this can&apos;t be undone -- turning it off instead keeps
+              the link intact if you might want it again.
+            </p>
+            <div className="mt-5 flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteLink(null)}
+                className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(() => deleteInviteLink(confirmDeleteLink.id), () => setConfirmDeleteLink(null))}
+                className="rounded-[10px] bg-alert-red px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+              >
+                {pending ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>

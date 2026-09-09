@@ -34,12 +34,13 @@ const CLIENT_STAGES = ["closed_won", "servicing"];
 // The server runs in UTC and Malaysia is UTC+8, so a plain toISOString() call
 // reports yesterday's date for the first eight hours of every Malaysian day.
 // A birthday card is the one place that is immediately obvious, so this asks
-// for the Malaysian calendar date explicitly.
-export const MY_TIME_ZONE = "Asia/Kuala_Lumpur";
+// for the Malaysian calendar date explicitly -- via the one shared definition
+// of "what day is it" the rest of the app now uses too.
+export { MY_TIME_ZONE, malaysiaDayKey } from "@/lib/malaysia-date";
+import { malaysiaDayKey as dayKey } from "@/lib/malaysia-date";
 
 export function malaysiaToday(now: Date = new Date()): string {
-  // en-CA formats as YYYY-MM-DD, which is exactly the key format used here.
-  return new Intl.DateTimeFormat("en-CA", { timeZone: MY_TIME_ZONE }).format(now);
+  return dayKey(now);
 }
 
 function daysInMonth(year: number, month: number) {

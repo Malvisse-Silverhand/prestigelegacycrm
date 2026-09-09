@@ -10,6 +10,7 @@ import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
 import { leadPotentialAnc } from "@/lib/lead-anc";
 import { AncBadge } from "@/components/anc-badge";
+import { malaysiaToday } from "@/lib/malaysia-date";
 import { LeadNo } from "@/components/lead-no";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
@@ -36,7 +37,10 @@ function fmtRM(n: number) {
 
 function isToday(dateStr: string | null) {
   if (!dateStr) return false;
-  return dateStr === new Date().toISOString().slice(0, 10);
+  // Malaysia calendar day, not the visitor's device or the server's UTC one
+  // -- the business runs on Malaysia time regardless of where an agent's
+  // phone thinks it is. See lib/malaysia-date.
+  return dateStr === malaysiaToday();
 }
 
 function buildQuery(agent: string, interest: string) {

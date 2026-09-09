@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { MalaysianState, LeadSource } from "@/lib/lead-constants";
 import type { AncQuotation } from "@/lib/lead-anc";
+import { malaysiaToday } from "@/lib/malaysia-date";
 
 export const PAGE_SIZE = 20;
 
@@ -92,7 +93,10 @@ function filteredLeadsQuery(
   }
 
   if (isLeadView(filters.view)) {
-    const today = new Date().toISOString().slice(0, 10);
+    // Malaysia calendar day, not the server's UTC one -- see
+    // lib/malaysia-date. A UTC-based "today" would call a lead overdue (or
+    // not) up to eight hours late every single day.
+    const today = malaysiaToday();
     if (filters.view === "overdue") {
       query = query.not("follow_up_date", "is", null).lt("follow_up_date", today).in("pipeline_stage", OPEN_STAGES);
     } else if (filters.view === "followup_today") {

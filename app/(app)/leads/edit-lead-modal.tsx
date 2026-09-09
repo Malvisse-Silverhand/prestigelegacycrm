@@ -139,8 +139,13 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
 
           {confirmingDelete && (
             <div className="rounded-[10px] border border-[#f6d5cf] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
-              Delete this lead permanently? This also removes its activity history and any quotations
-              linked to it. This can&apos;t be undone.
+              {/* deleteLead is a soft delete: the row, its activity and its
+                  quotations all stay intact, just hidden from ordinary view
+                  and from a SuperAdmin's Deleted list, which is the only
+                  place it can be restored from -- not "permanently" and not
+                  "can't be undone", so the copy here shouldn't claim either. */}
+              Delete this lead? It disappears from your view -- along with its activity history and any quotations
+              linked to it -- and can only be brought back by a SuperAdmin.
             </div>
           )}
 
