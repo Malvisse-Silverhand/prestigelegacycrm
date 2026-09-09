@@ -52,6 +52,17 @@ export function ScriptsView({
   const [query, setQuery] = useState("");
   const [chapter, setChapter] = useState("");
   const [editing, setEditing] = useState<ClosingScript | null>(null);
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  function toggleExpand(name: string) {
+    setExpandedChapters((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
 
   const chapters = useMemo(() => {
     const seen = new Map<string, number>();
@@ -119,22 +130,56 @@ export function ScriptsView({
           />
         </div>
 
-        {/* Mobile: a horizontally scrollable strip of chapters -- there is no
-            room for a sidebar on a phone, and wrapping pills would push the
-            actual scripts off the first screen the way the old dropdown's
-            sibling controls once did on Leads Manager. */}
-        <div className="mt-2.5 -mx-5 overflow-x-auto px-5 lg:hidden">
-          <div className="flex w-max gap-1.5 pb-1">
-            <ChapterChip label={`All sections (${navCounts.total})`} active={chapter === ""} onClick={() => setChapter("")} />
-            {chapters.map((c, i) => (
-              <ChapterChip
-                key={c}
-                label={`${pad2(i + 1)} · ${c} (${navCounts.byChapter.get(c) ?? 0})`}
-                active={chapter === c}
-                onClick={() => setChapter(c)}
+        {/* Mobile: a tap-to-open dropdown instead of a sidebar -- every
+            chapter listed with its full name wrapped onto as many lines as
+            it needs, so nothing scrolls off the edge of the screen. */}
+        <div className="relative mt-2.5 lg:hidden">
+          <button
+            type="button"
+            aria-label="Section filter"
+            aria-expanded={mobileNavOpen}
+            onClick={() => setMobileNavOpen((v) => !v)}
+            className="flex w-full items-center gap-2 rounded-[10px] border border-sand-2 bg-white px-3.5 py-3 text-left"
+          >
+            <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-navy">
+              {chapter ? `${pad2(chapters.indexOf(chapter) + 1)} · ${chapter}` : "All sections"}
+            </span>
+            <span className="flex-none rounded-[5px] bg-cream px-[6px] py-[1px] text-[10px] font-bold text-taupe-2">
+              {chapter ? navCounts.byChapter.get(chapter) ?? 0 : navCounts.total}
+            </span>
+            <ChevronDownIcon
+              width={14}
+              height={14}
+              className={`flex-none text-navy transition-transform ${mobileNavOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {mobileNavOpen && (
+            <div className="absolute inset-x-0 top-full z-10 mt-1.5 max-h-[60vh] overflow-y-auto rounded-[12px] border border-sand-2 bg-white p-1.5 shadow-elevated">
+              <MobileChapterOption
+                label="All sections"
+                count={navCounts.total}
+                active={chapter === ""}
+                onClick={() => {
+                  setChapter("");
+                  setMobileNavOpen(false);
+                }}
               />
-            ))}
-          </div>
+              {chapters.map((c, i) => (
+                <MobileChapterOption
+                  key={c}
+                  no={pad2(i + 1)}
+                  label={c}
+                  count={navCounts.byChapter.get(c) ?? 0}
+                  active={chapter === c}
+                  onClick={() => {
+                    setChapter(c);
+                    setMobileNavOpen(false);
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -152,6 +197,8 @@ export function ScriptsView({
                 count={navCounts.byChapter.get(c) ?? 0}
                 active={chapter === c}
                 onClick={() => setChapter(c)}
+                expanded={expandedChapters.has(c)}
+                onToggleExpand={() => toggleExpand(c)}
               />
             ))}
           </div>
@@ -178,7 +225,7 @@ export function ScriptsView({
                     {chapterName} · {items.length}
                   </div>
                 )}
-                <div className="grid gap-3 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {items.map((s) => (
                     <div
                       key={s.id}
@@ -259,21 +306,63 @@ export function ScriptsView({
   );
 }
 
-function ChapterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function ChapterRow({
+  no,
+  label,
+  count,
+  active,
+  onClick,
+  expanded,
+  onToggleExpand,
+}: {
+  no?: string;
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+  /** Chapter rows only -- "All sections" is short enough to never need it. */
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+}) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`press flex-none rounded-full px-3.5 py-2 text-[12px] font-semibold whitespace-nowrap ${
-        active ? "bg-navy text-white" : "border border-sand-2 bg-white text-navy"
-      }`}
-    >
-      {label}
-    </button>
+    <div className={`flex items-stretch gap-0.5 rounded-[10px] ${active ? "bg-navy" : "hover:bg-cream"}`}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`press flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5 text-left text-[12.5px] ${
+          active ? "font-bold text-white" : "font-semibold text-navy"
+        }`}
+      >
+        {no && (
+          <span className={`flex-none font-mono text-[10.5px] ${active ? "text-white/60" : "text-taupe"}`}>{no}</span>
+        )}
+        <span className={`min-w-0 flex-1 ${expanded ? "whitespace-normal break-words" : "truncate"}`}>{label}</span>
+        <span
+          className={`flex-none rounded-[5px] px-[6px] py-[1px] text-[10px] font-bold ${
+            active ? "bg-white/15 text-white" : "bg-cream text-taupe-2"
+          }`}
+        >
+          {count}
+        </span>
+      </button>
+      {onToggleExpand && (
+        <button
+          type="button"
+          aria-label={expanded ? "Collapse full title" : "Expand full title"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className={`press flex-none px-2 ${active ? "text-white/70" : "text-taupe"}`}
+        >
+          <ChevronDownIcon width={12} height={12} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
+        </button>
+      )}
+    </div>
   );
 }
 
-function ChapterRow({
+function MobileChapterOption({
   no,
   label,
   count,
@@ -290,16 +379,18 @@ function ChapterRow({
     <button
       type="button"
       onClick={onClick}
-      className={`press flex items-center gap-2 rounded-[10px] px-3 py-2.5 text-left text-[12.5px] ${
-        active ? "bg-navy font-bold text-white" : "font-semibold text-navy hover:bg-cream"
+      className={`press flex w-full items-start gap-2 rounded-[9px] px-3 py-2.5 text-left text-[13px] ${
+        active ? "bg-navy font-bold text-white" : "font-semibold text-navy"
       }`}
     >
       {no && (
-        <span className={`flex-none font-mono text-[10.5px] ${active ? "text-white/60" : "text-taupe"}`}>{no}</span>
+        <span className={`mt-[1px] flex-none font-mono text-[10.5px] ${active ? "text-white/60" : "text-taupe"}`}>
+          {no}
+        </span>
       )}
-      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="min-w-0 flex-1 whitespace-normal break-words">{label}</span>
       <span
-        className={`flex-none rounded-[5px] px-[6px] py-[1px] text-[10px] font-bold ${
+        className={`mt-[1px] flex-none rounded-[5px] px-[6px] py-[1px] text-[10px] font-bold ${
           active ? "bg-white/15 text-white" : "bg-cream text-taupe-2"
         }`}
       >
