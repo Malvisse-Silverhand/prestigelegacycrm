@@ -11,6 +11,7 @@ import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
 import { BirthdayCard } from "@/components/birthday-card";
 import { UpcomingAppointmentsCard, RecentLeadsCard } from "@/components/dashboard-lists";
+import { QuickAction } from "./quick-action";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 
@@ -114,6 +115,7 @@ export function DashboardView({
               {subtitleFor(profile)}
             </div>
           </div>
+          <QuickAction />
           <NotificationBell initial={notifications} />
           <ThemeToggle dark={dark} onChange={toggleTheme} />
           <div
@@ -433,6 +435,7 @@ export function DashboardView({
               </div>
               <div className="text-[15.5px] font-bold">Dashboard</div>
             </div>
+            <QuickAction compact />
             <NotificationBell initial={notifications} compact />
             <ThemeToggle dark={dark} onChange={toggleTheme} compact />
           </div>

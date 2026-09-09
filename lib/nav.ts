@@ -76,7 +76,7 @@ export const SIDEBAR_NAV: NavItem[] = [
 // which opens the full desktop nav as an off-canvas drawer. Two items sit
 // either side of it.
 export const MOBILE_NAV_LEFT = [
-  { href: "/dashboard", label: "Home", icon: DashboardIcon },
+  { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/leads", label: "Leads", icon: LeadsIcon },
 ];
 

@@ -123,7 +123,7 @@ export default async function LeadsPage({
           </Link>
         )}
         <ImportButton />
-        {canManage && <AddLeadButton />}
+        <AddLeadButton />
       </div>
 
       <div className="px-5 lg:px-[30px] pb-[30px]">

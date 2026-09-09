@@ -18,9 +18,7 @@ export async function exportLeads(filters: LeadFilters) {
 
 export async function createLead(formData: FormData) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role === "agent") {
-    return { error: "You don't have permission to add leads." };
-  }
+  if (!profile) return { error: "You don't have permission to add leads." };
 
   const full_name = String(formData.get("full_name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
@@ -51,8 +49,9 @@ export async function createLead(formData: FormData) {
     status: pickStatus(String(formData.get("status") ?? "").trim(), "warm"),
     agent_remark: String(formData.get("agent_remark") ?? "").trim() || null,
     unit_id: profile.unit_id,
-    // A manager creating a lead by hand is the natural first owner --
-    // reassignable afterwards from Lead Detail (see updateLeadOwner).
+    // Whoever adds a lead by hand is its natural first owner -- reassignable
+    // afterwards from Lead Detail (see updateLeadOwner). For an agent this is
+    // also the only value RLS will accept.
     agent_id: profile.id,
   })
     .select("id, full_name, phone, email, lead_source, interest, status, created_at")
@@ -279,7 +278,7 @@ export async function addRelative(parentLeadId: string, formData: FormData) {
     return {
       error:
         error.code === "42501"
-          ? "You can only add family members to leads assigned to you."
+          ? "You can only add family members to leads in your own book."
           : "Couldn't save this family member. Please try again.",
     };
   }
