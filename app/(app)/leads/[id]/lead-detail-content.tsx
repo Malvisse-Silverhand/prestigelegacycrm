@@ -17,6 +17,7 @@ import { LeadAppointments } from "./lead-appointments";
 import { LeadWaFlow } from "./lead-wa-flow";
 import type { WaTemplate } from "@/app/(app)/wa-flow/types";
 import type { FillableLead } from "@/lib/wa-template-fill";
+import type { ClosingScript, ScriptSet } from "@/app/(app)/wa-flow/scripts/data";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
 import { LeadFamily } from "./lead-family";
@@ -106,6 +107,7 @@ export function LeadDetailContent({
   waTemplates,
   waLead,
   family,
+  closingScripts,
   onClose,
   isModal,
 }: {
@@ -120,6 +122,7 @@ export function LeadDetailContent({
   // quotation plans the placeholders read from).
   waLead: FillableLead | null;
   family: { parent: RelativeRow | null; relatives: RelativeRow[] };
+  closingScripts: Record<ScriptSet, ClosingScript[]>;
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -387,6 +390,7 @@ export function LeadDetailContent({
               lead={waLead}
               agentName={lead.profiles?.full_name ?? profile.full_name}
               templates={waTemplates}
+              closingScripts={closingScripts}
             />
           )}
 

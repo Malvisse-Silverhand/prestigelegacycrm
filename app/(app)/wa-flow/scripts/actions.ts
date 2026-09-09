@@ -51,6 +51,12 @@ export async function updateScript(
   });
   if (auditError) console.error("updateScript: audit_log insert failed", auditError);
 
+  // One table backs all three script pages, and Lead Detail's WhatsApp Flow
+  // card reads all three sets at once -- revalidate everywhere a change here
+  // could show up, not just the page the edit was made from.
   revalidatePath("/wa-flow/scripts");
+  revalidatePath("/wa-flow/scripts/medical");
+  revalidatePath("/wa-flow/scripts/hibah-faraid");
+  revalidatePath("/leads/[id]", "page");
   return { error: null };
 }

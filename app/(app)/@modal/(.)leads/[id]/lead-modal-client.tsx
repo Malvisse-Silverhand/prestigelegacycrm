@@ -7,6 +7,7 @@ import type { CurrentProfile } from "@/lib/profile-types";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import type { WaTemplate } from "@/app/(app)/wa-flow/types";
 import type { FillableLead } from "@/lib/wa-template-fill";
+import type { ClosingScript, ScriptSet } from "@/app/(app)/wa-flow/scripts/data";
 
 export function LeadModalClient({
   lead,
@@ -18,6 +19,7 @@ export function LeadModalClient({
   waTemplates,
   waLead,
   family,
+  closingScripts,
 }: {
   lead: LeadDetail;
   activity: ActivityRow[];
@@ -28,6 +30,7 @@ export function LeadModalClient({
   waTemplates: WaTemplate[];
   waLead: FillableLead | null;
   family: { parent: RelativeRow | null; relatives: RelativeRow[] };
+  closingScripts: Record<ScriptSet, ClosingScript[]>;
 }) {
   const close = useModalClose();
 
@@ -43,6 +46,7 @@ export function LeadModalClient({
         waTemplates={waTemplates}
         waLead={waLead}
         family={family}
+        closingScripts={closingScripts}
         onClose={close}
         isModal
       />

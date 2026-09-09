@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getLeadDetail, getLeadQuotations, getReassignableUsers, getLeadFamily } from "./data";
 import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
+import { getAllClosingScripts } from "@/app/(app)/wa-flow/scripts/data";
 import { LeadDetailContent } from "./lead-detail-content";
 
 export default async function LeadDetailPage({
@@ -17,13 +18,14 @@ export default async function LeadDetailPage({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const [reassignOptions, quotations, appointments, waTemplates, waLead, family] = await Promise.all([
+  const [reassignOptions, quotations, appointments, waTemplates, waLead, family, closingScripts] = await Promise.all([
     getReassignableUsers(profile),
     getLeadQuotations(id),
     getLeadAppointments(id),
     getTemplates(),
     getLeadForFill(id),
     getLeadFamily(lead),
+    getAllClosingScripts(),
   ]);
 
   return (
@@ -38,6 +40,7 @@ export default async function LeadDetailPage({
         waTemplates={waTemplates}
         waLead={waLead}
         family={family}
+        closingScripts={closingScripts}
       />
     </div>
   );

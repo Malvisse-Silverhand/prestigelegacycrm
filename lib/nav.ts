@@ -54,6 +54,8 @@ export const SIDEBAR_NAV: NavItem[] = [
     children: [
       { href: "/wa-flow", label: "Message Templates" },
       { href: "/wa-flow/scripts", label: "Takaful Closing Scripts" },
+      { href: "/wa-flow/scripts/medical", label: "Medical Card Scripts" },
+      { href: "/wa-flow/scripts/hibah-faraid", label: "Hibah & Faraid Scripts" },
     ],
   },
   {
