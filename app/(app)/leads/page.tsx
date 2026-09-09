@@ -11,6 +11,8 @@ import { DeletedRowActions } from "./deleted-row-actions";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
+import { productTag } from "@/lib/product-interest";
+import { leadPotentialAnc, fmtAnc } from "@/lib/lead-anc";
 
 function subtitleFor(role: string) {
   switch (role) {
@@ -83,12 +85,14 @@ export default async function LeadsPage({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
-        <div>
-          <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">
+      <div className="flex items-center justify-between gap-3 border-b border-sand bg-white px-5 lg:px-[30px] py-3.5 lg:py-5">
+        <div className="min-w-0">
+          <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">
             Lead Management
           </div>
-          <div className="mt-[3px] text-[13px] font-medium text-muted">
+          {/* The subtitle is orientation for a new user, not something worth a
+              line of a phone screen every visit. */}
+          <div className="mt-[3px] hidden text-[13px] font-medium text-muted lg:block">
             {subtitleFor(profile.role)}
           </div>
         </div>
@@ -100,13 +104,20 @@ export default async function LeadsPage({
         agents={agents}
         showAgentFilter={canManage}
       />
-      <div className="flex flex-wrap justify-end gap-2.5 px-5 lg:px-[30px] pb-4">
+      <div className="flex flex-wrap justify-end gap-2 px-5 lg:gap-2.5 lg:px-[30px] pb-3 lg:pb-4">
         {isSuperAdmin && (
           <Link
             href={viewingDeleted ? "/leads" : "/leads?view=deleted"}
-            className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-white px-[17px] py-3 text-[13px] font-semibold text-navy"
+            className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-white px-3 py-2 text-[12.5px] font-semibold text-navy lg:px-[17px] lg:py-3 lg:text-[13px]"
           >
-            {viewingDeleted ? "Back to all leads" : "Deleted leads"}
+            {viewingDeleted ? (
+              "Back to all leads"
+            ) : (
+              <>
+                <span className="lg:hidden">Deleted</span>
+                <span className="hidden lg:inline">Deleted leads</span>
+              </>
+            )}
           </Link>
         )}
         <ImportButton />
@@ -199,6 +210,8 @@ export default async function LeadsPage({
             <div className="flex flex-col gap-2.5 lg:hidden">
               {leads.map((lead) => {
                 const fu = fmtFollowUp(lead.follow_up_date);
+                const tag = productTag(lead.interest);
+                const potential = leadPotentialAnc(lead.quotations);
                 return (
                   <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5 shadow-card">
                     <div className="flex items-start justify-between gap-2">
@@ -210,23 +223,53 @@ export default async function LeadsPage({
                       </div>
                       <StatusBadge status={lead.status} />
                     </div>
-                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-medium text-muted">
+
+                    {(tag || potential) && (
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        {tag && (
+                          <span className={`rounded-[6px] px-[7px] py-[2px] text-[9.5px] font-bold tracking-[0.05em] ${tag.cls}`}>
+                            {tag.label}
+                          </span>
+                        )}
+                        {potential && (
+                          // A customizer quotation and a calculator estimate
+                          // are not equally firm, so the card says which one
+                          // the number came from rather than implying both are
+                          // the same promise.
+                          <span
+                            className={`flex items-center gap-1 rounded-[6px] px-[7px] py-[2px] text-[10.5px] font-bold ${
+                              potential.source === "quotation"
+                                ? "bg-warn-gold-bg text-warn-gold-text"
+                                : "bg-info-blue-bg text-info-blue-text"
+                            }`}
+                          >
+                            {fmtAnc(potential.anc)}
+                            <span className="text-[8.5px] font-semibold opacity-75">
+                              ANC · {potential.source === "quotation" ? "QUOTED" : "EST"}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-medium text-muted">
                       <span className="truncate font-semibold text-green">{lead.profiles?.full_name ?? "Unassigned"}</span>
                       <span className={fu.overdue ? "font-semibold text-alert-red" : ""}>FU {fu.text}</span>
                       {lead.state && <span>{lead.state}</span>}
                     </div>
+
                     <div className="mt-3 flex items-center gap-1.5">
                       <a
                         href={waLink(lead.phone)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex h-9 flex-1 items-center justify-center gap-2 rounded-[10px] bg-green text-[12.5px] font-semibold text-white"
+                        className="press flex h-9 w-11 flex-none items-center justify-center rounded-[10px] bg-green text-white"
                         aria-label="Message on WhatsApp"
+                        title="WhatsApp"
                       >
-                        <WhatsAppIcon width={13} height={13} fill="#fff" />
-                        WhatsApp
+                        <WhatsAppIcon width={16} height={16} fill="#fff" />
                       </a>
-                      <LeadRowActions lead={lead} canManage={canManage} />
+                      <LeadRowActions lead={lead} canManage={canManage} variant="labels" />
                     </div>
                   </div>
                 );

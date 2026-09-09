@@ -22,35 +22,56 @@ const quotationReceipt = (
   </svg>
 );
 
-export function LeadRowActions({ lead, canManage }: { lead: LeadRow; canManage: boolean }) {
+// The desktop table has ten columns and no room for words, so it keeps the
+// icon buttons. A phone has the width and needs the clarity -- an unlabelled
+// pencil and receipt side by side are a guess.
+export function LeadRowActions({
+  lead,
+  canManage,
+  variant = "icons",
+}: {
+  lead: LeadRow;
+  canManage: boolean;
+  variant?: "icons" | "labels";
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [quoteMenuOpen, setQuoteMenuOpen] = useState(false);
   const [modalUrl, setModalUrl] = useState<string | null>(null);
 
+  const labelled = variant === "labels";
+  const buttonClass = labelled
+    ? "press flex h-9 w-full items-center justify-center gap-1.5 rounded-[10px] border border-sand-2 bg-cream text-[12.5px] font-semibold text-navy"
+    : "flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 bg-cream text-navy";
+
   return (
-    <div className="flex justify-end gap-1.5">
+    <div className={labelled ? "flex flex-1 gap-1.5" : "flex justify-end gap-1.5"}>
       <button
         type="button"
         onClick={() => setEditing(true)}
-        aria-label="Edit"
+        // Only when the button is icon-only. With a visible label an
+        // aria-label would override it, leaving the accessible name saying
+        // something different from what is on screen.
+        aria-label={labelled ? undefined : "Edit"}
         title="Edit"
-        className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 bg-cream text-navy"
+        className={labelled ? `${buttonClass} flex-1` : buttonClass}
       >
         {editPencil}
+        {labelled && "Edit"}
       </button>
 
-      <div className="relative">
+      <div className={labelled ? "relative flex-1" : "relative"}>
         <button
           type="button"
           onClick={() => setQuoteMenuOpen((v) => !v)}
-          aria-label="Quotation"
+          aria-label={labelled ? undefined : "Quotation"}
           title="Quotation"
           aria-haspopup="menu"
           aria-expanded={quoteMenuOpen}
-          className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-sand-2 bg-cream text-navy"
+          className={buttonClass}
         >
           {quotationReceipt}
+          {labelled && "Quote"}
         </button>
 
         {quoteMenuOpen && (

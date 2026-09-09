@@ -1,10 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import { toAnc } from "@/app/(app)/pipeline/types";
+import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays";
 
 type LeadRow = {
   id: string;
   full_name: string;
+  phone: string;
+  date_of_birth: string | null;
   status: "hot" | "warm" | "cold" | "unassigned" | "closed";
   pipeline_stage:
     | "new"
@@ -94,7 +97,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // leads now has two FKs to profiles (agent_id and deleted_by), so the
       // embed has to name which one -- a bare profiles(...) is ambiguous and
       // PostgREST returns nothing at all for it.
-      "id, full_name, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
+      "id, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
     )
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
@@ -320,8 +323,24 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     .sort((a, b) => b.count - a.count)
     .map((a) => ({ ...a, barPct: Math.round((a.count / maxAgentCount) * 100) }));
 
+  // Birthdays of the leads and clients this person can already see -- the
+  // list is RLS-scoped like everything else on this page. A month ahead is
+  // enough to plan around without the card becoming a wall of names.
+  const birthdays: Birthday[] = upcomingBirthdays(
+    allLeads.map((l) => ({
+      id: l.id,
+      full_name: l.full_name,
+      phone: l.phone,
+      date_of_birth: l.date_of_birth,
+      pipeline_stage: l.pipeline_stage,
+    })),
+    malaysiaToday(),
+    30,
+  );
+
   return {
     totalLeads: allLeads.length,
+    birthdays,
     teamSize: (teamProfiles ?? []).length,
     todayCount,
     todayDelta: todayCount - yesterdayCount,

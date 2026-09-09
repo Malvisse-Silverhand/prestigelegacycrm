@@ -9,6 +9,7 @@ import { useTheme } from "@/components/theme";
 import { NotificationBell } from "@/components/notification-bell";
 import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
+import { BirthdayCard } from "@/components/birthday-card";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 
@@ -213,6 +214,8 @@ export function DashboardView({
           </div>
 
           <ActivityCalendar {...calendarProps} />
+
+          <BirthdayCard birthdays={stats.birthdays} limit={5} />
 
           <div className="grid grid-cols-2 gap-[18px]">
             <div className="rounded-[18px] border border-sand bg-white p-5 pb-[22px] dark:border-white/10 dark:bg-[#12283f]">
@@ -453,6 +456,8 @@ export function DashboardView({
           <div className="mt-0.5">
             <ActivityCalendar {...calendarProps} compact />
           </div>
+
+          <BirthdayCard birthdays={stats.birthdays} limit={3} />
 
           <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
             <div className="text-[13.5px] font-bold text-navy dark:text-[#eef3f8]">Lead status</div>

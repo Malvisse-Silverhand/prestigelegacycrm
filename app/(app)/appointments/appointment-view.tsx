@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { AppointmentRow, LeadOption } from "./data";
+import type { BirthdayRow, Birthday } from "@/lib/birthdays";
+import { occurrencesInRange, upcomingBirthdays } from "@/lib/birthdays";
+import { BirthdayCard } from "@/components/birthday-card";
 import { AppointmentDialog, type AppointmentDraft } from "./appointment-dialog";
 import { setAppointmentStatus, deleteAppointment } from "./actions";
 import { dayKeyOf, formatTime, isoToLocalParts, relativeToNow } from "@/lib/appointments";
@@ -60,10 +63,15 @@ export function AppointmentView({
   appointments,
   leads,
   leadBase,
+  birthdayPeople,
+  todayKey,
 }: {
   appointments: AppointmentRow[];
   leads: LeadOption[];
   leadBase: number;
+  birthdayPeople: BirthdayRow[];
+  /** Today in Malaysia, resolved on the server -- see the page component. */
+  todayKey: string;
 }) {
   const router = useRouter();
   const [view, setView] = useState<View>("week");
@@ -86,7 +94,11 @@ export function AppointmentView({
 
   const upcoming = useMemo(() => stillToCome(live), [live]);
 
-  const todayKey = keyOf(new Date());
+  // Next month's worth, for the side card.
+  const birthdaysSoon = useMemo(
+    () => upcomingBirthdays(birthdayPeople, todayKey, 30),
+    [birthdayPeople, todayKey],
+  );
 
   // Which days the grid draws, and how the range reads in the toolbar.
   const { days, rangeLabel, isNow } = useMemo(() => {
@@ -117,6 +129,13 @@ export function AppointmentView({
       isNow: anchor.getMonth() === new Date().getMonth() && anchor.getFullYear() === new Date().getFullYear(),
     };
   }, [view, anchor, todayKey]);
+
+  // Keyed to the days actually on screen rather than a fixed window: a
+  // birthday recurs every year, so paging to next March still has to mark it.
+  const birthdayByDay = useMemo(() => {
+    if (days.length === 0) return new Map<string, Birthday[]>();
+    return occurrencesInRange(birthdayPeople, keyOf(days[0]), keyOf(days[days.length - 1]), todayKey);
+  }, [birthdayPeople, days, todayKey]);
 
   function shift(direction: 1 | -1) {
     setAnchor((a) => {
@@ -259,11 +278,13 @@ export function AppointmentView({
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           {view === "month" ? (
-            <MonthGrid days={days} byDay={byDay} todayKey={todayKey} onOpen={setDetail} onSlot={(d) => openSlot(d, 9)} />
+            <MonthGrid days={days} byDay={byDay} birthdayByDay={birthdayByDay} todayKey={todayKey} onOpen={setDetail} onSlot={(d) => openSlot(d, 9)} />
           ) : (
-            <TimeGrid days={days} byDay={byDay} todayKey={todayKey} onOpen={setDetail} onSlot={openSlot} />
+            <TimeGrid days={days} byDay={byDay} birthdayByDay={birthdayByDay} todayKey={todayKey} onOpen={setDetail} onSlot={openSlot} />
           )}
 
+          <div className="flex flex-col gap-4">
+          <BirthdayCard birthdays={birthdaysSoon} limit={4} />
           <div className="rounded-[14px] border border-sand-2 p-3.5 dark:border-white/10">
             <div className="flex items-center justify-between">
               <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">Upcoming Appointments</div>
@@ -303,6 +324,7 @@ export function AppointmentView({
               )}
             </div>
           </div>
+          </div>
         </div>
       </div>
     </div>
@@ -321,10 +343,11 @@ function StatCard({ label, value }: { label: string; value: number }) {
 }
 
 function TimeGrid({
-  days, byDay, todayKey, onOpen, onSlot,
+  days, byDay, birthdayByDay, todayKey, onOpen, onSlot,
 }: {
   days: Date[];
   byDay: Map<string, AppointmentRow[]>;
+  birthdayByDay: Map<string, Birthday[]>;
   todayKey: string;
   onOpen: (a: AppointmentRow) => void;
   onSlot: (day: Date, hour: number) => void;
@@ -339,6 +362,7 @@ function TimeGrid({
           <div />
           {days.map((d) => {
             const isToday = keyOf(d) === todayKey;
+            const birthdays = birthdayByDay.get(keyOf(d)) ?? [];
             return (
               <div key={keyOf(d)} className="border-l border-sand-2 py-2 text-center dark:border-white/10">
                 <div className="text-[9.5px] font-bold uppercase tracking-[0.06em] text-taupe-2 dark:text-[#7f93aa]">
@@ -351,6 +375,15 @@ function TimeGrid({
                 >
                   {d.getDate()}
                 </div>
+                {birthdays.length > 0 && (
+                  <div
+                    title={birthdays.map((b) => b.fullName).join(", ")}
+                    className="text-[9px] leading-none"
+                    aria-label={`${birthdays.length} birthday${birthdays.length === 1 ? "" : "s"}`}
+                  >
+                    🎂{birthdays.length > 1 ? birthdays.length : ""}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -414,10 +447,11 @@ function TimeGrid({
 }
 
 function MonthGrid({
-  days, byDay, todayKey, onOpen, onSlot,
+  days, byDay, birthdayByDay, todayKey, onOpen, onSlot,
 }: {
   days: Date[];
   byDay: Map<string, AppointmentRow[]>;
+  birthdayByDay: Map<string, Birthday[]>;
   todayKey: string;
   onOpen: (a: AppointmentRow) => void;
   onSlot: (day: Date) => void;
@@ -438,6 +472,7 @@ function MonthGrid({
         {days.map((d) => {
           const key = keyOf(d);
           const items = byDay.get(key) ?? [];
+          const birthdays = birthdayByDay.get(key) ?? [];
           return (
             <button
               key={key}
@@ -449,7 +484,21 @@ function MonthGrid({
                   : "border-sand-2 dark:border-white/10"
               }`}
             >
-              <span className="block text-[10.5px] font-bold text-navy dark:text-[#eef3f8]">{d.getDate()}</span>
+              <span className="flex items-center justify-between gap-1">
+                <span className="text-[10.5px] font-bold text-navy dark:text-[#eef3f8]">{d.getDate()}</span>
+                {birthdays.length > 0 && (
+                  // A quiet marker, not a third kind of appointment: a
+                  // birthday is context for the day, not something booked in
+                  // it, so it never competes with a real slot.
+                  <span
+                    title={birthdays.map((b) => `${b.fullName}${b.turningAge ? ` (${b.turningAge})` : ""}`).join(", ")}
+                    className="flex-none text-[9px] leading-none"
+                    aria-label={`${birthdays.length} birthday${birthdays.length === 1 ? "" : "s"}`}
+                  >
+                    🎂{birthdays.length > 1 ? birthdays.length : ""}
+                  </span>
+                )}
+              </span>
               {items.slice(0, 2).map((a) => (
                 <span
                   key={a.id}

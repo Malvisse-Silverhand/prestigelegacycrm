@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { AppointmentStatus } from "@/lib/appointments";
+import type { BirthdayRow } from "@/lib/birthdays";
 
 export type AppointmentRow = {
   id: string;
@@ -102,4 +103,27 @@ export async function getLeadAppointments(leadId: string): Promise<AppointmentRo
       status: a.status as AppointmentStatus,
     };
   });
+}
+
+// Leads and clients with a date of birth, for the calendar's birthday markers.
+// RLS scopes this exactly like every other lead read, so an agent only ever
+// sees their own people's birthdays. Rows without a DOB are dropped here
+// rather than shipped to the browser to be filtered out there.
+export async function getBirthdayPeople(): Promise<BirthdayRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("leads")
+    .select("id, full_name, phone, date_of_birth, pipeline_stage")
+    .not("date_of_birth", "is", null)
+    .neq("pipeline_stage", "closed_lost")
+    .order("full_name")
+    .limit(2000);
+
+  return (data ?? []).map((l) => ({
+    id: l.id as string,
+    full_name: l.full_name as string,
+    phone: (l.phone as string | null) ?? "",
+    date_of_birth: (l.date_of_birth as string | null) ?? null,
+    pipeline_stage: (l.pipeline_stage as string) ?? "",
+  }));
 }

@@ -71,7 +71,7 @@ export function ExportCsvButton() {
         type="button"
         onClick={handleExport}
         disabled={pending}
-        className="flex items-center gap-2 rounded-[11px] border border-sand-2 bg-cream px-4 py-2.5 text-[13px] font-semibold text-navy disabled:opacity-60"
+        className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-cream px-3 py-2 text-[12.5px] font-semibold text-navy disabled:opacity-60 lg:px-4 lg:py-2.5 lg:text-[13px]"
       >
         <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
           <path d="M12 3v12M7 12l5 5 5-5M4 21h16" />
