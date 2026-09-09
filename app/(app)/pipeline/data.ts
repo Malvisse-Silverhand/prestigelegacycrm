@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import type { PipelineLead } from "./types";
 
 export type { PipelineLead } from "./types";
-export { primaryQuoteValue } from "./types";
 export { getStaleAfterDays } from "@/lib/staleness-server";
 
 export async function getPipelineLeads(filters: { agent?: string; interest?: string }) {
@@ -11,7 +10,7 @@ export async function getPipelineLeads(filters: { agent?: string; interest?: str
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, gender, is_smoker, lead_source, interest, budget_indicated, follow_up_date, pipeline_stage, status, agent_id, created_at, quotations(id, status, created_at, quotation_plans(sort_order, monthly_contribution)), lead_activity(created_at)",
+      "id, full_name, phone, email, date_of_birth, gender, is_smoker, lead_source, interest, budget_indicated, follow_up_date, pipeline_stage, status, agent_id, created_at, quotations(id, status, created_at, updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution)), lead_activity(created_at)",
     )
     .order("created_at", { ascending: false });
 

@@ -12,7 +12,8 @@ import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
-import { leadPotentialAnc, fmtAnc } from "@/lib/lead-anc";
+import { leadPotentialAnc } from "@/lib/lead-anc";
+import { AncBadge } from "@/components/anc-badge";
 
 function subtitleFor(role: string) {
   switch (role) {
@@ -231,24 +232,7 @@ export default async function LeadsPage({
                             {tag.label}
                           </span>
                         )}
-                        {potential && (
-                          // A customizer quotation and a calculator estimate
-                          // are not equally firm, so the card says which one
-                          // the number came from rather than implying both are
-                          // the same promise.
-                          <span
-                            className={`flex items-center gap-1 rounded-[6px] px-[7px] py-[2px] text-[10.5px] font-bold ${
-                              potential.source === "quotation"
-                                ? "bg-warn-gold-bg text-warn-gold-text"
-                                : "bg-info-blue-bg text-info-blue-text"
-                            }`}
-                          >
-                            {fmtAnc(potential.anc)}
-                            <span className="text-[8.5px] font-semibold opacity-75">
-                              ANC · {potential.source === "quotation" ? "QUOTED" : "EST"}
-                            </span>
-                          </span>
-                        )}
+                        <AncBadge potential={potential} />
                       </div>
                     )}
 

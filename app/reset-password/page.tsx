@@ -111,6 +111,9 @@ export default function ResetPasswordPage() {
       // router.refresh() fired straight after router.push() aborted the
       // pending navigation, so the dashboard rendered but the URL never
       // moved off /reset-password and the button sat on "Saving…".
+      // A client-side push would reuse a tree rendered for the previous
+      // session, so the hard navigation is deliberate here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");

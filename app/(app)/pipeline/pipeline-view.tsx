@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { STAGES, WON_STAGES, type PipelineStage } from "@/lib/pipeline-stages";
-import { type PipelineLead, primaryQuoteValue, stagePotentialValue, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
+import { type PipelineLead, stagePotentialValue, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
 import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
+import { leadPotentialAnc } from "@/lib/lead-anc";
+import { AncBadge } from "@/components/anc-badge";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
@@ -291,6 +293,7 @@ export function PipelineView({
           )}
           {columns[mobileStage].map((lead) => {
             const tag = productTag(lead.interest);
+            const potential = leadPotentialAnc(lead.quotations);
             const staleDays = daysSinceLastActivity(lead);
             const stale = staleDays >= staleAfterDays;
             const nextStage = STAGES[Math.min(STAGES.findIndex((s) => s.value === mobileStage) + 1, STAGES.length - 1)];
@@ -303,14 +306,20 @@ export function PipelineView({
                     </Link>
                     <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
                   </div>
-                  {stale ? (
-                    <span className="rounded-[6px] bg-alert-red-bg px-[7px] py-1 text-[9.5px] font-bold text-alert-red">
+                  {stale && (
+                    <span className="flex-none rounded-[6px] bg-alert-red-bg px-[7px] py-1 text-[9.5px] font-bold text-alert-red">
                       STALE {staleDays}d
                     </span>
-                  ) : tag ? (
-                    <span className={`rounded-[7px] px-2 py-[3px] text-[10px] font-bold ${tag.cls}`}>{tag.label}</span>
-                  ) : null}
+                  )}
                 </div>
+                {(tag || potential) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {tag && (
+                      <span className={`rounded-[6px] px-[7px] py-[2px] text-[9.5px] font-bold ${tag.cls}`}>{tag.label}</span>
+                    )}
+                    <AncBadge potential={potential} />
+                  </div>
+                )}
                 {isToday(lead.follow_up_date) && (
                   <div className="mt-2.5 rounded-[10px] border border-[#f7e9c2] bg-warn-gold-bg px-2.5 py-2 text-[11.5px] font-semibold text-warn-gold-text">
                     Callback today
@@ -443,11 +452,14 @@ function PipelineTable({
               <div>Stage</div>
               <div>Product</div>
               <div>Agent</div>
-              <div className="text-right">Value / Actions</div>
+              <div className="text-right">Potential ANC / Actions</div>
             </div>
             {leads.map((lead) => {
               const stage = STAGES.find((s) => s.value === lead.pipeline_stage) ?? STAGES[0];
               const tag = productTag(lead.interest);
+              const potential = leadPotentialAnc(lead.quotations);
+              // Only used when there is no quotation to annualise yet: the
+              // budget the lead said they could afford, which is monthly.
               const value = leadPotentialValue(lead);
               return (
                 <div
@@ -473,7 +485,13 @@ function PipelineTable({
                   </div>
                   <div className="truncate font-semibold text-green">{agentName.get(lead.agent_id ?? "") ?? "—"}</div>
                   <div className="flex items-center justify-end gap-2">
-                    <span className="font-extrabold text-navy">{value > 0 ? fmtRM(value) : "—"}</span>
+                    {potential ? (
+                      <AncBadge potential={potential} />
+                    ) : (
+                      <span className="text-[11px] font-semibold text-taupe">
+                        {value > 0 ? `${fmtRM(value)}/mo budget` : "—"}
+                      </span>
+                    )}
                     <a href={`tel:${lead.phone}`} className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-navy" aria-label="Call">
                       <PhoneIcon width={12} height={12} className="text-gold" />
                     </a>
@@ -511,8 +529,7 @@ function PipelineCard({
   onOpenCustomizer: () => void;
 }) {
   const tag = productTag(lead.interest);
-  const quoteValue = primaryQuoteValue(lead);
-  const hasQuote = lead.quotations.length > 0;
+  const potential = leadPotentialAnc(lead.quotations);
   const staleDays = daysSinceLastActivity(lead);
   const stale = staleDays >= staleAfterDays;
   const canDrag = canManageStage && !movePending;
@@ -557,9 +574,10 @@ function PipelineCard({
           Callback today
         </div>
       )}
-      {tag && !stale && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          <span className={`rounded-[5px] px-[6px] py-[3px] text-[9px] font-bold ${tag.cls}`}>{tag.label}</span>
+      {(tag || potential || lead.lead_source) && (
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          {tag && <span className={`rounded-[5px] px-[6px] py-[3px] text-[9px] font-bold ${tag.cls}`}>{tag.label}</span>}
+          <AncBadge potential={potential} />
           {lead.lead_source && (
             <span className="rounded-[5px] border border-sand-2 bg-cream px-[6px] py-[3px] text-[9px] font-semibold text-muted">
               {lead.lead_source}
@@ -568,14 +586,9 @@ function PipelineCard({
         </div>
       )}
 
-      {hasQuote && (stage === "quoted" || WON_STAGES.includes(stage)) && quoteValue !== null && (
-        <div className="mt-2.5 flex items-baseline justify-between border-t border-sand-3 pt-2.5">
-          <span className="text-[10px] font-semibold text-taupe">
-            {WON_STAGES.includes(stage) ? "Policy active" : "Quote sent"}
-          </span>
-          <span className={`text-[12.5px] font-extrabold ${WON_STAGES.includes(stage) ? "text-gold" : "text-green"}`}>
-            {fmtRM(quoteValue)}<span className="text-[9px] text-taupe">/mo</span>
-          </span>
+      {WON_STAGES.includes(stage) && potential && (
+        <div className="mt-2 border-t border-sand-3 pt-2 text-[10px] font-semibold text-taupe">
+          Policy active
         </div>
       )}
 

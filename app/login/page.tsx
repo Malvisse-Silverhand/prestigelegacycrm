@@ -36,6 +36,9 @@ export default function LoginPage() {
       // the server rather than pushing client-side: same push/refresh race as
       // the password pages, and the middleware gets a clean request to route
       // on (including sending a first-time agent to /change-password).
+      // A client-side push would reuse a tree rendered for the previous
+      // session, so the hard navigation is deliberate here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");

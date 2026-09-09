@@ -1,4 +1,10 @@
-import { MONTHS_PER_YEAR } from "@/app/(app)/pipeline/types";
+// Annual New Contribution: the annualised value of a monthly contribution.
+// One definition, used everywhere a figure is labelled ANC, so the monthly
+// -> annual conversion can never drift between screens.
+export const MONTHS_PER_YEAR = 12;
+export function toAnc(monthly: number): number {
+  return monthly * MONTHS_PER_YEAR;
+}
 
 // A lead's quotations, reduced to just what a potential-value figure needs.
 // is_customizer arrives as PostgREST's `raw_payload->>__customizer`, so it is

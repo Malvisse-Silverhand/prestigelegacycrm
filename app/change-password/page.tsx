@@ -28,6 +28,9 @@ export default function ChangePasswordPage() {
       // Hard navigation, for the same reason as the reset page: the auth
       // cookies were just rotated, and router.refresh() after router.push()
       // aborts the push -- leaving the button stuck on "Saving…".
+      // A client-side push would reuse a tree rendered for the previous
+      // session, so the hard navigation is deliberate here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign("/dashboard");
     } catch {
       setError("Couldn't connect. Check your internet connection and try again.");

@@ -1,4 +1,9 @@
 import { daysSinceLastActivity as daysSince } from "@/lib/staleness";
+import { leadPotentialAnc, MONTHS_PER_YEAR, toAnc } from "@/lib/lead-anc";
+
+// Re-exported so the pipeline's callers keep importing ANC helpers from
+// one place; the definitions live with the rest of the ANC logic.
+export { MONTHS_PER_YEAR, toAnc };
 
 export type PipelineLead = {
   id: string;
@@ -16,29 +21,18 @@ export type PipelineLead = {
   status: string;
   agent_id: string | null;
   created_at: string;
-  quotations: { id: string; status: string; created_at: string; quotation_plans: { sort_order: number; monthly_contribution: number | null }[] }[];
+  // updated_at, is_customizer and annual_contribution are what
+  // leadPotentialAnc needs; the rest drive the column totals.
+  quotations: {
+    id: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    is_customizer: string | null;
+    quotation_plans: { sort_order: number; monthly_contribution: number | null; annual_contribution: number | null }[];
+  }[];
   lead_activity: { created_at: string }[];
 };
-
-export function primaryQuoteValue(lead: PipelineLead): number | null {
-  const q = lead.quotations[0];
-  if (!q || q.quotation_plans.length === 0) return null;
-  const primary = [...q.quotation_plans].sort((a, b) => a.sort_order - b.sort_order)[0];
-  return primary.monthly_contribution ?? null;
-}
-
-// Quoted and Closed Won cards both have a guaranteed real quotation (Quoted
-// can't be entered without one -- see updateStage), so both should reflect
-// the deal itself rather than whichever quotation happens to sort first --
-// prefer an accepted one, fall back to a sent one, then to whatever exists.
-export function realQuoteValue(lead: PipelineLead): number {
-  const accepted = lead.quotations.find((q) => q.status === "accepted");
-  const sent = lead.quotations.find((q) => q.status === "sent");
-  const q = accepted ?? sent ?? lead.quotations[0];
-  if (!q || q.quotation_plans.length === 0) return 0;
-  const primary = [...q.quotation_plans].sort((a, b) => a.sort_order - b.sort_order)[0];
-  return primary.monthly_contribution ?? 0;
-}
 
 // budget_indicated is free-text (agents type things like "RM 250" or "250"),
 // so pull out the first number rather than assuming a clean numeric string.
@@ -48,36 +42,28 @@ export function parseBudget(v: string | null): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Per-lead version of the same rule, for contexts (Table view, sorting) that
-// need one lead's figure rather than a column's sum.
-// Everything from Quoted onwards sits downstream of a real quotation, so it
-// reports the quoted premium rather than the indicated budget.
-const HAS_REAL_QUOTE = ["quoted", "appointment", "closed_won", "servicing"];
-
+// One lead's potential, as a monthly figure (the column totals annualise it
+// once, at display time).
+//
+// This used to key off the stage: a real quotation from Quoted onwards, and
+// the typed budget before that. But the cards now show a lead's potential ANC
+// wherever one exists, and an early-stage card reading RM 6,000 while the
+// column above it read RM 0 is worse than either number alone. So both come
+// from the same place: the quotation if there is one -- customizer first,
+// exactly as the card decides -- and only then the budget the lead named.
+//
+// A saved estimate is better evidence than free text an agent typed, so where
+// this changes a total it raises it toward something real.
 export function leadPotentialValue(lead: PipelineLead): number {
-  if (HAS_REAL_QUOTE.includes(lead.pipeline_stage)) return realQuoteValue(lead);
   if (lead.pipeline_stage === "closed_lost") return 0;
+  const potential = leadPotentialAnc(lead.quotations);
+  if (potential) return potential.anc / MONTHS_PER_YEAR;
   return parseBudget(lead.budget_indicated);
 }
 
-// New/Contacted/Follow Up have no real premium yet -- budget_indicated (what
-// the client said they can afford) is the closest thing to a potential-value
-// figure there. Quoted and Closed Won both have a real number instead: the
-// accepted/sent quotation's actual monthly contribution.
 export function stagePotentialValue(stage: string, cards: PipelineLead[]): number {
-  if (HAS_REAL_QUOTE.includes(stage)) {
-    return cards.reduce((sum, l) => sum + realQuoteValue(l), 0);
-  }
   if (stage === "closed_lost") return 0;
-  return cards.reduce((sum, l) => sum + parseBudget(l.budget_indicated), 0);
-}
-
-// Annual New Contribution: the annualised value of a monthly contribution.
-// One definition, used everywhere a pipeline figure is labelled ANC, so the
-// monthly -> annual conversion can never drift between screens.
-export const MONTHS_PER_YEAR = 12;
-export function toAnc(monthly: number): number {
-  return monthly * MONTHS_PER_YEAR;
+  return cards.reduce((sum, l) => sum + leadPotentialValue(l), 0);
 }
 
 export function daysSinceLastActivity(lead: PipelineLead): number {
