@@ -18,7 +18,7 @@ export type NavItem = {
   icon: typeof DashboardIcon;
   roles?: Role[];
   // Rendered indented under the parent, and shown whenever the parent section
-  // is the one you are in. Only Lead Generation has these today.
+  // is the one you are in.
   children?: { href: string; label: string }[];
 };
 
@@ -47,7 +47,15 @@ export const SIDEBAR_NAV: NavItem[] = [
     roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"],
   },
   { href: "/quotations", label: "Quotation", icon: QuotationIcon },
-  { href: "/wa-flow", label: "WA Flow", icon: WaFlowIcon },
+  {
+    href: "/wa-flow",
+    label: "WA Flow",
+    icon: WaFlowIcon,
+    children: [
+      { href: "/wa-flow", label: "Message Templates" },
+      { href: "/wa-flow/scripts", label: "Takaful Closing Scripts" },
+    ],
+  },
   {
     href: "/statistics",
     label: "Statistics",

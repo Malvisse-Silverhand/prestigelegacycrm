@@ -14,6 +14,7 @@ import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
 import { leadPotentialAnc } from "@/lib/lead-anc";
 import { AncBadge } from "@/components/anc-badge";
+import { LeadNo } from "@/components/lead-no";
 
 function subtitleFor(role: string) {
   switch (role) {
@@ -169,9 +170,12 @@ export default async function LeadsPage({
                     key={lead.id}
                     className="grid grid-cols-[1.5fr_1fr_.9fr_.9fr_1fr_1fr_.8fr_1fr_.8fr_.7fr] items-center border-b border-sand-3 px-5 py-3.5 text-[12.5px] text-ink last:border-b-0"
                   >
-                    <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
-                      {lead.full_name}
-                    </Link>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <LeadNo no={lead.lead_no} />
+                      <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
+                        {lead.full_name}
+                      </Link>
+                    </div>
                     <div className="font-medium">{lead.phone}</div>
                     <div className="font-medium">{fmtDate(lead.date_of_birth)}</div>
                     <div className="truncate font-medium">{lead.state ?? "—"}</div>
@@ -217,9 +221,12 @@ export default async function LeadsPage({
                   <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5 shadow-card">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <Link href={`/leads/${lead.id}`} className="truncate text-[14.5px] font-bold text-navy hover:underline">
-                          {lead.full_name}
-                        </Link>
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <LeadNo no={lead.lead_no} />
+                          <Link href={`/leads/${lead.id}`} className="truncate text-[14.5px] font-bold text-navy hover:underline">
+                            {lead.full_name}
+                          </Link>
+                        </div>
                         <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
                       </div>
                       <StatusBadge status={lead.status} />

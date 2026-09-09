@@ -28,6 +28,7 @@ const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted"];
 
 export type LeadRow = {
   id: string;
+  lead_no: number;
   full_name: string;
   phone: string;
   email: string | null;
@@ -76,7 +77,7 @@ function filteredLeadsQuery(
   let query = supabase
     .from("leads")
     .select(
-      "id, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, deleted_at, deleted_by, profiles!leads_agent_id_fkey(full_name), deleted_by_profile:profiles!leads_deleted_by_fkey(full_name), quotations(updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution))",
+      "id, lead_no, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, deleted_at, deleted_by, profiles!leads_agent_id_fkey(full_name), deleted_by_profile:profiles!leads_deleted_by_fkey(full_name), quotations(updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution))",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
@@ -115,7 +116,13 @@ function filteredLeadsQuery(
     // lead_source is a fixed enum now (Batch D) -- ilike against it would be
     // a Postgres type error, so it's dropped from the free-text search.
     const q = filters.q.replace(/[%_,()]/g, "");
-    query = query.or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`);
+    const conditions = [`full_name.ilike.%${q}%`, `phone.ilike.%${q}%`];
+    // Leads carry a short number so people can refer to one out loud, which
+    // is only useful if you can then search for it. "#42" and "42" both work;
+    // a bare number still matches phone numbers too, so nothing is lost.
+    const asNumber = q.replace(/^#/, "");
+    if (/^\d{1,9}$/.test(asNumber)) conditions.push(`lead_no.eq.${asNumber}`);
+    query = query.or(conditions.join(","));
   }
   if (filters.from) query = query.gte("created_at", filters.from);
   if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59`);

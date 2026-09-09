@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
-import type { LeadDetail, ActivityRow, ReassignOption } from "./data";
+import type { LeadDetail, ActivityRow, ReassignOption, RelativeRow } from "./data";
 import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
 import { LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
@@ -19,6 +19,7 @@ import type { WaTemplate } from "@/app/(app)/wa-flow/types";
 import type { FillableLead } from "@/lib/wa-template-fill";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
+import { LeadFamily } from "./lead-family";
 import { QuotationModal } from "@/components/quotation-modal";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import type { QuotationRow } from "./data";
@@ -104,6 +105,7 @@ export function LeadDetailContent({
   appointments,
   waTemplates,
   waLead,
+  family,
   onClose,
   isModal,
 }: {
@@ -117,6 +119,7 @@ export function LeadDetailContent({
   // The lead again, but shaped for template filling (it carries the
   // quotation plans the placeholders read from).
   waLead: FillableLead | null;
+  family: { parent: RelativeRow | null; relatives: RelativeRow[] };
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -261,6 +264,12 @@ export function LeadDetailContent({
         </div>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="flex-none rounded-[6px] bg-white/15 px-[7px] py-[2px] font-mono text-[11px] font-bold text-gold"
+              title={`Lead #${lead.lead_no}`}
+            >
+              #{lead.lead_no}
+            </span>
             <div className="text-xl font-bold tracking-[-0.01em]">{lead.full_name}</div>
             {tag && (
               <span className={`rounded-[6px] px-2 py-[3px] text-[10px] font-bold ${tag.cls}`}>{tag.label}</span>
@@ -358,6 +367,19 @@ export function LeadDetailContent({
                 Build a side-by-side plan comparison. Saving stores it on this lead.
               </p>
             </div>
+          </div>
+
+          <div className="mt-[22px]">
+            <LeadFamily
+              leadId={lead.id}
+              leadName={lead.full_name}
+              parent={family.parent}
+              relatives={family.relatives}
+              relationship={lead.relationship}
+              // Whoever may edit the lead may add family to it. For an agent
+              // that is their own book only -- enforced in RLS, not here.
+              canEdit={profile.role !== "agent" || lead.agent_id === profile.id}
+            />
           </div>
 
           {waLead && (

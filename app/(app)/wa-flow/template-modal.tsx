@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { CATEGORIES, type WaTemplate } from "./types";
 import { saveTemplate } from "./actions";
+import { PlaceholderPicker, insertAtCursor } from "@/components/placeholder-picker";
 
 export function TemplateModal({
   open, template, onClose,
 }: { open: boolean; template: WaTemplate | null; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   if (!open) return null;
 
@@ -71,6 +73,7 @@ export function TemplateModal({
               Message body
             </span>
             <textarea
+              ref={bodyRef}
               name="body"
               required
               rows={6}
@@ -86,13 +89,25 @@ export function TemplateModal({
             </div>
           )}
 
-          <div className="mt-2 flex justify-end gap-2.5">
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+            {/* The field is uncontrolled -- FormData reads it on submit -- so
+                the insert writes straight to the element rather than through
+                state. */}
+            <PlaceholderPicker
+              className="flex-1"
+              onInsert={(token) => {
+                const el = bodyRef.current;
+                if (el) el.value = insertAtCursor(el, el.value, token);
+              }}
+            />
+            <div className="flex flex-none gap-2.5">
             <button type="button" onClick={onClose} className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy">
               Cancel
             </button>
             <button type="submit" disabled={pending} className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60">
               {pending ? "Saving…" : "Save template"}
             </button>
+            </div>
           </div>
         </form>
       </div>

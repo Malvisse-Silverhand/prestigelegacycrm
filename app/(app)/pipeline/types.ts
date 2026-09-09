@@ -7,6 +7,7 @@ export { MONTHS_PER_YEAR, toAnc };
 
 export type PipelineLead = {
   id: string;
+  lead_no: number;
   full_name: string;
   phone: string;
   email: string | null;

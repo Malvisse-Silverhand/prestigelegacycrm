@@ -5,6 +5,7 @@ import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays
 
 type LeadRow = {
   id: string;
+  lead_no: number;
   full_name: string;
   phone: string;
   date_of_birth: string | null;
@@ -97,7 +98,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // leads now has two FKs to profiles (agent_id and deleted_by), so the
       // embed has to name which one -- a bare profiles(...) is ambiguous and
       // PostgREST returns nothing at all for it.
-      "id, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
+      "id, lead_no, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
     )
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
@@ -338,9 +339,38 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     30,
   );
 
+  // The next few appointments, so the dashboard answers "where do I have to
+  // be" without opening the calendar. Cancelled ones are already excluded by
+  // the query; this drops the ones that have been and gone.
+  const nowIso = new Date().toISOString();
+  const upcomingAppointments = (appointmentRows ?? [])
+    .filter((a) => (a.scheduled_at as string) >= nowIso)
+    .sort((a, b) => (a.scheduled_at as string).localeCompare(b.scheduled_at as string))
+    .slice(0, 5)
+    .map((a) => ({
+      id: a.id as string,
+      leadId: a.lead_id as string,
+      leadName: ((a.leads as unknown as { full_name: string } | null)?.full_name) ?? "Unknown lead",
+      scheduledAt: a.scheduled_at as string,
+      location: (a.location as string | null) ?? null,
+    }));
+
+  // allLeads already comes back newest first.
+  const recentLeads = allLeads.slice(0, 5).map((l) => ({
+    id: l.id,
+    leadNo: l.lead_no,
+    fullName: l.full_name,
+    status: l.status,
+    stage: l.pipeline_stage,
+    agentName: l.profiles?.full_name ?? null,
+    createdAt: l.created_at,
+  }));
+
   return {
     totalLeads: allLeads.length,
     birthdays,
+    upcomingAppointments,
+    recentLeads,
     teamSize: (teamProfiles ?? []).length,
     todayCount,
     todayDelta: todayCount - yesterdayCount,

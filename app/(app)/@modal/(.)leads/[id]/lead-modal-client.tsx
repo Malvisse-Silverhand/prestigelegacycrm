@@ -2,7 +2,7 @@
 
 import { ModalOverlay, useModalClose } from "@/components/modal-overlay";
 import { LeadDetailContent } from "@/app/(app)/leads/[id]/lead-detail-content";
-import type { LeadDetail, ActivityRow, ReassignOption, QuotationRow } from "@/app/(app)/leads/[id]/data";
+import type { LeadDetail, ActivityRow, ReassignOption, QuotationRow, RelativeRow } from "@/app/(app)/leads/[id]/data";
 import type { CurrentProfile } from "@/lib/profile-types";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import type { WaTemplate } from "@/app/(app)/wa-flow/types";
@@ -17,6 +17,7 @@ export function LeadModalClient({
   appointments,
   waTemplates,
   waLead,
+  family,
 }: {
   lead: LeadDetail;
   activity: ActivityRow[];
@@ -26,6 +27,7 @@ export function LeadModalClient({
   appointments: AppointmentRow[];
   waTemplates: WaTemplate[];
   waLead: FillableLead | null;
+  family: { parent: RelativeRow | null; relatives: RelativeRow[] };
 }) {
   const close = useModalClose();
 
@@ -40,6 +42,7 @@ export function LeadModalClient({
         appointments={appointments}
         waTemplates={waTemplates}
         waLead={waLead}
+        family={family}
         onClose={close}
         isModal
       />

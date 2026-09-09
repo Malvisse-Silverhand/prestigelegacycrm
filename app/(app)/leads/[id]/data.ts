@@ -4,6 +4,7 @@ import type { CurrentProfile } from "@/lib/profile-types";
 
 export type LeadDetail = {
   id: string;
+  lead_no: number;
   full_name: string;
   phone: string;
   email: string | null;
@@ -24,7 +25,20 @@ export type LeadDetail = {
   pipeline_stage: string;
   agent_id: string | null;
   created_at: string;
+  parent_lead_id: string | null;
+  relationship: string | null;
   profiles: { full_name: string; units: { name: string } | null } | null;
+};
+
+// One line of the family box: enough to recognise the person and open them.
+export type RelativeRow = {
+  id: string;
+  lead_no: number;
+  full_name: string;
+  phone: string;
+  relationship: string | null;
+  status: string;
+  pipeline_stage: string;
 };
 
 export type ActivityRow = {
@@ -67,7 +81,7 @@ export async function getLeadDetail(id: string) {
     supabase
       .from("leads")
       .select(
-        "id, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
+        "id, lead_no, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, parent_lead_id, relationship, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
       )
       .eq("id", id)
       .single<LeadDetail>(),
@@ -80,6 +94,38 @@ export async function getLeadDetail(id: string) {
   ]);
 
   return { lead, activity: activity ?? [] };
+}
+
+// The family around a lead: who they were added from, and who was added from
+// them.
+//
+// Two plain queries rather than a self-embed. `parent_lead_id` points at
+// `leads` from `leads`, so a PostgREST embed has to be told which direction
+// is meant and reads identically for both -- and this codebase has already
+// lost an afternoon to an ambiguous embed returning nothing at all.
+export async function getLeadFamily(lead: Pick<LeadDetail, "id" | "parent_lead_id">) {
+  const supabase = await createClient();
+  const COLS = "id, lead_no, full_name, phone, relationship, status, pipeline_stage";
+
+  const [{ data: relatives }, parentResult] = await Promise.all([
+    supabase
+      .from("leads")
+      .select(COLS)
+      .eq("parent_lead_id", lead.id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true })
+      .returns<RelativeRow[]>(),
+    lead.parent_lead_id
+      ? supabase
+          .from("leads")
+          .select(COLS)
+          .eq("id", lead.parent_lead_id)
+          .is("deleted_at", null)
+          .maybeSingle<RelativeRow>()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  return { parent: parentResult.data ?? null, relatives: relatives ?? [] };
 }
 
 // Quotations saved against this lead, newest first, with their plan options

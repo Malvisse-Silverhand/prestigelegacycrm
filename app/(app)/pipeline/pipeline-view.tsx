@@ -10,6 +10,7 @@ import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
 import { leadPotentialAnc } from "@/lib/lead-anc";
 import { AncBadge } from "@/components/anc-badge";
+import { LeadNo } from "@/components/lead-no";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
@@ -300,10 +301,13 @@ export function PipelineView({
             return (
               <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <Link href={`/leads/${lead.id}`} className="text-[14.5px] font-bold text-navy">
-                      {lead.full_name}
-                    </Link>
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <LeadNo no={lead.lead_no} />
+                      <Link href={`/leads/${lead.id}`} className="truncate text-[14.5px] font-bold text-navy">
+                        {lead.full_name}
+                      </Link>
+                    </div>
                     <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
                   </div>
                   {stale && (
@@ -466,9 +470,12 @@ function PipelineTable({
                   key={lead.id}
                   className="grid grid-cols-[1.5fr_1fr_1fr_1.1fr_1fr_1fr] items-center border-b border-sand-3 px-5 py-3 text-[12.5px] text-ink last:border-b-0"
                 >
-                  <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
-                    {lead.full_name}
-                  </Link>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <LeadNo no={lead.lead_no} />
+                    <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
+                      {lead.full_name}
+                    </Link>
+                  </div>
                   <div className="font-medium">{lead.phone}</div>
                   <div>
                     <span className="inline-flex items-center gap-[6px] rounded-[7px] bg-cream px-2 py-1 text-[10.5px] font-bold text-navy">
@@ -546,9 +553,12 @@ function PipelineCard({
       }
     >
       <div className="flex items-start justify-between gap-1.5">
-        <Link href={`/leads/${lead.id}`} draggable={false} className="text-[13px] font-bold text-navy hover:underline">
-          {lead.full_name}
-        </Link>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <LeadNo no={lead.lead_no} />
+          <Link href={`/leads/${lead.id}`} draggable={false} className="truncate text-[13px] font-bold text-navy hover:underline">
+            {lead.full_name}
+          </Link>
+        </div>
         <button type="button" onClick={onToggle} className="text-taupe" aria-label="Card actions">
           <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
         </button>

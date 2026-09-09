@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { getLeadDetail, getLeadQuotations, getReassignableUsers } from "@/app/(app)/leads/[id]/data";
+import { getLeadDetail, getLeadQuotations, getReassignableUsers, getLeadFamily } from "@/app/(app)/leads/[id]/data";
 import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { LeadModalClient } from "./lead-modal-client";
@@ -17,12 +17,13 @@ export default async function LeadDetailModalRoute({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const [reassignOptions, quotations, appointments, waTemplates, waLead] = await Promise.all([
+  const [reassignOptions, quotations, appointments, waTemplates, waLead, family] = await Promise.all([
     getReassignableUsers(profile),
     getLeadQuotations(id),
     getLeadAppointments(id),
     getTemplates(),
     getLeadForFill(id),
+    getLeadFamily(lead),
   ]);
 
   return (
@@ -35,6 +36,7 @@ export default async function LeadDetailModalRoute({
       appointments={appointments}
       waTemplates={waTemplates}
       waLead={waLead}
+      family={family}
     />
   );
 }

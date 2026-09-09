@@ -32,3 +32,18 @@ export const OCCUPATION_CLASSES = [
 ] as const;
 export type OccupationClass = (typeof OCCUPATION_CLASSES)[number]["value"];
 export const OCCUPATION_DIRECTORY_URL = "https://velvety-peony-7d44ec.netlify.app/";
+
+// How a relative is related to the lead they were added from. Kept in step
+// with the CHECK constraint on leads.relationship -- a value the database
+// would reject should never reach it from a dropdown.
+export const RELATIONSHIPS = [
+  "Spouse",
+  "Child",
+  "Parent",
+  "Sibling",
+  "Grandparent",
+  "Grandchild",
+  "In-law",
+  "Other relative",
+] as const;
+export type Relationship = (typeof RELATIONSHIPS)[number];

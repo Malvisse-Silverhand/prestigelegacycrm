@@ -10,6 +10,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
 import { BirthdayCard } from "@/components/birthday-card";
+import { UpcomingAppointmentsCard, RecentLeadsCard } from "@/components/dashboard-lists";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 
@@ -159,22 +160,20 @@ export function DashboardView({
               delta="policies inforced"
               muted
             />
-            <div className="rounded-2xl bg-navy p-4 pb-[18px] dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
+            <div className="rounded-2xl bg-navy px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
               <div className="flex items-center justify-between">
-                <span className="text-[11.5px] font-semibold text-white/60">Pipeline value</span>
-                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-gold/[.18]">
-                  <QuotationIcon width={15} height={15} className="text-gold" />
+                <span className="text-[11px] font-semibold text-white/60">Pipeline value</span>
+                <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[8px] bg-gold/[.18]">
+                  <QuotationIcon width={13} height={13} className="text-gold" />
                 </span>
               </div>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-[26px] font-extrabold tracking-[-0.03em] text-white">
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[22px] font-extrabold tracking-[-0.03em] text-white">
                   {fmtRM(stats.pipelineValue)}
                 </span>
-                <span className="text-[11.5px] font-bold text-gold">ANC</span>
+                <span className="text-[11px] font-bold text-gold">ANC</span>
               </div>
-              <div className="mt-0.5 text-[10.5px] font-medium text-white/45">
-                Potential ANC · monthly x 12
-              </div>
+              <div className="text-[10px] font-medium text-white/45">Potential ANC · monthly x 12</div>
             </div>
           </div>
 
@@ -209,13 +208,18 @@ export function DashboardView({
               detail="contacted leads"
               cta="Build estimate"
               href="/leads?view=no_quotation"
-              solid
             />
           </div>
 
           <ActivityCalendar {...calendarProps} />
 
-          <BirthdayCard birthdays={stats.birthdays} limit={5} />
+          {/* What is coming up, who just arrived, and whose birthday it is --
+              the three "what should I do next" lists, side by side. */}
+          <div className="grid grid-cols-3 gap-3.5">
+            <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />
+            <RecentLeadsCard leads={stats.recentLeads} />
+            <BirthdayCard birthdays={stats.birthdays} limit={4} />
+          </div>
 
           <div className="grid grid-cols-2 gap-[18px]">
             <div className="rounded-[18px] border border-sand bg-white p-5 pb-[22px] dark:border-white/10 dark:bg-[#12283f]">
@@ -457,6 +461,8 @@ export function DashboardView({
             <ActivityCalendar {...calendarProps} compact />
           </div>
 
+          <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />
+          <RecentLeadsCard leads={stats.recentLeads} />
           <BirthdayCard birthdays={stats.birthdays} limit={3} />
 
           <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
@@ -529,21 +535,21 @@ function StatCard({
   label: string; value: number; delta: string; positive?: boolean; muted?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-sand bg-white p-4 pb-[18px] dark:border-white/10 dark:bg-[#12283f]">
+    <div className="rounded-2xl border border-sand bg-white px-3.5 py-3 dark:border-white/10 dark:bg-[#12283f]">
       <div className="flex items-center justify-between">
-        <span className="text-[11.5px] font-semibold text-muted dark:text-[#7f93aa]">{label}</span>
+        <span className="text-[11px] font-semibold text-muted dark:text-[#7f93aa]">{label}</span>
       </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-[30px] font-extrabold tracking-[-0.03em] text-navy dark:text-[#eef3f8]">
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy dark:text-[#eef3f8]">
           {value}
         </span>
         <span
           className={
             muted
-              ? "text-[11.5px] font-bold text-muted dark:text-[#7f93aa]"
+              ? "text-[11px] font-bold text-muted dark:text-[#7f93aa]"
               : positive
-                ? "text-[11.5px] font-bold text-green dark:text-[#2e8f68]"
-                : "text-[11.5px] font-bold text-alert-red dark:text-[#ef8b6c]"
+                ? "text-[11px] font-bold text-green dark:text-[#2e8f68]"
+                : "text-[11px] font-bold text-alert-red dark:text-[#ef8b6c]"
           }
         >
           {delta}
@@ -578,28 +584,23 @@ const ALERT_TONES = {
 } as const;
 
 function AlertCard({
-  tone, icon, title, value, detail, cta, href, solid,
+  tone, icon, title, value, detail, cta, href,
 }: {
-  tone: keyof typeof ALERT_TONES; icon: React.ReactNode; title: string; value: number; detail: string; cta: string; href: string; solid?: boolean;
+  tone: keyof typeof ALERT_TONES; icon: React.ReactNode; title: string; value: number; detail: string; cta: string; href: string;
 }) {
   const t = ALERT_TONES[tone];
   return (
-    <div className={`rounded-2xl border p-4 pb-[18px] ${t.bg}`}>
-      <div className="flex items-center gap-[9px]">
-        <span className={t.value}>{icon}</span>
-        <span className={`text-sm font-bold ${t.title}`}>{title}</span>
-      </div>
-      <div className="mt-2.5 flex items-baseline gap-[7px]">
-        <span className={`text-[28px] font-extrabold tracking-[-0.03em] ${t.value}`}>{value}</span>
-        <span className={`text-xs font-semibold ${t.detail}`}>{detail}</span>
-      </div>
-      <Link
-        href={href}
-        className={`mt-3 inline-flex rounded-[9px] border px-[15px] py-2.5 text-[12.5px] font-semibold ${solid ? t.cta : `bg-white ${t.cta}`}`}
-      >
-        {cta}
-      </Link>
-    </div>
+    <Link href={href} title={cta} className={`press flex items-center gap-3 rounded-2xl border px-3.5 py-3 ${t.bg}`}>
+      <span className={`flex-none ${t.value}`}>{icon}</span>
+      <span className={`flex-none text-[26px] font-extrabold tracking-[-0.03em] leading-none ${t.value}`}>
+        {value}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block truncate text-[12.5px] font-bold ${t.title}`}>{title}</span>
+        <span className={`block truncate text-[11px] font-semibold ${t.detail}`}>{detail}</span>
+      </span>
+      <ChevronRightIcon width={15} height={15} className={`flex-none ${t.value}`} />
+    </Link>
   );
 }
 
