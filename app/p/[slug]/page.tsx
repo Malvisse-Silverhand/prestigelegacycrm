@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPublicLandingPage, recordLandingView } from "@/lib/landing-public";
 import { LandingPageView } from "./landing-view";
+import { MedicalLandingView } from "./medical-view";
 import { TrackingCode } from "@/components/tracking-code";
 
 export async function generateMetadata({
@@ -46,7 +47,11 @@ export default async function PublicLandingPage({
           and the Settings screen says so. */}
       <TrackingCode slot="head" />
       <TrackingCode slot="body" />
-      <LandingPageView page={page} />
+      {page.layout === "medical" ? (
+        <MedicalLandingView page={page} />
+      ) : (
+        <LandingPageView page={page} />
+      )}
       <TrackingCode slot="footer" />
     </>
   );

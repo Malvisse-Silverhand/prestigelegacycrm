@@ -7,6 +7,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { slugify, DEFAULT_CONTENT, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 const PRODUCTS: LandingProduct[] = ["medical", "hibah", "both"];
+const LAYOUTS: LandingLayout[] = ["full", "quickquote", "medical"];
 
 // The slug is the public URL, so a collision would silently hand one agent's
 // traffic to another. Uniqueness is enforced by the table; this finds the
@@ -55,7 +56,7 @@ export async function createLandingPage(input: {
       slug,
       name,
       product,
-      layout: input.layout === "quickquote" ? "quickquote" : "full",
+      layout: LAYOUTS.includes(input.layout as LandingLayout) ? input.layout : "full",
       content: DEFAULT_CONTENT,
     })
     .select("id")

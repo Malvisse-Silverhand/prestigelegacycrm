@@ -11,12 +11,31 @@ const FIELD =
   "mt-1.5 w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold";
 const LABEL = "text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2";
 
-type Tab = "hero" | "benefits" | "testimonials" | "faq" | "settings";
+type Tab =
+  | "hero"
+  | "problem"
+  | "benefits"
+  | "why"
+  | "advisor"
+  | "testimonials"
+  | "providers"
+  | "faq"
+  | "settings";
+
+// The medical funnel has four bands the standard template doesn't, so its
+// tabs only appear for that layout -- editing sections a page will never
+// render is just noise.
+const MEDICAL_ONLY: Tab[] = ["problem", "why", "advisor", "providers"];
+const STANDARD_ONLY: Tab[] = ["faq"];
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "hero", label: "Hero" },
+  { key: "problem", label: "The case" },
   { key: "benefits", label: "Benefits" },
+  { key: "why", label: "Why you" },
+  { key: "advisor", label: "Your profile" },
   { key: "testimonials", label: "Testimonials" },
+  { key: "providers", label: "Operators" },
   { key: "faq", label: "FAQ" },
   { key: "settings", label: "Settings" },
 ];
@@ -24,6 +43,10 @@ const TABS: { key: Tab; label: string }[] = [
 export function PageBuilder({ page }: { page: LandingPageDetail }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("hero");
+  const isMedical = page.layout === "medical";
+  const visibleTabs = TABS.filter((t) =>
+    isMedical ? !STANDARD_ONLY.includes(t.key) : !MEDICAL_ONLY.includes(t.key),
+  );
   const [content, setContent] = useState<LandingContent>(page.content);
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
@@ -130,7 +153,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
 
       <div className="border-b border-sand bg-white px-5 lg:px-[30px]">
         <div className="flex gap-[22px] overflow-x-auto">
-          {TABS.map((t) => (
+          {visibleTabs.map((t) => (
             <button
               key={t.key}
               type="button"
@@ -168,6 +191,111 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                 onChange={(v) => edit("heroPoints", v)}
                 blank=""
                 render={(item, set) => <Text label="Point" value={item} onChange={set} />}
+              />
+            </Card>
+          )}
+
+          {tab === "problem" && (
+            <Card
+              title="The case"
+              hint="Why this matters before you ask for anything: what treatment actually costs, and what's in the news about it."
+            >
+              <Text label="Eyebrow" value={content.problemEyebrow} onChange={(v) => edit("problemEyebrow", v)} />
+              <Text label="Section heading" value={content.problemTitle} onChange={(v) => edit("problemTitle", v)} />
+              <Area label="Opening line" value={content.problemBody} onChange={(v) => edit("problemBody", v)} rows={3} />
+              <List
+                label="Cost row"
+                items={content.costRows}
+                onChange={(v) => edit("costRows", v)}
+                blank={{ label: "", amount: "" }}
+                render={(item, set) => (
+                  <div className="grid grid-cols-[1fr_140px] gap-3">
+                    <Text label="Treatment" value={item.label} onChange={(v) => set({ ...item, label: v })} />
+                    <Text label="Cost" value={item.amount} onChange={(v) => set({ ...item, amount: v })} />
+                  </div>
+                )}
+              />
+              <Text label="Small print under the table" value={content.costNote} onChange={(v) => edit("costNote", v)} />
+              <List
+                label="Headline"
+                items={content.newsHeadlines}
+                onChange={(v) => edit("newsHeadlines", v)}
+                blank=""
+                render={(item, set) => <Text label="News headline" value={item} onChange={set} />}
+              />
+            </Card>
+          )}
+
+          {tab === "why" && (
+            <Card title="Why you" hint="What makes working with you different. Six is what fits the layout neatly.">
+              <Text label="Section heading" value={content.whyTitle} onChange={(v) => edit("whyTitle", v)} />
+              <List
+                label="Reason"
+                items={content.whyPoints}
+                onChange={(v) => edit("whyPoints", v)}
+                blank={{ title: "", body: "" }}
+                render={(item, set) => (
+                  <>
+                    <Text label="Headline" value={item.title} onChange={(v) => set({ ...item, title: v })} />
+                    <Area label="Description" value={item.body} onChange={(v) => set({ ...item, body: v })} rows={2} />
+                  </>
+                )}
+              />
+            </Card>
+          )}
+
+          {tab === "advisor" && (
+            <Card
+              title="Your profile"
+              hint="Who the visitor is about to trust. Leave the name blank to use the name on the account."
+            >
+              <Text label="Name" value={content.advisorName} onChange={(v) => edit("advisorName", v)} />
+              <Text label="Title" value={content.advisorTitle} onChange={(v) => edit("advisorTitle", v)} />
+              <Text
+                label="Photo URL"
+                value={content.advisorPhotoUrl}
+                onChange={(v) => edit("advisorPhotoUrl", v)}
+              />
+              <p className="-mt-1 text-[11px] font-medium text-taupe">
+                Paste a link to a photo of yourself. Without one the page shows your initials instead.
+              </p>
+              <Area label="About you" value={content.advisorBio} onChange={(v) => edit("advisorBio", v)} rows={4} />
+              <List
+                label="Credential"
+                items={content.advisorStats}
+                onChange={(v) => edit("advisorStats", v)}
+                blank={{ value: "", label: "" }}
+                render={(item, set) => (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Text label="Figure" value={item.value} onChange={(v) => set({ ...item, value: v })} />
+                    <Text label="Caption" value={item.label} onChange={(v) => set({ ...item, label: v })} />
+                  </div>
+                )}
+              />
+            </Card>
+          )}
+
+          {tab === "providers" && (
+            <Card
+              title="Operators"
+              hint="The takaful operators you compare. A logo URL is optional — without one the name shows as text."
+            >
+              <Text
+                label="Section heading"
+                value={content.providersTitle}
+                onChange={(v) => edit("providersTitle", v)}
+              />
+              <List
+                label="Operator"
+                items={content.providers}
+                onChange={(v) => edit("providers", v)}
+                blank={{ name: "", logoUrl: "" }}
+                render={(item, set) => (
+                  <>
+                    <Text label="Name" value={item.name} onChange={(v) => set({ ...item, name: v })} />
+                    <Text label="Logo URL" value={item.logoUrl} onChange={(v) => set({ ...item, logoUrl: v })} />
+                  </>
+                )}
               />
             </Card>
           )}

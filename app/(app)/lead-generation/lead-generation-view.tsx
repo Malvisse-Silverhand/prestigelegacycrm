@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LandingPageRow } from "./data";
-import { PRODUCT_LABEL, type LandingProduct } from "@/lib/landing-content";
+import { PRODUCT_LABEL, type LandingProduct, type LandingLayout } from "@/lib/landing-content";
 import { createLandingPage, setLandingPublished, deleteLandingPage } from "./actions";
 import { EmptyState } from "@/components/empty-state";
 import { CalendarIcon } from "@/components/icons";
@@ -41,6 +41,7 @@ export function LeadGenerationView({
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [product, setProduct] = useState<LandingProduct>("both");
+  const [layout, setLayout] = useState<LandingLayout>("full");
   const [ownerId, setOwnerId] = useState(currentUserId);
   const [copied, setCopied] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LandingPageRow | null>(null);
@@ -242,6 +243,23 @@ export function LeadGenerationView({
             </label>
 
             <label className="mt-3.5 block">
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">Template</span>
+              <select
+                value={layout}
+                onChange={(e) => setLayout(e.target.value as LandingLayout)}
+                className="mt-1.5 h-[42px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[13px] font-semibold text-navy outline-none focus:border-gold"
+              >
+                <option value="full">Standard — hero, benefits, testimonials, FAQ</option>
+                <option value="medical">Medical Card funnel — long-form, builds the case first</option>
+              </select>
+              <span className="mt-1 block text-[11px] font-medium text-taupe">
+                {layout === "medical"
+                  ? "Cost-of-treatment case, benefits, why you, your profile, testimonials and the panel of operators — then the calculator."
+                  : "The shorter page: hero, benefits, testimonials and FAQ around the calculator."}
+              </span>
+            </label>
+
+            <label className="mt-3.5 block">
               <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">Calculators</span>
               <select
                 value={product}
@@ -281,7 +299,7 @@ export function LeadGenerationView({
                 disabled={pending || !name.trim()}
                 onClick={() =>
                   startTransition(async () => {
-                    const result = await createLandingPage({ name, product, ownerId });
+                    const result = await createLandingPage({ name, product, ownerId, layout });
                     if (result.error) {
                       setError(result.error);
                       return;
