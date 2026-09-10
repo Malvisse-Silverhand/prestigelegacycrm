@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_RANK, type CurrentProfile, type Role } from "@/lib/profile-types";
-import type { WebhookRow, InviteLinkRow, JoinRequestRow, TrackingCodeSettings, TrackablePage } from "./types";
+import type { WebhookRow, InviteLinkRow, JoinRequestRow, TrackingCodeSettings, TrackablePage, CampaignRow, TargetRow } from "./types";
 
 // Mirrors can_review_invite() in SQL: the roles that can hold a recruitment
 // link and review who comes through it.
@@ -239,13 +239,9 @@ export async function getAssignmentOptions(profile: CurrentProfile) {
   };
 }
 
-export type TargetRow = {
-  agentId: string;
-  fullName: string;
-  role: Role;
-  ancTarget: number | null;
-  nocTarget: number | null;
-};
+// One definition, in types.ts, so a field added for the Set Target screen
+// can't be missing from what this module returns.
+export type { TargetRow } from "./types";
 
 type TargetableMember = { id: string; full_name: string; role: Role };
 
@@ -332,11 +328,16 @@ export async function getTargetsForMonth(profile: CurrentProfile, monthDate: str
   if (members.length === 0) return [];
 
   const agentIds = members.map((a) => a.id);
-  let targets: { agent_id: string; anc_target: number | null; noc_target: number | null }[] = [];
+  let targets: {
+    agent_id: string;
+    anc_target: number | null;
+    noc_target: number | null;
+    approach_target: number | null;
+  }[] = [];
   if (agentIds.length > 0) {
     const { data } = await supabase
       .from("targets")
-      .select("agent_id, anc_target, noc_target")
+      .select("agent_id, anc_target, noc_target, approach_target")
       .eq("month", monthDate)
       .in("agent_id", agentIds);
     targets = data ?? [];
@@ -349,7 +350,30 @@ export async function getTargetsForMonth(profile: CurrentProfile, monthDate: str
     role: a.role,
     ancTarget: byAgent.get(a.id)?.anc_target ?? null,
     nocTarget: byAgent.get(a.id)?.noc_target ?? null,
+    approachTarget: byAgent.get(a.id)?.approach_target ?? null,
   }));
+}
+
+// The caller's own running campaign, if they have one. RLS already limits
+// anc_campaigns to self-plus-downline, so this narrows to the one row the
+// Set Target screen edits: the goal belonging to whoever is looking.
+export async function getMyCampaign(profile: CurrentProfile): Promise<CampaignRow | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("anc_campaigns")
+    .select("id, name, target_anc, start_date, deadline")
+    .eq("agent_id", profile.id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!data) return null;
+  return {
+    id: data.id,
+    name: data.name,
+    targetAnc: Number(data.target_anc),
+    startDate: data.start_date,
+    deadline: data.deadline,
+  };
 }
 
 export type DistributionSettings = {

@@ -7,6 +7,7 @@ import type {
   UnitManagerOption,
   UnitOption,
   TargetRow,
+  CampaignRow,
   DistributionSettings,
   AuditEntry,
   LeadSourceStat,
@@ -67,6 +68,7 @@ export function SettingsView({
   assignmentOptions,
   monthDate,
   targets,
+  campaign,
   distribution,
   auditLog,
   leadSources,
@@ -82,6 +84,7 @@ export function SettingsView({
   assignmentOptions: { unitManagers: UnitManagerOption[]; units: UnitOption[] };
   monthDate: string;
   targets: TargetRow[];
+  campaign: CampaignRow | null;
   distribution: DistributionSettings;
   auditLog: AuditEntry[] | null;
   leadSources: LeadSourceStat[];
@@ -206,7 +209,9 @@ export function SettingsView({
             />
           )}
           {tab === "Roles & Permissions" && <RolesPermissionsTab />}
-          {tab === "Set Target" && <SetTargetTab monthDate={monthDate} initialTargets={targets} />}
+          {tab === "Set Target" && (
+            <SetTargetTab monthDate={monthDate} initialTargets={targets} campaign={campaign} />
+          )}
           {tab === "Lead Distribution" && <LeadDistributionTab initial={distribution} />}
           {tab === "Lead Sources" && <LeadSourcesTab stats={leadSources} />}
           {tab === "Webhooks" && <WebhooksTab webhooks={webhooks} />}

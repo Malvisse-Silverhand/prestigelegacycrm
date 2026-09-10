@@ -73,6 +73,9 @@ function daysAgoKey(n: number) {
 const CALENDAR_MONTHS = 13;
 
 export type CalendarLeadItem = { id: string; fullName: string };
+// A closed case carries its ANC so the month/week money figures can be summed
+// from the same per-day rows the calendar draws, exactly like the counts are.
+export type CalendarSaleItem = CalendarLeadItem & { anc: number };
 export type CalendarActivityItem = { id: string; label: string; leadId: string | null; leadName: string | null };
 export type CalendarAppointmentItem = {
   id: string;
@@ -87,7 +90,7 @@ export type CalendarAppointmentItem = {
 export type CalendarDay = {
   key: string;
   leads: CalendarLeadItem[];
-  sales: CalendarLeadItem[];
+  sales: CalendarSaleItem[];
   activities: CalendarActivityItem[];
   appointments: CalendarAppointmentItem[];
 };
@@ -133,6 +136,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     { data: teamProfiles },
     { data: activityRows },
     { data: appointmentRows },
+    { data: campaignRow },
   ] = await Promise.all([
       leadsQuery.returns<LeadRow[]>(),
       supabase
@@ -143,7 +147,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         .returns<QuotationForPipeline[]>(),
       supabase
         .from("targets")
-        .select("agent_id, noc_target")
+        .select("agent_id, noc_target, anc_target, approach_target")
         .eq("month", `${todayKey().slice(0, 7)}-01`),
       supabase.from("profiles").select("id"),
       // RLS ("activity visible if lead visible") scopes this to the same leads
@@ -159,6 +163,15 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         .select("id, lead_id, scheduled_at, location, status, leads(full_name)")
         .neq("status", "cancelled")
         .gte("scheduled_at", calendarStartKey),
+      // The viewer's own goal, not the team's: a campaign is a personal
+      // commitment, so a manager looking at team numbers still sees their
+      // own road to target above them.
+      supabase
+        .from("anc_campaigns")
+        .select("name, target_anc, start_date, deadline")
+        .eq("agent_id", profile.id)
+        .eq("is_active", true)
+        .maybeSingle(),
     ]);
 
   const allLeads = leads ?? [];
@@ -183,9 +196,12 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   // so re-scope here to the team this profile can actually see via `profiles` RLS
   // (which IS correctly unit/group-scoped) rather than trusting the raw targets rows.
   const teamProfileIds = new Set((teamProfiles ?? []).map((p) => p.id));
-  const monthTarget = (targets ?? [])
-    .filter((t) => teamProfileIds.has(t.agent_id))
-    .reduce((sum, t) => sum + (t.noc_target ?? 0), 0);
+  const targetsInScope = (targets ?? []).filter((t) => teamProfileIds.has(t.agent_id));
+  const monthTarget = targetsInScope.reduce((sum, t) => sum + (t.noc_target ?? 0), 0);
+  // The money and approach equivalents of monthTarget, scoped the same way:
+  // an agent sees their own row, a manager the sum across their team.
+  const monthAncTarget = targetsInScope.reduce((sum, t) => sum + Number(t.anc_target ?? 0), 0);
+  const approachTargetPerDay = targetsInScope.reduce((sum, t) => sum + (t.approach_target ?? 0), 0);
 
   const openLeadIds = new Set(
     allLeads.filter((l) => OPEN_STAGES.includes(l.pipeline_stage)).map((l) => l.id),
@@ -202,9 +218,12 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   // OPEN_STAGES above -- on purpose, as "potential" money not yet closed
   // either way, where the board's total also includes what has already
   // closed.)
+  // Every lead's quotations, not just the open ones: the same per-lead figure
+  // answers both "what is still in play" (open leads, below) and "what has
+  // actually closed" (won leads, for the goal card and the money on each
+  // closed day in the calendar).
   const quotationsByLead = new Map<string, AncQuotation[]>();
   for (const q of quotations ?? []) {
-    if (!openLeadIds.has(q.lead_id)) continue;
     const entry: AncQuotation = {
       is_customizer: q.is_customizer,
       updated_at: q.updated_at,
@@ -214,11 +233,98 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     if (list) list.push(entry);
     else quotationsByLead.set(q.lead_id, [entry]);
   }
-  let pipelineValue = 0;
-  for (const leadQuotations of quotationsByLead.values()) {
+  const ancByLead = new Map<string, number>();
+  for (const [leadId, leadQuotations] of quotationsByLead) {
     const potential = leadPotentialAnc(leadQuotations);
-    if (potential) pipelineValue += potential.anc;
+    if (potential) ancByLead.set(leadId, potential.anc);
   }
+  let pipelineValue = 0;
+  for (const [leadId, anc] of ancByLead) {
+    if (openLeadIds.has(leadId)) pipelineValue += anc;
+  }
+
+  // ---- Goal tracking -------------------------------------------------------
+  // A won lead's close date is the day it was last moved -- the same stand-in
+  // the activity calendar already uses, so the goal card and the calendar can
+  // never disagree about which month a case landed in.
+  const wonLeads = allLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage));
+  const ancOf = (leadId: string) => ancByLead.get(leadId) ?? 0;
+  const closedAncAllTime = wonLeads.reduce((sum, l) => sum + ancOf(l.id), 0);
+  const monthClosed = wonLeads.filter((l) => dayKey(l.updated_at).startsWith(monthPrefix));
+  const monthAnc = monthClosed.reduce((sum, l) => sum + ancOf(l.id), 0);
+  const weekAnc = wonLeads
+    .filter((l) => dayKey(l.updated_at) >= weekStart)
+    .reduce((sum, l) => sum + ancOf(l.id), 0);
+
+  // Only cases that actually carry a figure count toward the average -- a won
+  // lead with no quotation on file would otherwise drag it toward zero and
+  // make "how many more cases do I need" nonsense.
+  const casesWithAnc = wonLeads.filter((l) => ancOf(l.id) > 0);
+  const avgCaseSize = casesWithAnc.length > 0
+    ? Math.round(closedAncAllTime / casesWithAnc.length)
+    : null;
+
+  const campaign = campaignRow
+    ? (() => {
+        const targetAnc = Number(campaignRow.target_anc);
+        const start = campaignRow.start_date as string;
+        const deadline = campaignRow.deadline as string;
+        // Closings inside the campaign window only, so an old push's numbers
+        // don't inflate the new one.
+        const currentAnc = wonLeads
+          .filter((l) => {
+            const key = dayKey(l.updated_at);
+            return key >= start && key <= deadline;
+          })
+          .reduce((sum, l) => sum + ancOf(l.id), 0);
+        const remaining = Math.max(0, targetAnc - currentAnc);
+        const daysLeft = Math.max(
+          0,
+          Math.ceil((new Date(deadline).getTime() - new Date(today).getTime()) / 86400000),
+        );
+        // Round up: a partial week still has to carry its share, and pacing
+        // against a rounded-down week count would quietly under-set the bar.
+        const weeksLeft = Math.max(1, Math.ceil(daysLeft / 7));
+        return {
+          name: campaignRow.name as string,
+          targetAnc,
+          startDate: start,
+          deadline,
+          currentAnc,
+          remaining,
+          achievementPct: targetAnc > 0 ? Math.round((currentAnc / targetAnc) * 1000) / 10 : 0,
+          daysLeft,
+          weeksLeft,
+          weeklyNeeded: Math.round(remaining / weeksLeft),
+          casesNeeded: avgCaseSize && avgCaseSize > 0 ? Math.ceil(remaining / avgCaseSize) : null,
+        };
+      })()
+    : null;
+
+  // Weeks left in the calendar month, for pacing the monthly target the same
+  // way the campaign paces its own remainder.
+  const [yr, mo] = monthPrefix.split("-").map(Number);
+  const daysInMonth = new Date(yr, mo, 0).getDate();
+  const dayOfMonth = Number(today.slice(8, 10));
+  const monthWeeksLeft = Math.max(1, Math.ceil((daysInMonth - dayOfMonth + 1) / 7));
+  const monthAncRemaining = Math.max(0, monthAncTarget - monthAnc);
+
+  const goal = {
+    campaign,
+    monthAncTarget,
+    monthAnc,
+    monthAncRemaining,
+    monthAncPct: monthAncTarget > 0 ? Math.round((monthAnc / monthAncTarget) * 1000) / 10 : null,
+    // Auto-paced from what is left rather than a flat target/4: by the last
+    // week of a month behind plan, a flat figure understates the real ask.
+    weekAncTarget: monthAncTarget > 0 ? Math.round(monthAncRemaining / monthWeeksLeft) : 0,
+    weekAnc,
+    avgCaseSize,
+    casesNeededThisMonth:
+      avgCaseSize && avgCaseSize > 0 ? Math.ceil(monthAncRemaining / avgCaseSize) : null,
+    approachTargetPerDay,
+    closedAncAllTime,
+  };
 
   const overdue = allLeads.filter(
     (l) => l.follow_up_date && l.follow_up_date < today && OPEN_STAGES.includes(l.pipeline_stage),
@@ -303,7 +409,11 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     if (WON_STAGES.includes(l.pipeline_stage)) {
       const updatedKey = dayKey(l.updated_at);
       if (updatedKey >= calendarStartKey) {
-        dayEntry(updatedKey).sales.push({ id: l.id, fullName: l.full_name });
+        dayEntry(updatedKey).sales.push({
+          id: l.id,
+          fullName: l.full_name,
+          anc: ancByLead.get(l.id) ?? 0,
+        });
       }
     }
   }
@@ -416,6 +526,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     weekDeltaPct,
     monthCount,
     monthTarget,
+    goal,
     pipelineValue,
     overdueCount: overdue.length,
     overdueOldestDays,

@@ -2,23 +2,32 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { TargetRow } from "../types";
+import type { TargetRow, CampaignRow } from "../types";
 import { saveTargets } from "../actions";
 import { ROLE_LABEL } from "@/lib/profile-types";
+import { CampaignGoalCard } from "./campaign-goal-card";
 
 function monthLabel(monthDate: string) {
   const [y, m] = monthDate.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-MY", { month: "short", year: "numeric" }).toUpperCase();
 }
 
-export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string; initialTargets: TargetRow[] }) {
+export function SetTargetTab({
+  monthDate,
+  initialTargets,
+  campaign,
+}: {
+  monthDate: string;
+  initialTargets: TargetRow[];
+  campaign: CampaignRow | null;
+}) {
   const router = useRouter();
   const [rows, setRows] = useState(initialTargets);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function updateRow(agentId: string, field: "ancTarget" | "nocTarget", value: string) {
+  function updateRow(agentId: string, field: "ancTarget" | "nocTarget" | "approachTarget", value: string) {
     setSaved(false);
     const parsed = value === "" ? null : Number(value);
     setRows((prev) => prev.map((r) => (r.agentId === agentId ? { ...r, [field]: parsed } : r)));
@@ -30,7 +39,12 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
       try {
         const result = await saveTargets(
           monthDate,
-          rows.map((r) => ({ agentId: r.agentId, ancTarget: r.ancTarget, nocTarget: r.nocTarget })),
+          rows.map((r) => ({
+            agentId: r.agentId,
+            ancTarget: r.ancTarget,
+            nocTarget: r.nocTarget,
+            approachTarget: r.approachTarget,
+          })),
         );
         if (result.error) {
           setError(result.error);
@@ -45,7 +59,10 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
   }
 
   return (
-    <div className="max-w-[520px] rounded-[18px] border border-sand bg-white px-[22px] pb-[22px] pt-5">
+    <div className="flex max-w-[600px] flex-col gap-4">
+      <CampaignGoalCard campaign={campaign} />
+
+      <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-[22px] pt-5">
       <div className="flex items-center gap-2.5">
         <div className="flex-1 text-[15px] font-bold text-navy">Set Target</div>
         <span className="rounded-[6px] bg-warn-gold-bg px-2 py-1 text-[9.5px] font-bold tracking-[0.06em] text-warn-gold-text">
@@ -53,7 +70,8 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
         </span>
       </div>
       <div className="mt-[3px] text-[11.5px] font-medium text-taupe">
-        Monthly ANC and number of cases (NOC) — yourself and everyone at or below your level
+        Monthly ANC, number of cases (NOC) and first approaches per working day — yourself and
+        everyone at or below your level
       </div>
 
       {rows.length === 0 ? (
@@ -62,14 +80,15 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
         </div>
       ) : (
         <>
-          <div className="mt-4 grid grid-cols-[1fr_84px_68px] items-center gap-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-taupe">
+          <div className="mt-4 grid grid-cols-[1fr_78px_56px_66px] items-center gap-2 text-[9.5px] font-bold uppercase tracking-[0.08em] text-taupe">
             <div>Member</div>
             <div className="text-right">ANC (RM)</div>
             <div className="text-right">NOC</div>
+            <div className="text-right">Appr/day</div>
           </div>
           <div className="mt-2 flex flex-col gap-2">
             {rows.map((row) => (
-              <div key={row.agentId} className="grid grid-cols-[1fr_84px_68px] items-center gap-2.5">
+              <div key={row.agentId} className="grid grid-cols-[1fr_78px_56px_66px] items-center gap-2">
                 <div className="min-w-0">
                   <div className="truncate text-[12.5px] font-semibold text-navy">{row.fullName}</div>
                   <div className="truncate text-[10px] font-semibold uppercase tracking-[0.06em] text-taupe-2">
@@ -78,14 +97,23 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
                 </div>
                 <input
                   type="number"
+                  aria-label={`ANC target for ${row.fullName}`}
                   value={row.ancTarget ?? ""}
                   onChange={(e) => updateRow(row.agentId, "ancTarget", e.target.value)}
                   className="h-[34px] w-full rounded-[9px] border border-sand-2 bg-cream px-2.5 text-right text-[12.5px] font-bold text-navy outline-none focus:border-gold"
                 />
                 <input
                   type="number"
+                  aria-label={`NOC target for ${row.fullName}`}
                   value={row.nocTarget ?? ""}
                   onChange={(e) => updateRow(row.agentId, "nocTarget", e.target.value)}
+                  className="h-[34px] w-full rounded-[9px] border border-sand-2 bg-cream px-2.5 text-right text-[12.5px] font-bold text-navy outline-none focus:border-gold"
+                />
+                <input
+                  type="number"
+                  aria-label={`Daily approach target for ${row.fullName}`}
+                  value={row.approachTarget ?? ""}
+                  onChange={(e) => updateRow(row.agentId, "approachTarget", e.target.value)}
                   className="h-[34px] w-full rounded-[9px] border border-sand-2 bg-cream px-2.5 text-right text-[12.5px] font-bold text-navy outline-none focus:border-gold"
                 />
               </div>
@@ -105,6 +133,7 @@ export function SetTargetTab({ monthDate, initialTargets }: { monthDate: string;
       >
         {pending ? "Saving…" : "Save targets"}
       </button>
+      </div>
     </div>
   );
 }

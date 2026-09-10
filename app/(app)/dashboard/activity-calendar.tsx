@@ -8,6 +8,7 @@ import type {
   CalendarActivityItem,
   CalendarAppointmentItem,
 } from "./data";
+import { LogApproachModal } from "./log-approach-modal";
 
 import {
   keyOf,
@@ -75,6 +76,7 @@ export function ActivityCalendar({
   onOffsetChange: (updater: (o: number) => number) => void;
 }) {
   const [openCell, setOpenCell] = useState<Cell | null>(null);
+  const [loggingApproach, setLoggingApproach] = useState(false);
 
   const byDay = useMemo(() => new Map(days.map((d) => [d.key, d])), [days]);
 
@@ -183,11 +185,24 @@ export function ActivityCalendar({
   return (
     <div className={`rounded-[18px] border border-sand bg-white dark:border-white/10 dark:bg-[#12283f] ${compact ? "p-4" : "p-3.5"}`}>
       {openCell && <DayModal cell={openCell} onClose={() => setOpenCell(null)} />}
+      <LogApproachModal open={loggingApproach} onClose={() => setLoggingApproach(false)} />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className={`font-bold text-navy dark:text-[#eef3f8] ${compact ? "text-[13.5px]" : "text-[13px]"}`}>
           Activity calendar
         </div>
+        {/* An approach logged from here lands on today's cell, which is the
+            cell you were most likely looking at when you remembered it. */}
+        <button
+          type="button"
+          onClick={() => setLoggingApproach(true)}
+          className="press ml-auto flex items-center gap-1.5 rounded-[9px] border border-sand-2 bg-cream px-2.5 py-[5px] text-[11px] font-semibold text-navy hover:border-navy dark:border-white/10 dark:bg-[#0b1a2b] dark:text-[#eef3f8]"
+        >
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+            <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z" />
+          </svg>
+          Log approach
+        </button>
         <div className="flex rounded-[9px] border border-sand-2 bg-cream p-[2px] dark:border-white/10 dark:bg-[#0b1a2b]">
           {GRANULARITIES.map((g) => (
             <button

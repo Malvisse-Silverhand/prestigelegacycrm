@@ -40,6 +40,20 @@ export function anchorFor(granularity: Granularity, offset: number, now = new Da
   return new Date(now.getFullYear() + offset, 0, 1);
 }
 
+// The six working days the approach scoreboard runs over. Matches how the
+// weekly approach figure is built in the field -- 15 a day across Mon-Sat is
+// the 90-a-week number, so Sunday carries no target and isn't shown.
+export const APPROACH_DAYS = [
+  { offset: 0, label: "Isnin" },
+  { offset: 1, label: "Selasa" },
+  { offset: 2, label: "Rabu" },
+  { offset: 3, label: "Khamis" },
+  { offset: 4, label: "Jumaat" },
+  { offset: 5, label: "Sabtu" },
+];
+
+export type ApproachDay = { key: string; label: string; count: number; isToday: boolean; isFuture: boolean };
+
 export type PeriodStats = {
   dayCount: number;
   dayPrevCount: number;
@@ -51,6 +65,9 @@ export type PeriodStats = {
   monthLabel: string;
   closedCount: number;
   closedLabel: string;
+  /** ANC of everything closed inside the visible month. */
+  closedAnc: number;
+  approachDays: ApproachDay[];
 };
 
 function sumLeads(days: Map<string, CalendarDay>, keys: string[]) {
@@ -85,6 +102,22 @@ export function periodStats(
   const inMonth = calendarDays.filter((d) => d.key.startsWith(monthPrefix));
   const monthCount = inMonth.reduce((n, d) => n + d.leads.length, 0);
   const closedCount = inMonth.reduce((n, d) => n + d.sales.length, 0);
+  const closedAnc = inMonth.reduce(
+    (n, d) => n + d.sales.reduce((s, sale) => s + sale.anc, 0),
+    0,
+  );
+
+  const approachWeekStart = startOfWeek(anchor);
+  const approachDays: ApproachDay[] = APPROACH_DAYS.map(({ offset, label }) => {
+    const key = keyOf(addDays(approachWeekStart, offset));
+    return {
+      key,
+      label,
+      count: byKey.get(key)?.leads.length ?? 0,
+      isToday: key === todayKey,
+      isFuture: key > todayKey,
+    };
+  });
 
   const sameMonth = monthPrefix === todayKey.slice(0, 7);
   const monthName = `${MONTH_LONG[anchor.getMonth()]} ${anchor.getFullYear()}`;
@@ -98,11 +131,13 @@ export function periodStats(
     weekPrevCount,
     weekLabel:
       keyOf(weekStart) === keyOf(startOfWeek(now))
-        ? "This week"
-        : `Week of ${weekStart.getDate()} ${MONTH_SHORT[weekStart.getMonth()]}`,
+        ? "Leads this week"
+        : `Leads · week of ${weekStart.getDate()} ${MONTH_SHORT[weekStart.getMonth()]}`,
     monthCount,
-    monthLabel: sameMonth ? "This month" : monthName,
+    monthLabel: sameMonth ? "Leads this month" : `Leads · ${monthName}`,
     closedCount,
     closedLabel: sameMonth ? "This month closing" : `Closing · ${monthName}`,
+    closedAnc,
+    approachDays,
   };
 }

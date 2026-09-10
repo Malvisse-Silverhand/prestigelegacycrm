@@ -1,0 +1,333 @@
+"use client";
+
+import Link from "next/link";
+import type { DashboardStats } from "./data";
+import type { ApproachDay } from "./calendar-period";
+
+type Goal = DashboardStats["goal"];
+
+function fmtRM(n: number) {
+  return `RM${Math.round(n).toLocaleString("en-MY")}`;
+}
+
+function fmtDeadline(iso: string) {
+  const d = new Date(iso);
+  return d
+    .toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })
+    .toUpperCase();
+}
+
+// Where the goal should be by now, as a share of its whole window. Progress
+// on its own can't say whether 47% is good -- 47% with three weeks left is
+// not the same story as 47% with three days left, and the difference is the
+// only thing worth putting a colour on.
+function paceOf(pct: number, elapsedPct: number) {
+  if (pct >= elapsedPct) return "ahead" as const;
+  if (pct >= elapsedPct - 10) return "close" as const;
+  return "behind" as const;
+}
+
+const PACE_STYLE = {
+  ahead: {
+    bar: "bg-green",
+    chip: "bg-success-bg text-green",
+    label: "Ahead of pace",
+  },
+  close: {
+    bar: "bg-gold",
+    chip: "bg-warn-gold-bg text-warn-gold-text",
+    label: "On pace",
+  },
+  behind: {
+    bar: "bg-alert-red",
+    chip: "bg-alert-red-bg text-alert-red",
+    label: "Behind pace",
+  },
+};
+
+function ProgressBar({ pct, tone }: { pct: number; tone: keyof typeof PACE_STYLE }) {
+  return (
+    <div className="h-[10px] w-full overflow-hidden rounded-full bg-sand-2 dark:bg-white/10">
+      <div
+        className={`h-full rounded-full transition-[width] ${PACE_STYLE[tone].bar}`}
+        style={{ width: `${Math.min(100, Math.max(pct, pct > 0 ? 2 : 0))}%` }}
+      />
+    </div>
+  );
+}
+
+function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="rounded-[13px] border border-sand bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#12283f]">
+      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe dark:text-[#7f93aa]">
+        {label}
+      </div>
+      <div
+        className={`mt-0.5 text-[19px] font-extrabold tracking-[-0.03em] ${
+          accent ? "text-green" : "text-navy dark:text-[#eef3f8]"
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+// Mon-Sat, against the daily approach target from Set Target. An "approach"
+// is a lead reaching the system: the Quick Action form and every other way a
+// lead gets created all count the same, so the scoreboard can't disagree with
+// Leads Manager about how much work happened.
+function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: number }) {
+  const done = days.filter((d) => !d.isFuture).reduce((n, d) => n + d.count, 0);
+  const weekTarget = target * days.length;
+
+  return (
+    <div className="rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">Daily approach</div>
+        {weekTarget > 0 ? (
+          <div className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
+            {done} of {weekTarget} this week
+          </div>
+        ) : (
+          <Link href="/settings" className="text-[11px] font-semibold text-taupe hover:text-navy">
+            Set a target
+          </Link>
+        )}
+      </div>
+
+      <div className="mt-2.5 grid grid-cols-6 gap-1.5">
+        {days.map((d) => {
+          const hit = target > 0 && d.count >= target;
+          return (
+            <div
+              key={d.key}
+              className={`rounded-[9px] border px-1 py-2 text-center ${
+                d.isToday
+                  ? "border-navy bg-navy dark:border-gold"
+                  : hit
+                    ? "border-transparent bg-success-bg"
+                    : d.isFuture
+                      ? "border-dashed border-sand-2 bg-transparent"
+                      : "border-transparent bg-cream dark:bg-white/5"
+              }`}
+            >
+              <div
+                className={`text-[9px] font-bold uppercase tracking-[0.04em] ${
+                  d.isToday ? "text-white/60" : "text-taupe-2 dark:text-[#7f93aa]"
+                }`}
+              >
+                {d.label.slice(0, 3)}
+              </div>
+              <div
+                className={`text-[15px] font-extrabold ${
+                  d.isToday
+                    ? "text-white"
+                    : hit
+                      ? "text-green"
+                      : d.isFuture
+                        ? "text-taupe"
+                        : "text-navy dark:text-[#eef3f8]"
+                }`}
+              >
+                {d.isFuture ? "–" : d.count}
+              </div>
+              {target > 0 && (
+                <div
+                  className={`text-[9px] font-semibold ${
+                    d.isToday ? "text-white/45" : "text-taupe dark:text-[#7f93aa]"
+                  }`}
+                >
+                  /{target}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function AncGoalPanel({
+  goal,
+  approachDays,
+}: {
+  goal: Goal;
+  approachDays: ApproachDay[];
+}) {
+  const { campaign } = goal;
+
+  // A campaign paces against its own window; without one, the month is the
+  // window and the figures come from Set Target instead.
+  const headline = campaign
+    ? {
+        eyebrow: `${campaign.name} · Road to ${fmtRM(campaign.targetAnc)}`,
+        deadline: fmtDeadline(campaign.deadline),
+        current: campaign.currentAnc,
+        target: campaign.targetAnc,
+        remaining: campaign.remaining,
+        pct: campaign.achievementPct,
+        elapsedPct: elapsedPctOf(campaign.startDate, campaign.deadline),
+        weeklyNeeded: campaign.weeklyNeeded,
+        casesNeeded: campaign.casesNeeded,
+        footnote:
+          campaign.daysLeft > 0
+            ? `${campaign.daysLeft} day${campaign.daysLeft === 1 ? "" : "s"} left`
+            : "Deadline reached",
+      }
+    : {
+        eyebrow: "Monthly ANC target",
+        deadline: null,
+        current: goal.monthAnc,
+        target: goal.monthAncTarget,
+        remaining: goal.monthAncRemaining,
+        pct: goal.monthAncPct ?? 0,
+        elapsedPct: monthElapsedPct(),
+        weeklyNeeded: goal.weekAncTarget,
+        casesNeeded: goal.casesNeededThisMonth,
+        footnote: null,
+      };
+
+  // Nothing to pace against: rather than a card full of zeroes, point at the
+  // one screen that fixes it.
+  if (headline.target <= 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-sand-2 bg-white px-5 py-4 dark:border-white/10 dark:bg-[#12283f]">
+        <div className="text-[13px] font-bold text-navy dark:text-[#eef3f8]">No ANC target set</div>
+        <div className="mt-0.5 text-[12px] font-medium text-muted dark:text-[#7f93aa]">
+          Set a monthly ANC target — or a goal with a deadline — in{" "}
+          <Link href="/settings" className="font-semibold text-navy underline underline-offset-2 dark:text-gold">
+            Settings › Set Target
+          </Link>
+          , and this becomes your progress tracker.
+        </div>
+        <div className="mt-3">
+          <ApproachScoreboard days={approachDays} target={goal.approachTargetPerDay} />
+        </div>
+      </div>
+    );
+  }
+
+  const tone = paceOf(headline.pct, headline.elapsedPct);
+  const style = PACE_STYLE[tone];
+
+  return (
+    <div className="rounded-2xl border border-sand bg-cream p-4 dark:border-white/10 dark:bg-[#0f2233] lg:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-taupe dark:text-[#7f93aa]">
+            {headline.eyebrow}
+          </div>
+          <div className="mt-0.5 flex items-center gap-2">
+            <span className="text-[17px] font-extrabold tracking-[-0.02em] text-navy dark:text-[#eef3f8]">
+              Overall target progress
+            </span>
+            {headline.deadline && (
+              <span className="rounded-[6px] bg-navy px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white dark:bg-white/10">
+                {headline.deadline}
+              </span>
+            )}
+          </div>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${style.chip}`}>
+          {style.label} · {headline.pct}%
+        </span>
+      </div>
+
+      <div className="mt-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <Tile label="Current ANC" value={fmtRM(headline.current)} accent />
+        <Tile label="Target" value={fmtRM(headline.target)} />
+        <Tile label="Remaining" value={fmtRM(headline.remaining)} />
+        <Tile label="Achievement" value={`${headline.pct}%`} />
+      </div>
+
+      <div className="mt-3.5 rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe dark:text-[#7f93aa]">
+            Overall progress
+          </span>
+          <span className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
+            {headline.footnote}
+          </span>
+        </div>
+        <div className="mt-2">
+          <ProgressBar pct={headline.pct} tone={tone} />
+        </div>
+        <div className="mt-2 text-[11.5px] font-medium text-muted dark:text-[#7f93aa]">
+          {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
+        </div>
+      </div>
+
+      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-2">
+        <div className="rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">This month</span>
+            <span className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
+              {fmtRM(goal.monthAnc)}
+              {goal.monthAncTarget > 0 ? ` of ${fmtRM(goal.monthAncTarget)}` : ""}
+            </span>
+          </div>
+          <div className="mt-2">
+            <ProgressBar
+              pct={goal.monthAncPct ?? 0}
+              tone={paceOf(goal.monthAncPct ?? 0, monthElapsedPct())}
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-muted dark:text-[#7f93aa]">
+            <span>
+              This week <strong className="font-bold text-navy dark:text-[#eef3f8]">{fmtRM(goal.weekAnc)}</strong>
+              {goal.weekAncTarget > 0 ? ` of ${fmtRM(goal.weekAncTarget)}` : ""}
+            </span>
+            {goal.avgCaseSize != null && (
+              <span>
+                Avg case <strong className="font-bold text-navy dark:text-[#eef3f8]">{fmtRM(goal.avgCaseSize)}</strong>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <ApproachScoreboard days={approachDays} target={goal.approachTargetPerDay} />
+      </div>
+    </div>
+  );
+}
+
+// How far through the campaign window today is, as a percentage.
+function elapsedPctOf(startDate: string, deadline: string) {
+  const start = new Date(startDate).getTime();
+  const end = new Date(deadline).getTime();
+  const now = Date.now();
+  if (end <= start) return 100;
+  return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+}
+
+function monthElapsedPct() {
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return Math.round((now.getDate() / daysInMonth) * 100);
+}
+
+function tipFor(
+  tone: keyof typeof PACE_STYLE,
+  remaining: number,
+  weeklyNeeded: number,
+  casesNeeded: number | null,
+  avgCaseSize: number | null,
+) {
+  if (remaining <= 0) return "Target reached. Everything from here is ahead of plan.";
+
+  const casesPart =
+    casesNeeded != null && avgCaseSize != null
+      ? ` That's about ${casesNeeded} more case${casesNeeded === 1 ? "" : "s"} at your ${fmtRM(avgCaseSize)} average.`
+      : " Close a case with a quotation on it and this starts estimating cases needed too.";
+
+  switch (tone) {
+    case "ahead":
+      return `${fmtRM(remaining)} to go and you're ahead of schedule — ${fmtRM(weeklyNeeded)} a week holds it.${casesPart}`;
+    case "close":
+      return `${fmtRM(remaining)} to go. Keep ${fmtRM(weeklyNeeded)} a week coming and you land it.${casesPart}`;
+    default:
+      return `${fmtRM(remaining)} to go and the pace has slipped — it needs ${fmtRM(weeklyNeeded)} a week from here.${casesPart}`;
+  }
+}

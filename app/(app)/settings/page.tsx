@@ -4,6 +4,7 @@ import {
   getOrgTree,
   getAssignmentOptions,
   getTargetsForMonth,
+  getMyCampaign,
   getDistributionSettings,
   getAuditLog,
   getLeadSourceStats,
@@ -51,6 +52,7 @@ export default async function SettingsPage() {
     orgTree,
     assignmentOptions,
     targets,
+    campaign,
     distribution,
     auditLog,
     leadSources,
@@ -63,6 +65,7 @@ export default async function SettingsPage() {
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
       getTargetsForMonth(profile, monthDate),
+      getMyCampaign(profile),
       isManager ? getDistributionSettings() : Promise.resolve(EMPTY_DISTRIBUTION),
       // Audit Log is SuperAdmin-only -- don't even fetch it for a Group Manager.
       profile.role === "superadmin" ? getAuditLog(profile) : Promise.resolve(null),
@@ -83,6 +86,7 @@ export default async function SettingsPage() {
       assignmentOptions={assignmentOptions}
       monthDate={monthDate}
       targets={targets}
+      campaign={campaign}
       distribution={distribution}
       auditLog={auditLog}
       leadSources={leadSources}

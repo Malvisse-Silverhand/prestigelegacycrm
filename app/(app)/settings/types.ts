@@ -44,6 +44,18 @@ export type TargetRow = {
   role: Role;
   ancTarget: number | null;
   nocTarget: number | null;
+  /** First approaches per working day. Null means no approach target set. */
+  approachTarget: number | null;
+};
+
+// The "Road to RM130K" goal behind the dashboard's headline card. Spans
+// months and carries its own deadline, which is why it isn't a TargetRow.
+export type CampaignRow = {
+  id: string;
+  name: string;
+  targetAnc: number;
+  startDate: string;
+  deadline: string;
 };
 
 export type DistributionSettings = {

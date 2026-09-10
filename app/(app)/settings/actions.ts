@@ -433,7 +433,10 @@ export async function updateUserAssignment(input: {
   return { error: null };
 }
 
-export async function saveTargets(monthDate: string, rows: { agentId: string; ancTarget: number | null; nocTarget: number | null }[]) {
+export async function saveTargets(
+  monthDate: string,
+  rows: { agentId: string; ancTarget: number | null; nocTarget: number | null; approachTarget: number | null }[],
+) {
   const profile = await getCurrentProfile();
   // Every role can set targets for themselves and their downline, so this
   // checks target scope rather than canManageSettings -- see
@@ -464,12 +467,79 @@ export async function saveTargets(monthDate: string, rows: { agentId: string; an
       month: monthDate,
       anc_target: row.ancTarget,
       noc_target: row.nocTarget,
+      approach_target: row.approachTarget,
     })),
     { onConflict: "agent_id,month" },
   );
   if (error) return { error: "Couldn't save targets. Please try again." };
 
   revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  return { error: null };
+}
+
+// The campaign goal behind the dashboard's headline card. Always the
+// caller's own -- a manager setting someone else's monthly numbers is
+// normal, but "my road to RM130k" is a personal commitment, so there is no
+// agentId parameter to spoof.
+export async function saveCampaign(input: {
+  name: string;
+  targetAnc: number;
+  startDate: string;
+  deadline: string;
+}) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const name = input.name.trim();
+  if (!name) return { error: "Give this goal a name." };
+  if (!Number.isFinite(input.targetAnc) || input.targetAnc <= 0) {
+    return { error: "Set a target amount above zero." };
+  }
+  if (input.deadline < input.startDate) {
+    return { error: "The deadline can't be before the start date." };
+  }
+
+  const supabase = await createClient();
+  // One running campaign per agent is a partial unique index, so replacing
+  // the old one has to happen before the new row goes in rather than relying
+  // on an upsert: the two rows differ by id, not by the indexed column.
+  await supabase
+    .from("anc_campaigns")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("agent_id", profile.id)
+    .eq("is_active", true);
+
+  const { error } = await supabase.from("anc_campaigns").insert({
+    agent_id: profile.id,
+    name,
+    target_anc: input.targetAnc,
+    start_date: input.startDate,
+    deadline: input.deadline,
+  });
+  if (error) return { error: "Couldn't save this goal. Please try again." };
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  return { error: null };
+}
+
+// Retires the running campaign without putting a new one in its place. The
+// row stays (is_active = false) so past pushes remain on record.
+export async function clearCampaign() {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("anc_campaigns")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("agent_id", profile.id)
+    .eq("is_active", true);
+  if (error) return { error: "Couldn't clear this goal. Please try again." };
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
   return { error: null };
 }
 

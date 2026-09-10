@@ -14,6 +14,7 @@ import { UpcomingAppointmentsCard, RecentLeadsCard } from "@/components/dashboar
 import { QuickAction } from "./quick-action";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
+import { AncGoalPanel } from "./anc-goal-panel";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -133,6 +134,9 @@ export function DashboardView({
         </div>
 
         <div className="flex flex-col gap-[18px] px-[30px] py-[22px] pb-[30px]">
+          {/* Above everything else: where the year's money actually stands. */}
+          <AncGoalPanel goal={stats.goal} approachDays={period.approachDays} />
+
           <div className="grid grid-cols-5 gap-3">
             <StatCard
               label={period.dayLabel}
@@ -156,12 +160,20 @@ export function DashboardView({
               delta={stats.monthTarget > 0 ? `target ${stats.monthTarget}` : "no target set"}
               muted
             />
-            <StatCard
-              label={period.closedLabel}
-              value={period.closedCount}
-              delta="policies inforced"
-              muted
-            />
+            {/* Gold, not white: closings are the one number on this row that
+                is money in rather than work in progress. */}
+            <div className="rounded-2xl border border-[#f0dfb4] bg-gold px-3.5 py-3">
+              <div className="text-[11px] font-semibold text-navy/70">{period.closedLabel}</div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
+                  {fmtRM(period.closedAnc)}
+                </span>
+                <span className="text-[11px] font-bold text-navy/70">ANC</span>
+              </div>
+              <div className="text-[10.5px] font-semibold text-navy/70">
+                {period.closedCount} polic{period.closedCount === 1 ? "y" : "ies"} inforced
+              </div>
+            </div>
             <div className="rounded-2xl bg-navy px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-white/60">Pipeline value</span>
@@ -448,14 +460,27 @@ export function DashboardView({
             <MobileStat value={period.closedCount} label="Closed" />
           </div>
           <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-gold px-3.5 py-2.5 text-navy">
-            <span className="text-[10.5px] font-bold text-[#5c4a1c]">Pipeline value · ANC</span>
+            <div>
+              <span className="text-[10.5px] font-bold text-[#5c4a1c]">Closed · ANC inforced</span>
+              <div className="text-[9.5px] font-semibold text-[#5c4a1c]">
+                {period.closedCount} polic{period.closedCount === 1 ? "y" : "ies"} inforced
+              </div>
+            </div>
             <span className="text-[19px] font-extrabold tracking-[-0.03em]">
+              {fmtRM(period.closedAnc)}
+            </span>
+          </div>
+          <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-white/10 px-3.5 py-2.5">
+            <span className="text-[10.5px] font-bold text-white/60">Pipeline value · ANC</span>
+            <span className="text-[17px] font-extrabold tracking-[-0.03em] text-white">
               {fmtRM(stats.pipelineValue)}
             </span>
           </div>
         </div>
 
         <div className="flex flex-col gap-[11px] px-5 pt-4">
+          <AncGoalPanel goal={stats.goal} approachDays={period.approachDays} />
+
           <MobileAlert href="/leads?view=overdue" tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
           <MobileAlert href="/leads?view=followup_today" tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
           <MobileAlert href="/leads?view=no_quotation" tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />

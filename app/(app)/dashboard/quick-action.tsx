@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AddLeadModal } from "@/app/(app)/leads/add-lead-modal";
+import { LogApproachModal } from "./log-approach-modal";
 import { LeadsIcon, CalendarIcon, QuotationIcon, WaFlowIcon } from "@/components/icons";
 
 const LINKS = [
@@ -21,6 +22,7 @@ const LINKS = [
 export function QuickAction({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
+  const [loggingApproach, setLoggingApproach] = useState(false);
 
   return (
     <div className="relative flex-none">
@@ -48,6 +50,21 @@ export function QuickAction({ compact = false }: { compact?: boolean }) {
             <div className="px-2 pt-1 pb-1.5 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
               Quick action
             </div>
+            {/* First in the list on purpose: this is the one done many times
+                a day, standing up, between conversations. */}
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setLoggingApproach(true);
+              }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-semibold text-navy hover:bg-cream dark:text-[#eef3f8] dark:hover:bg-white/5"
+            >
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z" />
+              </svg>
+              Log an approach
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -57,7 +74,7 @@ export function QuickAction({ compact = false }: { compact?: boolean }) {
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-semibold text-navy hover:bg-cream dark:text-[#eef3f8] dark:hover:bg-white/5"
             >
               <LeadsIcon width={15} height={15} className="text-green" />
-              Add a lead
+              Add a lead (full form)
             </button>
             {LINKS.map(({ href, label, icon: Icon }) => (
               <Link
@@ -75,6 +92,7 @@ export function QuickAction({ compact = false }: { compact?: boolean }) {
       )}
 
       <AddLeadModal open={addingLead} onClose={() => setAddingLead(false)} />
+      <LogApproachModal open={loggingApproach} onClose={() => setLoggingApproach(false)} />
     </div>
   );
 }
