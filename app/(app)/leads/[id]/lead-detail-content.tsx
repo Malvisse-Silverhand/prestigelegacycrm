@@ -428,7 +428,13 @@ export function LeadDetailContent({
                       <span className="text-[13.5px] font-semibold text-navy">
                         {activityLabel(a)}
                       </span>
-                      <span className="text-[11.5px] font-medium text-taupe">
+                      {/* timeAgo() reads Date.now(), so the server's render and
+                          the client's hydration pass -- moments apart -- can
+                          disagree right at a minute boundary. suppressHydration
+                          Warning accepts that one-off mismatch instead of
+                          reporting it; the client's value is the correct one
+                          for the reader either way. */}
+                      <span className="text-[11.5px] font-medium text-taupe" suppressHydrationWarning>
                         {a.profiles?.full_name ?? "System"} · {timeAgo(a.created_at)}
                       </span>
                     </div>

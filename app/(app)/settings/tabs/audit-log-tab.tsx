@@ -43,7 +43,10 @@ export function AuditLogTab({ entries }: { entries: AuditEntry[] }) {
         {entries.map((entry) => (
           <div key={entry.id} className="flex items-center justify-between gap-4 border-t border-sand-3 py-3 first:border-t-0">
             <div className="text-[12.5px] font-medium text-navy">{describe(entry)}</div>
-            <div className="flex-none text-[11px] text-taupe">{timeAgo(entry.createdAt)}</div>
+            {/* Same Date.now()-in-render race as Lead Detail's activity
+                timeline: server render and client hydration a moment apart
+                can disagree right at an hour boundary. */}
+            <div className="flex-none text-[11px] text-taupe" suppressHydrationWarning>{timeAgo(entry.createdAt)}</div>
           </div>
         ))}
       </div>

@@ -532,9 +532,20 @@ export async function deleteUser(userId: string) {
     };
   }
 
+  // None of these FKs cascade or set-null on their own (only profiles.id ->
+  // auth.users does), so any of them still pointing at this user blocks the
+  // delete at the database level -- surfaced by Supabase as an opaque
+  // "Database error deleting user" with no indication of which table.
   await admin.from("profiles").update({ parent_id: null }).eq("parent_id", userId);
   await admin.from("audit_log").update({ target_id: null }).eq("target_id", userId);
+  await admin.from("audit_log").update({ actor_id: null }).eq("actor_id", userId);
   await admin.from("units").update({ group_manager_id: null }).eq("group_manager_id", userId);
+  await admin.from("lead_activity").update({ actor_id: null }).eq("actor_id", userId);
+  await admin.from("quotations").update({ agent_id: null }).eq("agent_id", userId);
+  await admin.from("wa_templates").update({ created_by: null }).eq("created_by", userId);
+  await admin.from("webhooks").update({ created_by: null }).eq("created_by", userId);
+  // Target quotas have no meaning once the agent they were set for is gone.
+  await admin.from("targets").delete().eq("agent_id", userId);
 
   // Deleting the auth user cascades to the profile row (profiles.id
   // references auth.users on delete cascade).

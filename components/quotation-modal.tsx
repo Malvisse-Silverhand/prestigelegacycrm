@@ -70,7 +70,14 @@ function QuotationModalPanel({ url, title, onClose }: { url: string; title: stri
             </svg>
           </button>
         </div>
-        <iframe ref={iframeRef} src={url} title={title} className="min-h-0 flex-1 border-0 bg-cream" />
+        {/* web-share: the customizer's "Hantar WhatsApp" button calls
+            navigator.share() to hand the PDF straight to the share sheet on
+            mobile. Without this delegation the browser silently blocks the
+            call from inside the iframe with a NotAllowedError, even though
+            navigator.canShare() (which isn't gated the same way) already said
+            yes -- the tool falls back to a plain download either way, but
+            the delegation lets the better path actually work. */}
+        <iframe ref={iframeRef} src={url} title={title} allow="web-share" className="min-h-0 flex-1 border-0 bg-cream" />
       </div>
     </div>
   );

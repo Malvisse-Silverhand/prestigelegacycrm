@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/profile-types";
 
@@ -11,7 +12,13 @@ function initialsFrom(name: string) {
   return (first + last).toUpperCase() || "?";
 }
 
-export async function getCurrentProfile(): Promise<CurrentProfile | null> {
+// auth.getUser() always revalidates against the Auth server -- unlike
+// getSession(), it's a real network round trip every time, by design. A
+// single request commonly calls getCurrentProfile() more than once (a
+// Server Action, then the page it revalidates re-rendering in the same
+// response), which without this would fire that same GET /auth/v1/user
+// request back to back. React's cache() memoizes it per request instead.
+export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,7 +26,7 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   if (!user) return null;
   return getProfileById(user.id);
-}
+});
 
 // `units` has two FK paths to/from `profiles` (profiles.unit_id -> units.id,
 // and units.group_manager_id -> profiles.id), so the embed must name the
