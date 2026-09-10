@@ -1,17 +1,188 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CurrentProfile } from "@/lib/profile-types";
+import type { CurrentProfile, Role } from "@/lib/profile-types";
 import { computeAgentMetrics, type MinimalLead, type MinimalActivity } from "@/app/(app)/team/metrics";
 import { WON_STAGES } from "@/lib/pipeline-stages";
+import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
+import { malaysiaDayKey, malaysiaDaysAgo } from "@/lib/malaysia-date";
 
 type QuotationRow = {
   id: string;
   lead_id: string;
   status: string;
   created_at: string;
-  quotation_plans: { sort_order: number; monthly_contribution: number | null }[];
+  updated_at?: string | null;
+  is_customizer?: string | boolean | null;
+  quotation_plans: {
+    sort_order: number;
+    monthly_contribution: number | null;
+    annual_contribution?: number | null;
+  }[];
 };
 
-export type MinimalLeadWithSource = MinimalLead & { lead_source?: string | null; interest?: string | null };
+// Everyone this person is allowed to look at. profiles RLS is already scoped
+// correctly per role (superadmin everyone, GM their units and reports, UM
+// their unit, AUM their agents, agent themselves), so the query IS the
+// permission check -- there is no scope rule repeated here to fall out of
+// step with the database.
+export type ScopedMember = {
+  id: string;
+  fullName: string;
+  role: Role;
+  avatarInitials: string | null;
+  unitId: string | null;
+};
+
+export async function getScopedMembers(profile: CurrentProfile): Promise<ScopedMember[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, role, avatar_initials, unit_id")
+    .eq("is_active", true)
+    .order("full_name");
+
+  const rows = (data ?? []).map((p) => ({
+    id: p.id as string,
+    fullName: p.full_name as string,
+    role: p.role as Role,
+    avatarInitials: (p.avatar_initials as string | null) ?? null,
+    unitId: (p.unit_id as string | null) ?? null,
+  }));
+
+  // An agent whose own row somehow isn't readable still gets themselves --
+  // the personal view is the one thing nobody should be locked out of.
+  return rows.some((r) => r.id === profile.id)
+    ? rows
+    : [
+        {
+          id: profile.id,
+          fullName: profile.full_name,
+          role: profile.role,
+          avatarInitials: profile.avatar_initials,
+          unitId: profile.unit_id,
+        },
+        ...rows,
+      ];
+}
+
+export type PersonalStats = ReturnType<typeof computePersonalStats>;
+
+// One person's own numbers, from the same rows the team-wide charts use.
+// `leads` arrives already RLS-scoped, so this only has to narrow by owner.
+export function computePersonalStats(
+  memberId: string,
+  leads: MinimalLeadWithSource[],
+  quotations: PersonalQuotation[],
+  activities: MinimalActivity[],
+  staleAfterDays: number,
+  target: { ancTarget: number | null; nocTarget: number | null; approachTarget: number | null } | null,
+) {
+  const mine = leads.filter((l) => l.agent_id === memberId);
+  const mineIds = new Set(mine.map((l) => l.id));
+  const today = malaysiaDayKey();
+  const monthPrefix = today.slice(0, 7);
+  const weekStart = malaysiaDaysAgo(6);
+
+  // Same per-lead ANC rule as the dashboard and every lead card: the
+  // customizer quotation over the calculator estimate, newest within a kind.
+  const byLead = new Map<string, AncQuotation[]>();
+  for (const q of quotations) {
+    if (!mineIds.has(q.lead_id)) continue;
+    const entry: AncQuotation = {
+      is_customizer: q.is_customizer ?? null,
+      updated_at: q.updated_at ?? q.created_at,
+      quotation_plans: (q.quotation_plans ?? []).map((p) => ({
+        sort_order: p.sort_order,
+        monthly_contribution: p.monthly_contribution,
+        annual_contribution: p.annual_contribution ?? null,
+      })),
+    };
+    const list = byLead.get(q.lead_id);
+    if (list) list.push(entry);
+    else byLead.set(q.lead_id, [entry]);
+  }
+  const ancOf = (leadId: string) => leadPotentialAnc(byLead.get(leadId))?.anc ?? 0;
+
+  const won = mine.filter((l) => WON_STAGES.includes(l.pipeline_stage));
+  const wonThisMonth = won.filter((l) => malaysiaDayKey(l.updated_at ?? l.created_at).startsWith(monthPrefix));
+
+  const closedAnc = won.reduce((sum, l) => sum + ancOf(l.id), 0);
+  const closedAncThisMonth = wonThisMonth.reduce((sum, l) => sum + ancOf(l.id), 0);
+
+  const openAnc = mine
+    .filter((l) => !WON_STAGES.includes(l.pipeline_stage) && l.pipeline_stage !== "closed_lost")
+    .reduce((sum, l) => sum + ancOf(l.id), 0);
+
+  const metrics = computeAgentMetrics(mine, activities, staleAfterDays).get(memberId) ?? null;
+
+  const leadsThisMonth = mine.filter((l) => malaysiaDayKey(l.created_at).startsWith(monthPrefix)).length;
+  const approachesThisWeek = mine.filter((l) => malaysiaDayKey(l.created_at) >= weekStart).length;
+  const approachesToday = mine.filter((l) => malaysiaDayKey(l.created_at) === today).length;
+  const quotationCount = quotations.filter((q) => mineIds.has(q.lead_id)).length;
+
+  return {
+    leadCount: mine.length,
+    leadsThisMonth,
+    approachesToday,
+    approachesThisWeek,
+    quotationCount,
+    casesClosed: won.length,
+    casesClosedThisMonth: wonThisMonth.length,
+    closedAnc,
+    closedAncThisMonth,
+    openAnc,
+    convRate: metrics?.convRate ?? 0,
+    avgResponseHours: metrics?.avgResponseHours ?? null,
+    staleCount: metrics?.staleCount ?? 0,
+    ancTarget: target?.ancTarget ?? null,
+    nocTarget: target?.nocTarget ?? null,
+    approachTarget: target?.approachTarget ?? null,
+    ancPct:
+      target?.ancTarget && target.ancTarget > 0
+        ? Math.round((closedAncThisMonth / target.ancTarget) * 1000) / 10
+        : null,
+  };
+}
+
+// What computePersonalStats needs from a quotation -- a superset of the
+// team-chart shape, since ANC also needs the annual figure and which kind of
+// document it came from.
+export type PersonalQuotation = {
+  lead_id: string;
+  created_at: string;
+  updated_at?: string | null;
+  is_customizer?: string | boolean | null;
+  quotation_plans: {
+    sort_order: number;
+    monthly_contribution: number | null;
+    annual_contribution?: number | null;
+  }[];
+};
+
+// This month's target row for one person, if anyone has set one.
+export async function getMemberTarget(memberId: string) {
+  const supabase = await createClient();
+  const month = `${malaysiaDayKey().slice(0, 7)}-01`;
+  const { data } = await supabase
+    .from("targets")
+    .select("anc_target, noc_target, approach_target")
+    .eq("agent_id", memberId)
+    .eq("month", month)
+    .maybeSingle();
+
+  if (!data) return null;
+  return {
+    ancTarget: data.anc_target === null ? null : Number(data.anc_target),
+    nocTarget: data.noc_target,
+    approachTarget: data.approach_target,
+  };
+}
+
+export type MinimalLeadWithSource = MinimalLead & {
+  lead_source?: string | null;
+  interest?: string | null;
+  // The stand-in for a close date, same as the dashboard uses.
+  updated_at?: string | null;
+};
 
 export async function getStatisticsData(profile: CurrentProfile) {
   const supabase = await createClient();
@@ -19,11 +190,13 @@ export async function getStatisticsData(profile: CurrentProfile) {
   const [{ data: leads }, { data: quotations }] = await Promise.all([
     supabase
       .from("leads")
-      .select("id, agent_id, unit_id, pipeline_stage, created_at, lead_source, interest")
+      .select("id, agent_id, unit_id, pipeline_stage, created_at, updated_at, lead_source, interest")
       .returns<MinimalLeadWithSource[]>(),
     supabase
       .from("quotations")
-      .select("id, lead_id, status, created_at, quotation_plans(sort_order, monthly_contribution)")
+      .select(
+        "id, lead_id, status, created_at, updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution)",
+      )
       .returns<QuotationRow[]>(),
   ]);
 

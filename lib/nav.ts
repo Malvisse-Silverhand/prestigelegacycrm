@@ -62,7 +62,9 @@ export const SIDEBAR_NAV: NavItem[] = [
     href: "/statistics",
     label: "Statistics",
     icon: StatisticsIcon,
-    roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"],
+    // Agents included: the page now opens on their own personal performance
+    // rather than team-wide charts they have no business seeing.
+    roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager", "agent"],
   },
   {
     href: "/settings",

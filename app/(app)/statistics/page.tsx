@@ -1,17 +1,20 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import {
   getStatisticsData,
+  getScopedMembers,
+  getMemberTarget,
   computeTopStats,
   computeProductMix,
   computeResponseBuckets,
   computeStageFunnel,
   computeLeague,
+  computePersonalStats,
 } from "./data";
 import { computeAgentMetrics } from "@/app/(app)/team/metrics";
 import { getStaleAfterDays } from "@/lib/staleness-server";
 import { StatCard, LeagueTable, ProductMix, ResponseHistogram, StageFunnel, AgentTable } from "./statistics-view";
+import { PersonalPanel, MemberCards } from "./personal-view";
 
 export default async function StatisticsPage({
   searchParams,
@@ -20,15 +23,32 @@ export default async function StatisticsPage({
 }) {
   const profile = await getCurrentProfile();
   if (!profile) return null;
-  if (profile.role === "agent") redirect("/dashboard");
 
   const params = await searchParams;
   const scope = params.scope ?? "units";
 
-  const [{ leads, activities, quotations, units, unitManagers, agents }, staleAfterDays] = await Promise.all([
-    getStatisticsData(profile),
-    getStaleAfterDays(),
-  ]);
+  const [{ leads, activities, quotations, units, unitManagers, agents }, staleAfterDays, members] =
+    await Promise.all([getStatisticsData(profile), getStaleAfterDays(), getScopedMembers(profile)]);
+
+  // Drilling into someone else is only possible for people the scoped member
+  // list already contains, and that list is profiles RLS -- so an agent
+  // passing ?member=<someone else> silently lands back on themselves rather
+  // than seeing anything they shouldn't.
+  const requested = params.member || null;
+  const selected =
+    (requested ? members.find((m) => m.id === requested) : undefined) ??
+    members.find((m) => m.id === profile.id) ??
+    members[0] ??
+    null;
+
+  const memberTarget = selected ? await getMemberTarget(selected.id) : null;
+  const personalStats = selected
+    ? computePersonalStats(selected.id, leads, quotations, activities, staleAfterDays, memberTarget)
+    : null;
+
+  // An agent has nobody below them, so the cards, the league and the
+  // cross-team charts are all noise -- their page is the personal panel.
+  const personalOnly = profile.role === "agent";
 
   const now = new Date();
   const thisMonth = now.toISOString().slice(0, 7);
@@ -66,12 +86,14 @@ export default async function StatisticsPage({
         <div className="flex-1">
           <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Statistics</div>
           <div className="mt-0.5 text-[13px] font-medium text-muted">
-            {singleTeamView
-              ? `${profile.unit_name ?? "your unit"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`
-              : `${units.length} unit${units.length === 1 ? "" : "s"} · ${unitManagers.length} unit manager${unitManagers.length === 1 ? "" : "s"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`}
+            {personalOnly
+              ? `Your own performance · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`
+              : singleTeamView
+                ? `${profile.unit_name ?? "your unit"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`
+                : `${units.length} unit${units.length === 1 ? "" : "s"} · ${unitManagers.length} unit manager${unitManagers.length === 1 ? "" : "s"} · ${new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" })}`}
           </div>
         </div>
-        {!singleTeamView && (
+        {!singleTeamView && !personalOnly && (
           <div className="flex rounded-[10px] border border-sand-2 bg-cream p-[3px]">
             {[
               { key: "units", label: "Units" },
@@ -95,6 +117,29 @@ export default async function StatisticsPage({
       </div>
 
       <div className="flex flex-col gap-[18px] px-5 lg:px-[30px] py-[22px] pb-[30px]">
+        {/* Whose numbers you are looking at, before the team-wide charts --
+            for an agent this is the whole page. */}
+        {selected && personalStats && (
+          <PersonalPanel member={selected} stats={personalStats} isSelf={selected.id === profile.id} />
+        )}
+
+        {!personalOnly && members.length > 1 && (
+          <MemberCards
+            members={members}
+            selectedId={selected?.id ?? profile.id}
+            metricsFor={(id) => {
+              const m = agentMetrics.get(id);
+              const owned = leads.filter((l) => l.agent_id === id);
+              return {
+                leads: m?.leadCount ?? owned.length,
+                closed: Math.round(((m?.convRate ?? 0) / 100) * (m?.leadCount ?? 0)),
+                convRate: m?.convRate ?? 0,
+              };
+            }}
+          />
+        )}
+
+        {!personalOnly && (
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
           <StatCard label="Total leads" value={top.totalLeads} delta={top.totalLeadsDelta === null ? null : `${top.totalLeadsDelta > 0 ? "+" : ""}${top.totalLeadsDelta}%`} />
           <StatCard label="Quotations sent" value={top.quotationsSent} delta={top.quotationsSentDelta === null ? null : `${top.quotationsSentDelta > 0 ? "+" : ""}${top.quotationsSentDelta}%`} />
@@ -102,17 +147,20 @@ export default async function StatisticsPage({
           <StatCard label="Group conversion" value={`${top.groupConversion}%`} delta={`${top.groupConversionDelta > 0 ? "+" : ""}${top.groupConversionDelta}pt`} />
           <StatCard label="Monthly contribution" value={`RM ${top.monthlyContribution >= 1000 ? (top.monthlyContribution / 1000).toFixed(1) + "k" : top.monthlyContribution}`} dark />
         </div>
+        )}
 
-        {!singleTeamView && scope === "units" && <LeagueTable rows={league} />}
-        {!singleTeamView && scope === "agents" && (
+        {!singleTeamView && !personalOnly && scope === "units" && <LeagueTable rows={league} />}
+        {!singleTeamView && !personalOnly && scope === "agents" && (
           <AgentTable metrics={agentMetrics} agents={agents} />
         )}
 
-        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3">
-          <ProductMix data={productMix} />
-          <ResponseHistogram data={responseData} />
-          <StageFunnel stages={funnel} />
-        </div>
+        {!personalOnly && (
+          <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3">
+            <ProductMix data={productMix} />
+            <ResponseHistogram data={responseData} />
+            <StageFunnel stages={funnel} />
+          </div>
+        )}
       </div>
     </div>
   );
