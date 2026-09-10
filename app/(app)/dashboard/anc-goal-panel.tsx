@@ -168,7 +168,7 @@ export function AncGoalPanel({
         target: campaign.targetAnc,
         remaining: campaign.remaining,
         pct: campaign.achievementPct,
-        elapsedPct: elapsedPctOf(campaign.startDate, campaign.deadline),
+        elapsedPct: campaign.elapsedPct,
         weeklyNeeded: campaign.weeklyNeeded,
         casesNeeded: campaign.casesNeeded,
         footnote:
@@ -183,7 +183,7 @@ export function AncGoalPanel({
         target: goal.monthAncTarget,
         remaining: goal.monthAncRemaining,
         pct: goal.monthAncPct ?? 0,
-        elapsedPct: monthElapsedPct(),
+        elapsedPct: goal.monthElapsedPct,
         weeklyNeeded: goal.weekAncTarget,
         casesNeeded: goal.casesNeededThisMonth,
         footnote: null,
@@ -271,7 +271,7 @@ export function AncGoalPanel({
           <div className="mt-2">
             <ProgressBar
               pct={goal.monthAncPct ?? 0}
-              tone={paceOf(goal.monthAncPct ?? 0, monthElapsedPct())}
+              tone={paceOf(goal.monthAncPct ?? 0, goal.monthElapsedPct)}
             />
           </div>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-muted dark:text-[#7f93aa]">
@@ -291,21 +291,6 @@ export function AncGoalPanel({
       </div>
     </div>
   );
-}
-
-// How far through the campaign window today is, as a percentage.
-function elapsedPctOf(startDate: string, deadline: string) {
-  const start = new Date(startDate).getTime();
-  const end = new Date(deadline).getTime();
-  const now = Date.now();
-  if (end <= start) return 100;
-  return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
-}
-
-function monthElapsedPct() {
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  return Math.round((now.getDate() / daysInMonth) * 100);
 }
 
 function tipFor(

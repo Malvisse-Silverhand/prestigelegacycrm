@@ -285,6 +285,16 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         // Round up: a partial week still has to carry its share, and pacing
         // against a rounded-down week count would quietly under-set the bar.
         const weeksLeft = Math.max(1, Math.ceil(daysLeft / 7));
+        // How far through the window today is. Computed here rather than in
+        // the view because the pace it decides is rendered as words ("Behind
+        // pace"), and a clock read during render disagrees between the
+        // server (UTC) and the browser (UTC+8) for eight hours of every day
+        // -- a hydration mismatch, and a wrong-looking label besides.
+        const startMs = new Date(start).getTime();
+        const endMs = new Date(deadline).getTime();
+        const elapsedPct = endMs <= startMs
+          ? 100
+          : Math.min(100, Math.max(0, Math.round(((new Date(today).getTime() - startMs) / (endMs - startMs)) * 100)));
         return {
           name: campaignRow.name as string,
           targetAnc,
@@ -295,6 +305,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
           achievementPct: targetAnc > 0 ? Math.round((currentAnc / targetAnc) * 1000) / 10 : 0,
           daysLeft,
           weeksLeft,
+          elapsedPct,
           weeklyNeeded: Math.round(remaining / weeksLeft),
           casesNeeded: avgCaseSize && avgCaseSize > 0 ? Math.ceil(remaining / avgCaseSize) : null,
         };
@@ -311,6 +322,9 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
 
   const goal = {
     campaign,
+    // Same reason as the campaign's own elapsedPct above: this decides words
+    // on screen, so it is settled once on the server.
+    monthElapsedPct: Math.round((dayOfMonth / daysInMonth) * 100),
     monthAncTarget,
     monthAnc,
     monthAncRemaining,
