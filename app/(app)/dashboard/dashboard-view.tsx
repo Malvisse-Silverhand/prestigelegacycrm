@@ -15,6 +15,7 @@ import { QuickAction } from "./quick-action";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 import { AncGoalPanel } from "./anc-goal-panel";
+import { ManageWidgets, DashboardClock, useWidgetPrefs } from "./widgets";
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -62,10 +63,6 @@ function fmtRM(n: number) {
   return `RM ${n >= 1000 ? (n / 1000).toFixed(1) + "k" : n.toFixed(0)}`;
 }
 
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 export function DashboardView({
   profile,
@@ -100,8 +97,8 @@ export function DashboardView({
     onOffsetChange: (updater: (o: number) => number) => setOffset(updater),
   };
 
-  const now = new Date();
   const arcs = donutArcs(stats.statusCounts, stats.statusTotal, dark);
+  const widgets = useWidgetPrefs();
 
   return (
     <div>
@@ -119,78 +116,75 @@ export function DashboardView({
           <QuickAction />
           <NotificationBell initial={notifications} />
           <ThemeToggle dark={dark} onChange={toggleTheme} />
-          <div
-            title="Historical periods aren't wired up yet — showing the current year"
-            className="flex cursor-not-allowed items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-taupe opacity-60 dark:border-white/10 dark:bg-[#12283f] dark:text-[#7f93aa]"
-          >
-            {now.getFullYear()}
-          </div>
-          <div
-            title="Historical periods aren't wired up yet — showing the current month"
-            className="flex cursor-not-allowed items-center gap-[18px] rounded-[10px] border border-sand-2 bg-cream px-[14px] py-[10px] text-[12.5px] font-semibold text-taupe opacity-60 dark:border-white/10 dark:bg-[#12283f] dark:text-[#7f93aa]"
-          >
-            {MONTH_NAMES[now.getMonth()]}
-          </div>
+          <ManageWidgets on={widgets.on} toggle={widgets.toggle} showAll={widgets.showAll} hiddenCount={widgets.hiddenCount} />
+          <DashboardClock />
         </div>
 
         <div className="flex flex-col gap-[18px] px-[30px] py-[22px] pb-[30px]">
-          {/* Above everything else: where the year's money actually stands. */}
-          <AncGoalPanel goal={stats.goal} approachDays={period.approachDays} />
+          {/* Sales first, and kept apart from lead volume: what has closed and
+              what is still to close are two different questions, and mixing
+              them in one row made the money read as just another counter. */}
+          {widgets.on("goal") && (
+            <section>
+              <SectionLabel title="Sales" hint="Targets, closings and daily activity" />
+              <AncGoalPanel
+                goal={stats.goal}
+                approachDays={period.approachDays}
+                closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
+              />
+            </section>
+          )}
 
-          <div className="grid grid-cols-5 gap-3">
-            <StatCard
-              label={period.dayLabel}
-              value={period.dayCount}
-              delta={
-                period.dayCount - period.dayPrevCount === 0
-                  ? "Same as the day before"
-                  : `${period.dayCount > period.dayPrevCount ? "+" : ""}${period.dayCount - period.dayPrevCount} vs day before`
-              }
-              positive={period.dayCount >= period.dayPrevCount}
-            />
-            <StatCard
-              label={period.weekLabel}
-              value={period.weekCount}
-              delta={deltaPct(period.weekCount, period.weekPrevCount)}
-              positive={period.weekCount >= period.weekPrevCount}
-            />
-            <StatCard
-              label={period.monthLabel}
-              value={period.monthCount}
-              delta={stats.monthTarget > 0 ? `target ${stats.monthTarget}` : "no target set"}
-              muted
-            />
-            {/* Gold, not white: closings are the one number on this row that
-                is money in rather than work in progress. */}
-            <div className="rounded-2xl border border-[#f0dfb4] bg-gold px-3.5 py-3">
-              <div className="text-[11px] font-semibold text-navy/70">{period.closedLabel}</div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
-                  {fmtRM(period.closedAnc)}
-                </span>
-                <span className="text-[11px] font-bold text-navy/70">ANC</span>
-              </div>
-              <div className="text-[10.5px] font-semibold text-navy/70">
-                {period.closedCount} polic{period.closedCount === 1 ? "y" : "ies"} inforced
-              </div>
-            </div>
-            <div className="rounded-2xl bg-navy px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-white/60">Pipeline value</span>
-                <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[8px] bg-gold/[.18]">
-                  <QuotationIcon width={13} height={13} className="text-gold" />
-                </span>
-              </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[22px] font-extrabold tracking-[-0.03em] text-white">
-                  {fmtRM(stats.pipelineValue)}
-                </span>
-                <span className="text-[11px] font-bold text-gold">ANC</span>
-              </div>
-              <div className="text-[10px] font-medium text-white/45">Potential ANC · monthly x 12</div>
-            </div>
-          </div>
+          {widgets.on("calendar") && <ActivityCalendar {...calendarProps} />}
 
+          {widgets.on("leads") && (
+            <section>
+              <SectionLabel title="Leads" hint="What is coming in, and what it could be worth" />
+              <div className="grid grid-cols-4 gap-3">
+                <StatCard
+                  label={period.dayLabel}
+                  value={period.dayCount}
+                  delta={
+                    period.dayCount - period.dayPrevCount === 0
+                      ? "Same as the day before"
+                      : `${period.dayCount > period.dayPrevCount ? "+" : ""}${period.dayCount - period.dayPrevCount} vs day before`
+                  }
+                  positive={period.dayCount >= period.dayPrevCount}
+                />
+                <StatCard
+                  label={period.weekLabel}
+                  value={period.weekCount}
+                  delta={deltaPct(period.weekCount, period.weekPrevCount)}
+                  positive={period.weekCount >= period.weekPrevCount}
+                />
+                <StatCard
+                  label={period.monthLabel}
+                  value={period.monthCount}
+                  delta={stats.monthTarget > 0 ? `target ${stats.monthTarget}` : "no target set"}
+                  muted
+                />
+                {/* Potential, not banked -- so it belongs with the leads it
+                    is sitting in, not with the closings. */}
+                <div className="rounded-2xl bg-navy px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-white/60">Pipeline value</span>
+                    <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[8px] bg-gold/[.18]">
+                      <QuotationIcon width={13} height={13} className="text-gold" />
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <span className="text-[22px] font-extrabold tracking-[-0.03em] text-white">
+                      {fmtRM(stats.pipelineValue)}
+                    </span>
+                    <span className="text-[11px] font-bold text-gold">ANC</span>
+                  </div>
+                  <div className="text-[10px] font-medium text-white/45">Potential ANC · monthly x 12</div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {widgets.on("alerts") && (
           <div className="grid grid-cols-3 gap-3.5">
             <AlertCard
               tone="red"
@@ -224,17 +218,19 @@ export function DashboardView({
               href="/leads?view=no_quotation"
             />
           </div>
-
-          <ActivityCalendar {...calendarProps} />
+          )}
 
           {/* What is coming up, who just arrived, and whose birthday it is --
               the three "what should I do next" lists, side by side. */}
-          <div className="grid grid-cols-3 gap-3.5">
-            <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />
-            <RecentLeadsCard leads={stats.recentLeads} />
-            <BirthdayCard birthdays={stats.birthdays} limit={4} />
-          </div>
+          {(widgets.on("appointments") || widgets.on("recent") || widgets.on("birthdays")) && (
+            <div className="grid grid-cols-3 gap-3.5">
+              {widgets.on("appointments") && <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />}
+              {widgets.on("recent") && <RecentLeadsCard leads={stats.recentLeads} />}
+              {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} limit={4} />}
+            </div>
+          )}
 
+          {widgets.on("analytics") && (<>
           <div className="grid grid-cols-2 gap-[18px]">
             <div className="rounded-[18px] border border-sand bg-white p-5 pb-[22px] dark:border-white/10 dark:bg-[#12283f]">
               <div className="text-[15.5px] font-bold text-navy dark:text-[#eef3f8]">
@@ -431,6 +427,7 @@ export function DashboardView({
               )}
             </div>
           </div>
+          </>)}
         </div>
       </div>
 
@@ -451,48 +448,64 @@ export function DashboardView({
             <NotificationBell initial={notifications} compact />
             <ThemeToggle dark={dark} onChange={toggleTheme} compact />
           </div>
-          {/* Four counts across, then ANC on its own row -- five tiles in one
-              line is unreadable on a phone. */}
-          <div className="mt-4 grid grid-cols-4 gap-2">
-            <MobileStat value={period.dayCount} label="Day" />
-            <MobileStat value={period.weekCount} label="Week" />
-            <MobileStat value={period.monthCount} label="Month" />
-            <MobileStat value={period.closedCount} label="Closed" />
-          </div>
-          <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-gold px-3.5 py-2.5 text-navy">
-            <div>
-              <span className="text-[10.5px] font-bold text-[#5c4a1c]">Closed · ANC inforced</span>
-              <div className="text-[9.5px] font-semibold text-[#5c4a1c]">
-                {period.closedCount} polic{period.closedCount === 1 ? "y" : "ies"} inforced
-              </div>
-            </div>
-            <span className="text-[19px] font-extrabold tracking-[-0.03em]">
-              {fmtRM(period.closedAnc)}
-            </span>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-white/10 px-3.5 py-2.5">
-            <span className="text-[10.5px] font-bold text-white/60">Pipeline value · ANC</span>
-            <span className="text-[17px] font-extrabold tracking-[-0.03em] text-white">
-              {fmtRM(stats.pipelineValue)}
-            </span>
+          {/* Clock and widget control on their own line -- five controls in
+              one row does not fit a phone. */}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <DashboardClock compact />
+            <ManageWidgets
+              compact
+              on={widgets.on}
+              toggle={widgets.toggle}
+              showAll={widgets.showAll}
+              hiddenCount={widgets.hiddenCount}
+            />
           </div>
         </div>
 
         <div className="flex flex-col gap-[11px] px-5 pt-4">
-          <AncGoalPanel goal={stats.goal} approachDays={period.approachDays} />
+          {widgets.on("goal") && (
+            <section>
+              <SectionLabel title="Sales" hint="Targets and closings" />
+              <AncGoalPanel
+                goal={stats.goal}
+                approachDays={period.approachDays}
+                closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
+              />
+            </section>
+          )}
 
-          <MobileAlert href="/leads?view=overdue" tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
-          <MobileAlert href="/leads?view=followup_today" tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
-          <MobileAlert href="/leads?view=no_quotation" tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
+          {widgets.on("calendar") && <ActivityCalendar {...calendarProps} compact />}
 
-          <div className="mt-0.5">
-            <ActivityCalendar {...calendarProps} compact />
-          </div>
+          {widgets.on("leads") && (
+            <section>
+              <SectionLabel title="Leads" hint="Coming in, and what it could be worth" />
+              <div className="rounded-2xl bg-navy p-3.5 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
+                <div className="grid grid-cols-3 gap-2">
+                  <MobileStat value={period.dayCount} label="Day" />
+                  <MobileStat value={period.weekCount} label="Week" />
+                  <MobileStat value={period.monthCount} label="Month" />
+                </div>
+                <div className="mt-2 flex items-baseline justify-between rounded-[13px] bg-white/10 px-3.5 py-2.5">
+                  <span className="text-[10.5px] font-bold text-white/60">Pipeline value · ANC</span>
+                  <span className="text-[17px] font-extrabold tracking-[-0.03em] text-white">
+                    {fmtRM(stats.pipelineValue)}
+                  </span>
+                </div>
+              </div>
+            </section>
+          )}
 
-          <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />
-          <RecentLeadsCard leads={stats.recentLeads} />
-          <BirthdayCard birthdays={stats.birthdays} limit={3} />
+          {widgets.on("alerts") && (<>
+            <MobileAlert href="/leads?view=overdue" tone="red" value={stats.overdueCount} title="Overdue follow-up" detail={stats.overdueOldestDays > 0 ? `Oldest is ${stats.overdueOldestDays} day${stats.overdueOldestDays === 1 ? "" : "s"} old` : "All caught up"} />
+            <MobileAlert href="/leads?view=followup_today" tone="blue" value={stats.followUpTodayCount} title="Follow up today" detail={`${stats.followUpBeforeNoon} before noon`} />
+            <MobileAlert href="/leads?view=no_quotation" tone="gold" value={stats.noQuotationCount} title="No quotation yet" detail="Build an estimate in 30 sec" />
+          </>)}
 
+          {widgets.on("appointments") && <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />}
+          {widgets.on("recent") && <RecentLeadsCard leads={stats.recentLeads} />}
+          {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} limit={3} />}
+
+          {widgets.on("analytics") && (
           <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">
             <div className="text-[13.5px] font-bold text-navy dark:text-[#eef3f8]">Lead status</div>
             <div className="mt-3 flex items-center gap-4">
@@ -518,6 +531,7 @@ export function DashboardView({
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
@@ -553,6 +567,20 @@ function ThemeToggle({ dark, onChange, compact }: { dark: boolean; onChange: (v:
       >
         <MoonIcon width={13} height={13} className={dark ? "text-navy" : inactiveIcon} />
       </button>
+    </div>
+  );
+}
+
+// Sales and Leads are the two halves of this page. Naming them is the whole
+// point -- without it the money and the volume read as one undifferentiated
+// row of numbers.
+function SectionLabel({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="mb-2 flex flex-wrap items-baseline gap-2">
+      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-navy dark:text-[#eef3f8]">
+        {title}
+      </span>
+      <span className="text-[11.5px] font-medium text-taupe dark:text-[#7f93aa]">{hint}</span>
     </div>
   );
 }

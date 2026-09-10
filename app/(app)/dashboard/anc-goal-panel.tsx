@@ -47,7 +47,7 @@ const PACE_STYLE = {
 
 function ProgressBar({ pct, tone }: { pct: number; tone: keyof typeof PACE_STYLE }) {
   return (
-    <div className="h-[10px] w-full overflow-hidden rounded-full bg-sand-2 dark:bg-white/10">
+    <div className="h-[10px] w-full overflow-hidden rounded-full bg-white/12">
       <div
         className={`h-full rounded-full transition-[width] ${PACE_STYLE[tone].bar}`}
         style={{ width: `${Math.min(100, Math.max(pct, pct > 0 ? 2 : 0))}%` }}
@@ -56,15 +56,15 @@ function ProgressBar({ pct, tone }: { pct: number; tone: keyof typeof PACE_STYLE
   );
 }
 
+// Everything in this panel sits on navy, so the tiles are translucent white
+// rather than cards -- a white card on navy reads as a hole punched in it.
 function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-[13px] border border-sand bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#12283f]">
-      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe dark:text-[#7f93aa]">
-        {label}
-      </div>
+    <div className="rounded-[13px] bg-white/[.06] px-3.5 py-2.5">
+      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">{label}</div>
       <div
         className={`mt-0.5 text-[19px] font-extrabold tracking-[-0.03em] ${
-          accent ? "text-green" : "text-navy dark:text-[#eef3f8]"
+          accent ? "text-gold" : "text-white"
         }`}
       >
         {value}
@@ -82,15 +82,15 @@ function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: num
   const weekTarget = target * days.length;
 
   return (
-    <div className="rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+    <div className="rounded-[13px] bg-white/[.06] p-3.5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">Daily approach</div>
+        <div className="text-[12.5px] font-bold text-white">Daily approach</div>
         {weekTarget > 0 ? (
-          <div className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
+          <div className="text-[11px] font-semibold text-white/50">
             {done} of {weekTarget} this week
           </div>
         ) : (
-          <Link href="/settings" className="text-[11px] font-semibold text-taupe hover:text-navy">
+          <Link href="/settings" className="text-[11px] font-semibold text-white/50 hover:text-gold">
             Set a target
           </Link>
         )}
@@ -104,40 +104,30 @@ function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: num
               key={d.key}
               className={`rounded-[9px] border px-1 py-2 text-center ${
                 d.isToday
-                  ? "border-navy bg-navy dark:border-gold"
+                  ? "border-gold bg-gold/[.16]"
                   : hit
-                    ? "border-transparent bg-success-bg"
+                    ? "border-transparent bg-green/25"
                     : d.isFuture
-                      ? "border-dashed border-sand-2 bg-transparent"
-                      : "border-transparent bg-cream dark:bg-white/5"
+                      ? "border-dashed border-white/15 bg-transparent"
+                      : "border-transparent bg-white/[.07]"
               }`}
             >
               <div
                 className={`text-[9px] font-bold uppercase tracking-[0.04em] ${
-                  d.isToday ? "text-white/60" : "text-taupe-2 dark:text-[#7f93aa]"
+                  d.isToday ? "text-gold/80" : "text-white/40"
                 }`}
               >
                 {d.label.slice(0, 3)}
               </div>
               <div
                 className={`text-[15px] font-extrabold ${
-                  d.isToday
-                    ? "text-white"
-                    : hit
-                      ? "text-green"
-                      : d.isFuture
-                        ? "text-taupe"
-                        : "text-navy dark:text-[#eef3f8]"
+                  d.isToday ? "text-gold" : hit ? "text-[#7fd6ad]" : d.isFuture ? "text-white/30" : "text-white"
                 }`}
               >
                 {d.isFuture ? "–" : d.count}
               </div>
               {target > 0 && (
-                <div
-                  className={`text-[9px] font-semibold ${
-                    d.isToday ? "text-white/45" : "text-taupe dark:text-[#7f93aa]"
-                  }`}
-                >
+                <div className={`text-[9px] font-semibold ${d.isToday ? "text-gold/60" : "text-white/35"}`}>
                   /{target}
                 </div>
               )}
@@ -152,9 +142,13 @@ function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: num
 export function AncGoalPanel({
   goal,
   approachDays,
+  closing,
 }: {
   goal: Goal;
   approachDays: ApproachDay[];
+  /** This month's closings -- money already in, so it belongs with the
+   *  sales figures rather than up among the lead counters. */
+  closing: { label: string; anc: number; count: number };
 }) {
   const { campaign } = goal;
 
@@ -193,16 +187,28 @@ export function AncGoalPanel({
   // one screen that fixes it.
   if (headline.target <= 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-sand-2 bg-white px-5 py-4 dark:border-white/10 dark:bg-[#12283f]">
-        <div className="text-[13px] font-bold text-navy dark:text-[#eef3f8]">No ANC target set</div>
-        <div className="mt-0.5 text-[12px] font-medium text-muted dark:text-[#7f93aa]">
+      <div className="rounded-2xl bg-navy p-4 dark:ring-1 dark:ring-white/10 lg:p-5">
+        <div className="text-[13px] font-bold text-white">No ANC target set</div>
+        <div className="mt-0.5 text-[12px] font-medium text-white/60">
           Set a monthly ANC target — or a goal with a deadline — in{" "}
-          <Link href="/settings" className="font-semibold text-navy underline underline-offset-2 dark:text-gold">
+          <Link href="/settings" className="font-semibold text-gold underline underline-offset-2">
             Settings › Set Target
           </Link>
           , and this becomes your progress tracker.
         </div>
-        <div className="mt-3">
+        <div className="mt-3 grid gap-2.5 lg:grid-cols-2">
+          <div className="rounded-[13px] bg-gold p-3.5">
+            <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
+                {fmtRM(closing.anc)}
+              </span>
+              <span className="text-[11px] font-bold text-navy/70">ANC</span>
+            </div>
+            <div className="text-[10.5px] font-semibold text-navy/70">
+              {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
+            </div>
+          </div>
           <ApproachScoreboard days={approachDays} target={goal.approachTargetPerDay} />
         </div>
       </div>
@@ -213,18 +219,18 @@ export function AncGoalPanel({
   const style = PACE_STYLE[tone];
 
   return (
-    <div className="rounded-2xl border border-sand bg-cream p-4 dark:border-white/10 dark:bg-[#0f2233] lg:p-5">
+    <div className="rounded-2xl bg-navy p-4 dark:ring-1 dark:ring-white/10 lg:p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-taupe dark:text-[#7f93aa]">
+          <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
             {headline.eyebrow}
           </div>
           <div className="mt-0.5 flex items-center gap-2">
-            <span className="text-[17px] font-extrabold tracking-[-0.02em] text-navy dark:text-[#eef3f8]">
+            <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">
               Overall target progress
             </span>
             {headline.deadline && (
-              <span className="rounded-[6px] bg-navy px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white dark:bg-white/10">
+              <span className="rounded-[6px] bg-white/10 px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white">
                 {headline.deadline}
               </span>
             )}
@@ -242,28 +248,26 @@ export function AncGoalPanel({
         <Tile label="Achievement" value={`${headline.pct}%`} />
       </div>
 
-      <div className="mt-3.5 rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+      <div className="mt-3.5 rounded-[13px] bg-white/[.06] p-3.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe dark:text-[#7f93aa]">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">
             Overall progress
           </span>
-          <span className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
-            {headline.footnote}
-          </span>
+          <span className="text-[11px] font-semibold text-white/50">{headline.footnote}</span>
         </div>
         <div className="mt-2">
           <ProgressBar pct={headline.pct} tone={tone} />
         </div>
-        <div className="mt-2 text-[11.5px] font-medium text-muted dark:text-[#7f93aa]">
+        <div className="mt-2 text-[11.5px] font-medium text-white/60">
           {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
         </div>
       </div>
 
-      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-2">
-        <div className="rounded-[13px] border border-sand bg-white p-3.5 dark:border-white/10 dark:bg-[#12283f]">
+      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-3">
+        <div className="rounded-[13px] bg-white/[.06] p-3.5">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">This month</span>
-            <span className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
+            <span className="text-[12.5px] font-bold text-white">This month</span>
+            <span className="text-[11px] font-semibold text-white/50">
               {fmtRM(goal.monthAnc)}
               {goal.monthAncTarget > 0 ? ` of ${fmtRM(goal.monthAncTarget)}` : ""}
             </span>
@@ -274,16 +278,31 @@ export function AncGoalPanel({
               tone={paceOf(goal.monthAncPct ?? 0, goal.monthElapsedPct)}
             />
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-muted dark:text-[#7f93aa]">
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/60">
             <span>
-              This week <strong className="font-bold text-navy dark:text-[#eef3f8]">{fmtRM(goal.weekAnc)}</strong>
+              This week <strong className="font-bold text-white">{fmtRM(goal.weekAnc)}</strong>
               {goal.weekAncTarget > 0 ? ` of ${fmtRM(goal.weekAncTarget)}` : ""}
             </span>
             {goal.avgCaseSize != null && (
               <span>
-                Avg case <strong className="font-bold text-navy dark:text-[#eef3f8]">{fmtRM(goal.avgCaseSize)}</strong>
+                Avg case <strong className="font-bold text-white">{fmtRM(goal.avgCaseSize)}</strong>
               </span>
             )}
+          </div>
+        </div>
+
+        {/* Money already in. Gold on navy, because it is the one figure in
+            this panel that has actually happened. */}
+        <div className="rounded-[13px] bg-gold p-3.5">
+          <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
+              {fmtRM(closing.anc)}
+            </span>
+            <span className="text-[11px] font-bold text-navy/70">ANC</span>
+          </div>
+          <div className="text-[10.5px] font-semibold text-navy/70">
+            {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
           </div>
         </div>
 
