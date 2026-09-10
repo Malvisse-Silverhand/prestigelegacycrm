@@ -109,7 +109,9 @@ export function LeadWaFlow({
             ))}
           </div>
 
-          <div className="mt-3 flex flex-col gap-2">
+          {/* Capped to roughly 6 rows before scrolling, so a category with a
+              long list doesn't push the rest of the lead's page down. */}
+          <div className="mt-3 flex max-h-[358px] flex-col gap-2 overflow-y-auto pr-1">
             {shown.map((t) => {
               const open = openId === t.id;
               return (

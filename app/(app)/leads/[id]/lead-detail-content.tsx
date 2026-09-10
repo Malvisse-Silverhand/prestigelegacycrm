@@ -385,15 +385,6 @@ export function LeadDetailContent({
             />
           </div>
 
-          {waLead && (
-            <LeadWaFlow
-              lead={waLead}
-              agentName={lead.profiles?.full_name ?? profile.full_name}
-              templates={waTemplates}
-              closingScripts={closingScripts}
-            />
-          )}
-
           <LeadAppointments leadId={lead.id} leadName={lead.full_name} appointments={appointments} />
 
           <div className="mt-[22px]">
@@ -403,6 +394,15 @@ export function LeadDetailContent({
               canDelete={profile.role !== "agent"}
             />
           </div>
+
+          {waLead && (
+            <LeadWaFlow
+              lead={waLead}
+              agentName={lead.profiles?.full_name ?? profile.full_name}
+              templates={waTemplates}
+              closingScripts={closingScripts}
+            />
+          )}
 
           <div className="mt-[22px] flex items-center justify-between">
             <div className="text-[14.5px] font-bold text-navy">Activity timeline</div>
