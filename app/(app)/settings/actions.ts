@@ -9,7 +9,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { appOrigin } from "@/lib/app-url";
 import { getTargetableMembers } from "./data";
 import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
-import { sendEmail, inviteEmail } from "@/lib/email";
+import { sendEmail, inviteEmail, resetPasswordEmail } from "@/lib/email";
 import { isWebhookEvent } from "@/lib/webhook-events";
 
 // Unit Managers can now invite into their own unit too ("Superadmin, Group
@@ -431,6 +431,112 @@ export async function updateUserAssignment(input: {
 
   revalidatePath("/settings");
   return { error: null };
+}
+
+// Shared by both password actions below: same permission rule and the same
+// "below your own rank, or superadmin" reach updateUserAssignment already
+// uses, so nobody can act on an account they couldn't otherwise touch.
+async function loadEditablePasswordTarget(userId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageSettings(profile.role)) {
+    return { profile: null, target: null, error: "You don't have permission to do that." };
+  }
+  if (userId === profile.id) {
+    return { profile: null, target: null, error: "You can't reset your own password here — use your account settings instead." };
+  }
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("id, role, full_name, email")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!target) return { profile: null, target: null, error: "That user could not be found." };
+  if (profile.role !== "superadmin" && ROLE_RANK[target.role as Role] <= ROLE_RANK[profile.role]) {
+    return { profile: null, target: null, error: "You can only reset the password of users below your own level." };
+  }
+
+  return { profile, target, error: null };
+}
+
+// Emails the same recovery link the public "Forgot password" page sends
+// itself -- one template (resetPasswordEmail), one link-minting call
+// (generateLink), so this can never drift from what that flow produces.
+// Unlike the public endpoint, this one is allowed to say plainly whether it
+// worked: the caller is already authenticated and already knows who the
+// target is, so there's no address-enumeration risk to hide behind a
+// same-response-either-way shape.
+export async function sendPasswordResetLink(userId: string) {
+  const { profile, target, error } = await loadEditablePasswordTarget(userId);
+  if (error || !profile || !target) return { error };
+
+  const admin = createAdminClient();
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email: target.email,
+    options: { redirectTo: `${await appOrigin()}/reset-password` },
+  });
+  const actionLink = linkData?.properties?.action_link;
+  if (linkError || !actionLink) {
+    Sentry.captureException(linkError ?? new Error("generateLink returned no action_link"), {
+      tags: { action: "sendPasswordResetLink" },
+      extra: { userId },
+    });
+    return { error: "Couldn't generate a reset link. Please try again." };
+  }
+
+  const { subject, html } = resetPasswordEmail({ actionLink });
+  const { sent, error: mailError } = await sendEmail({ to: target.email, subject, html });
+  if (!sent) {
+    console.error("sendPasswordResetLink: send failed", mailError);
+    return { error: "Couldn't send the reset email just now. Please try again in a moment." };
+  }
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    target_id: userId,
+    action: "password_reset_link_sent",
+    metadata: { email: target.email },
+  });
+  if (auditError) console.error("sendPasswordResetLink: audit_log insert failed", auditError);
+
+  return { error: null };
+}
+
+// Sets a fresh random password immediately, for when the target can't be
+// reached by email right now (or the admin is on the phone with them and
+// wants a credential to read out this second) -- the reset-link email above
+// stays the normal path. Reuses the exact same generate-a-temp-password +
+// must_change_password shape new accounts already get via inviteUser, so a
+// manually reset account is handed back to its owner the same way a brand
+// new one is: one login on a password nobody re-uses, then their own choice.
+export async function resetUserPasswordNow(userId: string) {
+  const { profile, target, error } = await loadEditablePasswordTarget(userId);
+  if (error || !profile || !target) return { error, tempPassword: null };
+
+  const admin = createAdminClient();
+  const tempPassword = generateTempPassword();
+  const { error: authError } = await admin.auth.admin.updateUserById(userId, { password: tempPassword });
+  if (authError) {
+    Sentry.captureException(authError, { tags: { action: "resetUserPasswordNow" }, extra: { userId } });
+    return { error: "Couldn't set a new password. Please try again.", tempPassword: null };
+  }
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ must_change_password: true })
+    .eq("id", userId);
+  if (profileError) console.error("resetUserPasswordNow: profile update failed", profileError);
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    target_id: userId,
+    action: "password_reset_manual",
+    metadata: { email: target.email },
+  });
+  if (auditError) console.error("resetUserPasswordNow: audit_log insert failed", auditError);
+
+  return { error: null, tempPassword };
 }
 
 export async function saveTargets(

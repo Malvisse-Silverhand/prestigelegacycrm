@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ROLE_RANK } from "@/lib/profile-types";
 import type { Role, OrgTree, UnitManagerOption, UnitOption } from "../types";
-import { inviteUser, updateUserAssignment, deleteUser } from "../actions";
+import { inviteUser, updateUserAssignment, deleteUser, sendPasswordResetLink, resetUserPasswordNow } from "../actions";
 import { waLink } from "@/lib/whatsapp";
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -88,6 +88,22 @@ function shareMessage(s: { fullName: string; email: string; tempPassword: string
     "",
     `🔗 Log masuk: ${origin}/login`,
     `📧 Emel: ${s.email}`,
+    `🔑 Kata laluan sementara: ${s.tempPassword}`,
+    "",
+    "Sila tukar kata laluan selepas log masuk kali pertama.",
+  ].join("\n");
+}
+
+// Same shape as the invite flow's shareMessage, worded for a reset rather
+// than a brand-new account.
+function resetShareMessage(s: { fullName: string; tempPassword: string }) {
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  return [
+    "*Prestige Legacy CRM*",
+    "",
+    `Salam ${s.fullName}, kata laluan akaun CRM anda telah ditetapkan semula.`,
+    "",
+    `🔗 Log masuk: ${origin}/login`,
     `🔑 Kata laluan sementara: ${s.tempPassword}`,
     "",
     "Sila tukar kata laluan selepas log masuk kali pertama.",
@@ -604,8 +620,55 @@ function EditUserPanel({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  // Independent of the Save changes flow above -- a password action can be
+  // fired without touching (or waiting on) the rest of this form.
+  const [resetLinkState, setResetLinkState] = useState<"idle" | "sent" | "error">("idle");
+  const [resetLinkError, setResetLinkError] = useState<string | null>(null);
+  const [resetLinkPending, startResetLinkTransition] = useTransition();
+
+  const [confirmResetNow, setConfirmResetNow] = useState(false);
+  const [resetNowError, setResetNowError] = useState<string | null>(null);
+  const [resetNowResult, setResetNowResult] = useState<string | null>(null);
+  const [resetNowPending, startResetNowTransition] = useTransition();
+
   const requiresAssignment = needsAssignment(newRole);
   const assignmentChoices = assignmentChoicesFor(newRole, assignmentOptions);
+
+  function handleSendResetLink() {
+    setResetLinkState("idle");
+    setResetLinkError(null);
+    startResetLinkTransition(async () => {
+      try {
+        const result = await sendPasswordResetLink(editing.id);
+        if (result.error) {
+          setResetLinkState("error");
+          setResetLinkError(result.error);
+          return;
+        }
+        setResetLinkState("sent");
+      } catch {
+        setResetLinkState("error");
+        setResetLinkError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
+
+  function handleResetNow() {
+    setResetNowError(null);
+    startResetNowTransition(async () => {
+      try {
+        const result = await resetUserPasswordNow(editing.id);
+        if (result.error || !result.tempPassword) {
+          setResetNowError(result.error ?? "Couldn't reset this password. Please try again.");
+          return;
+        }
+        setConfirmResetNow(false);
+        setResetNowResult(result.tempPassword);
+      } catch {
+        setResetNowError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
 
   function handleSave() {
     setError(null);
@@ -708,6 +771,79 @@ function EditUserPanel({
             )}
           </Field>
         )}
+
+        <Field label="Password">
+          {resetNowResult ? (
+            <div className="rounded-[10px] border border-sand-2 bg-cream px-3.5 py-3">
+              <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">
+                New temporary password
+              </div>
+              <div className="mt-1 select-all font-mono text-[15px] font-bold text-navy">{resetNowResult}</div>
+              <div className="mt-1.5 text-[11px] font-medium text-taupe">
+                {fullName} must change this the next time they sign in. Pass it on however you reach them.
+              </div>
+              <a
+                href={waLink(phone, resetShareMessage({ fullName, tempPassword: resetNowResult }))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="press mt-2.5 flex h-9 items-center justify-center rounded-[9px] bg-green text-[12px] font-semibold text-white"
+              >
+                Share via WhatsApp
+              </a>
+            </div>
+          ) : confirmResetNow ? (
+            <div className="rounded-[10px] border border-[#f0dfb4] bg-warn-gold-bg px-3.5 py-3">
+              <div className="text-[12px] font-semibold text-warn-gold-text">
+                Their current password stops working immediately, and they&rsquo;ll need a new one from you to
+                sign in. Continue?
+              </div>
+              {resetNowError && <div className="mt-2 text-[11.5px] font-medium text-alert-red">{resetNowError}</div>}
+              <div className="mt-2.5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmResetNow(false)}
+                  className="flex h-9 flex-1 items-center justify-center rounded-[9px] border border-sand-2 bg-white text-[12px] font-semibold text-navy"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetNow}
+                  disabled={resetNowPending}
+                  className="flex h-9 flex-1 items-center justify-center rounded-[9px] bg-alert-red text-[12px] font-semibold text-white disabled:opacity-60"
+                >
+                  {resetNowPending ? "Resetting…" : "Yes, reset it now"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSendResetLink}
+                  disabled={resetLinkPending}
+                  className="flex h-9 flex-1 items-center justify-center rounded-[9px] border border-sand-2 bg-cream text-[12px] font-semibold text-navy disabled:opacity-60"
+                >
+                  {resetLinkPending ? "Sending…" : "Send reset link by email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmResetNow(true)}
+                  className="flex h-9 flex-1 items-center justify-center rounded-[9px] border border-sand-2 bg-cream text-[12px] font-semibold text-navy"
+                >
+                  Reset password now
+                </button>
+              </div>
+              {resetLinkState === "sent" && (
+                <div className="text-[11.5px] font-medium text-green">Reset link sent to {email}.</div>
+              )}
+              {resetLinkState === "error" && (
+                <div className="text-[11.5px] font-medium text-alert-red">{resetLinkError}</div>
+              )}
+            </div>
+          )}
+        </Field>
 
         {error && <div className="text-[12px] font-medium text-alert-red">{error}</div>}
 
