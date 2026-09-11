@@ -20,6 +20,23 @@ export type RecentLead = {
   createdAt: string;
 };
 
+// Same "follow_up" stage the Sales Pipeline board's Follow Up column filters
+// on -- text/overdue are precomputed server-side rather than derived from
+// today's date here, so this stays hydration-safe. See dashboard/data.ts.
+export type FollowUpLead = {
+  id: string;
+  leadNo: number;
+  fullName: string;
+  text: string;
+  overdue: boolean;
+  agentName: string | null;
+  anc: number | null;
+};
+
+function fmtRM(n: number) {
+  return `RM${Math.round(n).toLocaleString("en-MY")}`;
+}
+
 const STATUS_TONE: Record<string, string> = {
   hot: "bg-alert-red-bg text-alert-red",
   warm: "bg-warn-gold-bg text-warn-gold-text",
@@ -60,7 +77,10 @@ function Shell({
       {empty ? (
         <p className="mt-3 text-[11.5px] font-medium text-muted dark:text-[#7f93aa]">Nothing here yet.</p>
       ) : (
-        <div className="mt-3 flex flex-col gap-1.5">{children}</div>
+        // Capped to 6 rows before scrolling, so a long list doesn't push the
+        // rest of the dashboard down -- same pattern as the WhatsApp Flow
+        // template list on Lead Detail.
+        <div className="mt-3 flex max-h-[358px] flex-col gap-1.5 overflow-y-auto pr-1">{children}</div>
       )}
     </div>
   );
@@ -95,6 +115,50 @@ export function UpcomingAppointmentsCard({ appointments }: { appointments: Upcom
             </div>
           </div>
           <span className="flex-none text-[10.5px] font-bold text-warn-orange">{relativeToNow(a.scheduledAt)}</span>
+        </Link>
+      ))}
+    </Shell>
+  );
+}
+
+// Mirrors the Sales Pipeline board's Follow Up column -- same pipeline_stage
+// filter, same potential-ANC figure -- so a lead listed here is never one
+// the board itself would disagree about.
+export function FollowUpLeadsCard({ leads }: { leads: FollowUpLead[] }) {
+  return (
+    <Shell
+      title="Needs follow-up"
+      count={`${leads.length} in Follow Up`}
+      href="/pipeline"
+      empty={leads.length === 0}
+      icon={
+        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 8v5l3 2" />
+          <circle cx="12" cy="12" r="8.5" />
+        </svg>
+      }
+    >
+      {leads.map((l) => (
+        <Link
+          key={l.id}
+          href={`/leads/${l.id}`}
+          className="flex items-center gap-2.5 rounded-[11px] bg-cream px-2.5 py-2 dark:bg-white/5"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <LeadNo no={l.leadNo} />
+              <span className="truncate text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">{l.fullName}</span>
+            </div>
+            <div className="truncate text-[10.5px] font-medium text-taupe dark:text-[#7f93aa]">
+              {l.agentName ?? "Unassigned"}
+              {l.anc != null ? ` · ${fmtRM(l.anc)} ANC` : ""}
+            </div>
+          </div>
+          <span
+            className={`flex-none text-[10.5px] font-bold ${l.overdue ? "text-alert-red" : "text-warn-orange"}`}
+          >
+            {l.text}
+          </span>
         </Link>
       ))}
     </Shell>

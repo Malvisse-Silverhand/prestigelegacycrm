@@ -21,14 +21,20 @@ export function BirthdayCard({
   birthdays,
   className = "",
   limit = 4,
+  /** The dashboard's row of lead-list cards all cap at 6 visible rows and
+   *  scroll for the rest, rather than truncating with a "+N more" line --
+   *  opt-in here so the Appointments page sidebar, which passes a fixed
+   *  `limit`, keeps its existing shape. */
+  scrollable = false,
 }: {
   birthdays: Birthday[];
   className?: string;
   limit?: number;
+  scrollable?: boolean;
 }) {
   if (birthdays.length === 0) return null;
 
-  const shown = birthdays.slice(0, limit);
+  const shown = scrollable ? birthdays : birthdays.slice(0, limit);
   const todayCount = birthdays.filter((b) => b.daysAway === 0).length;
 
   return (
@@ -47,7 +53,7 @@ export function BirthdayCard({
         </div>
       </div>
 
-      <div className="mt-3 flex flex-col gap-1.5">
+      <div className={scrollable ? "mt-3 flex max-h-[358px] flex-col gap-1.5 overflow-y-auto pr-1" : "mt-3 flex flex-col gap-1.5"}>
         {shown.map((b) => (
           <div
             key={b.id}
@@ -87,7 +93,7 @@ export function BirthdayCard({
         ))}
       </div>
 
-      {birthdays.length > shown.length && (
+      {!scrollable && birthdays.length > shown.length && (
         <div className="mt-2 text-[11px] font-medium text-taupe">
           +{birthdays.length - shown.length} more this month
         </div>

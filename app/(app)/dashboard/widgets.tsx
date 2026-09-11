@@ -10,6 +10,7 @@ export const WIDGETS = [
   { key: "leads", label: "Lead counters", hint: "Leads today, this week, this month" },
   { key: "alerts", label: "Needs attention", hint: "Overdue, follow up today, no quotation" },
   { key: "appointments", label: "Upcoming appointments", hint: "" },
+  { key: "followup", label: "Needs follow-up", hint: "Leads in the pipeline's Follow Up stage" },
   { key: "recent", label: "Recently added leads", hint: "" },
   { key: "birthdays", label: "Birthdays", hint: "" },
   { key: "analytics", label: "Charts", hint: "Status mix, sources, 14-day trend, assignment" },

@@ -10,7 +10,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import type { NotificationRow } from "@/app/(app)/notifications/actions";
 import { ActivityCalendar } from "./activity-calendar";
 import { BirthdayCard } from "@/components/birthday-card";
-import { UpcomingAppointmentsCard, RecentLeadsCard } from "@/components/dashboard-lists";
+import { UpcomingAppointmentsCard, FollowUpLeadsCard, RecentLeadsCard } from "@/components/dashboard-lists";
 import { QuickAction } from "./quick-action";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
@@ -224,13 +224,15 @@ export function DashboardView({
           </div>
           )}
 
-          {/* What is coming up, who just arrived, and whose birthday it is --
-              the three "what should I do next" lists, side by side. */}
-          {(widgets.on("appointments") || widgets.on("recent") || widgets.on("birthdays")) && (
-            <div className="grid grid-cols-3 gap-3.5">
+          {/* What is coming up, who needs a follow-up, who just arrived, and
+              whose birthday it is -- the "what should I do next" lists, side
+              by side. */}
+          {(widgets.on("appointments") || widgets.on("followup") || widgets.on("recent") || widgets.on("birthdays")) && (
+            <div className="grid grid-cols-4 gap-3.5">
               {widgets.on("appointments") && <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />}
+              {widgets.on("followup") && <FollowUpLeadsCard leads={stats.followUpLeads} />}
               {widgets.on("recent") && <RecentLeadsCard leads={stats.recentLeads} />}
-              {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} limit={4} />}
+              {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} scrollable />}
             </div>
           )}
 
@@ -506,8 +508,9 @@ export function DashboardView({
           </>)}
 
           {widgets.on("appointments") && <UpcomingAppointmentsCard appointments={stats.upcomingAppointments} />}
+          {widgets.on("followup") && <FollowUpLeadsCard leads={stats.followUpLeads} />}
           {widgets.on("recent") && <RecentLeadsCard leads={stats.recentLeads} />}
-          {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} limit={3} />}
+          {widgets.on("birthdays") && <BirthdayCard birthdays={stats.birthdays} scrollable />}
 
           {widgets.on("analytics") && (
           <div className="rounded-2xl border border-sand bg-white p-4 pb-[15px] dark:border-white/10 dark:bg-[#12283f]">

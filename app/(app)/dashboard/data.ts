@@ -503,12 +503,15 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
 
   // The next few appointments, so the dashboard answers "where do I have to
   // be" without opening the calendar. Cancelled ones are already excluded by
-  // the query; this drops the ones that have been and gone.
+  // the query; this drops the ones that have been and gone. Sliced to 20
+  // rather than the 5 the card used to show outright -- the card itself now
+  // caps what's visible at once and scrolls for the rest, so the data needs
+  // to go deeper than the old fixed list did.
   const nowIso = new Date().toISOString();
   const upcomingAppointments = (appointmentRows ?? [])
     .filter((a) => (a.scheduled_at as string) >= nowIso)
     .sort((a, b) => (a.scheduled_at as string).localeCompare(b.scheduled_at as string))
-    .slice(0, 5)
+    .slice(0, 20)
     .map((a) => ({
       id: a.id as string,
       leadId: a.lead_id as string,
@@ -518,7 +521,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     }));
 
   // allLeads already comes back newest first.
-  const recentLeads = allLeads.slice(0, 5).map((l) => ({
+  const recentLeads = allLeads.slice(0, 20).map((l) => ({
     id: l.id,
     leadNo: l.lead_no,
     fullName: l.full_name,
@@ -528,10 +531,44 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     createdAt: l.created_at,
   }));
 
+  // Same "follow_up" stage the Sales Pipeline board itself uses -- this list
+  // is that board's Follow Up column, not a separate notion of "needs
+  // attention". Oldest follow-up date first, since that's the one closest to
+  // slipping into Overdue; leads with no date set fall to the end.
+  //
+  // The label is spelled out here rather than left for the component to
+  // compute from today's date: this card is part of a "use client" tree, and
+  // a relative-date string worked out from new Date() at render time is
+  // exactly the Date.now()-in-render hydration bug fixed elsewhere on this
+  // page earlier today -- server and client can land on different days.
+  function followUpLabel(dateStr: string | null): { text: string; overdue: boolean } {
+    if (!dateStr) return { text: "No date set", overdue: false };
+    if (dateStr < today) {
+      const days = Math.floor((new Date(today).getTime() - new Date(dateStr).getTime()) / 86400000);
+      return { text: `Overdue ${days}d`, overdue: true };
+    }
+    if (dateStr === today) return { text: "Today", overdue: false };
+    const d = new Date(dateStr);
+    return { text: `${d.getDate()}/${d.getMonth() + 1}`, overdue: false };
+  }
+  const followUpLeads = allLeads
+    .filter((l) => l.pipeline_stage === "follow_up")
+    .sort((a, b) => (a.follow_up_date ?? "9999-99-99").localeCompare(b.follow_up_date ?? "9999-99-99"))
+    .slice(0, 20)
+    .map((l) => ({
+      id: l.id,
+      leadNo: l.lead_no,
+      fullName: l.full_name,
+      ...followUpLabel(l.follow_up_date),
+      agentName: l.profiles?.full_name ?? null,
+      anc: ancByLead.get(l.id) ?? null,
+    }));
+
   return {
     totalLeads: allLeads.length,
     birthdays,
     upcomingAppointments,
+    followUpLeads,
     recentLeads,
     teamSize: (teamProfiles ?? []).length,
     todayCount,
