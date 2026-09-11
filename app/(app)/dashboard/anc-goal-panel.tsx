@@ -45,11 +45,23 @@ const PACE_STYLE = {
   },
 };
 
-function ProgressBar({ pct, tone }: { pct: number; tone: keyof typeof PACE_STYLE }) {
+function ProgressBar({
+  pct,
+  tone,
+  onGold,
+}: {
+  pct: number;
+  tone: keyof typeof PACE_STYLE;
+  /** The one Overall Progress card sits on gold, not navy -- the "close"
+   *  tone's own bar color is gold, which would vanish against it, so that
+   *  one tone swaps to navy there. Everything else still reads by color. */
+  onGold?: boolean;
+}) {
+  const bar = onGold && tone === "close" ? "bg-navy" : PACE_STYLE[tone].bar;
   return (
-    <div className="h-[10px] w-full overflow-hidden rounded-full bg-white/12">
+    <div className={`h-[10px] w-full overflow-hidden rounded-full ${onGold ? "bg-navy/15" : "bg-white/12"}`}>
       <div
-        className={`h-full rounded-full transition-[width] ${PACE_STYLE[tone].bar}`}
+        className={`h-full rounded-full transition-[width] ${bar}`}
         style={{ width: `${Math.min(100, Math.max(pct, pct > 0 ? 2 : 0))}%` }}
       />
     </div>
@@ -77,57 +89,72 @@ function Tile({ label, value, accent }: { label: string; value: string; accent?:
 // is a lead reaching the system: the Quick Action form and every other way a
 // lead gets created all count the same, so the scoreboard can't disagree with
 // Leads Manager about how much work happened.
-function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: number }) {
+//
+// Exported rather than kept private to this panel: it now renders in the
+// Leads section of the dashboard, to the left of "Leads today" -- a daily
+// activity count belongs next to the lead counters it feeds, not buried in
+// the sales target panel.
+export function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: number }) {
   const done = days.filter((d) => !d.isFuture).reduce((n, d) => n + d.count, 0);
   const weekTarget = target * days.length;
 
   return (
-    <div className="rounded-[13px] bg-white/[.06] p-3.5">
+    <div className="rounded-2xl border border-sand bg-white px-3.5 py-3 dark:border-white/10 dark:bg-[#12283f]">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[12.5px] font-bold text-white">Daily approach</div>
+        <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">Daily approach</div>
         {weekTarget > 0 ? (
-          <div className="text-[11px] font-semibold text-white/50">
+          <div className="text-[11px] font-semibold text-taupe dark:text-[#7f93aa]">
             {done} of {weekTarget} this week
           </div>
         ) : (
-          <Link href="/settings" className="text-[11px] font-semibold text-white/50 hover:text-gold">
+          <Link href="/settings" className="text-[11px] font-semibold text-taupe hover:text-navy dark:text-[#7f93aa]">
             Set a target
           </Link>
         )}
       </div>
 
-      <div className="mt-2.5 grid grid-cols-6 gap-1.5">
+      <div className="mt-2.5 grid grid-cols-6 gap-1">
         {days.map((d) => {
           const hit = target > 0 && d.count >= target;
           return (
             <div
               key={d.key}
-              className={`rounded-[9px] border px-1 py-2 text-center ${
+              className={`rounded-[9px] border px-1 py-1.5 text-center ${
                 d.isToday
-                  ? "border-gold bg-gold/[.16]"
+                  ? "border-navy bg-navy dark:border-gold"
                   : hit
-                    ? "border-transparent bg-green/25"
+                    ? "border-transparent bg-success-bg dark:bg-green/25"
                     : d.isFuture
-                      ? "border-dashed border-white/15 bg-transparent"
-                      : "border-transparent bg-white/[.07]"
+                      ? "border-dashed border-sand-2 bg-transparent dark:border-white/15"
+                      : "border-transparent bg-cream dark:bg-white/5"
               }`}
             >
               <div
-                className={`text-[9px] font-bold uppercase tracking-[0.04em] ${
-                  d.isToday ? "text-gold/80" : "text-white/40"
+                className={`text-[8.5px] font-bold uppercase tracking-[0.02em] ${
+                  d.isToday ? "text-white/60" : "text-taupe-2 dark:text-[#7f93aa]"
                 }`}
               >
                 {d.label.slice(0, 3)}
               </div>
               <div
-                className={`text-[15px] font-extrabold ${
-                  d.isToday ? "text-gold" : hit ? "text-[#7fd6ad]" : d.isFuture ? "text-white/30" : "text-white"
+                className={`text-[14px] font-extrabold ${
+                  d.isToday
+                    ? "text-white"
+                    : hit
+                      ? "text-green"
+                      : d.isFuture
+                        ? "text-taupe"
+                        : "text-navy dark:text-[#eef3f8]"
                 }`}
               >
                 {d.isFuture ? "–" : d.count}
               </div>
               {target > 0 && (
-                <div className={`text-[9px] font-semibold ${d.isToday ? "text-gold/60" : "text-white/35"}`}>
+                <div
+                  className={`text-[8.5px] font-semibold ${
+                    d.isToday ? "text-white/45" : "text-taupe dark:text-[#7f93aa]"
+                  }`}
+                >
                   /{target}
                 </div>
               )}
@@ -141,11 +168,9 @@ function ApproachScoreboard({ days, target }: { days: ApproachDay[]; target: num
 
 export function AncGoalPanel({
   goal,
-  approachDays,
   closing,
 }: {
   goal: Goal;
-  approachDays: ApproachDay[];
   /** This month's closings -- money already in, so it belongs with the
    *  sales figures rather than up among the lead counters. */
   closing: { label: string; anc: number; count: number };
@@ -196,20 +221,17 @@ export function AncGoalPanel({
           </Link>
           , and this becomes your progress tracker.
         </div>
-        <div className="mt-3 grid gap-2.5 lg:grid-cols-2">
-          <div className="rounded-[13px] bg-gold p-3.5">
-            <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
-                {fmtRM(closing.anc)}
-              </span>
-              <span className="text-[11px] font-bold text-navy/70">ANC</span>
-            </div>
-            <div className="text-[10.5px] font-semibold text-navy/70">
-              {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
-            </div>
+        <div className="mt-3 rounded-[13px] bg-gold p-3.5">
+          <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
+              {fmtRM(closing.anc)}
+            </span>
+            <span className="text-[11px] font-bold text-navy/70">ANC</span>
           </div>
-          <ApproachScoreboard days={approachDays} target={goal.approachTargetPerDay} />
+          <div className="text-[10.5px] font-semibold text-navy/70">
+            {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
+          </div>
         </div>
       </div>
     );
@@ -241,6 +263,24 @@ export function AncGoalPanel({
         </span>
       </div>
 
+      {/* Gold, navy text: the one card in this panel meant to be read first,
+          which is also why it now sits above the tiles rather than below
+          them. */}
+      <div className="mt-3.5 rounded-[13px] bg-gold p-3.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/70">
+            Overall progress
+          </span>
+          <span className="text-[11px] font-semibold text-navy/70">{headline.footnote}</span>
+        </div>
+        <div className="mt-2">
+          <ProgressBar pct={headline.pct} tone={tone} onGold />
+        </div>
+        <div className="mt-2 text-[11.5px] font-medium text-navy/80">
+          {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
+        </div>
+      </div>
+
       <div className="mt-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <Tile label="Current ANC" value={fmtRM(headline.current)} accent />
         <Tile label="Target" value={fmtRM(headline.target)} />
@@ -248,22 +288,7 @@ export function AncGoalPanel({
         <Tile label="Achievement" value={`${headline.pct}%`} />
       </div>
 
-      <div className="mt-3.5 rounded-[13px] bg-white/[.06] p-3.5">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">
-            Overall progress
-          </span>
-          <span className="text-[11px] font-semibold text-white/50">{headline.footnote}</span>
-        </div>
-        <div className="mt-2">
-          <ProgressBar pct={headline.pct} tone={tone} />
-        </div>
-        <div className="mt-2 text-[11.5px] font-medium text-white/60">
-          {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
-        </div>
-      </div>
-
-      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-3">
+      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-2">
         <div className="rounded-[13px] bg-white/[.06] p-3.5">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-[12.5px] font-bold text-white">This month</span>
@@ -292,7 +317,7 @@ export function AncGoalPanel({
         </div>
 
         {/* Money already in. Gold on navy, because it is the one figure in
-            this panel that has actually happened. */}
+            this row that has actually happened. */}
         <div className="rounded-[13px] bg-gold p-3.5">
           <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
           <div className="mt-1 flex items-baseline gap-2">
@@ -305,8 +330,6 @@ export function AncGoalPanel({
             {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
           </div>
         </div>
-
-        <ApproachScoreboard days={approachDays} target={goal.approachTargetPerDay} />
       </div>
     </div>
   );

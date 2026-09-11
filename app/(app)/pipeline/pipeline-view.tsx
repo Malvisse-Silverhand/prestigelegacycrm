@@ -115,6 +115,18 @@ export function PipelineView({
 
   const totalLeads = leads.length;
   const totalValue = STAGES.reduce((sum, s) => sum + stagePotentialValue(s.value, columns[s.value]), 0);
+  // Split the same per-column figures the board already computes into what
+  // is still open and what has actually closed, rather than the one blended
+  // "in play" total above -- a card reading "Potential" has to mean leads
+  // still moving, not leads that already won.
+  const potentialValue = STAGES.filter((s) => !WON_STAGES.includes(s.value) && s.value !== "closed_lost").reduce(
+    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value]),
+    0,
+  );
+  const closedValue = STAGES.filter((s) => WON_STAGES.includes(s.value)).reduce(
+    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value]),
+    0,
+  );
 
   function moveStage(leadId: string, stage: PipelineStage) {
     setOpenCardId(null);
@@ -155,6 +167,20 @@ export function PipelineView({
             </div>
             <div className="mt-0.5 text-[12.5px] font-medium text-muted">
               {totalLeads} lead{totalLeads === 1 ? "" : "s"} · {fmtRM(toAnc(totalValue))} ANC in play
+            </div>
+          </div>
+          {/* Same color language as the dashboard: navy for what is still in
+              play, gold for what has actually closed. */}
+          <div className="rounded-[13px] bg-navy px-4 py-2.5">
+            <div className="text-[10px] font-semibold text-white/60">Potential ANC</div>
+            <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-white">
+              {fmtRM(toAnc(potentialValue))}
+            </div>
+          </div>
+          <div className="rounded-[13px] bg-gold px-4 py-2.5">
+            <div className="text-[10px] font-semibold text-navy/70">ANC Closed</div>
+            <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-navy">
+              {fmtRM(toAnc(closedValue))}
             </div>
           </div>
         </div>

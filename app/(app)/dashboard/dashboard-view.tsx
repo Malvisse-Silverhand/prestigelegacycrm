@@ -14,7 +14,7 @@ import { UpcomingAppointmentsCard, RecentLeadsCard } from "@/components/dashboar
 import { QuickAction } from "./quick-action";
 import { anchorFor, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
-import { AncGoalPanel } from "./anc-goal-panel";
+import { AncGoalPanel, ApproachScoreboard } from "./anc-goal-panel";
 import { ManageWidgets, DashboardClock, useWidgetPrefs } from "./widgets";
 
 const STATUS_META = [
@@ -129,7 +129,6 @@ export function DashboardView({
               <SectionLabel title="Sales" hint="Targets, closings and daily activity" />
               <AncGoalPanel
                 goal={stats.goal}
-                approachDays={period.approachDays}
                 closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
               />
             </section>
@@ -140,7 +139,12 @@ export function DashboardView({
           {widgets.on("leads") && (
             <section>
               <SectionLabel title="Leads" hint="What is coming in, and what it could be worth" />
-              <div className="grid grid-cols-4 gap-3">
+              {/* Daily approach leads the row now -- how much work happened
+                  sits directly beside how many leads it produced. Given a
+                  little extra width: it packs six day cells, the plain
+                  counters only one number. */}
+              <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr_1fr] gap-3">
+                <ApproachScoreboard days={period.approachDays} target={stats.goal.approachTargetPerDay} />
                 <StatCard
                   label={period.dayLabel}
                   value={period.dayCount}
@@ -468,7 +472,6 @@ export function DashboardView({
               <SectionLabel title="Sales" hint="Targets and closings" />
               <AncGoalPanel
                 goal={stats.goal}
-                approachDays={period.approachDays}
                 closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
               />
             </section>
@@ -477,8 +480,9 @@ export function DashboardView({
           {widgets.on("calendar") && <ActivityCalendar {...calendarProps} compact />}
 
           {widgets.on("leads") && (
-            <section>
+            <section className="flex flex-col gap-2.5">
               <SectionLabel title="Leads" hint="Coming in, and what it could be worth" />
+              <ApproachScoreboard days={period.approachDays} target={stats.goal.approachTargetPerDay} />
               <div className="rounded-2xl bg-navy p-3.5 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
                 <div className="grid grid-cols-3 gap-2">
                   <MobileStat value={period.dayCount} label="Day" />
