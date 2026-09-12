@@ -4,6 +4,7 @@ export type PipelineStage =
   | "follow_up"
   | "quoted"
   | "appointment"
+  | "submission"
   | "closed_won"
   | "servicing"
   | "closed_lost";
@@ -16,6 +17,10 @@ export const STAGES: { value: PipelineStage; label: string; dot: string }[] = [
   // A confirmed meeting in the diary sits between a quotation and a close.
   // Leads land here automatically when an appointment is saved.
   { value: "appointment", label: "Appointment", dot: "#c9552f" },
+  // The case is with the operator and waiting on underwriting. Its own column
+  // because that wait is work to track: submitted is not the same as still
+  // being chased, and not the same as won either.
+  { value: "submission", label: "Submission", dot: "#7a5bb0" },
   { value: "closed_won", label: "Closed Won/Policy Inforced", dot: "#0f2540" },
   // After the policy is inforced the job changes from selling to looking
   // after the client, so servicing gets its own column rather than leaving

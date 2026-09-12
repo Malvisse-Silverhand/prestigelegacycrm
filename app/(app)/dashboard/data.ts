@@ -17,6 +17,7 @@ type LeadRow = {
     | "follow_up"
     | "quoted"
     | "appointment"
+    | "submission"
     | "closed_won"
     | "servicing"
     | "closed_lost";
@@ -38,7 +39,9 @@ type QuotationForPipeline = {
   quotation_plans: { sort_order: number; monthly_contribution: number | null; annual_contribution: number | null }[];
 };
 
-const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted", "appointment"];
+// Submission counts as open: the money is not banked until underwriting
+// returns, so it belongs in potential rather than in what has closed.
+const OPEN_STAGES = ["new", "contacted", "follow_up", "quoted", "appointment", "submission"];
 // Business already won. Servicing counts too -- that client was still closed,
 // they have simply moved on to being looked after.
 const WON_STAGES = ["closed_won", "servicing"];

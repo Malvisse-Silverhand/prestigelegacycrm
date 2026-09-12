@@ -351,7 +351,7 @@ export function computeStageFunnel(leads: MinimalLead[]) {
   // Every stage downstream of the one being measured counts as "reached
   // it", so Appointment and Servicing have to appear in these lists too --
   // otherwise booking a meeting would make a lead vanish from the funnel.
-  const DOWNSTREAM = ["appointment", "closed_won", "servicing", "closed_lost"];
+  const DOWNSTREAM = ["appointment", "submission", "closed_won", "servicing", "closed_lost"];
   const contactedPlus = atOrPast(["contacted", "follow_up", "quoted", ...DOWNSTREAM]);
   const fuPlus = atOrPast(["follow_up", "quoted", ...DOWNSTREAM]);
   const quotedPlus = atOrPast(["quoted", ...DOWNSTREAM]);
