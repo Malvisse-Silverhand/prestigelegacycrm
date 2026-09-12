@@ -4,6 +4,8 @@ import { getLeadDetail, getLeadQuotations, getReassignableUsers, getLeadFamily }
 import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { getAllClosingScripts } from "@/app/(app)/wa-flow/scripts/data";
+import { getCasesForLead } from "@/app/(app)/my-sales/data";
+import { malaysiaToday } from "@/lib/malaysia-date";
 import { LeadDetailContent } from "./lead-detail-content";
 
 export default async function LeadDetailPage({
@@ -18,15 +20,17 @@ export default async function LeadDetailPage({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const [reassignOptions, quotations, appointments, waTemplates, waLead, family, closingScripts] = await Promise.all([
-    getReassignableUsers(profile),
-    getLeadQuotations(id),
-    getLeadAppointments(id),
-    getTemplates(),
-    getLeadForFill(id),
-    getLeadFamily(lead),
-    getAllClosingScripts(),
-  ]);
+  const [reassignOptions, quotations, appointments, waTemplates, waLead, family, closingScripts, cases] =
+    await Promise.all([
+      getReassignableUsers(profile),
+      getLeadQuotations(id),
+      getLeadAppointments(id),
+      getTemplates(),
+      getLeadForFill(id),
+      getLeadFamily(lead),
+      getAllClosingScripts(),
+      getCasesForLead(id),
+    ]);
 
   return (
     <div className="mx-auto max-w-[900px] px-5 py-8">
@@ -41,6 +45,8 @@ export default async function LeadDetailPage({
         waLead={waLead}
         family={family}
         closingScripts={closingScripts}
+        cases={cases}
+        today={malaysiaToday()}
       />
     </div>
   );

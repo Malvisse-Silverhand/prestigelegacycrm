@@ -169,6 +169,17 @@ export const ShieldIcon = (p: IconProps) =>
     </>,
   );
 
+// A signed-off document: a case filed and a policy on the books.
+export const MySalesIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="m9 14 2 2 4-4" />
+    </>,
+  );
+
 export const PhoneIcon = (p: IconProps) =>
   base(
     p,

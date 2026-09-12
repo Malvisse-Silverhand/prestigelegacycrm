@@ -22,6 +22,8 @@ import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
 import { LeadFamily } from "./lead-family";
 import { QuotationModal } from "@/components/quotation-modal";
+import { LeadCaseTab, LockedCaseTab } from "@/app/(app)/my-sales/lead-case-tab";
+import type { CaseSubmission } from "@/app/(app)/my-sales/types";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import type { QuotationRow } from "./data";
 
@@ -108,6 +110,8 @@ export function LeadDetailContent({
   waLead,
   family,
   closingScripts,
+  cases,
+  today,
   onClose,
   isModal,
 }: {
@@ -123,6 +127,10 @@ export function LeadDetailContent({
   waLead: FillableLead | null;
   family: { parent: RelativeRow | null; relatives: RelativeRow[] };
   closingScripts: Record<ScriptSet, ClosingScript[]>;
+  /** Cases filed against this lead -- what the second tab shows. */
+  cases: CaseSubmission[];
+  /** Malaysia's today, settled server-side: the servicing maths depends on it. */
+  today: string;
   onClose?: () => void;
   isModal?: boolean;
 }) {
@@ -132,6 +140,11 @@ export function LeadDetailContent({
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [quoteTool, setQuoteTool] = useState<{ url: string; title: string } | null>(null);
+  const [tab, setTab] = useState<"details" | "case">("details");
+  // Unlocked from Submission onwards -- plus whenever a case already exists,
+  // so a lead that was submitted and then lost doesn't hide its own history.
+  const caseTabUnlocked =
+    ["submission", "closed_won", "servicing"].includes(lead.pipeline_stage) || cases.length > 0;
 
   // Passing quotation_id puts the customizer in reopen mode; without it the
   // tool just prefills from the lead and starts a fresh comparison.
@@ -321,6 +334,72 @@ export function LeadDetailContent({
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
         <div className="max-h-[70vh] overflow-y-auto p-[26px]">
+          {/* Two tabs, not two pages: the lead is still one record. The second
+              stays locked until the lead reaches Submission, because there is
+              nothing to put in it before then. */}
+          <div className="mb-4 flex gap-1.5 rounded-[11px] border border-sand-2 bg-white p-1">
+            <button
+              type="button"
+              onClick={() => setTab("details")}
+              className={`flex-1 rounded-[9px] px-3 py-2 text-[12.5px] font-semibold ${
+                tab === "details" ? "bg-navy text-white" : "text-navy hover:bg-cream"
+              }`}
+            >
+              Lead details
+            </button>
+            <button
+              type="button"
+              onClick={() => caseTabUnlocked && setTab("case")}
+              disabled={!caseTabUnlocked}
+              aria-disabled={!caseTabUnlocked}
+              title={caseTabUnlocked ? undefined : "Unlocks once this lead reaches the Submission stage"}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-[9px] px-3 py-2 text-[12.5px] font-semibold ${
+                tab === "case"
+                  ? "bg-navy text-white"
+                  : caseTabUnlocked
+                    ? "text-navy hover:bg-cream"
+                    : "cursor-not-allowed text-taupe-2"
+              }`}
+            >
+              {!caseTabUnlocked && (
+                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+                  <rect x="4" y="10" width="16" height="11" rx="2.5" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+              )}
+              Case &amp; Servicing
+              {caseTabUnlocked && cases.length > 0 && (
+                <span
+                  className={`rounded-[5px] px-1.5 py-[1px] text-[9.5px] font-bold ${
+                    tab === "case" ? "bg-white/15 text-white" : "bg-cream text-taupe-2"
+                  }`}
+                >
+                  {cases.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {tab === "case" ? (
+            caseTabUnlocked ? (
+              <LeadCaseTab
+                lead={{
+                  id: lead.id,
+                  fullName: lead.full_name,
+                  dateOfBirth: lead.date_of_birth,
+                  gender: lead.gender,
+                  isSmoker: lead.is_smoker,
+                  occupation: lead.occupation,
+                  interest: lead.interest,
+                }}
+                cases={cases}
+                today={today}
+              />
+            ) : (
+              <LockedCaseTab />
+            )
+          ) : (
+          <>
           <div className="rounded-[16px] border border-sand bg-white p-[18px]">
             <div className="flex items-center justify-between">
               <div className="text-[14.5px] font-bold text-navy">Lead details</div>
@@ -482,6 +561,8 @@ export function LeadDetailContent({
               </button>
             </div>
           </div>
+          </>
+          )}
         </div>
 
         <div className="flex flex-col gap-[18px] border-t border-sand bg-white p-[22px] lg:border-l lg:border-t-0">

@@ -7,6 +7,7 @@ import {
   QuotationIcon,
   CalendarIcon,
   FunnelIcon,
+  MySalesIcon,
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
@@ -38,6 +39,17 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
+  // Sits after Appointment because that is where it falls in the work: a case
+  // is filed once the meetings are done, and serviced once it is inforced.
+  {
+    href: "/my-sales/submit-case",
+    label: "My Sales",
+    icon: MySalesIcon,
+    children: [
+      { href: "/my-sales/submit-case", label: "Submit Case" },
+      { href: "/my-sales/servicing", label: "Servicing" },
+    ],
+  },
   {
     href: "/team",
     label: "My Team",
