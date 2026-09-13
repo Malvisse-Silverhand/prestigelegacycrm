@@ -43,6 +43,7 @@ function cleanNominees(rows: CaseNominee[]) {
     .map((n, i) => ({
       name: n.name.trim(),
       relationship: n.relationship?.trim() || null,
+      phone: n.phone?.trim() || null,
       percentage: n.percentage,
       sort_order: i,
     }));

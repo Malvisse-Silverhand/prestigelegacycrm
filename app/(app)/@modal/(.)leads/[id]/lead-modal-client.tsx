@@ -8,7 +8,7 @@ import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import type { WaTemplate } from "@/app/(app)/wa-flow/types";
 import type { FillableLead } from "@/lib/wa-template-fill";
 import type { ClosingScript, ScriptSet } from "@/app/(app)/wa-flow/scripts/data";
-import type { CaseSubmission } from "@/app/(app)/my-sales/types";
+import type { CaseSubmission, BenefitOption } from "@/app/(app)/my-sales/types";
 
 export function LeadModalClient({
   lead,
@@ -22,6 +22,7 @@ export function LeadModalClient({
   family,
   closingScripts,
   cases,
+  benefitOptions,
   today,
 }: {
   lead: LeadDetail;
@@ -35,6 +36,7 @@ export function LeadModalClient({
   family: { parent: RelativeRow | null; relatives: RelativeRow[] };
   closingScripts: Record<ScriptSet, ClosingScript[]>;
   cases: CaseSubmission[];
+  benefitOptions: BenefitOption[];
   today: string;
 }) {
   const close = useModalClose();
@@ -53,6 +55,7 @@ export function LeadModalClient({
         family={family}
         closingScripts={closingScripts}
         cases={cases}
+        benefitOptions={benefitOptions}
         today={today}
         onClose={close}
         isModal

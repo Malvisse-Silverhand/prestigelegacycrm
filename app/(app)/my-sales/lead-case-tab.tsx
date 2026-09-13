@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CaseForm, type CaseFormLead } from "./case-form";
 import { CertificatePanel } from "./certificate-panel";
 import { ServicingDetail } from "./servicing-detail";
-import type { CaseSubmission } from "./types";
+import type { CaseSubmission, BenefitOption } from "./types";
 
 /**
  * Lead Detail's second tab: every case filed against this lead, and -- once
@@ -17,10 +17,12 @@ import type { CaseSubmission } from "./types";
 export function LeadCaseTab({
   lead,
   cases,
+  benefitOptions,
   today,
 }: {
   lead: CaseFormLead;
   cases: CaseSubmission[];
+  benefitOptions: BenefitOption[];
   today: string;
 }) {
   const [filing, setFiling] = useState(false);
@@ -36,7 +38,12 @@ export function LeadCaseTab({
           What you are sending to the operator. The certificate number and commencement date come later,
           when underwriting returns.
         </div>
-        <CaseForm lead={lead} onDone={() => setFiling(false)} onCancel={() => setFiling(false)} />
+        <CaseForm
+          lead={lead}
+          benefitOptions={benefitOptions}
+          onDone={() => setFiling(false)}
+          onCancel={() => setFiling(false)}
+        />
       </div>
     );
   }
@@ -80,7 +87,7 @@ export function LeadCaseTab({
       ) : (
         cases.map((c) => (
           <div key={c.id} className="flex flex-col gap-2.5">
-            <CertificatePanel submission={c} lead={lead} />
+            <CertificatePanel submission={c} lead={lead} benefitOptions={benefitOptions} />
             {c.status === "inforce" && (
               <div className="rounded-[14px] border border-sand bg-white p-3.5">
                 <button

@@ -23,7 +23,7 @@ import { EditLeadModal } from "../edit-lead-modal";
 import { LeadFamily } from "./lead-family";
 import { QuotationModal } from "@/components/quotation-modal";
 import { LeadCaseTab, LockedCaseTab } from "@/app/(app)/my-sales/lead-case-tab";
-import type { CaseSubmission } from "@/app/(app)/my-sales/types";
+import type { CaseSubmission, BenefitOption } from "@/app/(app)/my-sales/types";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import type { QuotationRow } from "./data";
 
@@ -111,6 +111,7 @@ export function LeadDetailContent({
   family,
   closingScripts,
   cases,
+  benefitOptions,
   today,
   onClose,
   isModal,
@@ -129,6 +130,8 @@ export function LeadDetailContent({
   closingScripts: Record<ScriptSet, ClosingScript[]>;
   /** Cases filed against this lead -- what the second tab shows. */
   cases: CaseSubmission[];
+  /** The benefit catalogue maintained in Settings, for the case form. */
+  benefitOptions: BenefitOption[];
   /** Malaysia's today, settled server-side: the servicing maths depends on it. */
   today: string;
   onClose?: () => void;
@@ -393,6 +396,7 @@ export function LeadDetailContent({
                   interest: lead.interest,
                 }}
                 cases={cases}
+                benefitOptions={benefitOptions}
                 today={today}
               />
             ) : (

@@ -14,6 +14,7 @@ import {
   getTrackingCode,
   getTrackablePages,
 } from "./data";
+import { getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { SettingsView } from "./settings-view";
 
 const EMPTY_ORG_TREE = {
@@ -48,6 +49,9 @@ export default async function SettingsPage() {
   // queries backing the tabs they can't open.
   const isManager =
     profile.role === "superadmin" || profile.role === "group_manager" || profile.role === "unit_manager";
+  // Same audience as Webhooks: org-wide configuration, written by the roles
+  // that own it. Skip the query entirely for anyone who can't open the tab.
+  const canManageBenefitCatalogue = profile.role === "superadmin" || profile.role === "group_manager";
   const [
     orgTree,
     assignmentOptions,
@@ -61,6 +65,7 @@ export default async function SettingsPage() {
     joinRequests,
     trackingCode,
     trackablePages,
+    benefits,
   ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
@@ -77,6 +82,9 @@ export default async function SettingsPage() {
       // return an empty shape for anyone else, so skip the round trip.
       getTrackingCode(profile),
       getTrackablePages(profile),
+      // Everything, not just what is on offer, so a retired benefit can be
+      // brought back rather than retyped.
+      canManageBenefitCatalogue ? getBenefitOptions(false) : Promise.resolve([]),
     ]);
 
   return (
@@ -95,6 +103,7 @@ export default async function SettingsPage() {
       joinRequests={joinRequests}
       trackingCode={trackingCode}
       trackablePages={trackablePages}
+      benefits={benefits}
       currentUserId={profile.id}
     />
   );

@@ -9,7 +9,14 @@ import { LeadFormFields } from "@/app/(app)/leads/lead-form-fields";
 import { createLeadForCase } from "../actions";
 import { CaseForm, type CaseFormLead } from "../case-form";
 import { CertificatePanel, fmtRM } from "../certificate-panel";
-import { CASE_STATUS_LABEL, CASE_STATUS_TONE, type CaseStatus, type CaseSubmission, type SubmittableLead } from "../types";
+import {
+  CASE_STATUS_LABEL,
+  CASE_STATUS_TONE,
+  type BenefitOption,
+  type CaseStatus,
+  type CaseSubmission,
+  type SubmittableLead,
+} from "../types";
 
 const STATUS_FILTERS: { value: CaseStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -22,9 +29,11 @@ const STATUS_FILTERS: { value: CaseStatus | "all"; label: string }[] = [
 export function SubmitCaseView({
   cases,
   leads,
+  benefitOptions,
 }: {
   cases: CaseSubmission[];
   leads: SubmittableLead[];
+  benefitOptions: BenefitOption[];
 }) {
   const [statusFilter, setStatusFilter] = useState<CaseStatus | "all">("all");
   const [caseQuery, setCaseQuery] = useState("");
@@ -337,6 +346,7 @@ export function SubmitCaseView({
                             isSmoker: lead?.isSmoker ?? c.isSmoker,
                             occupation: lead?.occupation ?? c.occupation,
                           }}
+                          benefitOptions={benefitOptions}
                         />
                       </div>
                     )}
@@ -468,6 +478,7 @@ export function SubmitCaseView({
                   occupation: filingFor.occupation,
                   interest: filingFor.interest,
                 }}
+                benefitOptions={benefitOptions}
                 onDone={() => setFilingFor(null)}
                 onCancel={() => setFilingFor(null)}
               />

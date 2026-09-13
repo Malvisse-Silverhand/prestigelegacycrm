@@ -3,8 +3,16 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PAYMENT_FREQUENCIES, type PaymentFrequency } from "@/lib/contribution-schedule";
+import { waLink } from "@/lib/whatsapp";
 import { saveCase } from "./actions";
-import { BENEFIT_OPTIONS, BENEFIT_OTHER, type CaseSubmission, type CaseNominee, type CaseBenefit } from "./types";
+import { useSpecimen } from "./use-specimen";
+import {
+  BENEFIT_OTHER,
+  type BenefitOption,
+  type CaseSubmission,
+  type CaseNominee,
+  type CaseBenefit,
+} from "./types";
 
 export type CaseFormLead = {
   id: string;
@@ -16,8 +24,12 @@ export type CaseFormLead = {
   interest?: string | null;
 };
 
-const input =
-  "h-[38px] w-full rounded-[9px] border border-sand-2 bg-cream px-3 text-[12.5px] font-medium text-navy outline-none focus:border-gold";
+// Split so the nominee row can set its own widths: `w-full` and `w-[110px]`
+// are the same specificity, so appending one to the other leaves which wins up
+// to stylesheet order.
+const inputBase =
+  "h-[38px] rounded-[9px] border border-sand-2 bg-cream px-3 text-[12.5px] font-medium text-navy outline-none focus:border-gold";
+const input = `${inputBase} w-full`;
 
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
@@ -35,7 +47,7 @@ function numOrNull(v: string) {
   return Number.isFinite(n) ? n : null;
 }
 
-const EMPTY_NOMINEE: CaseNominee = { name: "", relationship: "", percentage: null };
+const EMPTY_NOMINEE: CaseNominee = { name: "", relationship: "", phone: "", percentage: null };
 const EMPTY_BENEFIT: CaseBenefit = {
   benefit: "",
   sumCovered: null,
@@ -55,15 +67,19 @@ const EMPTY_BENEFIT: CaseBenefit = {
 export function CaseForm({
   lead,
   existing,
+  benefitOptions,
   onDone,
   onCancel,
 }: {
   lead: CaseFormLead;
   existing?: CaseSubmission | null;
+  /** The catalogue maintained in Settings. Empty leaves only "Others". */
+  benefitOptions: BenefitOption[];
   onDone?: () => void;
   onCancel?: () => void;
 }) {
   const router = useRouter();
+  const eg = useSpecimen();
   const [planName, setPlanName] = useState(existing?.planName ?? lead.interest ?? "");
   const [planType, setPlanType] = useState(existing?.planType ?? "");
   const [includesMedicalCard, setIncludesMedicalCard] = useState(existing?.includesMedicalCard ?? false);
@@ -100,17 +116,31 @@ export function CaseForm({
   // Which option each row's dropdown is on. Derived from the stored name when
   // editing: a saved benefit that isn't on the list must have been "Others",
   // and has to come back that way rather than looking unset.
-  const [benefitPicks, setBenefitPicks] = useState<string[]>(() =>
-    (existing?.benefits?.length ? existing.benefits : [{ ...EMPTY_BENEFIT }]).map((b) =>
-      !b.benefit ? "" : (BENEFIT_OPTIONS as readonly string[]).includes(b.benefit) ? b.benefit : BENEFIT_OTHER,
-    ),
-  );
+  const [benefitPicks, setBenefitPicks] = useState<string[]>(() => {
+    const names = benefitOptions.map((o) => o.name);
+    return (existing?.benefits?.length ? existing.benefits : [{ ...EMPTY_BENEFIT }]).map((b) =>
+      !b.benefit ? "" : names.includes(b.benefit) ? b.benefit : BENEFIT_OTHER,
+    );
+  });
 
   function pickBenefit(i: number, choice: string) {
     setBenefitPicks((prev) => prev.map((p, idx) => (idx === i ? choice : p)));
-    // A preset fills the name outright; "Others" clears it so the free-text
-    // box starts empty rather than carrying the previous pick's name.
-    updateBenefit(i, { benefit: choice === BENEFIT_OTHER || choice === "" ? "" : choice });
+    if (choice === BENEFIT_OTHER || choice === "") {
+      // "Others" clears the name so the free-text box starts empty rather than
+      // carrying the previous pick's.
+      updateBenefit(i, { benefit: "" });
+      return;
+    }
+    // A catalogue benefit fills its name and, where Settings set one, its
+    // standard sum covered -- but never over a figure already typed, since the
+    // certificate in hand beats the catalogue default.
+    const option = benefitOptions.find((o) => o.name === choice);
+    updateBenefit(i, {
+      benefit: choice,
+      ...(option?.defaultSumCovered != null && benefits[i]?.sumCovered == null
+        ? { sumCovered: option.defaultSumCovered }
+        : {}),
+    });
   }
 
   function removeBenefit(i: number) {
@@ -122,6 +152,11 @@ export function CaseForm({
   function addBenefit() {
     setBenefits((prev) => [...prev, { ...EMPTY_BENEFIT }]);
     setBenefitPicks((prev) => [...prev, ""]);
+  }
+
+  function descriptionFor(pick: string | undefined) {
+    if (!pick || pick === BENEFIT_OTHER) return null;
+    return benefitOptions.find((o) => o.name === pick)?.description ?? null;
   }
 
   const [error, setError] = useState<string | null>(null);
@@ -181,10 +216,10 @@ export function CaseForm({
         <div className="text-[13px] font-bold text-navy">Plan</div>
         <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
           <Field label="Plan name">
-            <input value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder="i-GREAT NOVA" className={input} />
+            <input value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder={eg.planName} className={input} />
           </Field>
           <Field label="Plan type">
-            <input value={planType} onChange={(e) => setPlanType(e.target.value)} placeholder="0758" className={input} />
+            <input value={planType} onChange={(e) => setPlanType(e.target.value)} placeholder={eg.planType} className={input} />
           </Field>
           <Field label="Payment frequency">
             <select
@@ -198,13 +233,13 @@ export function CaseForm({
             </select>
           </Field>
           <Field label="Payment method">
-            <input value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} placeholder="Credit Card" className={input} />
+            <input value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} placeholder={eg.paymentMethod} className={input} />
           </Field>
           <Field label="Installment contribution (RM)">
-            <input type="number" step="0.01" value={installment} onChange={(e) => setInstallment(e.target.value)} placeholder="77.95" className={input} />
+            <input type="number" step="0.01" value={installment} onChange={(e) => setInstallment(e.target.value)} placeholder={eg.installment} className={input} />
           </Field>
           <Field label="Sum covered (RM)">
-            <input type="number" step="0.01" value={sumCovered} onChange={(e) => setSumCovered(e.target.value)} placeholder="250000" className={input} />
+            <input type="number" step="0.01" value={sumCovered} onChange={(e) => setSumCovered(e.target.value)} placeholder={eg.sumCovered} className={input} />
           </Field>
         </div>
         <label className="mt-2.5 flex items-start gap-2.5 rounded-[10px] border border-sand-2 bg-cream px-3 py-2.5">
@@ -242,7 +277,7 @@ export function CaseForm({
             <input value={personCovered} onChange={(e) => setPersonCovered(e.target.value)} className={input} />
           </Field>
           <Field label="ID no">
-            <input value={idNo} onChange={(e) => setIdNo(e.target.value)} placeholder="001017-10-1153" className={input} />
+            <input value={idNo} onChange={(e) => setIdNo(e.target.value)} placeholder={eg.idNo} className={input} />
           </Field>
           <Field label="Date of birth">
             <input type="date" value={dob ?? ""} onChange={(e) => setDob(e.target.value)} className={input} />
@@ -255,7 +290,7 @@ export function CaseForm({
             </select>
           </Field>
           <Field label="Religion">
-            <input value={religion} onChange={(e) => setReligion(e.target.value)} placeholder="Muslim" className={input} />
+            <input value={religion} onChange={(e) => setReligion(e.target.value)} placeholder={eg.religion} className={input} />
           </Field>
           <Field label="Smoker">
             <select value={smoker} onChange={(e) => setSmoker(e.target.value)} className={input}>
@@ -283,21 +318,23 @@ export function CaseForm({
           </span>
         </div>
         <div className="mt-2 flex flex-col gap-2">
+          {/* Wraps rather than a fixed grid: six controls in a row fit the
+              modal on a desktop and would run off the side of a phone. */}
           {nominees.map((n, i) => (
-            <div key={i} className="grid grid-cols-[1fr_110px_74px_32px] items-center gap-2">
+            <div key={i} className="flex flex-wrap items-center gap-2">
               <input
                 value={n.name}
                 onChange={(e) => updateNominee(i, { name: e.target.value })}
-                placeholder="Nominee name"
+                placeholder={eg.nomineeName}
                 aria-label={`Nominee ${i + 1} name`}
-                className={input}
+                className={`${inputBase} min-w-[150px] flex-1`}
               />
               <input
                 value={n.relationship ?? ""}
                 onChange={(e) => updateNominee(i, { relationship: e.target.value })}
-                placeholder="Relationship"
+                placeholder={eg.relationship}
                 aria-label={`Nominee ${i + 1} relationship`}
-                className={input}
+                className={`${inputBase} w-[104px]`}
               />
               <input
                 type="number"
@@ -306,13 +343,48 @@ export function CaseForm({
                 onChange={(e) => updateNominee(i, { percentage: numOrNull(e.target.value) })}
                 placeholder="%"
                 aria-label={`Nominee ${i + 1} percentage`}
-                className={`${input} text-right`}
+                className={`${inputBase} w-[64px] text-right`}
               />
+              <input
+                type="tel"
+                inputMode="tel"
+                value={n.phone ?? ""}
+                onChange={(e) => updateNominee(i, { phone: e.target.value })}
+                placeholder={eg.phone}
+                aria-label={`Nominee ${i + 1} phone`}
+                className={`${inputBase} w-[124px]`}
+              />
+              {/* A link only once there is a number to open: a WhatsApp button
+                  that opens an empty chat is worse than one that waits. */}
+              {n.phone?.trim() ? (
+                <a
+                  href={waLink(n.phone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`WhatsApp nominee ${i + 1}`}
+                  title={`WhatsApp ${n.name || "this nominee"}`}
+                  className="flex h-[38px] w-9 flex-none items-center justify-center rounded-[9px] bg-green text-white"
+                >
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.53.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07s.89 2.4 1.01 2.56c.12.17 1.74 2.66 4.22 3.73.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29Z" />
+                  </svg>
+                </a>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  title="Add a phone number to message this nominee"
+                  className="flex h-[38px] w-9 flex-none items-center justify-center rounded-[9px] border border-sand-2 bg-cream text-taupe-2"
+                >
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor" opacity={0.45} aria-hidden="true">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z" />
+                  </svg>
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => setNominees((prev) => (prev.length === 1 ? [{ ...EMPTY_NOMINEE }] : prev.filter((_, idx) => idx !== i)))}
                 aria-label={`Remove nominee ${i + 1}`}
-                className="flex h-[38px] w-8 items-center justify-center rounded-[9px] text-alert-red opacity-70 hover:opacity-100"
+                className="flex h-[38px] w-8 flex-none items-center justify-center rounded-[9px] text-alert-red opacity-70 hover:opacity-100"
               >
                 <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
@@ -346,8 +418,8 @@ export function CaseForm({
                   className={`${input} bg-white`}
                 >
                   <option value="">Choose a benefit…</option>
-                  {BENEFIT_OPTIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
+                  {benefitOptions.map((o) => (
+                    <option key={o.id} value={o.name}>{o.name}</option>
                   ))}
                   <option value={BENEFIT_OTHER}>{BENEFIT_OTHER}</option>
                 </select>
@@ -371,9 +443,15 @@ export function CaseForm({
                   className={`${input} mt-2 bg-white`}
                 />
               )}
+              {/* Whatever Settings recorded about this benefit, shown where the
+                  agent is deciding rather than in a document they'd have to go
+                  and find. */}
+              {descriptionFor(benefitPicks[i]) && (
+                <p className="mt-1.5 text-[11px] font-medium text-taupe">{descriptionFor(benefitPicks[i])}</p>
+              )}
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <input type="number" step="0.01" value={b.sumCovered ?? ""} onChange={(e) => updateBenefit(i, { sumCovered: numOrNull(e.target.value) })} placeholder="Sum covered" aria-label={`Benefit ${i + 1} sum covered`} className={`${input} bg-white`} />
-                <input type="number" step="0.01" value={b.installmentContribution ?? ""} onChange={(e) => updateBenefit(i, { installmentContribution: numOrNull(e.target.value) })} placeholder="Contribution" aria-label={`Benefit ${i + 1} contribution`} className={`${input} bg-white`} />
+                <input type="number" step="0.01" value={b.sumCovered ?? ""} onChange={(e) => updateBenefit(i, { sumCovered: numOrNull(e.target.value) })} placeholder={eg.benefitSum} aria-label={`Benefit ${i + 1} sum covered`} className={`${input} bg-white`} />
+                <input type="number" step="0.01" value={b.installmentContribution ?? ""} onChange={(e) => updateBenefit(i, { installmentContribution: numOrNull(e.target.value) })} placeholder={eg.benefitContribution} aria-label={`Benefit ${i + 1} contribution`} className={`${input} bg-white`} />
                 <input value={b.status ?? ""} onChange={(e) => updateBenefit(i, { status: e.target.value })} placeholder="Status" aria-label={`Benefit ${i + 1} status`} className={`${input} bg-white`} />
               </div>
             </div>

@@ -1152,3 +1152,107 @@ export async function testLandingPages() {
 
   return { error: null, results };
 }
+
+// The benefit catalogue behind the Submit Case form. Same audience as
+// Webhooks: org-wide configuration, edited by the roles that own it. Every
+// agent reads it (RLS allows that), but only these two change what is on offer.
+function canManageBenefits(role: Role) {
+  return role === "superadmin" || role === "group_manager";
+}
+
+export async function saveBenefit(input: {
+  id: string | null;
+  name: string;
+  defaultSumCovered: number | null;
+  description: string;
+  sortOrder: number;
+}) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageBenefits(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const name = input.name.trim();
+  if (!name) return { error: "Give this benefit a name." };
+  if (input.defaultSumCovered != null && input.defaultSumCovered < 0) {
+    return { error: "A sum covered can't be negative." };
+  }
+
+  const supabase = await createClient();
+  const payload = {
+    name,
+    default_sum_covered: input.defaultSumCovered,
+    description: input.description.trim() || null,
+    sort_order: input.sortOrder,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = input.id
+    ? await supabase.from("benefit_catalogue").update(payload).eq("id", input.id).select("id").maybeSingle()
+    : await supabase
+        .from("benefit_catalogue")
+        .insert({ ...payload, created_by: profile.id })
+        .select("id")
+        .maybeSingle();
+
+  if (error || !data) {
+    // A duplicate name is the one failure worth naming: the unique index is
+    // there on purpose, and "try again" would be a lie.
+    if (error?.code === "23505") return { error: "A benefit with that name already exists." };
+    Sentry.captureException(error ?? new Error("benefit save matched no row"), {
+      tags: { action: "saveBenefit" },
+    });
+    return { error: "Couldn't save this benefit. Please try again." };
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/my-sales/submit-case");
+  return { error: null };
+}
+
+/**
+ * Retires a benefit, or brings it back.
+ *
+ * Deliberately not a delete: cases already filed store the benefit's name, and
+ * a name that disappears from the catalogue leaves those rows looking like
+ * typos. Turning it off takes it out of the dropdown and leaves history alone.
+ */
+export async function setBenefitActive(id: string, isActive: boolean) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageBenefits(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("benefit_catalogue")
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { error: "Couldn't update this benefit." };
+
+  revalidatePath("/settings");
+  revalidatePath("/my-sales/submit-case");
+  return { error: null };
+}
+
+export async function deleteBenefit(id: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageBenefits(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("benefit_catalogue")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { error: "Couldn't delete this benefit." };
+
+  revalidatePath("/settings");
+  revalidatePath("/my-sales/submit-case");
+  return { error: null };
+}

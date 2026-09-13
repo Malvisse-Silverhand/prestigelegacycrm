@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { WON_STAGES } from "@/lib/pipeline-stages";
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
-import type { CaseSubmission, CaseStatus, SubmittableLead } from "./types";
+import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption } from "./types";
 
 // Every query here leans on the RLS already written for these tables, which
 // inherits lead visibility -- so an agent gets their own book, a manager gets
@@ -17,7 +17,7 @@ const CASE_SELECT = `
   certificate_under_trust, notes, submitted_at, inforced_at,
   leads!case_submissions_lead_id_fkey(lead_no, full_name, pipeline_stage),
   profiles!case_submissions_agent_id_fkey(full_name),
-  case_nominees(name, relationship, percentage, sort_order),
+  case_nominees(name, relationship, phone, percentage, sort_order),
   case_benefits(benefit, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
   contribution_schedule(id, seq, due_date, paid, paid_on)
 `;
@@ -79,6 +79,7 @@ function toCase(row: RawCase): CaseSubmission {
       .map((n) => ({
         name: n.name as string,
         relationship: (n.relationship as string) ?? null,
+        phone: (n.phone as string) ?? null,
         percentage: num(n.percentage),
       })),
     benefits: benefits
@@ -201,4 +202,32 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       canSubmit: ["submission", "closed_won", "servicing"].includes(row.pipeline_stage),
     };
   });
+}
+
+/**
+ * The benefits offered in the case form's dropdown, newest configuration
+ * first-class: this is maintained in Settings, not in code.
+ *
+ * `activeOnly` is the default because the form should only offer what is
+ * currently sold; Settings asks for everything so a retired benefit can be
+ * brought back rather than retyped.
+ */
+export async function getBenefitOptions(activeOnly = true): Promise<BenefitOption[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("benefit_catalogue")
+    .select("id, name, default_sum_covered, description, is_active, sort_order")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+  if (activeOnly) query = query.eq("is_active", true);
+
+  const { data } = await query;
+  return (data ?? []).map((b) => ({
+    id: b.id as string,
+    name: b.name as string,
+    defaultSumCovered: b.default_sum_covered == null ? null : Number(b.default_sum_covered),
+    description: (b.description as string) ?? null,
+    isActive: b.is_active as boolean,
+    sortOrder: Number(b.sort_order),
+  }));
 }

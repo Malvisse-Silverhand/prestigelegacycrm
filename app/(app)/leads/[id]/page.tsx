@@ -4,7 +4,7 @@ import { getLeadDetail, getLeadQuotations, getReassignableUsers, getLeadFamily }
 import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { getAllClosingScripts } from "@/app/(app)/wa-flow/scripts/data";
-import { getCasesForLead } from "@/app/(app)/my-sales/data";
+import { getCasesForLead, getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { LeadDetailContent } from "./lead-detail-content";
 
@@ -20,7 +20,17 @@ export default async function LeadDetailPage({
   const { lead, activity } = await getLeadDetail(id);
   if (!lead) notFound();
 
-  const [reassignOptions, quotations, appointments, waTemplates, waLead, family, closingScripts, cases] =
+  const [
+    reassignOptions,
+    quotations,
+    appointments,
+    waTemplates,
+    waLead,
+    family,
+    closingScripts,
+    cases,
+    benefitOptions,
+  ] =
     await Promise.all([
       getReassignableUsers(profile),
       getLeadQuotations(id),
@@ -30,6 +40,7 @@ export default async function LeadDetailPage({
       getLeadFamily(lead),
       getAllClosingScripts(),
       getCasesForLead(id),
+      getBenefitOptions(),
     ]);
 
   return (
@@ -46,6 +57,7 @@ export default async function LeadDetailPage({
         family={family}
         closingScripts={closingScripts}
         cases={cases}
+        benefitOptions={benefitOptions}
         today={malaysiaToday()}
       />
     </div>

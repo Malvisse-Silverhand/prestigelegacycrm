@@ -19,18 +19,23 @@ export const CASE_STATUS_TONE: Record<CaseStatus, string> = {
 export type CaseNominee = {
   name: string;
   relationship: string | null;
+  /** So whoever handles the claim can reach them without hunting. */
+  phone: string | null;
   percentage: number | null;
 };
 
-// The benefits that actually appear on these certificates, so an agent picks
-// rather than retypes a name that has to match the operator's exactly.
-// "Others" opens a free-text box for anything not on the list.
-export const BENEFIT_OPTIONS = [
-  "i-GREAT NOVA",
-  "i-ADDITIONAL LIFETIME CRITICAL ILLNESS TERM RIDER",
-  "SAVER i-NOVA",
-  "i-PROVIDER CRITICAL ILLNESS TERM RIDER",
-] as const;
+// The benefits an agent can pick from, maintained in Settings rather than in
+// code: the name has to match the operator's exactly, and the operator adds
+// products faster than this app ships. "Others" opens a free-text box for
+// anything not on the list.
+export type BenefitOption = {
+  id: string;
+  name: string;
+  defaultSumCovered: number | null;
+  description: string | null;
+  isActive: boolean;
+  sortOrder: number;
+};
 
 export const BENEFIT_OTHER = "Others";
 

@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { frequencyLabel } from "@/lib/contribution-schedule";
 import { recordCertificate, setCaseStatus, deleteCase } from "./actions";
 import { CaseForm, type CaseFormLead } from "./case-form";
-import { ageAtEntry, CASE_STATUS_LABEL, CASE_STATUS_TONE, type CaseSubmission } from "./types";
+import { waLink } from "@/lib/whatsapp";
+import { useSpecimen } from "./use-specimen";
+import {
+  ageAtEntry,
+  CASE_STATUS_LABEL,
+  CASE_STATUS_TONE,
+  type BenefitOption,
+  type CaseSubmission,
+} from "./types";
 
 /** YYYY-MM-DD -> DD/MM/YYYY, the way the operator's own screens print it. */
 export function fmtDate(iso: string | null) {
@@ -48,13 +56,16 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 export function CertificatePanel({
   submission,
   lead,
+  benefitOptions,
   canEdit = true,
 }: {
   submission: CaseSubmission;
   lead: CaseFormLead;
+  benefitOptions: BenefitOption[];
   canEdit?: boolean;
 }) {
   const router = useRouter();
+  const eg = useSpecimen();
   const [mode, setMode] = useState<"view" | "edit" | "certificate">("view");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +137,13 @@ export function CertificatePanel({
     return (
       <div className="rounded-[14px] border border-sand bg-white p-4">
         <div className="mb-3 text-[13.5px] font-bold text-navy">Edit case</div>
-        <CaseForm lead={lead} existing={submission} onDone={() => setMode("view")} onCancel={() => setMode("view")} />
+        <CaseForm
+          lead={lead}
+          existing={submission}
+          benefitOptions={benefitOptions}
+          onDone={() => setMode("view")}
+          onCancel={() => setMode("view")}
+        />
       </div>
     );
   }
@@ -200,7 +217,7 @@ export function CertificatePanel({
           <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
             <label className="block">
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">Certificate no</span>
-              <input value={certNo} onChange={(e) => setCertNo(e.target.value)} placeholder="4048879269" className={`mt-[5px] ${input}`} />
+              <input value={certNo} onChange={(e) => setCertNo(e.target.value)} placeholder={eg.certificateNo} className={`mt-[5px] ${input}`} />
             </label>
             <label className="block">
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">Risk commencement date</span>
@@ -332,11 +349,33 @@ export function CertificatePanel({
             <p className="py-1.5 text-[11.5px] font-medium text-taupe">None recorded.</p>
           ) : (
             submission.nominees.map((n, i) => (
-              <Row
+              <div
                 key={i}
-                label={`${n.name}${n.relationship ? ` · ${n.relationship}` : ""}`}
-                value={n.percentage === null ? "—" : `${n.percentage}%`}
-              />
+                className="flex items-baseline justify-between gap-3 border-b border-sand-3 py-[7px] last:border-b-0"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[11px] font-semibold text-taupe">
+                    {n.name}
+                    {n.relationship ? ` · ${n.relationship}` : ""}
+                  </span>
+                  {n.phone && (
+                    <a
+                      href={waLink(n.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-[2px] inline-flex items-center gap-1 text-[10.5px] font-semibold text-green hover:underline"
+                    >
+                      <svg width={11} height={11} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z" />
+                      </svg>
+                      {n.phone}
+                    </a>
+                  )}
+                </span>
+                <span className="flex-none text-right text-[12px] font-semibold text-navy">
+                  {n.percentage === null ? "—" : `${n.percentage}%`}
+                </span>
+              </div>
             ))
           )}
         </Block>

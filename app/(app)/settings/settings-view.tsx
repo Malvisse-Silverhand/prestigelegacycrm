@@ -26,6 +26,8 @@ import { AuditLogTab } from "./tabs/audit-log-tab";
 import { WebhooksTab } from "./tabs/webhooks-tab";
 import { JoinRequestsTab } from "./tabs/join-requests-tab";
 import { TrackingCodeTab } from "./tabs/tracking-code-tab";
+import { BenefitsTab } from "./tabs/benefits-tab";
+import type { BenefitOption } from "@/app/(app)/my-sales/types";
 
 const TABS = [
   "Users & Hierarchy",
@@ -34,6 +36,7 @@ const TABS = [
   "Set Target",
   "Lead Distribution",
   "Lead Sources",
+  "Benefits",
   "Webhooks",
   "Tracking Code",
   "Audit Log",
@@ -46,6 +49,7 @@ type Tab = (typeof TABS)[number];
 const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
   { heading: "People", tabs: ["Users & Hierarchy", "Join Requests", "Roles & Permissions"] },
   { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Lead Sources"] },
+  { heading: "Sales", tabs: ["Benefits"] },
   { heading: "Integrations", tabs: ["Webhooks", "Tracking Code"] },
   { heading: "Security", tabs: ["Audit Log"] },
 ];
@@ -57,6 +61,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   "Set Target": "Monthly ANC and NOC targets",
   "Lead Distribution": "How new leads are shared out",
   "Lead Sources": "Where your leads are coming from",
+  Benefits: "The benefits agents can pick when submitting a case",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
   "Tracking Code": "Meta and TikTok pixels on your landing pages",
   "Audit Log": "Every sensitive action, and who took it",
@@ -77,6 +82,7 @@ export function SettingsView({
   joinRequests,
   trackingCode,
   trackablePages,
+  benefits,
   currentUserId,
 }: {
   role: Role;
@@ -93,6 +99,7 @@ export function SettingsView({
   joinRequests: JoinRequestRow[];
   trackingCode: TrackingCodeSettings;
   trackablePages: TrackablePage[];
+  benefits: BenefitOption[];
   currentUserId: string;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
@@ -108,7 +115,9 @@ export function SettingsView({
       ? TABS
       : role === "group_manager"
         ? TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code")
-        : TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Webhooks");
+        : TABS.filter(
+          (t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Webhooks" && t !== "Benefits",
+        );
   const [tab, setTab] = useState<Tab>(visibleTabs[0]);
 
   const groups = GROUPS.map((g) => ({ ...g, tabs: g.tabs.filter((t) => visibleTabs.includes(t)) })).filter(
@@ -214,6 +223,12 @@ export function SettingsView({
           )}
           {tab === "Lead Distribution" && <LeadDistributionTab initial={distribution} />}
           {tab === "Lead Sources" && <LeadSourcesTab stats={leadSources} />}
+          {tab === "Benefits" && (
+            <BenefitsTab
+              benefits={benefits}
+              canManage={role === "superadmin" || role === "group_manager"}
+            />
+          )}
           {tab === "Webhooks" && <WebhooksTab webhooks={webhooks} />}
           {tab === "Tracking Code" && role === "superadmin" && (
             <TrackingCodeTab initial={trackingCode} pages={trackablePages} />
