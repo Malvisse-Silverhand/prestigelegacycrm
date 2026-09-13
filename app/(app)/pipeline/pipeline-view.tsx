@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { STAGES, WON_STAGES, type PipelineStage } from "@/lib/pipeline-stages";
-import { type PipelineLead, stagePotentialValue, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
+import { type PipelineLead, stagePotentialValue, stageCollected, leadPotentialValue, daysSinceLastActivity, toAnc } from "./types";
+import { caseAncByLead, type AncCase, type LeadCaseAnc } from "@/lib/case-anc";
 import { waLink } from "@/lib/whatsapp";
 import { productTag, INTEREST_OPTIONS } from "@/lib/product-interest";
 import { leadPotentialAnc } from "@/lib/lead-anc";
@@ -58,6 +59,7 @@ export function PipelineView({
   currentAgent,
   currentInterest,
   staleAfterDays,
+  caseRows,
 }: {
   leads: PipelineLead[];
   agents: { id: string; full_name: string }[];
@@ -65,6 +67,8 @@ export function PipelineView({
   currentAgent: string;
   currentInterest: string;
   staleAfterDays: number;
+  /** Submitted and inforce cases, which outrank quotations for ANC. */
+  caseRows: AncCase[];
 }) {
   const router = useRouter();
   const [openCardId, setOpenCardId] = useState<string | null>(null);
@@ -113,20 +117,26 @@ export function PipelineView({
     return map;
   }, [leads]);
 
+  const casedAnc = useMemo(() => caseAncByLead(caseRows), [caseRows]);
+
   const totalLeads = leads.length;
-  const totalValue = STAGES.reduce((sum, s) => sum + stagePotentialValue(s.value, columns[s.value]), 0);
+  const totalValue = STAGES.reduce((sum, s) => sum + stagePotentialValue(s.value, columns[s.value], casedAnc), 0);
   // Split the same per-column figures the board already computes into what
   // is still open and what has actually closed, rather than the one blended
   // "in play" total above -- a card reading "Potential" has to mean leads
   // still moving, not leads that already won.
   const potentialValue = STAGES.filter((s) => !WON_STAGES.includes(s.value) && s.value !== "closed_lost").reduce(
-    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value]),
+    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value], casedAnc),
     0,
   );
   const closedValue = STAGES.filter((s) => WON_STAGES.includes(s.value)).reduce(
-    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value]),
+    (sum, s) => sum + stagePotentialValue(s.value, columns[s.value], casedAnc),
     0,
   );
+  // Money actually received, from the contributions ticked on each checklist.
+  // Not annualised: inflating collected cash to a yearly figure would report
+  // income that has not arrived.
+  const collectedValue = leads.reduce((sum, l) => sum + (casedAnc.get(l.id)?.collected ?? 0), 0);
 
   function moveStage(leadId: string, stage: PipelineStage) {
     setOpenCardId(null);
@@ -183,6 +193,12 @@ export function PipelineView({
               {fmtRM(toAnc(closedValue))}
             </div>
           </div>
+          <div className="rounded-[13px] border border-sand-2 bg-white px-4 py-2.5">
+            <div className="text-[10px] font-semibold text-taupe-2">ANC Collected</div>
+            <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-green">
+              {fmtRM(collectedValue)}
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 border-b border-sand bg-cream px-[26px] py-3">
@@ -215,12 +231,13 @@ export function PipelineView({
             />
           </div>
         ) : view === "table" ? (
-          <PipelineTable leads={leads} agents={agents} />
+          <PipelineTable leads={leads} agents={agents} casedAnc={casedAnc} />
         ) : (
         <div className="flex items-start gap-3 overflow-x-auto px-[26px] py-[18px] pb-16">
           {STAGES.map((stage) => {
             const cards = columns[stage.value];
-            const value = stagePotentialValue(stage.value, cards);
+            const value = stagePotentialValue(stage.value, cards, casedAnc);
+            const collected = stageCollected(cards, casedAnc);
             return (
               <div
                 key={stage.value}
@@ -247,6 +264,13 @@ export function PipelineView({
                         ? "Reason required"
                         : `${fmtRM(toAnc(value))} ANC potential`}
                   </div>
+                  {/* Only where there is something to report: "RM 0 collected"
+                      on New Lead is noise, not information. */}
+                  {collected > 0 && (
+                    <div className="mt-[2px] text-[10.5px] font-semibold text-taupe">
+                      {fmtRM(collected)} ANC collected
+                    </div>
+                  )}
                 </div>
 
                 {cards.length === 0 && (
@@ -308,7 +332,9 @@ export function PipelineView({
             {STAGES.find((s) => s.value === mobileStage)?.label} · {columns[mobileStage].length} leads
           </span>
           <span className="text-[11.5px] font-semibold text-taupe">
-            {fmtRM(toAnc(stagePotentialValue(mobileStage, columns[mobileStage])))} ANC
+            {fmtRM(toAnc(stagePotentialValue(mobileStage, columns[mobileStage], casedAnc)))} ANC
+            {stageCollected(columns[mobileStage], casedAnc) > 0 &&
+              ` · ${fmtRM(stageCollected(columns[mobileStage], casedAnc))} collected`}
           </span>
         </div>
 
@@ -472,8 +498,12 @@ function ProductFilter({
 }
 
 function PipelineTable({
-  leads, agents,
-}: { leads: PipelineLead[]; agents: { id: string; full_name: string }[] }) {
+  leads, agents, casedAnc,
+}: {
+  leads: PipelineLead[];
+  agents: { id: string; full_name: string }[];
+  casedAnc: Map<string, LeadCaseAnc>;
+}) {
   const agentName = new Map(agents.map((a) => [a.id, a.full_name]));
   return (
     <div className="px-[26px] py-[18px] pb-16">
@@ -494,7 +524,7 @@ function PipelineTable({
               const potential = leadPotentialAnc(lead.quotations);
               // Only used when there is no quotation to annualise yet: the
               // budget the lead said they could afford, which is monthly.
-              const value = leadPotentialValue(lead);
+              const value = leadPotentialValue(lead, casedAnc.get(lead.id));
               return (
                 <div
                   key={lead.id}

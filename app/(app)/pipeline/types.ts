@@ -1,5 +1,6 @@
 import { daysSinceLastActivity as daysSince } from "@/lib/staleness";
 import { leadPotentialAnc, MONTHS_PER_YEAR, toAnc } from "@/lib/lead-anc";
+import type { LeadCaseAnc } from "@/lib/case-anc";
 
 // Re-exported so the pipeline's callers keep importing ANC helpers from
 // one place; the definitions live with the rest of the ANC logic.
@@ -55,16 +56,32 @@ export function parseBudget(v: string | null): number {
 //
 // A saved estimate is better evidence than free text an agent typed, so where
 // this changes a total it raises it toward something real.
-export function leadPotentialValue(lead: PipelineLead): number {
+// A signed case outranks all of it. A quotation is what the client was shown;
+// a submitted or inforce case is what they actually committed to, at the
+// contribution the operator is billing. That is why Servicing could read
+// "RM 0 ANC" while holding two live certificates -- those clients had no
+// quotation on file, so there was nothing for the old rule to find.
+export function leadPotentialValue(lead: PipelineLead, cased?: LeadCaseAnc | null): number {
   if (lead.pipeline_stage === "closed_lost") return 0;
+  if (cased && cased.anc > 0) return cased.anc / MONTHS_PER_YEAR;
   const potential = leadPotentialAnc(lead.quotations);
   if (potential) return potential.anc / MONTHS_PER_YEAR;
   return parseBudget(lead.budget_indicated);
 }
 
-export function stagePotentialValue(stage: string, cards: PipelineLead[]): number {
+export function stagePotentialValue(
+  stage: string,
+  cards: PipelineLead[],
+  byLead?: Map<string, LeadCaseAnc>,
+): number {
   if (stage === "closed_lost") return 0;
-  return cards.reduce((sum, l) => sum + leadPotentialValue(l), 0);
+  return cards.reduce((sum, l) => sum + leadPotentialValue(l, byLead?.get(l.id)), 0);
+}
+
+/** What this column's clients have actually paid in, from ticked dues. */
+export function stageCollected(cards: PipelineLead[], byLead?: Map<string, LeadCaseAnc>): number {
+  if (!byLead) return 0;
+  return cards.reduce((sum, l) => sum + (byLead.get(l.id)?.collected ?? 0), 0);
 }
 
 export function daysSinceLastActivity(lead: PipelineLead): number {

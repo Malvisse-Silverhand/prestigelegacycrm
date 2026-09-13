@@ -94,6 +94,18 @@ export function PersonalPanel({
           sub={stats.nocTarget ? `of ${stats.nocTarget} target` : `${stats.casesClosed} all time`}
         />
         <Metric label="ANC in play" value={fmtRM(stats.openAnc)} sub="still open" />
+        {/* The two figures the Sales Pipeline and Servicing report, so a
+            personal page and a board can't tell different stories. */}
+        <Metric
+          label="ANC inforced"
+          value={fmtRM(stats.inforcedAnc)}
+          sub="certificates in force"
+        />
+        <Metric
+          label="ANC collected"
+          value={fmtRM(stats.collectedAnc)}
+          sub="contributions ticked"
+        />
         <Metric
           label="Conversion"
           value={`${stats.convRate}%`}

@@ -27,7 +27,7 @@ export default async function StatisticsPage({
   const params = await searchParams;
   const scope = params.scope ?? "units";
 
-  const [{ leads, activities, quotations, units, unitManagers, agents }, staleAfterDays, members] =
+  const [{ leads, activities, caseRows, quotations, units, unitManagers, agents }, staleAfterDays, members] =
     await Promise.all([getStatisticsData(profile), getStaleAfterDays(), getScopedMembers(profile)]);
 
   // Drilling into someone else is only possible for people the scoped member
@@ -43,7 +43,7 @@ export default async function StatisticsPage({
 
   const memberTarget = selected ? await getMemberTarget(selected.id) : null;
   const personalStats = selected
-    ? computePersonalStats(selected.id, leads, quotations, activities, staleAfterDays, memberTarget)
+    ? computePersonalStats(selected.id, leads, quotations, activities, staleAfterDays, memberTarget, caseRows)
     : null;
 
   // An agent has nobody below them, so the cards, the league and the

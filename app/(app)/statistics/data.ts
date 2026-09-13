@@ -3,6 +3,8 @@ import type { CurrentProfile, Role } from "@/lib/profile-types";
 import { computeAgentMetrics, type MinimalLead, type MinimalActivity } from "@/app/(app)/team/metrics";
 import { WON_STAGES } from "@/lib/pipeline-stages";
 import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
+import { caseAncByLead, COUNTED_CASE_STATUSES, type AncCase } from "@/lib/case-anc";
+import type { PaymentFrequency } from "@/lib/contribution-schedule";
 import { malaysiaDayKey, malaysiaDaysAgo } from "@/lib/malaysia-date";
 
 type QuotationRow = {
@@ -75,6 +77,7 @@ export function computePersonalStats(
   activities: MinimalActivity[],
   staleAfterDays: number,
   target: { ancTarget: number | null; nocTarget: number | null; approachTarget: number | null } | null,
+  caseRows: AncCase[] = [],
 ) {
   const mine = leads.filter((l) => l.agent_id === memberId);
   const mineIds = new Set(mine.map((l) => l.id));
@@ -100,13 +103,32 @@ export function computePersonalStats(
     if (list) list.push(entry);
     else byLead.set(q.lead_id, [entry]);
   }
-  const ancOf = (leadId: string) => leadPotentialAnc(byLead.get(leadId))?.anc ?? 0;
+  // A signed case outranks the quotation behind it, exactly as on the pipeline:
+  // the quotation is what the client was shown, the case is what they signed.
+  const casedAnc = caseAncByLead(caseRows.filter((c) => mineIds.has(c.leadId)));
+  const ancOf = (leadId: string) =>
+    casedAnc.get(leadId)?.anc || leadPotentialAnc(byLead.get(leadId))?.anc || 0;
 
   const won = mine.filter((l) => WON_STAGES.includes(l.pipeline_stage));
-  const wonThisMonth = won.filter((l) => malaysiaDayKey(l.updated_at ?? l.created_at).startsWith(monthPrefix));
+  // closed_on is the date the agent agreed with the client, which is the whole
+  // point of letting them backdate it; updated_at only stands in for rows that
+  // closed before the column existed.
+  const closedKey = (l: MinimalLeadWithSource) =>
+    l.closed_on ?? malaysiaDayKey(l.updated_at ?? l.created_at);
+  const wonThisMonth = won.filter((l) => closedKey(l).startsWith(monthPrefix));
 
   const closedAnc = won.reduce((sum, l) => sum + ancOf(l.id), 0);
   const closedAncThisMonth = wonThisMonth.reduce((sum, l) => sum + ancOf(l.id), 0);
+
+  // What the certificates already inforce are worth over a year, and what has
+  // actually been paid in against them.
+  let inforcedAnc = 0, collectedAnc = 0;
+  for (const id of mineIds) {
+    const v = casedAnc.get(id);
+    if (!v) continue;
+    inforcedAnc += v.inforcedAnc;
+    collectedAnc += v.collected;
+  }
 
   const openAnc = mine
     .filter((l) => !WON_STAGES.includes(l.pipeline_stage) && l.pipeline_stage !== "closed_lost")
@@ -129,6 +151,8 @@ export function computePersonalStats(
     casesClosedThisMonth: wonThisMonth.length,
     closedAnc,
     closedAncThisMonth,
+    inforcedAnc,
+    collectedAnc,
     openAnc,
     convRate: metrics?.convRate ?? 0,
     avgResponseHours: metrics?.avgResponseHours ?? null,
@@ -180,7 +204,9 @@ export async function getMemberTarget(memberId: string) {
 export type MinimalLeadWithSource = MinimalLead & {
   lead_source?: string | null;
   interest?: string | null;
-  // The stand-in for a close date, same as the dashboard uses.
+  /** The business date the sale closed, as agreed with the client. */
+  closed_on?: string | null;
+  // Only a fallback for rows that closed before closed_on existed.
   updated_at?: string | null;
 };
 
@@ -190,7 +216,7 @@ export async function getStatisticsData(profile: CurrentProfile) {
   const [{ data: leads }, { data: quotations }] = await Promise.all([
     supabase
       .from("leads")
-      .select("id, agent_id, unit_id, pipeline_stage, created_at, updated_at, lead_source, interest")
+      .select("id, agent_id, unit_id, pipeline_stage, created_at, updated_at, closed_on, lead_source, interest")
       .returns<MinimalLeadWithSource[]>(),
     supabase
       .from("quotations")
@@ -199,6 +225,27 @@ export async function getStatisticsData(profile: CurrentProfile) {
       )
       .returns<QuotationRow[]>(),
   ]);
+
+  const { data: caseData } = await supabase
+    .from("case_submissions")
+    .select("lead_id, status, payment_frequency, installment_contribution, contribution_schedule(paid)")
+    .in("status", COUNTED_CASE_STATUSES as unknown as string[]);
+  const caseRows: AncCase[] = (caseData ?? []).map((row) => {
+    const r = row as unknown as {
+      lead_id: string;
+      status: string;
+      payment_frequency: PaymentFrequency;
+      installment_contribution: number | string | null;
+      contribution_schedule: { paid: boolean }[] | null;
+    };
+    return {
+      leadId: r.lead_id,
+      status: r.status,
+      paymentFrequency: r.payment_frequency,
+      installmentContribution: r.installment_contribution == null ? null : Number(r.installment_contribution),
+      paidCount: (r.contribution_schedule ?? []).filter((x) => x.paid).length,
+    };
+  });
 
   const allLeads = leads ?? [];
   const leadIds = allLeads.map((l) => l.id);
@@ -240,6 +287,7 @@ export async function getStatisticsData(profile: CurrentProfile) {
   return {
     leads: allLeads,
     activities,
+    caseRows,
     quotations: quotations ?? [],
     units: unitRows,
     unitManagers,

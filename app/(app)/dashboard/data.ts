@@ -25,6 +25,7 @@ type LeadRow = {
   lead_source: string | null;
   follow_up_date: string | null;
   created_at: string;
+  closed_on?: string | null;
   updated_at: string;
   profiles: { full_name: string; avatar_initials: string | null } | null;
 };
@@ -120,7 +121,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // leads now has two FKs to profiles (agent_id and deleted_by), so the
       // embed has to name which one -- a bare profiles(...) is ambiguous and
       // PostgREST returns nothing at all for it.
-      "id, lead_no, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
+      "id, lead_no, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, closed_on, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
     )
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
@@ -247,16 +248,20 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   }
 
   // ---- Goal tracking -------------------------------------------------------
-  // A won lead's close date is the day it was last moved -- the same stand-in
-  // the activity calendar already uses, so the goal card and the calendar can
-  // never disagree about which month a case landed in.
+  // A won lead's close date is the one the agent recorded -- backdatable,
+  // because a case signed last week is often only entered today. updated_at is
+  // only a fallback for rows closed before that column existed; on its own it
+  // is wrong in both directions, since editing a phone number in October would
+  // drag a September sale into October.
+  const closeKey = (l: { closed_on?: string | null; updated_at: string }) =>
+    l.closed_on ?? dayKey(l.updated_at);
   const wonLeads = allLeads.filter((l) => WON_STAGES.includes(l.pipeline_stage));
   const ancOf = (leadId: string) => ancByLead.get(leadId) ?? 0;
   const closedAncAllTime = wonLeads.reduce((sum, l) => sum + ancOf(l.id), 0);
-  const monthClosed = wonLeads.filter((l) => dayKey(l.updated_at).startsWith(monthPrefix));
+  const monthClosed = wonLeads.filter((l) => closeKey(l).startsWith(monthPrefix));
   const monthAnc = monthClosed.reduce((sum, l) => sum + ancOf(l.id), 0);
   const weekAnc = wonLeads
-    .filter((l) => dayKey(l.updated_at) >= weekStart)
+    .filter((l) => closeKey(l) >= weekStart)
     .reduce((sum, l) => sum + ancOf(l.id), 0);
 
   // Only cases that actually carry a figure count toward the average -- a won
@@ -276,7 +281,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
         // don't inflate the new one.
         const currentAnc = wonLeads
           .filter((l) => {
-            const key = dayKey(l.updated_at);
+            const key = closeKey(l);
             return key >= start && key <= deadline;
           })
           .reduce((sum, l) => sum + ancOf(l.id), 0);
@@ -399,7 +404,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     const key = daysAgoKey(13 - i);
     const inCount = allLeads.filter((l) => dayKey(l.created_at) === key).length;
     const outCount = allLeads.filter(
-      (l) => WON_STAGES.includes(l.pipeline_stage) && dayKey(l.updated_at) === key,
+      (l) => WON_STAGES.includes(l.pipeline_stage) && closeKey(l) === key,
     ).length;
     return { key, day: new Date(key).getDate(), inCount, outCount };
   });
@@ -420,11 +425,9 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   for (const l of allLeads) {
     const createdKey = dayKey(l.created_at);
     if (createdKey >= calendarStartKey) dayEntry(createdKey).leads.push({ id: l.id, fullName: l.full_name });
-    // A closed-won lead counts as a sale on the day it was last moved -- the
-    // closest thing to a close date without a dedicated column. Only read
-    // updated_at for those: most leads have never been moved and carry null.
+    // A won lead counts as a sale on its recorded closing date.
     if (WON_STAGES.includes(l.pipeline_stage)) {
-      const updatedKey = dayKey(l.updated_at);
+      const updatedKey = closeKey(l);
       if (updatedKey >= calendarStartKey) {
         dayEntry(updatedKey).sales.push({
           id: l.id,

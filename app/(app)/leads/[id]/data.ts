@@ -25,6 +25,8 @@ export type LeadDetail = {
   pipeline_stage: string;
   agent_id: string | null;
   created_at: string;
+  /** Business date the sale closed. Null until the lead is won. */
+  closed_on: string | null;
   parent_lead_id: string | null;
   relationship: string | null;
   profiles: { full_name: string; units: { name: string } | null } | null;
@@ -81,7 +83,7 @@ export async function getLeadDetail(id: string) {
     supabase
       .from("leads")
       .select(
-        "id, lead_no, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, parent_lead_id, relationship, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
+        "id, lead_no, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, closed_on, parent_lead_id, relationship, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
       )
       .eq("id", id)
       .single<LeadDetail>(),

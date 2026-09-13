@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { PipelineLead } from "./types";
+import { COUNTED_CASE_STATUSES, type AncCase } from "@/lib/case-anc";
+import type { PaymentFrequency } from "@/lib/contribution-schedule";
 
 export type { PipelineLead } from "./types";
 export { getStaleAfterDays } from "@/lib/staleness-server";
@@ -25,4 +27,37 @@ export async function getPipelineAgents() {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("id, full_name").eq("role", "agent").order("full_name");
   return data ?? [];
+}
+
+/**
+ * Every case that counts toward ANC, flattened to what the ANC maths needs.
+ *
+ * Fetched separately rather than nested under the leads query: RLS on
+ * case_submissions inherits lead visibility, so this is already scoped to the
+ * same book, and nesting would drag a whole schedule (up to 72 rows) under
+ * every lead just to count the ticked ones.
+ */
+export async function getCaseAncRows(): Promise<AncCase[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("case_submissions")
+    .select("lead_id, status, payment_frequency, installment_contribution, contribution_schedule(paid)")
+    .in("status", COUNTED_CASE_STATUSES as unknown as string[]);
+
+  return (data ?? []).map((row) => {
+    const r = row as unknown as {
+      lead_id: string;
+      status: string;
+      payment_frequency: PaymentFrequency;
+      installment_contribution: number | string | null;
+      contribution_schedule: { paid: boolean }[] | null;
+    };
+    return {
+      leadId: r.lead_id,
+      status: r.status,
+      paymentFrequency: r.payment_frequency,
+      installmentContribution: r.installment_contribution == null ? null : Number(r.installment_contribution),
+      paidCount: (r.contribution_schedule ?? []).filter((s) => s.paid).length,
+    };
+  });
 }

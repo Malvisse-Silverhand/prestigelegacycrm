@@ -9,7 +9,8 @@ import { productTag } from "@/lib/product-interest";
 import { LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
-import { addNote, reassignLead, updateStage, updateSource } from "./actions";
+import { addNote, reassignLead, updateStage, updateSource, setClosedOn } from "./actions";
+import { WON_STAGES } from "@/lib/pipeline-stages";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
 import { InterestDropdown } from "./interest-dropdown";
 import { LeadQuotations } from "./lead-quotations";
@@ -591,6 +592,14 @@ export function LeadDetailContent({
             </div>
           </div>
 
+          {/* Only a lead that has actually closed has a closing date. It is
+              set to today the moment the lead is won, and stays editable
+              because a case signed last week is often only entered today --
+              and every monthly figure keys off this date. */}
+          {WON_STAGES.includes(lead.pipeline_stage) && (
+            <ClosingDate leadId={lead.id} closedOn={lead.closed_on ?? null} today={today} canEdit={canEditStage} />
+          )}
+
           <div>
             <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
               Lead Assigned
@@ -709,6 +718,75 @@ function Detail({ label, value }: { label: string; value: string | null }) {
     <div>
       <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">{label}</div>
       <div className="mt-[3px] text-[13px] font-semibold text-navy">{value || "—"}</div>
+    </div>
+  );
+}
+
+/**
+ * The date a sale closed, editable.
+ *
+ * Shown as a plain date input rather than behind an edit button: backdating is
+ * the normal case here, not a correction. An agent entering last week's case
+ * today should be able to fix the date in the same glance they check it.
+ */
+function ClosingDate({
+  leadId,
+  closedOn,
+  today,
+  canEdit,
+}: {
+  leadId: string;
+  closedOn: string | null;
+  today: string;
+  canEdit: boolean;
+}) {
+  const router = useRouter();
+  const [value, setValue] = useState(closedOn ?? today);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function save(next: string) {
+    setValue(next);
+    setError(null);
+    setSaved(false);
+    startTransition(async () => {
+      const result = await setClosedOn(leadId, next);
+      if (result.error) {
+        setError(result.error);
+        // Put the field back to what is actually stored, so the screen never
+        // shows a date the database rejected.
+        setValue(closedOn ?? today);
+        return;
+      }
+      setSaved(true);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div>
+      <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">Closing date</div>
+      <input
+        type="date"
+        value={value}
+        max={today}
+        disabled={!canEdit || pending}
+        onChange={(e) => save(e.target.value)}
+        aria-label="Closing date"
+        className="mt-2 w-full rounded-[10px] border border-sand-2 bg-cream px-3 py-[10px] text-[13px] font-semibold text-navy disabled:opacity-70"
+      />
+      <p className="mt-1 text-[10.5px] font-medium text-taupe">
+        {error ? (
+          <span className="font-semibold text-alert-red">{error}</span>
+        ) : pending ? (
+          "Saving…"
+        ) : saved ? (
+          <span className="font-semibold text-green">Saved · this month&rsquo;s figures updated</span>
+        ) : (
+          "Defaults to the day it closed. Backdate it if the case was signed earlier."
+        )}
+      </p>
     </div>
   );
 }

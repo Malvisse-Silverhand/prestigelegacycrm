@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { summariseSchedule } from "@/lib/contribution-schedule";
+import { caseAnc, caseCollected } from "@/lib/case-anc";
 import { LeadNo } from "@/components/lead-no";
 import { EmptyState } from "@/components/empty-state";
 import { ServicingDetail } from "../servicing-detail";
@@ -34,6 +35,23 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
     [cases, today],
   );
 
+  // The same two figures the Sales Pipeline reports, over this book: what the
+  // certificates are worth over a year, and what has actually been paid in.
+  const { inforcedAnc, collected } = useMemo(() => {
+    let inforcedAnc = 0, collected = 0;
+    for (const c of cases) {
+      inforcedAnc += caseAnc({
+        paymentFrequency: c.paymentFrequency,
+        installmentContribution: c.installmentContribution,
+      });
+      collected += caseCollected({
+        installmentContribution: c.installmentContribution,
+        paidCount: c.schedule.filter((r) => r.paid).length,
+      });
+    }
+    return { inforcedAnc, collected };
+  }, [cases]);
+
   if (cases.length === 0) {
     return (
       <div>
@@ -61,13 +79,29 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
-        <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Servicing</div>
-        <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">
-          {cases.length} inforce certificate{cases.length === 1 ? "" : "s"}
-          {totalOverdue > 0 && (
-            <span className="ml-1.5 font-bold text-alert-red">· {totalOverdue} contribution behind</span>
-          )}
+      <div className="flex flex-wrap items-start gap-3 border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
+        <div className="min-w-0 flex-1">
+          <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Servicing</div>
+          <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">
+            {cases.length} inforce certificate{cases.length === 1 ? "" : "s"}
+            {totalOverdue > 0 && (
+              <span className="ml-1.5 font-bold text-alert-red">· {totalOverdue} contribution behind</span>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-none flex-wrap gap-2.5">
+          <div className="rounded-[13px] bg-gold px-4 py-2.5">
+            <div className="text-[10px] font-semibold text-navy/70">ANC Inforced</div>
+            <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-navy">
+              RM {Math.round(inforcedAnc).toLocaleString("en-MY")}
+            </div>
+          </div>
+          <div className="rounded-[13px] border border-sand-2 bg-cream px-4 py-2.5">
+            <div className="text-[10px] font-semibold text-taupe-2">ANC Collected</div>
+            <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-green">
+              RM {Math.round(collected).toLocaleString("en-MY")}
+            </div>
+          </div>
         </div>
       </div>
 
