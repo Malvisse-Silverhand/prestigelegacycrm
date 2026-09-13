@@ -15,7 +15,7 @@ const CASE_SELECT = `
   certificate_issue_date, next_due_date, last_paid_date, lapse_date,
   termination_date, issuing_agent_name, currency, stamp_duty, discount_type,
   certificate_under_trust, notes, submitted_at, inforced_at,
-  leads!case_submissions_lead_id_fkey(lead_no, full_name, pipeline_stage),
+  leads!case_submissions_lead_id_fkey(lead_no, full_name, phone, pipeline_stage),
   profiles!case_submissions_agent_id_fkey(full_name),
   case_nominees(name, relationship, phone, percentage, sort_order),
   case_benefits(benefit, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
@@ -25,7 +25,7 @@ const CASE_SELECT = `
 type RawCase = Record<string, unknown>;
 
 function toCase(row: RawCase): CaseSubmission {
-  const lead = row.leads as { lead_no: number; full_name: string; pipeline_stage: string } | null;
+  const lead = row.leads as { lead_no: number; full_name: string; phone: string; pipeline_stage: string } | null;
   const agent = row.profiles as { full_name: string } | null;
   const nominees = (row.case_nominees ?? []) as Record<string, unknown>[];
   const benefits = (row.case_benefits ?? []) as Record<string, unknown>[];
@@ -37,6 +37,7 @@ function toCase(row: RawCase): CaseSubmission {
     leadId: row.lead_id as string,
     leadNo: lead?.lead_no ?? 0,
     leadName: lead?.full_name ?? "Unknown lead",
+    leadPhone: lead?.phone ?? null,
     leadStage: lead?.pipeline_stage ?? "",
     agentName: agent?.full_name ?? null,
     status: row.status as CaseStatus,
@@ -161,13 +162,17 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
         "id, lead_no, full_name, phone, pipeline_stage, interest, date_of_birth, gender, is_smoker, occupation, profiles!leads_agent_id_fkey(full_name)",
       )
       .order("lead_no", { ascending: false }),
-    supabase.from("case_submissions").select("lead_id"),
+    supabase.from("case_submissions").select("lead_id, status"),
   ]);
 
   const caseCounts = new Map<string, number>();
+  // A lead whose case came back inforce is finished with this page: the
+  // submission succeeded and the work moves to Servicing.
+  const settled = new Set<string>();
   for (const c of cases ?? []) {
-    const id = (c as { lead_id: string }).lead_id;
-    caseCounts.set(id, (caseCounts.get(id) ?? 0) + 1);
+    const row = c as { lead_id: string; status: string };
+    caseCounts.set(row.lead_id, (caseCounts.get(row.lead_id) ?? 0) + 1);
+    if (row.status === "inforce") settled.add(row.lead_id);
   }
 
   return (leads ?? []).map((l) => {
@@ -197,9 +202,13 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       isSmoker: row.is_smoker,
       occupation: row.occupation,
       caseCount: caseCounts.get(row.id) ?? 0,
+      inforced: settled.has(row.id),
       // Submission is the gate, and everything past it too: a case recorded
       // late against an already-inforced client is still a legitimate filing.
-      canSubmit: ["submission", "closed_won", "servicing"].includes(row.pipeline_stage),
+      // Once one of those cases is inforce the submission has succeeded, and
+      // the lead belongs to Servicing rather than this queue.
+      canSubmit:
+        ["submission", "closed_won", "servicing"].includes(row.pipeline_stage) && !settled.has(row.id),
     };
   });
 }

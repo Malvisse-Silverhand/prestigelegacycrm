@@ -62,6 +62,8 @@ export type CaseSubmission = {
   leadId: string;
   leadNo: number;
   leadName: string;
+  /** The client's own number, for the servicing reminder. */
+  leadPhone: string | null;
   leadStage: string;
   agentName: string | null;
   status: CaseStatus;
@@ -120,6 +122,8 @@ export type SubmittableLead = {
   isSmoker: boolean | null;
   occupation: string | null;
   caseCount: number;
+  /** A case on this lead has come back inforce: the submission succeeded. */
+  inforced: boolean;
   /** Only leads that have reached Submission can have a case filed. */
   canSubmit: boolean;
 };

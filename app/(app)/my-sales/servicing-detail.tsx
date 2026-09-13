@@ -9,6 +9,8 @@ import {
   CLIENT_PORTAL_URL,
 } from "@/lib/waiting-periods";
 import { frequencyLabel, rowStatus, summariseSchedule, type ScheduleStatus } from "@/lib/contribution-schedule";
+import { waLink } from "@/lib/whatsapp";
+import { contributionReminder } from "@/lib/contribution-reminder";
 import { setContributionPaid } from "./actions";
 import { fmtDate, fmtRM } from "./certificate-panel";
 import type { CaseSubmission } from "./types";
@@ -174,9 +176,40 @@ function ContributionChecklist({ submission, today }: { submission: CaseSubmissi
             six years from commencement
           </div>
         </div>
-        <div className="text-[11.5px] font-semibold text-taupe">
-          {summary.paid} of {summary.total} ticked
-          {summary.overdue > 0 && <span className="ml-1.5 font-bold text-alert-red">{summary.overdue} overdue</span>}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="text-[11.5px] font-semibold text-taupe">
+            {summary.paid} of {summary.total} ticked
+            {summary.overdue > 0 && <span className="ml-1.5 font-bold text-alert-red">{summary.overdue} overdue</span>}
+          </div>
+          {/* Opens WhatsApp with the message already written, so the agent
+              reads it and can change anything before it goes. Only offered
+              when there is a number to open and something left to chase. */}
+          {submission.leadPhone && summary.nextDue && (
+            <a
+              href={waLink(
+                submission.leadPhone,
+                contributionReminder({
+                  clientName: submission.leadName,
+                  planName: submission.planName,
+                  certificateNo: submission.certificateNo,
+                  amount: submission.installmentContribution,
+                  frequency: submission.paymentFrequency,
+                  nextDue: summary.nextDue,
+                  overdue: summary.overdue,
+                  religion: submission.religion,
+                  agentName: submission.agentName,
+                }),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-[9px] bg-green px-3 py-2 text-[11.5px] font-semibold text-white hover:brightness-95"
+            >
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z" />
+              </svg>
+              Send WhatsApp Reminder
+            </a>
+          )}
         </div>
       </div>
 

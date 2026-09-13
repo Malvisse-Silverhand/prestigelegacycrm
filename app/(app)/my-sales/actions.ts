@@ -14,6 +14,57 @@ import type { CaseNominee, CaseBenefit } from "./types";
 // mistake to block.
 const SUBMITTABLE_STAGES = ["submission", "closed_won", "servicing"];
 
+/**
+ * Regenerates a case's contribution schedule from its commencement date and
+ * payment frequency, keeping whatever has already been ticked.
+ *
+ * Two things can invalidate a schedule: a corrected commencement date, which
+ * slides every due date, and a corrected frequency, which changes how many
+ * there are. They need different rules for carrying ticks across:
+ *
+ *  - A due date that still exists keeps its tick. That is the only safe match
+ *    when the frequency changed, because "payment #2" means one month in on a
+ *    monthly certificate and a whole year in on a yearly one.
+ *  - When only the date moved, sequence number is the better match: the client
+ *    has paid their first N contributions whatever dates those landed on.
+ */
+async function rebuildSchedule(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  caseId: string,
+  commencementDate: string,
+  frequency: PaymentFrequency,
+  frequencyChanged: boolean,
+) {
+  const { data: previous } = await supabase
+    .from("contribution_schedule")
+    .select("seq, due_date, paid, paid_on")
+    .eq("submission_id", caseId);
+
+  const ticked = (previous ?? []).filter((p) => p.paid);
+  const byDate = new Map(ticked.map((p) => [p.due_date as string, (p.paid_on as string | null) ?? null]));
+  const bySeq = new Map(ticked.map((p) => [Number(p.seq), (p.paid_on as string | null) ?? null]));
+
+  await supabase.from("contribution_schedule").delete().eq("submission_id", caseId);
+
+  const rows = buildSchedule(commencementDate, frequency).map((r) => {
+    const carried = byDate.has(r.dueDate)
+      ? { paid: true, paidOn: byDate.get(r.dueDate) ?? r.dueDate }
+      : !frequencyChanged && bySeq.has(r.seq)
+        ? { paid: true, paidOn: bySeq.get(r.seq) ?? r.dueDate }
+        : { paid: false, paidOn: null };
+    return {
+      submission_id: caseId,
+      seq: r.seq,
+      due_date: r.dueDate,
+      paid: carried.paid,
+      paid_on: carried.paidOn,
+    };
+  });
+
+  const { error } = await supabase.from("contribution_schedule").insert(rows);
+  return { error };
+}
+
 export type CaseInput = {
   caseId?: string;
   leadId: string;
@@ -116,6 +167,14 @@ export async function saveCase(input: CaseInput) {
 
   let caseId = input.caseId ?? null;
   if (caseId) {
+    // Read before writing: the schedule has to be rebuilt if the frequency
+    // moved, and afterwards there is nothing left to compare against.
+    const { data: before } = await supabase
+      .from("case_submissions")
+      .select("payment_frequency, commencement_date")
+      .eq("id", caseId)
+      .maybeSingle();
+
     const { data, error } = await supabase
       .from("case_submissions")
       .update(row)
@@ -123,6 +182,27 @@ export async function saveCase(input: CaseInput) {
       .select("id")
       .maybeSingle();
     if (error || !data) return { error: "Couldn't save this case. Please try again.", caseId: null };
+
+    // A certificate already has its dues laid out. Changing how often the
+    // client pays changes every one of them, so the checklist is regenerated
+    // rather than left showing a cadence the case no longer has.
+    const frequencyChanged = Boolean(before) && before!.payment_frequency !== input.paymentFrequency;
+    if (frequencyChanged && before?.commencement_date) {
+      const { error: scheduleError } = await rebuildSchedule(
+        supabase,
+        caseId,
+        before.commencement_date as string,
+        input.paymentFrequency,
+        true,
+      );
+      if (scheduleError) {
+        console.error("saveCase: schedule rebuild failed", scheduleError);
+        return {
+          error: "The case saved, but its contribution checklist couldn't be rebuilt. Please try again.",
+          caseId: null,
+        };
+      }
+    }
   } else {
     const { data, error } = await supabase
       .from("case_submissions")
@@ -240,33 +320,28 @@ export async function recordCertificate(input: CertificateInput) {
 
   // Rebuilt rather than appended to: a corrected commencement date has to move
   // every due date with it, and ticks are keyed by row so regenerating would
-  // otherwise silently keep dues that no longer exist. Existing ticks are
-  // carried across by sequence number, which is stable under a date change.
-  const { data: previous } = await supabase
-    .from("contribution_schedule")
-    .select("seq, paid, paid_on")
-    .eq("submission_id", input.caseId);
-  const wasPaid = new Map(
-    (previous ?? []).map((p) => [Number(p.seq), { paid: Boolean(p.paid), paidOn: p.paid_on as string | null }]),
+  // otherwise silently keep dues that no longer exist.
+  const { error: scheduleError } = await rebuildSchedule(
+    supabase,
+    input.caseId,
+    input.commencementDate,
+    existing.payment_frequency as PaymentFrequency,
+    false,
   );
-
-  await supabase.from("contribution_schedule").delete().eq("submission_id", input.caseId);
-  const rows = buildSchedule(input.commencementDate, existing.payment_frequency as PaymentFrequency).map((r) => ({
-    submission_id: input.caseId,
-    seq: r.seq,
-    due_date: r.dueDate,
-    paid: wasPaid.get(r.seq)?.paid ?? false,
-    paid_on: wasPaid.get(r.seq)?.paidOn ?? null,
-  }));
-  const { error: scheduleError } = await supabase.from("contribution_schedule").insert(rows);
   if (scheduleError) {
     console.error("recordCertificate: schedule insert failed", scheduleError);
     return { error: "The certificate saved, but its contribution schedule couldn't be built. Please try again." };
   }
 
+  // Straight to Servicing, not Closed Won. A recorded certificate is the
+  // moment the job changes from selling to looking after the client, and the
+  // Servicing column is what the Servicing page lists -- leaving the lead in
+  // Closed Won made the board and that page disagree about the same client.
+  // Both stages count as won (WON_STAGES), so no ANC figure moves.
+  //
   // Reuses the one stage-change path so the activity log, the "closed" status
   // flag and the outgoing webhook all fire exactly as a manual move would.
-  const stageResult = await updateStage(existing.lead_id, "closed_won", "Closed Won/Policy Inforced");
+  const stageResult = await updateStage(existing.lead_id, "servicing", "Servicing");
   if (stageResult.error) {
     return { error: `Certificate recorded, but the lead couldn't be moved: ${stageResult.error}` };
   }

@@ -253,6 +253,15 @@ export function SubmitCaseView({
                       >
                         Submit case
                       </button>
+                    ) : l.inforced ? (
+                      // Its certificate is recorded, so there is nothing left
+                      // to file here -- point at where the work actually is.
+                      <Link
+                        href="/my-sales/servicing"
+                        className="flex-none rounded-[9px] border border-sand-2 bg-success-bg px-3 py-2 text-[11.5px] font-semibold text-green hover:border-green"
+                      >
+                        Inforce · Servicing
+                      </Link>
                     ) : (
                       <span
                         title="This lead has to reach the Submission stage first"
