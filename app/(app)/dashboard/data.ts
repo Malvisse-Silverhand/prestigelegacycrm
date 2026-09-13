@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
+import { caseAncByLead, sumCaseAnc, COUNTED_CASE_STATUSES, type AncCase } from "@/lib/case-anc";
+import type { PaymentFrequency } from "@/lib/contribution-schedule";
 import { malaysiaDayKey, malaysiaDaysAgo, malaysiaDateTime } from "@/lib/malaysia-date";
 import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays";
 
@@ -136,6 +138,7 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const [
     { data: leads },
     { data: quotations },
+    { data: caseData },
     { data: targets },
     { data: teamProfiles },
     { data: activityRows },
@@ -149,6 +152,13 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
           "id, lead_id, updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution)",
         )
         .returns<QuotationForPipeline[]>(),
+      // Every case a submitted or inforce certificate carries, so ANC can be
+      // tallied the same way the Sales Pipeline and Statistics tally it --
+      // see the merge into ancByLead below for why this outranks a quotation.
+      supabase
+        .from("case_submissions")
+        .select("lead_id, status, payment_frequency, installment_contribution, contribution_schedule(paid)")
+        .in("status", COUNTED_CASE_STATUSES as unknown as string[]),
       supabase
         .from("targets")
         .select("agent_id, noc_target, anc_target, approach_target")
@@ -242,6 +252,33 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     const potential = leadPotentialAnc(leadQuotations);
     if (potential) ancByLead.set(leadId, potential.anc);
   }
+  // A signed case outranks the quotation behind it, same rule as the Sales
+  // Pipeline, Servicing and Statistics: a quotation is what the client was
+  // shown, a submitted or inforce case is what they actually signed, at the
+  // contribution the operator is billing. Without this a client with no
+  // quotation on file -- which a case filed straight from Submit Case never
+  // creates one for -- counted as RM 0 here while the pipeline board and
+  // Servicing both showed their real certificate.
+  const caseRows: AncCase[] = (caseData ?? []).map((row) => {
+    const r = row as unknown as {
+      lead_id: string;
+      status: string;
+      payment_frequency: PaymentFrequency;
+      installment_contribution: number | string | null;
+      contribution_schedule: { paid: boolean }[] | null;
+    };
+    return {
+      leadId: r.lead_id,
+      status: r.status,
+      paymentFrequency: r.payment_frequency,
+      installmentContribution: r.installment_contribution == null ? null : Number(r.installment_contribution),
+      paidCount: (r.contribution_schedule ?? []).filter((x) => x.paid).length,
+    };
+  });
+  const casedAncByLead = caseAncByLead(caseRows);
+  for (const [leadId, cased] of casedAncByLead) {
+    if (cased.anc > 0) ancByLead.set(leadId, cased.anc);
+  }
   let pipelineValue = 0;
   for (const [leadId, anc] of ancByLead) {
     if (openLeadIds.has(leadId)) pipelineValue += anc;
@@ -328,8 +365,18 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const monthWeeksLeft = Math.max(1, Math.ceil((daysInMonth - dayOfMonth + 1) / 7));
   const monthAncRemaining = Math.max(0, monthAncTarget - monthAnc);
 
+  // Cumulative across every certificate this profile (or the monitored
+  // agent/unit) can see -- not scoped to the month, because collected cash
+  // and an inforced certificate don't reset on the 1st the way a target
+  // does. The same two figures Sales Pipeline, Servicing and Statistics
+  // report, so this panel can't tell a different story than the rest of the
+  // app.
+  const bookTotals = sumCaseAnc(casedAncByLead, allLeads.map((l) => l.id));
+
   const goal = {
     campaign,
+    inforcedAnc: bookTotals.inforcedAnc,
+    collectedAnc: bookTotals.collected,
     // Same reason as the campaign's own elapsedPct above: this decides words
     // on screen, so it is settled once on the server.
     monthElapsedPct: Math.round((dayOfMonth / daysInMonth) * 100),

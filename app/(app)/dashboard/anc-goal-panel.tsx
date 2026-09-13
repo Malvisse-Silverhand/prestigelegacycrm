@@ -95,6 +95,39 @@ function Tile({ label, value, accent }: { label: string; value: string; accent?:
   );
 }
 
+/**
+ * All-time, not scoped to the month: what every certificate on this book is
+ * worth over a year, and what has actually been paid in against it. The same
+ * two figures Sales Pipeline, Servicing and Statistics report, so this panel
+ * can never tell a different story than the rest of the app.
+ */
+function AncTotals({ goal }: { goal: Goal }) {
+  return (
+    <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
+      <div className="rounded-[13px] bg-white/[.06] p-3.5">
+        <div className="text-[11px] font-bold text-white/70">ANC Inforced</div>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-[20px] font-extrabold tracking-[-0.03em] text-white">
+            {fmtRM(goal.inforcedAnc)}
+          </span>
+          <span className="text-[11px] font-bold text-white/70">ANC</span>
+        </div>
+        <div className="text-[10.5px] font-semibold text-white/70">certificates in force</div>
+      </div>
+      <div className="rounded-[13px] bg-white/[.06] p-3.5">
+        <div className="text-[11px] font-bold text-white/70">ANC Collected</div>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-[20px] font-extrabold tracking-[-0.03em] text-green">
+            {fmtRM(goal.collectedAnc)}
+          </span>
+          <span className="text-[11px] font-bold text-white/70">ANC</span>
+        </div>
+        <div className="text-[10.5px] font-semibold text-white/70">contributions ticked</div>
+      </div>
+    </div>
+  );
+}
+
 // Mon-Sat, against the daily approach target from Set Target. An "approach"
 // is a lead reaching the system: the Quick Action form and every other way a
 // lead gets created all count the same, so the scoreboard can't disagree with
@@ -243,6 +276,7 @@ export function AncGoalPanel({
             {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
           </div>
         </div>
+        <AncTotals goal={goal} />
       </div>
     );
   }
@@ -341,6 +375,8 @@ export function AncGoalPanel({
           </div>
         </div>
       </div>
+
+      <AncTotals goal={goal} />
     </div>
   );
 }
