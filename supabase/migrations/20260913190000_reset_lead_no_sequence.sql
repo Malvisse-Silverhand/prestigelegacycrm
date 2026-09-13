@@ -1,0 +1,11 @@
+-- Put the lead counter back on the last number actually in use.
+--
+-- The renumber earlier today left the book at 1..18, but every verification
+-- run since then created throwaway leads and deleted them again, and each one
+-- advanced the sequence. Without this the next real lead would be #31 and the
+-- gap would be back.
+--
+-- Safe to run at any time: it reads the highest number that actually exists,
+-- so a lead created between the renumber and now keeps its number and is
+-- counted here rather than being overwritten by the next insert.
+select setval('leads_lead_no_seq', coalesce((select max(lead_no) from public.leads), 0));
