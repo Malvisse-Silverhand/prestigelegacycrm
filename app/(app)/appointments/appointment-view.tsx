@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import Link from "next/link";
 import type { AppointmentRow, LeadOption } from "./data";
 import type { BirthdayRow, Birthday } from "@/lib/birthdays";
@@ -315,7 +316,7 @@ export function AppointmentView({
                       </span>
                     </div>
                     <div className="mt-0.5 text-[11px] font-medium text-muted dark:text-[#7f93aa]">
-                      {new Date(a.scheduledAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })} ·{" "}
+                      {malaysiaDateTime(a.scheduledAt, { day: "numeric", month: "short" })} ·{" "}
                       {formatTime(a.scheduledAt)}
                       {a.location ? ` · ${a.location}` : ""}
                     </div>
@@ -571,7 +572,7 @@ function DetailDialog({
           <div>
             <div className="text-[16px] font-bold text-navy dark:text-[#eef3f8]">{appointment.leadName}</div>
             <div className="mt-0.5 text-[12px] font-medium text-muted dark:text-[#7f93aa]">
-              {new Date(appointment.scheduledAt).toLocaleDateString("en-MY", {
+              {malaysiaDateTime(appointment.scheduledAt, {
                 weekday: "short", day: "numeric", month: "short", year: "numeric",
               })}{" "}
               · {formatTime(appointment.scheduledAt)}

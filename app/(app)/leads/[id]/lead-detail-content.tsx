@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import type { LeadDetail, ActivityRow, ReassignOption, RelativeRow } from "./data";
@@ -433,9 +434,7 @@ export function LeadDetailContent({
               <Detail label="Monthly budget" value={lead.budget_indicated ? `RM ${lead.budget_indicated}` : null} />
               <Detail
                 label="Created"
-                value={new Date(lead.created_at).toLocaleString("en-MY", {
-                  day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
-                })}
+                value={malaysiaDateTime(lead.created_at)}
               />
             </div>
 
@@ -678,9 +677,7 @@ export function LeadDetailContent({
             <Detail label="Best time to reach" value={lead.best_time_to_reach} />
             <Detail
               label="Created"
-              value={new Date(lead.created_at).toLocaleString("en-MY", {
-                day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
-              })}
+              value={malaysiaDateTime(lead.created_at)}
             />
           </div>
         </div>

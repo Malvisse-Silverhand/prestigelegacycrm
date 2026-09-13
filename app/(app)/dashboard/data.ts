@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
-import { malaysiaDayKey, malaysiaDaysAgo } from "@/lib/malaysia-date";
+import { malaysiaDayKey, malaysiaDaysAgo, malaysiaDateTime } from "@/lib/malaysia-date";
 import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays";
 
 type LeadRow = {
@@ -460,7 +460,9 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       id: a.id as string,
       leadId: a.lead_id as string,
       leadName: lead?.full_name ?? "Unknown lead",
-      time: new Date(a.scheduled_at as string).toLocaleTimeString("en-MY", {
+      // Formatted on the server, which runs UTC -- without the zone a 6pm
+      // appointment was listed as 10am.
+      time: malaysiaDateTime(a.scheduled_at as string, {
         hour: "numeric", minute: "2-digit", hour12: true,
       }),
       location: (a.location as string | null) ?? null,

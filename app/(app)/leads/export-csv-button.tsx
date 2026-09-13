@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useSearchParams } from "next/navigation";
 import { exportLeads } from "./actions";
 import type { LeadRow } from "./data";
@@ -18,7 +19,7 @@ function buildCsv(leads: LeadRow[]) {
     l.date_of_birth ?? "",
     l.state ?? "",
     l.occupation ?? "",
-    new Date(l.created_at).toLocaleString("en-MY"),
+    malaysiaDateTime(l.created_at),
     l.status,
     l.profiles?.full_name ?? "",
     l.follow_up_date ?? "",

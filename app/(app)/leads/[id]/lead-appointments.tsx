@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useRouter } from "next/navigation";
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { AppointmentDialog, type AppointmentDraft } from "@/app/(app)/appointments/appointment-dialog";
@@ -113,9 +114,7 @@ export function LeadAppointments({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[13px] font-bold text-navy">
-                        {new Date(a.scheduledAt).toLocaleDateString("en-MY", {
-                          weekday: "short", day: "numeric", month: "short", year: "numeric",
-                        })}{" "}
+                        {malaysiaDateTime(a.scheduledAt, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{" "}
                         · {formatTime(a.scheduledAt)}
                       </span>
                       <span

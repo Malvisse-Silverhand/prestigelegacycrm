@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useRouter } from "next/navigation";
 import type { QuotationRow } from "./data";
 import { QuotationIcon } from "@/components/icons";
@@ -19,13 +20,7 @@ function fmtRM(n: number | null) {
 }
 
 function fmtWhen(iso: string) {
-  return new Date(iso).toLocaleString("en-MY", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return malaysiaDateTime(iso);
 }
 
 export function LeadQuotations({

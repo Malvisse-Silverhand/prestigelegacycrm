@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useRouter } from "next/navigation";
 import { updateLead, deleteLead } from "./actions";
 import { LeadFormFields } from "./lead-form-fields";
@@ -85,9 +86,7 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[11.5px] font-medium text-taupe">
           <span>Lead ID: {lead.id}</span>
           <span>
-            Date Created: {new Date(lead.created_at).toLocaleString("en-MY", {
-              day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
-            })}
+            Date Created: {malaysiaDateTime(lead.created_at)}
           </span>
         </div>
         <form action={handleSubmit} className="mt-4 flex flex-col gap-3">

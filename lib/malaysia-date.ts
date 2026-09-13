@@ -52,3 +52,28 @@ export function malaysiaDaysAgo(n: number, from: string = malaysiaToday()): stri
   const [y, m, d] = from.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d - n)).toISOString().slice(0, 10);
 }
+
+/**
+ * A stored timestamp, printed as a Malaysian date and time.
+ *
+ * Every "Created ..." and "Scheduled ..." line in this app goes through here.
+ * `toLocaleString` without an explicit zone formats in whichever zone the
+ * renderer happens to run in -- UTC on Vercel, UTC+8 in the browser -- so the
+ * server-rendered HTML said 1:43 pm where the browser said 9:43 pm for the
+ * same instant. That is both a wrong time for the reader and a hydration
+ * mismatch, and there is no case in this app where the viewer's own zone is
+ * the right answer: the business runs on Malaysia time.
+ */
+export function malaysiaDateTime(
+  when: Date | string | number,
+  options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  },
+): string {
+  const d = when instanceof Date ? when : new Date(when);
+  return d.toLocaleString("en-MY", { timeZone: MY_TIME_ZONE, ...options });
+}
