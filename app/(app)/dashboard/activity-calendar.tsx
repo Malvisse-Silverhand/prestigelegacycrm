@@ -12,6 +12,7 @@ import { LogApproachModal } from "./log-approach-modal";
 
 import {
   keyOf,
+  dateFromKey,
   startOfWeek,
   MONTH_SHORT,
   MONTH_LONG,
@@ -58,6 +59,7 @@ function emptyDay(): Pick<Cell, "leads" | "sales" | "activities" | "appointments
 export function ActivityCalendar({
   days,
   startKey,
+  today,
   compact,
   granularity,
   offset,
@@ -66,6 +68,8 @@ export function ActivityCalendar({
 }: {
   days: CalendarDay[];
   startKey: string;
+  /** Today in Malaysia, computed on the server. See dateFromKey for why. */
+  today: string;
   compact?: boolean;
   // The visible period is owned by the dashboard, because the headline cards
   // above the calendar report on whatever period is showing here.
@@ -81,7 +85,7 @@ export function ActivityCalendar({
   const byDay = useMemo(() => new Map(days.map((d) => [d.key, d])), [days]);
 
   const { cells, title, columns, canGoBack } = useMemo(() => {
-    const now = new Date();
+    const now = dateFromKey(today);
     const get = (key: string) =>
       byDay.get(key) ?? { leads: [], sales: [], activities: [], appointments: [] };
 
@@ -167,7 +171,7 @@ export function ActivityCalendar({
       columns: 1,
       canGoBack: keyOf(prev) >= startKey,
     };
-  }, [granularity, offset, days, byDay, startKey]);
+  }, [granularity, offset, days, byDay, startKey, today]);
 
   const totals = cells.reduce(
     (acc, c) => {
@@ -180,7 +184,7 @@ export function ActivityCalendar({
     { leads: 0, sales: 0, activities: 0, appointments: 0 },
   );
 
-  const todayKey = keyOf(new Date());
+  const todayKey = today;
 
   return (
     <div className={`rounded-[18px] border border-sand bg-white dark:border-white/10 dark:bg-[#12283f] ${compact ? "p-4" : "p-3.5"}`}>

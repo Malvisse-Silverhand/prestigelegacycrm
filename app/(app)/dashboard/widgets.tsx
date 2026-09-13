@@ -227,8 +227,8 @@ export function DashboardClock({ compact = false }: { compact?: boolean }) {
       className="flex min-w-[172px] flex-col rounded-[10px] border border-sand-2 bg-cream px-[13px] py-[7px] dark:border-white/10 dark:bg-[#12283f]"
       suppressHydrationWarning
     >
-      <span className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">{now ? time : " "}</span>
-      <span className="text-[10.5px] font-semibold text-taupe dark:text-[#7f93aa]">
+      <span className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]" suppressHydrationWarning>{now ? time : " "}</span>
+      <span className="text-[10.5px] font-semibold text-taupe dark:text-[#7f93aa]" suppressHydrationWarning>
         {now ? date : " "}
       </span>
     </div>

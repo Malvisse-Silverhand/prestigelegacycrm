@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { DashboardStats } from "./data";
 import type { ApproachDay } from "./calendar-period";
+import { MY_TIME_ZONE } from "@/lib/malaysia-date";
 
 type Goal = DashboardStats["goal"];
 
@@ -12,8 +13,17 @@ function fmtRM(n: number) {
 
 function fmtDeadline(iso: string) {
   const d = new Date(iso);
+  // The zone is pinned, not left to the viewer: a date column parses as UTC
+  // midnight, so formatting it in whatever zone the renderer happens to be in
+  // reports the day before for anyone west of Greenwich -- and disagrees
+  // between the UTC server and the browser that hydrates it.
   return d
-    .toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })
+    .toLocaleDateString("en-MY", {
+      timeZone: MY_TIME_ZONE,
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
     .toUpperCase();
 }
 

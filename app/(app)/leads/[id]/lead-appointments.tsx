@@ -126,7 +126,7 @@ export function LeadAppointments({
                         {APPOINTMENT_STATUS_LABEL[a.status]}
                       </span>
                       {isUpcoming && (
-                        <span className="text-[10.5px] font-bold text-warn-orange">
+                        <span className="text-[10.5px] font-bold text-warn-orange" suppressHydrationWarning>
                           {relativeToNow(a.scheduledAt)}
                         </span>
                       )}

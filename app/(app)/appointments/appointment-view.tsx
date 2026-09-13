@@ -310,7 +310,7 @@ export function AppointmentView({
                       <span className="truncate text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">
                         {a.leadName}
                       </span>
-                      <span className="flex-none text-[10.5px] font-bold text-warn-orange">
+                      <span className="flex-none text-[10.5px] font-bold text-warn-orange" suppressHydrationWarning>
                         {relativeToNow(a.scheduledAt)}
                       </span>
                     </div>

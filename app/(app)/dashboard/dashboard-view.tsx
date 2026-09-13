@@ -12,7 +12,7 @@ import { ActivityCalendar } from "./activity-calendar";
 import { BirthdayCard } from "@/components/birthday-card";
 import { UpcomingAppointmentsCard, FollowUpLeadsCard, RecentLeadsCard } from "@/components/dashboard-lists";
 import { QuickAction } from "./quick-action";
-import { anchorFor, periodStats, type Granularity } from "./calendar-period";
+import { anchorFor, dateFromKey, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 import { AncGoalPanel, ApproachScoreboard } from "./anc-goal-panel";
 import { ManageWidgets, DashboardClock, useWidgetPrefs } from "./widgets";
@@ -68,10 +68,13 @@ export function DashboardView({
   profile,
   stats,
   notifications,
+  today,
 }: {
   profile: CurrentProfile;
   stats: DashboardStats;
   notifications: NotificationRow[];
+  /** Today in Malaysia, computed on the server. See dateFromKey for why. */
+  today: string;
 }) {
   // Theme is system-wide now: the class lives on <html> and is shared with
   // every other screen, so this only reads it (for the donut's colours) and
@@ -84,13 +87,19 @@ export function DashboardView({
   // per-day rows the grid draws, so a card can never contradict the calendar.
   const [granularity, setGranularity] = useState<Granularity>("month");
   const [offset, setOffset] = useState(0);
+  // "Now" comes from the server rather than the clock: this tree renders on a
+  // UTC server and hydrates in UTC+8, and for eight hours of every day the two
+  // disagree about what the date is -- which showed up in production as a
+  // hydration text mismatch and wrong figures on the first paint.
+  const now = useMemo(() => dateFromKey(today), [today]);
   const period = useMemo(
-    () => periodStats(stats.calendarDays, anchorFor(granularity, offset)),
-    [stats.calendarDays, granularity, offset],
+    () => periodStats(stats.calendarDays, anchorFor(granularity, offset, now), now),
+    [stats.calendarDays, granularity, offset, now],
   );
   const calendarProps = {
     days: stats.calendarDays,
     startKey: stats.calendarStartKey,
+    today,
     granularity,
     offset,
     onGranularityChange: setGranularity,

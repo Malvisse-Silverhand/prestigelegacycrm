@@ -1,3 +1,5 @@
+import { MY_TIME_ZONE, malaysiaDayKey } from "@/lib/malaysia-date";
+
 // Reminder ladder for an appointment. Each offset becomes one notification row
 // written when the appointment is saved (see lib/appointment-reminders.ts), so
 // no scheduler is involved -- the bell just asks which rows are due.
@@ -36,18 +38,31 @@ export function isoToLocalParts(iso: string) {
   };
 }
 
+// Which Malaysian day an appointment falls on -- the day it is grouped under
+// has to be the same whether the grouping happens on the server or in the
+// browser, so this cannot use the renderer's local date.
 export function dayKeyOf(iso: string) {
-  const d = new Date(iso);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  return malaysiaDayKey(iso);
 }
 
+// These two are rendered on the server as well as in the browser -- in list
+// cards, and in the notification bodies written by the appointment actions.
+// Without an explicit zone they format in whatever zone the renderer runs in:
+// UTC on Vercel, UTC+8 in the browser. That means a 6:00 pm appointment is
+// announced as 10:00 am in a notification, and the server-rendered HTML
+// disagrees with the browser that hydrates it.
 export function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-MY", { hour: "numeric", minute: "2-digit", hour12: true });
+  return new Date(iso).toLocaleTimeString("en-MY", {
+    timeZone: MY_TIME_ZONE,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("en-MY", {
+    timeZone: MY_TIME_ZONE,
     day: "numeric",
     month: "short",
     hour: "numeric",

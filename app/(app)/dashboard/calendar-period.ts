@@ -141,3 +141,19 @@ export function periodStats(
     approachDays,
   };
 }
+
+/**
+ * A "YYYY-MM-DD" key as a local-midnight Date, so the rest of this file's
+ * local-time helpers (`keyOf`, `startOfWeek`, `getMonth`) work on it.
+ *
+ * This exists so "now" can come from the server as a Malaysia day key rather
+ * than from `new Date()` during render. The server runs UTC and every user is
+ * in UTC+8: between 16:00 and 23:59 UTC the two disagree about what day it
+ * is, so a client component that reads the clock renders one day on the
+ * server and another on the client -- a hydration text mismatch, and wrong
+ * figures on the first paint.
+ */
+export function dateFromKey(key: string): Date {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}

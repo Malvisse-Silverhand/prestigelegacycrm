@@ -5,6 +5,7 @@ import { getNotifications } from "@/app/(app)/notifications/actions";
 import { DashboardView } from "./dashboard-view";
 import { createClient } from "@/lib/supabase/server";
 import { ShieldIcon } from "@/components/icons";
+import { malaysiaToday } from "@/lib/malaysia-date";
 
 export default async function DashboardPage({
   searchParams,
@@ -59,7 +60,12 @@ export default async function DashboardPage({
       )}
       {/* The bell is always the signed-in user's own -- monitor mode changes
           whose figures are shown, never whose notifications. */}
-      <DashboardView profile={monitorTarget ?? profile} stats={stats} notifications={await getNotifications()} />
+      <DashboardView
+        profile={monitorTarget ?? profile}
+        stats={stats}
+        notifications={await getNotifications()}
+        today={malaysiaToday()}
+      />
     </div>
   );
 }

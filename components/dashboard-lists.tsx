@@ -1,6 +1,18 @@
 import Link from "next/link";
 import { LeadNo } from "@/components/lead-no";
 import { formatTime, relativeToNow } from "@/lib/appointments";
+import { MY_TIME_ZONE } from "@/lib/malaysia-date";
+
+// Pinned to Malaysia rather than the renderer's zone: these cards are rendered
+// on a UTC server and hydrated in UTC+8, so an unpinned date shows one day on
+// the server and another in the browser -- and the browser's is the right one.
+function fmtDay(iso: string) {
+  return new Date(iso).toLocaleDateString("en-MY", {
+    timeZone: MY_TIME_ZONE,
+    day: "numeric",
+    month: "short",
+  });
+}
 
 export type UpcomingAppointment = {
   id: string;
@@ -109,12 +121,16 @@ export function UpcomingAppointmentsCard({ appointments }: { appointments: Upcom
           <div className="min-w-0 flex-1">
             <div className="truncate text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">{a.leadName}</div>
             <div className="truncate text-[10.5px] font-medium text-taupe dark:text-[#7f93aa]">
-              {new Date(a.scheduledAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })} ·{" "}
+              {fmtDay(a.scheduledAt)} ·{" "}
               {formatTime(a.scheduledAt)}
               {a.location ? ` · ${a.location}` : ""}
             </div>
           </div>
-          <span className="flex-none text-[10.5px] font-bold text-warn-orange">{relativeToNow(a.scheduledAt)}</span>
+          {/* Genuinely relative to the moment it renders, so the server's
+              answer and the browser's are allowed to differ by a minute. */}
+          <span className="flex-none text-[10.5px] font-bold text-warn-orange" suppressHydrationWarning>
+            {relativeToNow(a.scheduledAt)}
+          </span>
         </Link>
       ))}
     </Shell>
@@ -193,7 +209,7 @@ export function RecentLeadsCard({ leads }: { leads: RecentLead[] }) {
             </div>
             <div className="truncate text-[10.5px] font-medium text-taupe dark:text-[#7f93aa]">
               {l.agentName ?? "Unassigned"} ·{" "}
-              {new Date(l.createdAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })}
+              {fmtDay(l.createdAt)}
             </div>
           </div>
           <span
