@@ -350,7 +350,6 @@ export function CertificatePanel({
               <thead>
                 <tr className="border-b border-sand-3 text-left text-[9.5px] font-bold uppercase tracking-[0.06em] text-taupe-2">
                   <th className="py-1.5 pr-2 font-bold">Benefit</th>
-                  <th className="py-1.5 pr-2 text-right font-bold">Term</th>
                   <th className="py-1.5 pr-2 text-right font-bold">Sum covered</th>
                   <th className="py-1.5 pr-2 text-right font-bold">Contribution</th>
                   <th className="py-1.5 text-right font-bold">Status</th>
@@ -360,7 +359,6 @@ export function CertificatePanel({
                 {submission.benefits.map((b, i) => (
                   <tr key={i} className="border-b border-sand-3 last:border-b-0">
                     <td className="py-1.5 pr-2 font-semibold text-navy">{b.benefit}</td>
-                    <td className="py-1.5 pr-2 text-right text-muted">{b.term ?? "—"}</td>
                     <td className="py-1.5 pr-2 text-right text-navy">{fmtRM(b.sumCovered)}</td>
                     <td className="py-1.5 pr-2 text-right text-navy">{fmtRM(b.installmentContribution)}</td>
                     <td className="py-1.5 text-right text-muted">{b.status ?? "—"}</td>

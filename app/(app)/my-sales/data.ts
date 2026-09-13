@@ -18,7 +18,7 @@ const CASE_SELECT = `
   leads!case_submissions_lead_id_fkey(lead_no, full_name, pipeline_stage),
   profiles!case_submissions_agent_id_fkey(full_name),
   case_nominees(name, relationship, percentage, sort_order),
-  case_benefits(benefit, term, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
+  case_benefits(benefit, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
   contribution_schedule(id, seq, due_date, paid, paid_on)
 `;
 
@@ -85,7 +85,6 @@ function toCase(row: RawCase): CaseSubmission {
       .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
       .map((b) => ({
         benefit: b.benefit as string,
-        term: b.term === null || b.term === undefined ? null : Number(b.term),
         sumCovered: num(b.sum_covered),
         installmentContribution: num(b.installment_contribution),
         coverStartDate: (b.cover_start_date as string) ?? null,

@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { stageLabel } from "@/lib/pipeline-stages";
 import { LeadNo } from "@/components/lead-no";
-import { CaseForm } from "../case-form";
+import { LeadFormFields } from "@/app/(app)/leads/lead-form-fields";
+import { createLeadForCase } from "../actions";
+import { CaseForm, type CaseFormLead } from "../case-form";
 import { CertificatePanel, fmtRM } from "../certificate-panel";
 import { CASE_STATUS_LABEL, CASE_STATUS_TONE, type CaseStatus, type CaseSubmission, type SubmittableLead } from "../types";
 
@@ -27,8 +30,70 @@ export function SubmitCaseView({
   const [caseQuery, setCaseQuery] = useState("");
   const [leadQuery, setLeadQuery] = useState("");
   const [onlyReady, setOnlyReady] = useState(true);
-  const [filingFor, setFilingFor] = useState<SubmittableLead | null>(null);
+  const [filingFor, setFilingFor] = useState<CaseFormLead | null>(null);
   const [openCaseId, setOpenCaseId] = useState<string | null>(null);
+
+  // The "Submit A Case" entry point and its two routes in.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [pickQuery, setPickQuery] = useState("");
+  const [freshOpen, setFreshOpen] = useState(false);
+  const [freshError, setFreshError] = useState<string | null>(null);
+  const [freshPending, startFresh] = useTransition();
+  const router = useRouter();
+
+  const readyLeads = useMemo(() => leads.filter((l) => l.canSubmit), [leads]);
+  const pickable = useMemo(() => {
+    const q = pickQuery.trim().toLowerCase();
+    if (!q) return readyLeads;
+    return readyLeads.filter(
+      (l) => l.fullName.toLowerCase().includes(q) || l.phone.includes(q) || String(l.leadNo) === q.replace(/^#/, ""),
+    );
+  }, [readyLeads, pickQuery]);
+
+  function openCaseFor(l: SubmittableLead) {
+    setFilingFor({
+      id: l.id,
+      fullName: l.fullName,
+      dateOfBirth: l.dateOfBirth,
+      gender: l.gender,
+      isSmoker: l.isSmoker,
+      occupation: l.occupation,
+      interest: l.interest,
+    });
+  }
+
+  // Save the lead, then hand straight on to the case form for the same
+  // person -- the whole point of the fresh path is not stopping in between.
+  function handleFreshSubmit(formData: FormData) {
+    setFreshError(null);
+    startFresh(async () => {
+      try {
+        const result = await createLeadForCase(formData);
+        if (result.error || !result.lead) {
+          setFreshError(result.error ?? "Couldn't save this lead. Please try again.");
+          return;
+        }
+        const lead = result.lead as {
+          id: string; full_name: string; date_of_birth: string | null;
+          gender: string | null; is_smoker: boolean | null; occupation: string | null; interest: string | null;
+        };
+        setFreshOpen(false);
+        setFilingFor({
+          id: lead.id,
+          fullName: lead.full_name,
+          dateOfBirth: lead.date_of_birth,
+          gender: lead.gender,
+          isSmoker: lead.is_smoker,
+          occupation: lead.occupation,
+          interest: lead.interest,
+        });
+        router.refresh();
+      } catch {
+        setFreshError("Couldn't connect. Check your internet connection and try again.");
+      }
+    });
+  }
 
   const visibleCases = useMemo(() => {
     const q = caseQuery.trim().toLowerCase();
@@ -62,11 +127,56 @@ export function SubmitCaseView({
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
-        <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Submit Case</div>
-        <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">
-          {awaiting} awaiting underwriting · {inforce} inforce · {readyCount} lead
-          {readyCount === 1 ? "" : "s"} ready to file
+      <div className="flex flex-wrap items-start gap-3 border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
+        <div className="min-w-0 flex-1">
+          <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Submit Case</div>
+          <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">
+            {awaiting} awaiting underwriting · {inforce} inforce · {readyCount} lead
+            {readyCount === 1 ? "" : "s"} ready to file
+          </div>
+        </div>
+
+        <div className="relative flex-none">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="press flex items-center gap-2 rounded-[11px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white"
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth={2.4} strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Submit A Case
+          </button>
+
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
+              <div className="absolute top-full right-0 z-30 mt-1.5 w-[286px] rounded-[14px] border border-sand-2 bg-white p-1.5 shadow-elevated">
+                <button
+                  type="button"
+                  onClick={() => { setMenuOpen(false); setPicking(true); setPickQuery(""); }}
+                  className="w-full rounded-[10px] px-3 py-2.5 text-left hover:bg-cream"
+                >
+                  <span className="block text-[12.5px] font-bold text-navy">Submit Existing Case</span>
+                  <span className="block text-[11px] font-medium text-taupe">
+                    Pick a lead that has reached Submission
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMenuOpen(false); setFreshOpen(true); setFreshError(null); }}
+                  className="w-full rounded-[10px] px-3 py-2.5 text-left hover:bg-cream"
+                >
+                  <span className="block text-[12.5px] font-bold text-navy">Submit A Fresh Case</span>
+                  <span className="block text-[11px] font-medium text-taupe">
+                    Add someone new, then file their case
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -129,7 +239,7 @@ export function SubmitCaseView({
                     {l.canSubmit ? (
                       <button
                         type="button"
-                        onClick={() => setFilingFor(l)}
+                        onClick={() => openCaseFor(l)}
                         className="flex-none rounded-[9px] bg-navy px-3 py-2 text-[11.5px] font-semibold text-white"
                       >
                         Submit case
@@ -237,6 +347,99 @@ export function SubmitCaseView({
           </div>
         </section>
       </div>
+
+      {/* ---- Submit Existing Case: pick who ---- */}
+      {picking && (
+        <div className="fixed inset-0 z-30 flex items-start justify-center overflow-y-auto bg-navy/55 p-4">
+          <div className="my-8 w-full max-w-[520px] rounded-2xl bg-white p-5 shadow-elevated">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="text-[15px] font-bold text-navy">Submit an existing case</div>
+                <div className="mt-0.5 text-[11.5px] font-medium text-muted">
+                  Leads that have reached the Submission stage.
+                </div>
+              </div>
+              <button type="button" onClick={() => setPicking(false)} className="flex-none text-[12px] font-semibold text-muted">
+                Cancel
+              </button>
+            </div>
+
+            <input
+              value={pickQuery}
+              onChange={(e) => setPickQuery(e.target.value)}
+              placeholder="Search a lead…"
+              aria-label="Search leads ready to file"
+              className="mt-3.5 h-[38px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[12.5px] font-medium text-navy outline-none focus:border-gold placeholder:text-taupe"
+            />
+
+            <div className="mt-3 flex max-h-[50vh] flex-col gap-1.5 overflow-y-auto pr-1">
+              {pickable.length === 0 ? (
+                <p className="py-8 text-center text-[12.5px] font-medium text-muted">
+                  {readyLeads.length === 0
+                    ? "No leads are at the Submission stage yet. Move one there on the Sales Pipeline, or start a fresh case instead."
+                    : "No leads match that search."}
+                </p>
+              ) : (
+                pickable.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => { setPicking(false); openCaseFor(l); }}
+                    className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
+                  >
+                    <LeadNo no={l.leadNo} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[12.5px] font-bold text-navy">{l.fullName}</span>
+                      <span className="block truncate text-[10.5px] font-medium text-taupe">
+                        {stageLabel(l.stage)}
+                        {l.caseCount > 0 ? ` · ${l.caseCount} case${l.caseCount === 1 ? "" : "s"} filed` : ""}
+                      </span>
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Submit A Fresh Case: the lead form, then straight into the case ---- */}
+      {freshOpen && (
+        <div className="fixed inset-0 z-30 flex items-start justify-center overflow-y-auto bg-navy/55 p-4">
+          <div className="my-8 w-full max-w-xl rounded-2xl bg-white p-6 shadow-elevated">
+            <div className="text-lg font-bold text-navy">Submit a fresh case</div>
+            <p className="mt-0.5 text-[12.5px] text-muted">
+              Add the person first. Saving puts them straight at the Submission stage and opens the case form.
+            </p>
+            <form action={handleFreshSubmit} className="mt-4 flex flex-col gap-3">
+              <LeadFormFields defaults={{}} />
+
+              {freshError && (
+                <div className="rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
+                  {freshError}
+                </div>
+              )}
+
+              <div className="mt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setFreshOpen(false)}
+                  className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={freshPending}
+                  className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                >
+                  {freshPending ? "Saving…" : "Save and continue"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ---- File a new case ---- */}
       {filingFor && (

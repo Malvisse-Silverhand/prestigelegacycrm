@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { buildSchedule, type PaymentFrequency } from "@/lib/contribution-schedule";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
+import { createLead } from "@/app/(app)/leads/actions";
 import type { CaseNominee, CaseBenefit } from "./types";
 
 // Stages from which a case may be filed. Submission is the gate the request
@@ -52,7 +53,6 @@ function cleanBenefits(rows: CaseBenefit[]) {
     .filter((b) => b.benefit.trim())
     .map((b, i) => ({
       benefit: b.benefit.trim(),
-      term: b.term,
       sum_covered: b.sumCovered,
       installment_contribution: b.installmentContribution,
       cover_start_date: b.coverStartDate || null,
@@ -148,6 +148,35 @@ export async function saveCase(input: CaseInput) {
   revalidatePath("/my-sales/servicing");
   revalidatePath(`/leads/${input.leadId}`);
   return { error: null, caseId };
+}
+
+/**
+ * The fresh-case path: a person who isn't in the CRM yet and whose case is
+ * being submitted right now.
+ *
+ * Creates the lead exactly as Lead Manager would -- same action, so the same
+ * validation, webhook and ownership rules apply -- and then puts it straight
+ * at Submission. That stage move isn't a shortcut: the only reason to use
+ * this path is that the case is going to the operator today, and without it
+ * saveCase would refuse the very case the agent came here to file.
+ */
+export async function createLeadForCase(formData: FormData) {
+  const result = await createLead(formData);
+  if (result.error || !result.lead) {
+    return { error: result.error ?? "Couldn't save this lead. Please try again.", lead: null };
+  }
+
+  const staged = await updateStage(result.lead.id, "submission", "Submission");
+  if (staged.error) {
+    // The lead exists and is fine -- say so rather than implying nothing saved.
+    return {
+      error: `Lead saved, but it couldn't be moved to Submission: ${staged.error}`,
+      lead: null,
+    };
+  }
+
+  revalidatePath("/my-sales/submit-case");
+  return { error: null, lead: result.lead };
 }
 
 export type CertificateInput = {

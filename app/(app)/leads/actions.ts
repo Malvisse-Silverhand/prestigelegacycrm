@@ -54,18 +54,22 @@ export async function createLead(formData: FormData) {
     // also the only value RLS will accept.
     agent_id: profile.id,
   })
-    .select("id, full_name, phone, email, lead_source, interest, status, created_at")
+    // The last four are for callers that carry straight on into another form
+    // with the same person -- Submit Case's fresh-case path prefills from them.
+    .select(
+      "id, full_name, phone, email, lead_source, interest, status, created_at, date_of_birth, gender, is_smoker, occupation",
+    )
     .maybeSingle();
 
   if (error) {
-    return { error: "Couldn't save this lead. Please try again." };
+    return { error: "Couldn't save this lead. Please try again.", lead: null };
   }
 
   // Never blocks the save: dispatchWebhook swallows its own failures.
   if (created) await dispatchWebhook("lead_created", { ...created, source: "manual" });
 
   revalidatePath("/leads");
-  return { error: null };
+  return { error: null, lead: created };
 }
 
 export async function updateLead(leadId: string, formData: FormData) {

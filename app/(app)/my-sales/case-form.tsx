@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PAYMENT_FREQUENCIES, type PaymentFrequency } from "@/lib/contribution-schedule";
 import { saveCase } from "./actions";
-import type { CaseSubmission, CaseNominee, CaseBenefit } from "./types";
+import { BENEFIT_OPTIONS, BENEFIT_OTHER, type CaseSubmission, type CaseNominee, type CaseBenefit } from "./types";
 
 export type CaseFormLead = {
   id: string;
@@ -38,7 +38,6 @@ function numOrNull(v: string) {
 const EMPTY_NOMINEE: CaseNominee = { name: "", relationship: "", percentage: null };
 const EMPTY_BENEFIT: CaseBenefit = {
   benefit: "",
-  term: null,
   sumCovered: null,
   installmentContribution: null,
   coverStartDate: null,
@@ -98,6 +97,32 @@ export function CaseForm({
   const [benefits, setBenefits] = useState<CaseBenefit[]>(
     existing?.benefits?.length ? existing.benefits : [{ ...EMPTY_BENEFIT }],
   );
+  // Which option each row's dropdown is on. Derived from the stored name when
+  // editing: a saved benefit that isn't on the list must have been "Others",
+  // and has to come back that way rather than looking unset.
+  const [benefitPicks, setBenefitPicks] = useState<string[]>(() =>
+    (existing?.benefits?.length ? existing.benefits : [{ ...EMPTY_BENEFIT }]).map((b) =>
+      !b.benefit ? "" : (BENEFIT_OPTIONS as readonly string[]).includes(b.benefit) ? b.benefit : BENEFIT_OTHER,
+    ),
+  );
+
+  function pickBenefit(i: number, choice: string) {
+    setBenefitPicks((prev) => prev.map((p, idx) => (idx === i ? choice : p)));
+    // A preset fills the name outright; "Others" clears it so the free-text
+    // box starts empty rather than carrying the previous pick's name.
+    updateBenefit(i, { benefit: choice === BENEFIT_OTHER || choice === "" ? "" : choice });
+  }
+
+  function removeBenefit(i: number) {
+    const last = benefits.length === 1;
+    setBenefits((prev) => (last ? [{ ...EMPTY_BENEFIT }] : prev.filter((_, idx) => idx !== i)));
+    setBenefitPicks((prev) => (last ? [""] : prev.filter((_, idx) => idx !== i)));
+  }
+
+  function addBenefit() {
+    setBenefits((prev) => [...prev, { ...EMPTY_BENEFIT }]);
+    setBenefitPicks((prev) => [...prev, ""]);
+  }
 
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -312,16 +337,23 @@ export function CaseForm({
           {benefits.map((b, i) => (
             <div key={i} className="rounded-[11px] border border-sand-2 bg-cream p-2.5">
               <div className="flex items-center gap-2">
-                <input
-                  value={b.benefit}
-                  onChange={(e) => updateBenefit(i, { benefit: e.target.value })}
-                  placeholder="i-GREAT NOVA"
-                  aria-label={`Benefit ${i + 1} name`}
+                {/* Picked, not typed: the name has to match the operator's
+                    exactly, and "Others" covers anything off-list. */}
+                <select
+                  value={benefitPicks[i] ?? ""}
+                  onChange={(e) => pickBenefit(i, e.target.value)}
+                  aria-label={`Benefit ${i + 1}`}
                   className={`${input} bg-white`}
-                />
+                >
+                  <option value="">Choose a benefit…</option>
+                  {BENEFIT_OPTIONS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                  <option value={BENEFIT_OTHER}>{BENEFIT_OTHER}</option>
+                </select>
                 <button
                   type="button"
-                  onClick={() => setBenefits((prev) => (prev.length === 1 ? [{ ...EMPTY_BENEFIT }] : prev.filter((_, idx) => idx !== i)))}
+                  onClick={() => removeBenefit(i)}
                   aria-label={`Remove benefit ${i + 1}`}
                   className="flex h-[38px] w-8 flex-none items-center justify-center rounded-[9px] text-alert-red opacity-70 hover:opacity-100"
                 >
@@ -330,8 +362,16 @@ export function CaseForm({
                   </svg>
                 </button>
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <input type="number" value={b.term ?? ""} onChange={(e) => updateBenefit(i, { term: numOrNull(e.target.value) })} placeholder="Term (yrs)" aria-label={`Benefit ${i + 1} term`} className={`${input} bg-white`} />
+              {benefitPicks[i] === BENEFIT_OTHER && (
+                <input
+                  value={b.benefit}
+                  onChange={(e) => updateBenefit(i, { benefit: e.target.value })}
+                  placeholder="Benefit name"
+                  aria-label={`Benefit ${i + 1} name`}
+                  className={`${input} mt-2 bg-white`}
+                />
+              )}
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 <input type="number" step="0.01" value={b.sumCovered ?? ""} onChange={(e) => updateBenefit(i, { sumCovered: numOrNull(e.target.value) })} placeholder="Sum covered" aria-label={`Benefit ${i + 1} sum covered`} className={`${input} bg-white`} />
                 <input type="number" step="0.01" value={b.installmentContribution ?? ""} onChange={(e) => updateBenefit(i, { installmentContribution: numOrNull(e.target.value) })} placeholder="Contribution" aria-label={`Benefit ${i + 1} contribution`} className={`${input} bg-white`} />
                 <input value={b.status ?? ""} onChange={(e) => updateBenefit(i, { status: e.target.value })} placeholder="Status" aria-label={`Benefit ${i + 1} status`} className={`${input} bg-white`} />
@@ -341,7 +381,7 @@ export function CaseForm({
         </div>
         <button
           type="button"
-          onClick={() => setBenefits((prev) => [...prev, { ...EMPTY_BENEFIT }])}
+          onClick={addBenefit}
           className="mt-2 rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
         >
           + Add benefit

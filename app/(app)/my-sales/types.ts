@@ -22,9 +22,20 @@ export type CaseNominee = {
   percentage: number | null;
 };
 
+// The benefits that actually appear on these certificates, so an agent picks
+// rather than retypes a name that has to match the operator's exactly.
+// "Others" opens a free-text box for anything not on the list.
+export const BENEFIT_OPTIONS = [
+  "i-GREAT NOVA",
+  "i-ADDITIONAL LIFETIME CRITICAL ILLNESS TERM RIDER",
+  "SAVER i-NOVA",
+  "i-PROVIDER CRITICAL ILLNESS TERM RIDER",
+] as const;
+
+export const BENEFIT_OTHER = "Others";
+
 export type CaseBenefit = {
   benefit: string;
-  term: number | null;
   sumCovered: number | null;
   installmentContribution: number | null;
   coverStartDate: string | null;
