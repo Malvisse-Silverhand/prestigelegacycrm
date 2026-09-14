@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { WON_STAGES } from "@/lib/pipeline-stages";
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
-import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption } from "./types";
+import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption, PortalLink } from "./types";
 
 // Every query here leans on the RLS already written for these tables, which
 // inherits lead visibility -- so an agent gets their own book, a manager gets
@@ -19,10 +19,23 @@ const CASE_SELECT = `
   profiles!case_submissions_agent_id_fkey(full_name),
   case_nominees(name, relationship, phone, percentage, sort_order),
   case_benefits(benefit, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
-  contribution_schedule(id, seq, due_date, paid, paid_on)
+  contribution_schedule(id, seq, due_date, paid, paid_on),
+  client_portal_links(id, token, display_status, created_at, first_opened_at, last_opened_at, open_count, revoked_at)
 `;
 
 type RawCase = Record<string, unknown>;
+
+function toPortalLink(row: Record<string, unknown>): PortalLink {
+  return {
+    id: row.id as string,
+    token: row.token as string,
+    displayStatus: (row.display_status as string) ?? null,
+    createdAt: row.created_at as string,
+    firstOpenedAt: (row.first_opened_at as string) ?? null,
+    lastOpenedAt: (row.last_opened_at as string) ?? null,
+    openCount: Number(row.open_count ?? 0),
+  };
+}
 
 function toCase(row: RawCase): CaseSubmission {
   const lead = row.leads as { lead_no: number; full_name: string; phone: string; pipeline_stage: string } | null;
@@ -30,6 +43,9 @@ function toCase(row: RawCase): CaseSubmission {
   const nominees = (row.case_nominees ?? []) as Record<string, unknown>[];
   const benefits = (row.case_benefits ?? []) as Record<string, unknown>[];
   const schedule = (row.contribution_schedule ?? []) as Record<string, unknown>[];
+  // A case has at most one live link; revoked rows are kept for the audit
+  // trail, so the live one is the row with no revoked_at.
+  const portal = ((row.client_portal_links ?? []) as Record<string, unknown>[]).find((l) => !l.revoked_at);
   const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
 
   return {
@@ -74,6 +90,8 @@ function toCase(row: RawCase): CaseSubmission {
     notes: (row.notes as string) ?? null,
     submittedAt: row.submitted_at as string,
     inforcedAt: (row.inforced_at as string) ?? null,
+
+    portalLink: portal ? toPortalLink(portal) : null,
 
     nominees: nominees
       .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))

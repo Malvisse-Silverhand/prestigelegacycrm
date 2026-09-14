@@ -12,6 +12,7 @@ import { frequencyLabel, rowStatus, summariseSchedule, type ScheduleStatus } fro
 import { waLink } from "@/lib/whatsapp";
 import { contributionReminder, jompayReminder } from "@/lib/contribution-reminder";
 import { setContributionPaid } from "./actions";
+import { PortalLinkCard } from "./portal-link-card";
 import { fmtDate, fmtRM } from "./certificate-panel";
 import type { CaseSubmission } from "./types";
 
@@ -353,6 +354,12 @@ export function ServicingDetail({ submission, today }: { submission: CaseSubmiss
 
       <div className="border-t border-sand-3 pt-3.5">
         <ContributionChecklist submission={submission} today={today} />
+      </div>
+
+      {/* Under the checklist, because issuing the link is the last thing an
+          agent does once the certificate is settled. */}
+      <div className="border-t border-sand-3 pt-3.5">
+        <PortalLinkCard submission={submission} />
       </div>
     </div>
   );

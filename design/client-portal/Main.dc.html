@@ -1,0 +1,759 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fdf9f3;
+      color: #0f2540;
+      font-family: Poppins, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-wrap: pretty;
+    }
+    a { color: #0f2540; text-decoration: none; }
+    a:hover { color: #1c3f66; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  </style>
+</helmet>
+
+<div style="position: relative; display: flex; flex-direction: column; min-height: 100%; background: #fdf9f3">
+
+  <!-- ===== Top bar ===== -->
+  <div style="display: flex; align-items: center; gap: 9px; background: #0f2540; padding: 13px 16px">
+    <div style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex: none; border-radius: 9px; background: #fac748">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z"></path>
+      </svg>
+    </div>
+    <div style="min-width: 0; flex: 1">
+      <div style="font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: #ffffff; line-height: 1.2">Prestige Legacy</div>
+      <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #fac748; line-height: 1.4">{{t.portalTag}}</div>
+    </div>
+    <!-- Reopens the welcome guide at any time -->
+    <button onClick="{{openHelp}}" aria-label="{{t.helpAria}}" style="display: flex; width: 32px; height: 32px; flex: none; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: rgba(255,255,255,.1); cursor: pointer; padding: 0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.4a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17h.01"></path>
+      </svg>
+    </button>
+    <!-- BM / EN toggle: a real control -->
+    <div style="display: flex; flex: none; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255,255,255,.1)">
+      <button onClick="{{setBm}}" style="{{bmBtn}}">BM</button>
+      <button onClick="{{setEn}}" style="{{enBtn}}">EN</button>
+    </div>
+  </div>
+
+  <!-- ===== Tab content ===== -->
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 15px 16px 0">
+
+    <!-- ---------- SIJIL ---------- -->
+    <sc-if value="{{isCert}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 20px; background: #0f2540; padding: 18px; box-shadow: 0 8px 20px -12px rgba(15,37,64,.4)">
+          <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fac748">{{t.certEyebrow}}</div>
+          <div style="margin-top: 5px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: #ffffff; line-height: 1.25">{{clientName}}</div>
+
+          <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 10px; border-radius: 12px; background: rgba(255,255,255,.07); padding: 11px 13px">
+              <div style="min-width: 0; flex: 1">
+                <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,.5)">{{t.certNo}}</div>
+                <div class="mono" style="margin-top: 2px; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; color: #ffffff">{{certificateNo}}</div>
+              </div>
+              <div style="flex: none; border-radius: 999px; background: #e8f2ec; padding: 5px 11px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: #0f4c35">{{t.statusActive}}</div>
+            </div>
+
+            <!-- Plan name is the base benefit recorded in the CRM, not a fixed
+                 "Medical Card" / "Hibah" label -->
+            <div style="border-radius: 12px; background: rgba(255,255,255,.07); padding: 11px 13px">
+              <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,.5)">{{t.plan}}</div>
+              <div style="margin-top: 3px; font-size: 14px; font-weight: 700; color: #ffffff; line-height: 1.3">{{planName}}</div>
+              <div style="margin-top: 3px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,.6)">{{riderLine}}</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <div style="border-radius: 12px; background: rgba(255,255,255,.07); padding: 11px 13px">
+                <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,.5)">{{t.contribution}}</div>
+                <div style="margin-top: 3px; font-size: 13px; font-weight: 700; color: #fac748">{{contribution}}</div>
+              </div>
+              <div style="border-radius: 12px; background: rgba(255,255,255,.07); padding: 11px 13px">
+                <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,.5)">{{t.commenced}}</div>
+                <div style="margin-top: 3px; font-size: 13px; font-weight: 700; color: #ffffff">{{commencedDate}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 15px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <div style="font-size: 13px; font-weight: 700; color: #0f2540">{{t.nextDueTitle}}</div>
+            <div style="font-size: 11px; font-weight: 600; color: #8b8271">{{paidLabel}}</div>
+          </div>
+          <div style="margin-top: 9px; display: flex; align-items: baseline; gap: 8px">
+            <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: #0f2540">{{nextDueDate}}</div>
+            <div style="font-size: 12px; font-weight: 700; color: #a29883">{{contribution}}</div>
+          </div>
+          <div style="margin-top: 10px; height: 7px; width: 100%; overflow: hidden; border-radius: 999px; background: #efe7da">
+            <div style="{{progressStyle}}"></div>
+          </div>
+          <div style="margin-top: 8px; font-size: 11px; font-weight: 500; color: #8b8271; line-height: 1.5">{{t.nextDueNote}}</div>
+        </div>
+
+        <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 15px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+          <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c">{{t.agentTitle}}</div>
+          <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px">
+            <div style="display: flex; width: 42px; height: 42px; flex: none; align-items: center; justify-content: center; border-radius: 14px; background: #0f2540; font-size: 14px; font-weight: 700; color: #fac748">{{agentInitials}}</div>
+            <div style="min-width: 0; flex: 1">
+              <div style="font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{agentName}}</div>
+              <div style="margin-top: 1px; font-size: 11.5px; font-weight: 500; color: #8b8271">{{t.agentRole}}</div>
+            </div>
+          </div>
+          <a href="{{agentWaUrl}}" target="_blank" rel="noopener noreferrer" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; background: #0f4c35; padding: 13px; min-height: 46px; font-size: 13px; font-weight: 700; color: #ffffff">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z"></path>
+            </svg>
+            {{t.agentCta}}
+          </a>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- MANFAAT ---------- -->
+    <sc-if value="{{isBenefits}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div>
+          <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{t.benefitsTitle}}</div>
+          <div style="margin-top: 3px; font-size: 11.5px; font-weight: 500; color: #8b8271; line-height: 1.5">{{t.benefitsSub}}</div>
+          <div style="margin-top: 11px; display: flex; flex-direction: column; gap: 9px">
+            <sc-for list="{{benefits}}" as="b" hint-placeholder-count="4">
+              <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 13px 14px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+                <div style="display: flex; align-items: flex-start; gap: 10px">
+                  <div style="min-width: 0; flex: 1">
+                    <div style="font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540; line-height: 1.3">{{b.name}}</div>
+                    <div style="margin-top: 3px; font-size: 11px; font-weight: 500; color: #8b8271; line-height: 1.45">{{b.note}}</div>
+                  </div>
+                  <div style="{{b.tagStyle}}">{{b.tag}}</div>
+                </div>
+                <div style="margin-top: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-top: 1px solid #f5eee3; padding-top: 9px">
+                  <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8f7c">{{t.sumCovered}}</div>
+                  <div style="font-size: 14px; font-weight: 800; letter-spacing: -0.02em; color: #0f2540">{{b.sum}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border-radius: 16px; border: 1px solid #e7ded0; background: #f5eee3; padding: 15px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7a5c14" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path>
+            </svg>
+            <div style="font-size: 13px; font-weight: 700; color: #0f2540">{{t.notesTitle}}</div>
+          </div>
+          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{coverNotes}}" as="n" hint-placeholder-count="5">
+              <div style="display: flex; align-items: flex-start; gap: 8px">
+                <div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #7a5c14"></div>
+                <div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">{{n}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- TEMPOH ---------- -->
+    <sc-if value="{{isWaiting}}" hint-placeholder-val="{{false}}">
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+          <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{t.waitingTitle}}</div>
+          <div style="font-size: 11px; font-weight: 600; color: #0f4c35">{{coveredCount}}</div>
+        </div>
+        <div style="margin-top: 3px; font-size: 11.5px; font-weight: 500; color: #8b8271; line-height: 1.5">{{t.waitingSub}}</div>
+
+        <div style="margin-top: 11px; display: flex; flex-direction: column; gap: 9px">
+          <sc-for list="{{periods}}" as="p" hint-placeholder-count="4">
+            <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+              <button onClick="{{p.toggle}}" style="display: flex; width: 100%; align-items: flex-start; gap: 11px; border: 0; background: transparent; padding: 13px 14px; text-align: left; cursor: pointer; font-family: inherit; min-height: 44px">
+                <div style="{{p.dotStyle}}"></div>
+                <div style="min-width: 0; flex: 1">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                    <span style="font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{p.label}}</span>
+                    <span style="{{p.pillStyle}}">{{p.statusText}}</span>
+                  </div>
+                  <div style="margin-top: 4px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">{{p.summary}}</div>
+                  <div style="margin-top: 6px; font-size: 11px; font-weight: 600; color: #a29883">{{p.startsLine}}</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" style="{{p.chevronStyle}}">
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </button>
+              <sc-if value="{{p.isOpen}}" hint-placeholder-val="{{true}}">
+                <div style="border-top: 1px solid #f5eee3; padding: 11px 14px 13px">
+                  <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8f7c">{{t.included}}</div>
+                  <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 7px">
+                    <sc-for list="{{p.conditions}}" as="c" hint-placeholder-count="4">
+                      <div style="display: flex; align-items: flex-start; gap: 8px">
+                        <div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #a29883"></div>
+                        <div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">{{c}}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- PENAMA ---------- -->
+    <sc-if value="{{isNominees}}" hint-placeholder-val="{{false}}">
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+          <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{t.nomineeTitle}}</div>
+          <div style="font-size: 11px; font-weight: 700; color: #0f4c35">{{t.allocated}}</div>
+        </div>
+        <div style="margin-top: 3px; font-size: 11.5px; font-weight: 500; color: #8b8271; line-height: 1.5">{{t.nomineeSub}}</div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 9px">
+          <sc-for list="{{nominees}}" as="n" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 12px; border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 13px 14px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+              <div style="display: flex; width: 36px; height: 36px; flex: none; align-items: center; justify-content: center; border-radius: 12px; background: #eef3f8; font-size: 11px; font-weight: 700; color: #1c3f66">{{n.initials}}</div>
+              <div style="min-width: 0; flex: 1">
+                <div style="font-size: 13px; font-weight: 700; color: #0f2540; line-height: 1.3">{{n.name}}</div>
+                <div style="margin-top: 2px; font-size: 11px; font-weight: 500; color: #8b8271">{{n.relationship}}</div>
+              </div>
+              <div style="flex: none; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0f2540">{{n.share}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top: 11px; border-radius: 16px; border: 1px solid #e7ded0; background: #f5eee3; padding: 14px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">{{t.nomineeFoot}}</div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- PANDUAN ---------- -->
+    <sc-if value="{{isGuides}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <!-- Official Great Eastern portal: gold, because it is the one link
+             here that reaches the insurer's own system rather than ours -->
+        <a href="https://igetintouch.greateasterntakaful.com/econnect-new/" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 13px; border-radius: 16px; background: #fac748; padding: 15px; min-height: 44px; box-shadow: 0 10px 22px -14px rgba(15,37,64,.55)">
+          <div style="display: flex; width: 40px; height: 40px; flex: none; align-items: center; justify-content: center; border-radius: 13px; background: #0f2540">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4.5" width="18" height="15" rx="3"></rect><path d="M3 9.5h18M7.5 14.5h5"></path>
+            </svg>
+          </div>
+          <div style="min-width: 0; flex: 1">
+            <div style="font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(15,37,64,.62)">{{t.officialEyebrow}}</div>
+            <div style="margin-top: 2px; font-size: 14px; font-weight: 800; letter-spacing: -0.015em; color: #0f2540; line-height: 1.25">{{t.officialTitle}}</div>
+            <div style="margin-top: 3px; font-size: 11px; font-weight: 600; color: rgba(15,37,64,.72); line-height: 1.45">{{t.officialNote}}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none">
+            <path d="M7 17 17 7M9 7h8v8"></path>
+          </svg>
+        </a>
+
+        <div>
+          <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">{{t.guidesTitle}}</div>
+          <div style="margin-top: 3px; font-size: 11.5px; font-weight: 500; color: #8b8271; line-height: 1.5">{{t.guidesSub}}</div>
+          <div style="margin-top: 11px; display: flex; flex-direction: column; gap: 9px">
+            <sc-for list="{{guides}}" as="g" hint-placeholder-count="3">
+              <a href="{{g.url}}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 12px; border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 13px 14px; min-height: 44px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+                <div style="{{g.iconWrapStyle}}">
+                  <div style="{{g.iconStyle}}"></div>
+                </div>
+                <div style="min-width: 0; flex: 1">
+                  <div style="font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540; line-height: 1.35">{{g.title}}</div>
+                  <div style="margin-top: 2px; font-size: 11px; font-weight: 500; color: #8b8271; line-height: 1.45">{{g.note}}</div>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none">
+                  <path d="M7 17 17 7M9 7h8v8"></path>
+                </svg>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== Disclaimer: on every tab, never behind a tap ===== -->
+    <div style="border-radius: 16px; border: 1px solid #e7ded0; background: #ffffff; padding: 14px">
+      <div style="display: flex; align-items: flex-start; gap: 10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px">
+          <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>
+          <path d="M12 9v4M12 17h.01"></path>
+        </svg>
+        <div style="min-width: 0; flex: 1">
+          <div style="font-size: 12px; font-weight: 700; color: #9b2c22; line-height: 1.4">{{t.disclaimerTitle}}</div>
+          <div style="margin-top: 6px; font-size: 11px; font-weight: 500; color: #5c5648; line-height: 1.6">{{t.disclaimerBody}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 2px 0 12px; text-align: center">
+      <div style="font-size: 10.5px; font-weight: 600; color: #a29883">{{t.footerUpdated}}</div>
+      <div style="margin-top: 3px; font-size: 10.5px; font-weight: 500; color: #a29883">{{t.footerViewOnly}}</div>
+    </div>
+  </div>
+
+  <!-- ===== Bottom menu: the thumb reaches it, and it never scrolls away ===== -->
+  <div style="position: sticky; bottom: 0; margin-top: auto; display: flex; gap: 2px; border-top: 1px solid #e7ded0; background: rgba(253,249,243,.97); padding: 7px 6px 10px">
+    <button onClick="{{goCert}}" style="{{certTab}}">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M7 10h5M7 14h8"></path>
+      </svg>
+      <span style="{{tabLabel}}">{{t.tabCert}}</span>
+    </button>
+    <button onClick="{{goBenefits}}" style="{{benefitsTab}}">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z"></path><path d="m9 12 2 2 4-4"></path>
+      </svg>
+      <span style="{{tabLabel}}">{{t.tabBenefits}}</span>
+    </button>
+    <!-- Waiting periods only exist where a medical benefit is attached -->
+    <sc-if value="{{hasMedical}}" hint-placeholder-val="{{true}}">
+      <button onClick="{{goWaiting}}" style="{{waitingTab}}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path>
+        </svg>
+        <span style="{{tabLabel}}">{{t.tabWaiting}}</span>
+      </button>
+    </sc-if>
+    <button onClick="{{goNominees}}" style="{{nomineesTab}}">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="8.5" r="3.2"></circle><path d="M3.5 19.5c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6M16.5 7.5h4.5M16.5 11h4.5"></path>
+      </svg>
+      <span style="{{tabLabel}}">{{t.tabNominees}}</span>
+    </button>
+    <button onClick="{{goGuides}}" style="{{guidesTab}}">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4z"></path>
+        <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"></path>
+      </svg>
+      <span style="{{tabLabel}}">{{t.tabGuides}}</span>
+    </button>
+  </div>
+
+  <!-- ===== First-visit welcome: dismissible, and never shown again once
+           the client says so ===== -->
+  <sc-if value="{{showOnboard}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; z-index: 20; display: flex; align-items: flex-end; background: rgba(15,37,64,.55); padding: 16px">
+      <div style="width: 100%; border-radius: 22px; background: #ffffff; padding: 20px; box-shadow: 0 24px 50px -20px rgba(15,37,64,.6)">
+        <div style="display: flex; align-items: center; gap: 11px">
+          <div style="display: flex; width: 38px; height: 38px; flex: none; align-items: center; justify-content: center; border-radius: 13px; background: #fac748">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z"></path>
+            </svg>
+          </div>
+          <div style="min-width: 0; flex: 1">
+            <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: #0f2540; line-height: 1.25">{{t.onboardTitle}}</div>
+            <div style="margin-top: 2px; font-size: 11.5px; font-weight: 500; color: #8b8271; line-height: 1.45">{{t.onboardSub}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 11px">
+          <sc-for list="{{onboardSteps}}" as="s" hint-placeholder-count="3">
+            <div style="display: flex; align-items: flex-start; gap: 11px">
+              <div style="display: flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 999px; background: #eef3f8; font-size: 10.5px; font-weight: 800; color: #1c3f66">{{s.n}}</div>
+              <div style="min-width: 0; flex: 1">
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f2540; line-height: 1.35">{{s.title}}</div>
+                <div style="margin-top: 2px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">{{s.body}}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <button onClick="{{closeOnboard}}" style="margin-top: 17px; display: flex; width: 100%; align-items: center; justify-content: center; border: 0; border-radius: 12px; background: #0f2540; padding: 14px; min-height: 48px; font-family: inherit; font-size: 13px; font-weight: 700; color: #ffffff; cursor: pointer">{{t.onboardCta}}</button>
+        <button onClick="{{muteOnboard}}" style="margin-top: 9px; display: flex; width: 100%; align-items: center; justify-content: center; gap: 7px; border: 0; background: transparent; padding: 9px; min-height: 40px; font-family: inherit; font-size: 11.5px; font-weight: 600; color: #8b8271; cursor: pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b8271" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="4"></rect>
+          </svg>
+          {{t.onboardMute}}
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+  copy() {
+    return {
+      bm: {
+        portalTag: "Portal Klien",
+        helpAria: "Panduan portal",
+        certEyebrow: "Sijil Takaful Anda",
+        certNo: "No. Sijil",
+        statusActive: "AKTIF",
+        plan: "Pelan Asas",
+        contribution: "Sumbangan",
+        commenced: "Mula Perlindungan",
+        tabCert: "Sijil",
+        tabBenefits: "Manfaat",
+        tabWaiting: "Tempoh",
+        tabNominees: "Penama",
+        tabGuides: "Panduan",
+        benefitsTitle: "Manfaat Anda",
+        benefitsSub: "Senarai manfaat yang direkodkan dalam sijil anda, berserta jumlah perlindungan.",
+        sumCovered: "Jumlah Dilindungi",
+        riderMore: "+ {n} manfaat tambahan",
+        waitingTitle: "Tempoh Menunggu",
+        waitingSub: "Dikira dari tarikh mula perlindungan anda, 25/05/2026. Ketik mana-mana kategori untuk lihat senarai penuh.",
+        included: "Termasuk",
+        covered: "DILINDUNGI",
+        coveredSince: "Dilindungi sejak",
+        coveredFrom: "Dilindungi mulai",
+        daysLeft: "LAGI {n} HARI",
+        coveredCount: "{n} dari 4 sudah aktif",
+        notesTitle: "Perkara Penting",
+        nextDueTitle: "Sumbangan Seterusnya",
+        nextDueNote: "Sila pastikan sumbangan dibayar mengikut jadual supaya perlindungan anda kekal aktif.",
+        paidLabel: "{n} daripada 72 dibayar",
+        nomineeTitle: "Penama Anda",
+        nomineeSub: "Nama dan bahagian peratusan seperti yang direkodkan dalam sijil anda.",
+        nomineeFoot: "Untuk menukar penama atau peratusan, sila hubungi ejen anda. Perubahan perlu dibuat melalui borang rasmi Great Eastern Takaful.",
+        allocated: "100% diagihkan",
+        officialEyebrow: "Sistem Rasmi",
+        officialTitle: "Portal Great Eastern Takaful",
+        officialNote: "eConnect — sijil, penyata dan tuntutan rasmi anda.",
+        guidesTitle: "Panduan Anda",
+        guidesSub: "Panduan yang dipaparkan mengikut manfaat dalam sijil anda.",
+        agentTitle: "Ejen Anda",
+        agentRole: "Perunding Takaful Bertauliah",
+        agentCta: "Hubungi melalui WhatsApp",
+        onboardTitle: "Selamat datang",
+        onboardSub: "Tiga perkara sebelum anda mula.",
+        onboardCta: "Saya faham, mula",
+        onboardMute: "Jangan tunjuk lagi",
+        onboardSteps: [
+          { n: "1", title: "Guna menu di bawah", body: "Sijil, Manfaat, Tempoh Menunggu, Penama dan Panduan — semuanya satu ketikan sahaja." },
+          { n: "2", title: "Tukar BM / EN di atas", body: "Seluruh portal bertukar bahasa serta-merta." },
+          { n: "3", title: "Paparan sahaja", body: "Ini portal agensi untuk rujukan. Untuk urusan rasmi, gunakan butang Portal Great Eastern Takaful." },
+        ],
+        disclaimerTitle: "Portal agensi, bukan sistem rasmi",
+        disclaimerBody: "Portal ini disediakan oleh agensi Prestige Legacy sebagai rujukan mudah. Ia bukan sistem rasmi Great Eastern Takaful Berhad. Maklumat di sini adalah salinan rekod ejen anda. Untuk maklumat rasmi sijil, tuntutan dan pembayaran, sila rujuk saluran rasmi Great Eastern Takaful atau hubungi ejen anda.",
+        footerUpdated: "Dikemas kini 14/09/2026",
+        footerViewOnly: "Paparan sahaja · Prestige Legacy",
+        benefits: [
+          { name: "i-GREAT NOVA", note: "Pelan asas takaful keluarga.", tag: "Asas", sum: "RM250,000" },
+          { name: "i-MEDI EVOLUSI", note: "Kad perubatan — kemasukan hospital dan pembedahan.", tag: "Tambahan", sum: "RM15,000" },
+          { name: "i-ADDITIONAL LIFETIME CRITICAL ILLNESS TERM RIDER", note: "Manfaat penyakit kritikal sepanjang hayat.", tag: "Tambahan", sum: "RM100,000" },
+          { name: "i-PROVIDER CRITICAL ILLNESS TERM RIDER", note: "Sumbangan diteruskan jika berlaku penyakit kritikal.", tag: "Tambahan", sum: "RM50,000" },
+        ],
+        periods: {
+          immediate: {
+            label: "Serta-merta",
+            summary: "Kemalangan dilindungi sebaik sahaja sijil anda aktif.",
+            conditions: ["Kemalangan jalan raya", "Kecederaan di tempat kerja", "Jatuh, hentaman dan melecur", "Patah tulang akibat kemalangan", "Kecederaan sukan", "Kemalangan di rumah"],
+          },
+          general: {
+            label: "30 Hari",
+            summary: "Penyakit am, selepas 30 hari dari tarikh mula perlindungan.",
+            conditions: ["Demam denggi", "Tibi (tuberkulosis)", "Demam kepialu", "Malaria", "Radang paru-paru", "Gastroenteritis akut", "Asma akut", "Jangkitan saluran kencing", "Radang usus buntu (apendisitis)", "Jangkitan virus dan bakteria", "Kecederaan kecil bukan kemalangan", "Komplikasi diabetes baharu"],
+          },
+          specified: {
+            label: "120 Hari",
+            summary: "Dua belas kategori penyakit tertentu.",
+            conditions: ["Darah tinggi, kencing manis dan penyakit jantung", "Ketumbuhan, kanser, sista dan polip", "Batu karang dan batu hempedu", "Masalah telinga, hidung dan tekak termasuk sinusitis", "Hernia, buasir dan fistula", "Hidrokel dan urat bengkak (varicose veins)", "Endometriosis dan penyakit sistem pembiakan", "Penyakit tulang belakang (slipped disc)", "Masalah lutut dan kerosakan dalaman sendi", "Pembedahan tonsil dan adenoid", "Pembedahan keadaan kongenital", "Katarak"],
+          },
+          pre_existing: {
+            label: "2 Tahun",
+            summary: "Penyakit sedia ada, dan hanya jika diisytiharkan semasa permohonan.",
+            conditions: ["Kencing manis sedia ada", "Darah tinggi sedia ada", "Penyakit jantung sedia ada", "Asma kronik", "Penyakit buah pinggang", "Keadaan lain yang telah didiagnos sebelum ini"],
+          },
+        },
+        coverNotes: [
+          "Bayaran bersama pesakit luar 5% di klinik panel Great Clinic, had maksimum RM500 setahun.",
+          "Co-takaful 20% dikenakan di hospital bukan panel.",
+          "Deductible dan co-takaful dikecualikan untuk kecemasan yang disahkan.",
+          "Deductible dikecualikan di hospital kerajaan.",
+          "Tuntutan mesti dihantar dalam tempoh 180 hari dari tarikh discaj.",
+        ],
+        guides: {
+          journey: { title: "Panduan The Great Journey", note: "Cara guna kad perubatan anda dari A ke Z." },
+          panel: { title: "Cari Klinik & Hospital Panel", note: "Senarai panel Great Eastern berhampiran anda." },
+          portal: { title: "Portal Klien Kad Perubatan", note: "Semak kad dan maklumat rasmi anda." },
+          hibah: { title: "Panduan Pelantikan Penama, Wasi & Hibah", note: "Perbezaan penama, wasi dan hibah serta cara melantik." },
+        },
+      },
+      en: {
+        portalTag: "Client Portal",
+        helpAria: "Portal guide",
+        certEyebrow: "Your Takaful Certificate",
+        certNo: "Certificate No.",
+        statusActive: "INFORCE",
+        plan: "Base Plan",
+        contribution: "Contribution",
+        commenced: "Cover Start",
+        tabCert: "Certificate",
+        tabBenefits: "Benefits",
+        tabWaiting: "Waiting",
+        tabNominees: "Nominees",
+        tabGuides: "Guides",
+        benefitsTitle: "Your Benefits",
+        benefitsSub: "The benefits recorded on your certificate, with the sum covered for each.",
+        sumCovered: "Sum Covered",
+        riderMore: "+ {n} additional benefits",
+        waitingTitle: "Waiting Periods",
+        waitingSub: "Counted from your cover start date, 25/05/2026. Tap any category to see the full list.",
+        included: "Included",
+        covered: "COVERED",
+        coveredSince: "Covered since",
+        coveredFrom: "Covered from",
+        daysLeft: "{n} DAYS LEFT",
+        coveredCount: "{n} of 4 active",
+        notesTitle: "Worth Knowing",
+        nextDueTitle: "Next Contribution",
+        nextDueNote: "Keeping contributions on schedule is what keeps your cover active.",
+        paidLabel: "{n} of 72 paid",
+        nomineeTitle: "Your Nominees",
+        nomineeSub: "Names and percentage shares as recorded on your certificate.",
+        nomineeFoot: "To change a nominee or a percentage, speak to your agent. Changes have to go through Great Eastern Takaful's official form.",
+        allocated: "100% allocated",
+        officialEyebrow: "Official System",
+        officialTitle: "Great Eastern Takaful Portal",
+        officialNote: "eConnect — your official certificate, statements and claims.",
+        guidesTitle: "Your Guides",
+        guidesSub: "The guides shown here follow the benefits on your certificate.",
+        agentTitle: "Your Agent",
+        agentRole: "Licensed Takaful Consultant",
+        agentCta: "Message on WhatsApp",
+        onboardTitle: "Welcome",
+        onboardSub: "Three things before you start.",
+        onboardCta: "Got it, let's go",
+        onboardMute: "Don't show this again",
+        onboardSteps: [
+          { n: "1", title: "Use the menu below", body: "Certificate, Benefits, Waiting Periods, Nominees and Guides — each one tap away." },
+          { n: "2", title: "Switch BM / EN at the top", body: "The whole portal changes language straight away." },
+          { n: "3", title: "View only", body: "This is an agency portal for reference. For anything official, use the Great Eastern Takaful Portal button." },
+        ],
+        disclaimerTitle: "Agency portal, not the official system",
+        disclaimerBody: "This portal is provided by the Prestige Legacy agency for easy reference. It is not the official system of Great Eastern Takaful Berhad. What you see here is a copy of your agent's records. For official certificate, claim and payment information, please use Great Eastern Takaful's own channels or speak to your agent.",
+        footerUpdated: "Updated 14/09/2026",
+        footerViewOnly: "View only · Prestige Legacy",
+        benefits: [
+          { name: "i-GREAT NOVA", note: "Base family takaful plan.", tag: "Base", sum: "RM250,000" },
+          { name: "i-MEDI EVOLUSI", note: "Medical card — hospitalisation and surgery.", tag: "Rider", sum: "RM15,000" },
+          { name: "i-ADDITIONAL LIFETIME CRITICAL ILLNESS TERM RIDER", note: "Lifetime critical illness benefit.", tag: "Rider", sum: "RM100,000" },
+          { name: "i-PROVIDER CRITICAL ILLNESS TERM RIDER", note: "Contributions continue if a critical illness occurs.", tag: "Rider", sum: "RM50,000" },
+        ],
+        periods: {
+          immediate: {
+            label: "Immediate",
+            summary: "Accidents are covered the moment your certificate is inforce.",
+            conditions: ["Road accidents", "Workplace injuries", "Falls, impacts and burns", "Fractures from accidents", "Sports injuries", "Accidents at home"],
+          },
+          general: {
+            label: "30 Days",
+            summary: "General illness, once 30 days have passed since your cover started.",
+            conditions: ["Dengue fever", "Tuberculosis", "Typhoid", "Malaria", "Pneumonia", "Acute gastroenteritis", "Acute asthma", "Urinary tract infections", "Appendicitis", "Viral and bacterial infections", "Minor non-accident injuries", "New diabetes complications"],
+          },
+          specified: {
+            label: "120 Days",
+            summary: "The twelve specified illness categories.",
+            conditions: ["Hypertension, diabetes and heart disease", "Tumours, cancer, cysts and polyps", "Kidney stones and gallstones", "ENT conditions including sinusitis", "Hernia, haemorrhoids and fistula", "Hydrocele and varicose veins", "Endometriosis and reproductive conditions", "Spinal disease (slipped disc)", "Knee conditions and internal derangement", "Tonsillectomy and adenoidectomy", "Surgery for congenital conditions", "Cataracts"],
+          },
+          pre_existing: {
+            label: "2 Years",
+            summary: "Pre-existing conditions, and only where they were declared at application.",
+            conditions: ["Existing diabetes", "Pre-existing hypertension", "Pre-existing heart disease", "Chronic asthma", "Kidney disease", "Other previously diagnosed conditions"],
+          },
+        },
+        coverNotes: [
+          "Outpatient co-payment of 5% at Great Clinic panel locations, capped at RM500 a year.",
+          "20% co-takaful applies at non-panel hospitals.",
+          "Deductible and co-takaful are both waived for confirmed emergencies.",
+          "Deductible is waived at government hospitals.",
+          "Claims must be submitted within 180 days of the discharge date.",
+        ],
+        guides: {
+          journey: { title: "The Great Journey Guide", note: "How to use your medical card, start to finish." },
+          panel: { title: "Find a Panel Clinic or Hospital", note: "Great Eastern panel locations near you." },
+          portal: { title: "Medical Card Client Portal", note: "Check your card and official details." },
+          hibah: { title: "Nominee, Executor & Hibah Guide", note: "What each role means, and how to appoint them." },
+        },
+      },
+    };
+  }
+
+  guideUrls() {
+    return {
+      journey: "https://takaful4us.com/panduan-the-great-journey-medical-card-great-eastern/",
+      panel: "https://takaful4us.com/getb-panel-locator/",
+      portal: "https://takaful4us.com/medical-card-client-portal/",
+      hibah: "https://takaful4us.com/panduan-pelantikan-penama-wasi-hibah/",
+    };
+  }
+
+  /* The one mapping in the portal: which catalogue benefits are medical.
+     Matched on the Settings > Benefits name, case-insensitively, so adding a
+     second medical product is one entry here and no other change. */
+  medicalBenefits() {
+    return ["i-medi evolusi"];
+  }
+
+  hasMedical(names) {
+    const medical = this.medicalBenefits();
+    return names.some((n) => medical.indexOf(n.toLowerCase()) !== -1);
+  }
+
+  /* Which guides a client sees follows the benefits on the certificate, not a
+     plan label. The nominee/hibah guide is shown to everyone, because every
+     certificate has nominees. */
+  guideKeysFor(names) {
+    const keys = [];
+    if (this.hasMedical(names)) keys.push("journey", "panel", "portal");
+    keys.push("hibah");
+    return keys;
+  }
+
+  /* Resolved against a 25/05/2026 commencement with today at 14/09/2026, so
+     the screen shows a real mix: two windows already open, one about to,
+     one a long way off. */
+  schedule() {
+    return [
+      { key: "immediate", startsOn: "25/05/2026", active: true, daysRemaining: 0 },
+      { key: "general", startsOn: "24/06/2026", active: true, daysRemaining: 0 },
+      { key: "specified", startsOn: "22/09/2026", active: false, daysRemaining: 8 },
+      { key: "pre_existing", startsOn: "24/05/2028", active: false, daysRemaining: 618 },
+    ];
+  }
+
+  renderVals() {
+    const st = this.state || {};
+    const lang = st.lang ? st.lang : "bm";
+    const open = st.open ? st.open : null;
+    const tab = st.tab ? st.tab : "cert";
+    const onboard = st.onboard ? st.onboard : "first";
+    const t = this.copy()[lang];
+    const urls = this.guideUrls();
+
+    const go = (patch) => {
+      const next = { lang: lang, open: open, tab: tab, onboard: onboard };
+      for (const k in patch) next[k] = patch[k];
+      this.setState(next);
+    };
+
+    const tabOn = "border: 0; border-radius: 999px; padding: 7px 13px; min-height: 32px; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: #fac748; color: #0f2540";
+    const tabOff = "border: 0; border-radius: 999px; padding: 7px 13px; min-height: 32px; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: transparent; color: rgba(255,255,255,.6)";
+
+    // Bottom-menu item: gold ground when selected, quiet taupe otherwise.
+    const navBtn = (key) => {
+      const on = tab === key;
+      return "display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; border-radius: 14px; padding: 7px 2px 6px; min-height: 52px; font-family: inherit; cursor: pointer; background: " +
+        (on ? "#fdf3dd" : "transparent") + "; color: " + (on ? "#0f2540" : "#a29883");
+    };
+
+    const periods = this.schedule().map((s) => {
+      const c = t.periods[s.key];
+      // Green once the window is open; gold when it is close enough to plan
+      // around; quiet sand when it is still far off.
+      const soon = !s.active && s.daysRemaining <= 60;
+      const pillBg = s.active ? "#e8f2ec" : soon ? "#fdf3dd" : "#f5eee3";
+      const pillFg = s.active ? "#0f4c35" : soon ? "#7a5c14" : "#8b8271";
+      const dotBg = s.active ? "#0f4c35" : soon ? "#fac748" : "#e7ded0";
+      return {
+        label: c.label,
+        summary: c.summary,
+        conditions: c.conditions,
+        isOpen: open === s.key,
+        toggle: () => go({ open: open === s.key ? null : s.key }),
+        statusText: s.active ? t.covered : t.daysLeft.replace("{n}", String(s.daysRemaining)),
+        startsLine: (s.active ? t.coveredSince : t.coveredFrom) + " " + s.startsOn,
+        pillStyle: "border-radius: 999px; padding: 3px 8px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; background: " + pillBg + "; color: " + pillFg,
+        dotStyle: "margin-top: 5px; width: 9px; height: 9px; flex: none; border-radius: 999px; background: " + dotBg,
+        chevronStyle: "flex: none; margin-top: 4px; transition: transform .15s ease; transform: rotate(" + (open === s.key ? "180deg" : "0deg") + ")",
+      };
+    });
+
+    const benefits = t.benefits.map((b, i) => ({
+      name: b.name,
+      note: b.note,
+      sum: b.sum,
+      tag: b.tag,
+      tagStyle: "flex: none; border-radius: 999px; padding: 4px 9px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; background: " +
+        (i === 0 ? "#0f2540" : "#f5eee3") + "; color: " + (i === 0 ? "#fac748" : "#8b8271"),
+    }));
+
+    const benefitNames = t.benefits.map((b) => b.name);
+    const guides = this.guideKeysFor(benefitNames).map((k) => ({
+      title: t.guides[k].title,
+      note: t.guides[k].note,
+      url: urls[k],
+      iconWrapStyle: "display: flex; width: 36px; height: 36px; flex: none; align-items: center; justify-content: center; border-radius: 12px; background: #eef3f8",
+      iconStyle: "width: 16px; height: 16px; border-radius: 5px; border: 2px solid #1c3f66",
+    }));
+
+    const activeCount = this.schedule().filter((s) => s.active).length;
+
+    // Name and share only — no IC, no phone number. The link is the only
+    // credential, so nothing here should be worth harvesting.
+    const nominees = [
+      { initials: "AB", name: "AHMAD BIN CONTOH", relationship: lang === "bm" ? "Suami" : "Spouse", share: "60%" },
+      { initials: "NB", name: "NUR IMAN BIN AHMAD", relationship: lang === "bm" ? "Anak" : "Son", share: "40%" },
+    ];
+
+    return {
+      t: t,
+      periods: periods,
+      benefits: benefits,
+      guides: guides,
+      nominees: nominees,
+      coverNotes: t.coverNotes,
+      onboardSteps: t.onboardSteps,
+      coveredCount: t.coveredCount.replace("{n}", String(activeCount)),
+      paidLabel: t.paidLabel.replace("{n}", "4"),
+      progressStyle: "height: 100%; width: 6%; border-radius: 999px; background: #0f4c35",
+      clientName: "NURUL AIN BINTI CONTOH",
+      certificateNo: "4048800142",
+      // Plan naming follows the benefit catalogue: the base benefit names the
+      // plan, the riders are counted beneath it.
+      planName: t.benefits[0].name,
+      riderLine: t.riderMore.replace("{n}", String(t.benefits.length - 1)),
+      contribution: "RM77.95",
+      commencedDate: lang === "bm" ? "25 Mei 2026" : "25 May 2026",
+      nextDueDate: "25/09/2026",
+      agentName: "Kamal Husaini",
+      agentInitials: "KH",
+      agentWaUrl: "https://wa.me/60123456789",
+
+      hasMedical: this.hasMedical(benefitNames),
+      isCert: tab === "cert",
+      isBenefits: tab === "benefits",
+      isWaiting: tab === "waiting" && this.hasMedical(benefitNames),
+      isNominees: tab === "nominees",
+      isGuides: tab === "guides",
+      goCert: () => go({ tab: "cert" }),
+      goBenefits: () => go({ tab: "benefits" }),
+      goWaiting: () => go({ tab: "waiting" }),
+      goNominees: () => go({ tab: "nominees" }),
+      goGuides: () => go({ tab: "guides" }),
+      certTab: navBtn("cert"),
+      benefitsTab: navBtn("benefits"),
+      waitingTab: navBtn("waiting"),
+      nomineesTab: navBtn("nominees"),
+      guidesTab: navBtn("guides"),
+      tabLabel: "font-size: 9.5px; font-weight: 700; letter-spacing: 0.01em",
+
+      showOnboard: onboard !== "closed" && onboard !== "muted",
+      closeOnboard: () => go({ onboard: "closed" }),
+      muteOnboard: () => go({ onboard: "muted" }),
+      openHelp: () => go({ onboard: "first" }),
+
+      setBm: () => go({ lang: "bm" }),
+      setEn: () => go({ lang: "en" }),
+      bmBtn: lang === "bm" ? tabOn : tabOff,
+      enBtn: lang === "en" ? tabOn : tabOff,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { saveBenefit, setBenefitActive, deleteBenefit } from "../actions";
+import { saveBenefit, setBenefitActive, deleteBenefit, reorderBenefit } from "../actions";
 import type { BenefitOption } from "@/app/(app)/my-sales/types";
 
 const input =
@@ -84,6 +84,17 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
     });
   }
 
+  // The order here is the order agents see in the Submit Case dropdown, so
+  // the common products can be pushed to the top where they are reached first.
+  function move(id: string, direction: "up" | "down") {
+    setError(null);
+    startTransition(async () => {
+      const result = await reorderBenefit(id, direction);
+      if (result.error) setError(result.error);
+      else router.refresh();
+    });
+  }
+
   function toggleActive(b: BenefitOption) {
     setError(null);
     startTransition(async () => {
@@ -157,16 +168,6 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                 className={`mt-[5px] ${input}`}
               />
             </label>
-            <label className="block">
-              <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">Order</span>
-              <input
-                type="number"
-                value={draft.sortOrder}
-                onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}
-                aria-label="Sort order"
-                className={`mt-[5px] ${input}`}
-              />
-            </label>
             <label className="block sm:col-span-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">Description</span>
               <textarea
@@ -205,7 +206,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
         </p>
       ) : (
         <div className="flex flex-col gap-2">
-          {benefits.map((b) => (
+          {benefits.map((b, i) => (
             <div
               key={b.id}
               className={`rounded-[12px] border bg-white p-3.5 ${
@@ -234,6 +235,30 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
 
                 {canManage && (
                   <div className="flex flex-none flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => move(b.id, "up")}
+                      disabled={pending || i === 0}
+                      aria-label={`Move ${b.name} up`}
+                      title="Move up"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-navy disabled:opacity-35"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 14 6-6 6 6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(b.id, "down")}
+                      disabled={pending || i === benefits.length - 1}
+                      aria-label={`Move ${b.name} down`}
+                      title="Move down"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-navy disabled:opacity-35"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 10 6 6 6-6" />
+                      </svg>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

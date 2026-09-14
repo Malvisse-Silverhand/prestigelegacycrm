@@ -57,6 +57,20 @@ export type ScheduleEntry = {
   paidOn: string | null;
 };
 
+/** The client-facing portal link for one certificate, as the Servicing page
+ *  needs it. Null when no link has ever been issued, or the last one was
+ *  revoked. */
+export type PortalLink = {
+  id: string;
+  token: string;
+  /** Null means "follow the case status" -- see lib/client-portal. */
+  displayStatus: string | null;
+  createdAt: string;
+  firstOpenedAt: string | null;
+  lastOpenedAt: string | null;
+  openCount: number;
+};
+
 export type CaseSubmission = {
   id: string;
   leadId: string;
@@ -102,6 +116,8 @@ export type CaseSubmission = {
   notes: string | null;
   submittedAt: string;
   inforcedAt: string | null;
+
+  portalLink: PortalLink | null;
 
   nominees: CaseNominee[];
   benefits: CaseBenefit[];

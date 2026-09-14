@@ -56,10 +56,16 @@ export async function updateSession(request: NextRequest) {
   // already run unauthenticated as WordPress embeds), and without this a
   // signed-out visitor's iframe is redirected to /login -- which then refuses
   // to be framed, so the calculator silently never appears.
+  //
+  // /sijil/<token> is a client's own certificate portal. Clients never get CRM
+  // accounts -- the token in the path is the only credential, the page
+  // resolves it server-side, and a revoked token renders the same dead end as
+  // one that was never real.
   const isPublicRoute =
     PUBLIC_ROUTES.includes(request.nextUrl.pathname) ||
     request.nextUrl.pathname.startsWith("/join/") ||
     request.nextUrl.pathname.startsWith("/p/") ||
+    request.nextUrl.pathname.startsWith("/sijil/") ||
     request.nextUrl.pathname.startsWith("/tools/");
 
   if (!user && !isPublicRoute) {

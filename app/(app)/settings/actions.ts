@@ -1256,3 +1256,60 @@ export async function deleteBenefit(id: string) {
   revalidatePath("/my-sales/submit-case");
   return { error: null };
 }
+
+/**
+ * Moves one benefit up or down the list.
+ *
+ * Renumbers the whole catalogue rather than swapping two sort_order values,
+ * because the values in the table are not guaranteed to be unique or gapless
+ * -- they were typed by hand before this existed, and a swap between two rows
+ * that already share a number would do nothing at all. Rewriting the sequence
+ * makes the order say exactly what the list shows, and the catalogue is small
+ * enough that the extra writes cost nothing.
+ */
+export async function reorderBenefit(id: string, direction: "up" | "down") {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageBenefits(profile.role)) {
+    return { error: "You don't have permission to do that." };
+  }
+
+  const supabase = await createClient();
+  const { data: rows, error: readError } = await supabase
+    .from("benefit_catalogue")
+    .select("id, sort_order, name")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (readError || !rows) return { error: "Couldn't read the benefit list." };
+
+  const from = rows.findIndex((r) => r.id === id);
+  if (from === -1) return { error: "That benefit no longer exists." };
+
+  const to = direction === "up" ? from - 1 : from + 1;
+  // Already at the end it is being pushed towards: nothing to do, and not an
+  // error worth showing anyone.
+  if (to < 0 || to >= rows.length) return { error: null };
+
+  const moved = rows.slice();
+  [moved[from], moved[to]] = [moved[to], moved[from]];
+
+  // Only the rows whose position actually changed get written.
+  const updates = moved
+    .map((row, index) => ({ row, index }))
+    .filter(({ row, index }) => row.sort_order !== index);
+
+  for (const { row, index } of updates) {
+    const { error } = await supabase
+      .from("benefit_catalogue")
+      .update({ sort_order: index, updated_at: new Date().toISOString() })
+      .eq("id", row.id);
+    if (error) {
+      Sentry.captureException(error, { tags: { action: "reorderBenefit" } });
+      return { error: "Couldn't reorder the benefits. Please try again." };
+    }
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/my-sales/submit-case");
+  return { error: null };
+}

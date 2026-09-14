@@ -1,0 +1,41 @@
+{
+  "artboards": [
+    { "file": "Flow.dc.html", "x": 0, "y": 0, "w": 1240, "h": 720, "title": "System plan" },
+    { "file": "Main.dc.html", "x": 0, "y": 880, "w": 390, "h": 1080, "title": "Portal — medical benefits (mobile)", "is_interactive": true },
+    { "file": "Hibah.dc.html", "x": 490, "y": 880, "w": 390, "h": 1080, "title": "Portal — hibah benefits (mobile)", "is_interactive": true },
+    { "file": "Closed.dc.html", "x": 980, "y": 880, "w": 390, "h": 760, "title": "Revoked / lapsed", "is_interactive": true },
+    { "file": "Desktop.dc.html", "x": 1470, "y": 880, "w": 1240, "h": 1580, "title": "Portal — wide screen", "is_interactive": true },
+    { "file": "ServicingControl.dc.html", "x": 1470, "y": 2600, "w": 880, "h": 720, "title": "CRM — My Sales › Servicing", "is_interactive": true }
+  ],
+  "annotations": [
+    {
+      "id": "note-plan",
+      "x": 1340,
+      "y": 0,
+      "w": 420,
+      "text": "START HERE.\n\nThe whole system in one picture: what gates a link, what the client sees, what never leaves the CRM, and who can close it.\n\nOne link per certificate. The token is the only credential, so the payload is deliberately thin."
+    },
+    {
+      "id": "note-portal",
+      "x": -520,
+      "y": 880,
+      "w": 420,
+      "text": "THE CLIENT'S VIEW — mobile first, and everything here is live. Try it.\n\nThe bottom menu is the spine: Certificate, Benefits, Waiting, Nominees, Guides. Tap between them. BM is the default; the BM/EN toggle at the top switches the lot.\n\nThe welcome card is open on the left screen — that is what a client meets on their first visit. \"Jangan tunjuk lagi\" silences it; the ? button in the top bar brings it back. The right screen shows the portal after it has been dismissed.\n\nOn Waiting, every card opens for the full illness list. Dates resolve against a 25/05/2026 commencement, so you get a real mix: two windows open, one 8 days away, one far off."
+    },
+    {
+      "id": "note-benefits",
+      "x": 980,
+      "y": 1700,
+      "w": 390,
+      "text": "PLAN NAMING FOLLOWS THE BENEFITS.\n\nNo screen says \"Medical Card\" or \"Hibah\" any more. The base benefit from the Settings > Benefits catalogue names the plan — i-GREAT NOVA here, i-GREAT CHINTA next door — and the riders are counted under it and listed with their sums covered on the Benefits tab.\n\nONE MAPPING decides the rest: a certificate carrying i-MEDI EVOLUSI gets the Waiting tab and the three medical guides. Nothing else is hardcoded. The nominee / hibah guide goes to everyone, since every certificate has nominees.\n\nSo these two phones are the same template with different benefits attached — not two designs. The hibah one has four tabs, not five, for exactly that reason.\n\nThe gold button is the official Great Eastern eConnect portal, the one link that leaves our system."
+    },
+    {
+      "id": "note-crm",
+      "x": 2430,
+      "y": 2600,
+      "w": 420,
+      "text": "THE AGENT'S VIEW — sits in the client panel on My Sales › Servicing, under the contribution checklist.\n\nLive: Copy, Revoke (with confirm), and Issue a new link. Click through the states.\n\nRevocable by the owning agent and any AUM / UM / GM / SuperAdmin above them — the same visibility rule the rest of the CRM uses."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

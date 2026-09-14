@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fdf9f3;
+      color: #0f2540;
+      font-family: Poppins, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-wrap: pretty;
+    }
+    a { color: #0f2540; text-decoration: none; }
+    a:hover { color: #1c3f66; }
+  </style>
+</helmet>
+
+<div style="display: flex; min-height: 100%; flex-direction: column; background: #fdf9f3">
+
+  <div style="display: flex; align-items: center; gap: 10px; background: #0f2540; padding: 14px 18px">
+    <div style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex: none; border-radius: 9px; background: #fac748">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z"></path>
+      </svg>
+    </div>
+    <div style="min-width: 0; flex: 1">
+      <div style="font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: #ffffff; line-height: 1.2">Prestige Legacy</div>
+      <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #fac748; line-height: 1.4">{{t.portalTag}}</div>
+    </div>
+    <div style="display: flex; flex: none; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255,255,255,.1)">
+      <button onClick="{{setBm}}" style="{{bmBtn}}">BM</button>
+      <button onClick="{{setEn}}" style="{{enBtn}}">EN</button>
+    </div>
+  </div>
+
+  <div style="display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 16px; padding: 32px 20px">
+
+    <div style="display: flex; flex-direction: column; align-items: center; text-align: center">
+      <div style="display: flex; width: 66px; height: 66px; align-items: center; justify-content: center; border-radius: 22px; background: #f5eee3">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="10" width="16" height="11" rx="2.5"></rect>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+        </svg>
+      </div>
+      <div style="margin-top: 16px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: #0f2540; line-height: 1.3">{{t.title}}</div>
+      <div style="margin-top: 8px; max-width: 300px; font-size: 12.5px; font-weight: 500; color: #5c5648; line-height: 1.6">{{t.body}}</div>
+    </div>
+
+    <!-- Deliberately says nothing about whether a certificate exists: the same
+         page answers a revoked link, an unknown token and a lapsed policy. -->
+    <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 16px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9a8f7c">{{t.helpTitle}}</div>
+      <div style="margin-top: 8px; font-size: 12px; font-weight: 500; color: #5c5648; line-height: 1.6">{{t.helpBody}}</div>
+      <a href="https://wa.me/60123456789" target="_blank" rel="noopener noreferrer" style="margin-top: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; background: #0f4c35; padding: 13px; min-height: 46px; font-size: 13px; font-weight: 700; color: #ffffff">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff">
+          <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z"></path>
+        </svg>
+        {{t.helpCta}}
+      </a>
+    </div>
+
+    <div style="text-align: center">
+      <div style="font-size: 10.5px; font-weight: 500; color: #a29883; line-height: 1.6">{{t.disclaimerShort}}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":760}}'>
+class Component extends DCLogic {
+  copy() {
+    return {
+      bm: {
+        portalTag: "Portal Klien",
+        title: "Pautan ini tidak lagi aktif",
+        body: "Pautan portal ini telah ditamatkan atau sudah tidak sah. Ejen anda boleh menghantar pautan baharu bila-bila masa.",
+        helpTitle: "Perlukan bantuan?",
+        helpBody: "Hubungi ejen anda untuk mendapatkan pautan baharu atau untuk sebarang pertanyaan mengenai sijil anda.",
+        helpCta: "Hubungi ejen anda",
+        disclaimerShort: "Portal agensi Prestige Legacy. Bukan sistem rasmi Great Eastern Takaful Berhad.",
+      },
+      en: {
+        portalTag: "Client Portal",
+        title: "This link is no longer active",
+        body: "This portal link has been closed or is no longer valid. Your agent can send you a fresh one at any time.",
+        helpTitle: "Need a hand?",
+        helpBody: "Message your agent for a new link, or for anything about your certificate.",
+        helpCta: "Message your agent",
+        disclaimerShort: "Prestige Legacy agency portal. Not the official system of Great Eastern Takaful Berhad.",
+      },
+    };
+  }
+
+  renderVals() {
+    const lang = this.state && this.state.lang ? this.state.lang : "bm";
+    const tabOn = "border: 0; border-radius: 999px; padding: 7px 13px; min-height: 32px; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: #fac748; color: #0f2540";
+    const tabOff = "border: 0; border-radius: 999px; padding: 7px 13px; min-height: 32px; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: transparent; color: rgba(255,255,255,.6)";
+    return {
+      t: this.copy()[lang],
+      setBm: () => this.setState({ lang: "bm" }),
+      setEn: () => this.setState({ lang: "en" }),
+      bmBtn: lang === "bm" ? tabOn : tabOff,
+      enBtn: lang === "en" ? tabOn : tabOff,
+    };
+  }
+}
+</script>
+</body>
+</html>

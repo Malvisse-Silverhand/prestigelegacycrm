@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fdf9f3;
+      color: #0f2540;
+      font-family: Poppins, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-wrap: pretty;
+    }
+    a { color: #0f2540; } a:hover { color: #1c3f66; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #fdf9f3; padding: 26px 28px">
+
+  <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #a29883">Prestige Legacy CRM</div>
+  <div style="margin-top: 4px; font-size: 22px; font-weight: 800; letter-spacing: -0.025em; color: #0f2540">How a client portal link lives and dies</div>
+  <div style="margin-top: 4px; font-size: 12.5px; font-weight: 500; color: #8b8271; max-width: 780px; line-height: 1.55">
+    One link per certificate, issued from My Sales &rsaquo; Servicing. It carries no password &mdash; the token is the credential &mdash; so everything below is about keeping the blast radius small.
+  </div>
+
+  <!-- ===== Lifecycle ===== -->
+  <div style="margin-top: 20px; display: flex; align-items: stretch; gap: 10px">
+
+    <div style="flex: 1; border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 15px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div style="display: flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 8px; background: #0f2540; font-size: 10px; font-weight: 700; color: #fac748">1</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">Certificate goes inforce</div>
+      </div>
+      <div style="margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">Agent records the certificate in Submit Case. The lead moves to Servicing and the closing date follows the commencement date.</div>
+      <div style="margin-top: 9px; border-radius: 8px; background: #e8f2ec; padding: 5px 9px; display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; color: #0f4c35">GATE: status = inforce</div>
+    </div>
+
+    <div style="display: flex; flex: none; align-items: center; padding-top: 40px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1; border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 15px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div style="display: flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 8px; background: #0f2540; font-size: 10px; font-weight: 700; color: #fac748">2</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">Agent issues the link</div>
+      </div>
+      <div style="margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">From the client&rsquo;s panel in Servicing. A random token is minted, stored against the certificate, and sent over WhatsApp.</div>
+      <div class="mono" style="margin-top: 9px; border-radius: 8px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 9px; font-size: 10.5px; font-weight: 500; color: #0f2540">/c/9f3c2ab74e1d</div>
+    </div>
+
+    <div style="display: flex; flex: none; align-items: center; padding-top: 40px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1; border-radius: 16px; border: 1px solid #cfe8da; background: #e8f2ec; padding: 15px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div style="display: flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 8px; background: #0f4c35; font-size: 10px; font-weight: 700; color: #ffffff">3</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">Client opens it</div>
+      </div>
+      <div style="margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #2f4f43; line-height: 1.55">No sign-in, no app, no account. Read-only. Every open bumps a counter the agent can see, so they know it landed.</div>
+      <div style="margin-top: 9px; border-radius: 8px; background: rgba(15,76,53,.1); padding: 5px 9px; display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; color: #0f4c35">VIEW ONLY &middot; NOINDEX</div>
+    </div>
+
+    <div style="display: flex; flex: none; align-items: center; padding-top: 40px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1; border-radius: 16px; border: 1px solid #f3d9d6; background: #fdeceb; padding: 15px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div style="display: flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 8px; background: #9b2c22; font-size: 10px; font-weight: 700; color: #ffffff">4</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">It closes</div>
+      </div>
+      <div style="margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #6b3b35; line-height: 1.55">Revoked by hand, or closed by itself the moment the certificate stops being inforce. Same dead-end page either way.</div>
+      <div style="margin-top: 9px; border-radius: 8px; background: rgba(155,44,34,.1); padding: 5px 9px; display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; color: #9b2c22">404, NEVER 403</div>
+    </div>
+  </div>
+
+  <!-- ===== Three panels ===== -->
+  <div style="margin-top: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+
+    <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 16px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">What the client sees</div>
+      <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 7px">
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Certificate number and policy status</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Benefits and sums covered — these name the plan</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Waiting periods, live against today</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Contribution amount and next due date</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Nominee names and percentage shares</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 6px; width: 4px; height: 4px; flex: none; border-radius: 999px; background: #0f4c35"></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Guides matched to those benefits, the official GE portal, and their agent</div></div>
+      </div>
+    </div>
+
+    <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 16px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">What never leaves the CRM</div>
+      <div style="margin-top: 4px; font-size: 10.5px; font-weight: 500; color: #a29883; line-height: 1.5">The token is the only credential, so the payload assumes the link will be forwarded.</div>
+      <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 7px">
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 5px; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="3" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"></path></svg></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">IC / ID number</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 5px; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="3" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"></path></svg></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Underwriting notes and case history</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 5px; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="3" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"></path></svg></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Nominee phone numbers</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 5px; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="3" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"></path></svg></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">ANC, commission, anything agency-side</div></div>
+        <div style="display: flex; gap: 8px; align-items: flex-start"><div style="margin-top: 5px; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="3" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"></path></svg></div><div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.5">Any other client, ever</div></div>
+      </div>
+    </div>
+
+    <div style="border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 16px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+      <div style="font-size: 12.5px; font-weight: 700; color: #0f2540">Who can revoke</div>
+      <div style="margin-top: 4px; font-size: 10.5px; font-weight: 500; color: #a29883; line-height: 1.5">Same visibility rule the rest of the CRM already uses &mdash; if you can see the lead, you can close its portal.</div>
+      <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px">
+        <div style="border-radius: 999px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #0f2540">Owning agent</div>
+        <div style="border-radius: 999px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #0f2540">AUM</div>
+        <div style="border-radius: 999px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #0f2540">UM</div>
+        <div style="border-radius: 999px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #0f2540">GM</div>
+        <div style="border-radius: 999px; border: 1px solid #e7ded0; background: #fdf9f3; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #0f2540">SuperAdmin</div>
+      </div>
+      <div style="margin-top: 12px; border-radius: 11px; border: 1px solid #e7ded0; background: #f5eee3; padding: 11px 12px">
+        <div style="font-size: 11px; font-weight: 700; color: #7a5c14">Written to the audit log</div>
+        <div style="margin-top: 3px; font-size: 11px; font-weight: 500; color: #5c5648; line-height: 1.5">Issue and revoke both record who did it and when, beside the existing user and export entries.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Disclaimer strip ===== -->
+  <div style="margin-top: 13px; display: flex; align-items: center; gap: 11px; border-radius: 14px; border: 1px solid #e7ded0; background: #ffffff; padding: 14px 16px">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none">
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4M12 17h.01"></path>
+    </svg>
+    <div style="min-width: 0; flex: 1; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">
+      Every page of the portal carries the same line, in both languages: <strong style="font-weight: 700; color: #0f2540">this is an agency system, not the official system of Great Eastern Takaful Berhad</strong>. It is placed above the fold on the closed page and directly under the content on the live one &mdash; never in a footer nobody reads.
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1240,"height":720}}'>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { buildSchedule, type PaymentFrequency } from "@/lib/contribution-schedule";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { createLead } from "@/app/(app)/leads/actions";
+import { PORTAL_STATUSES } from "@/lib/client-portal";
 import type { CaseNominee, CaseBenefit } from "./types";
 
 // Stages from which a case may be filed. Submission is the gate the request
@@ -445,5 +446,89 @@ export async function deleteCase(caseId: string) {
   revalidatePath("/my-sales/submit-case");
   revalidatePath("/my-sales/servicing");
   revalidatePath(`/leads/${data.lead_id}`);
+  return { error: null };
+}
+
+// --- Client portal links -----------------------------------------------
+//
+// All three actions go through the caller's own session, not the service
+// role, so RLS decides who may touch which link. The policy on
+// client_portal_links inherits lead visibility, which means the owning agent
+// and every AUM / UM / GM / SuperAdmin above them -- exactly the revoke list
+// this was specified with, and not a role list repeated here.
+
+/** Issues a link, replacing any live one on the same case. */
+export async function issuePortalLink(submissionId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const supabase = await createClient();
+
+  // A case has at most one live link (a partial unique index enforces it), so
+  // re-issuing means closing the old one first. Revoked rather than deleted:
+  // "this link was replaced on the 14th" is a question that gets asked.
+  await supabase
+    .from("client_portal_links")
+    .update({ revoked_at: new Date().toISOString(), revoked_by: profile.id })
+    .eq("submission_id", submissionId)
+    .is("revoked_at", null);
+
+  const { data, error } = await supabase
+    .from("client_portal_links")
+    .insert({ submission_id: submissionId, created_by: profile.id })
+    .select("token")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't create the portal link." };
+
+  revalidatePath("/my-sales/servicing");
+  return { error: null, token: data.token as string };
+}
+
+/** Closes a link. The client's page becomes the dead end immediately. */
+export async function revokePortalLink(linkId: string) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("client_portal_links")
+    .update({ revoked_at: new Date().toISOString(), revoked_by: profile.id })
+    .eq("id", linkId)
+    .is("revoked_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't revoke that link." };
+
+  revalidatePath("/my-sales/servicing");
+  return { error: null };
+}
+
+/**
+ * Sets the status the client sees, or clears the override so it follows the
+ * case again. The override exists because a certificate can sit in a state the
+ * case record has no word for -- a grace period, a reinstatement in progress --
+ * and the person servicing it knows which before the system does.
+ */
+export async function setPortalStatus(linkId: string, status: string | null) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  if (status !== null && !PORTAL_STATUSES.includes(status as (typeof PORTAL_STATUSES)[number])) {
+    return { error: "Unknown status." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("client_portal_links")
+    .update({ display_status: status })
+    .eq("id", linkId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) return { error: "Couldn't update the status." };
+
+  revalidatePath("/my-sales/servicing");
   return { error: null };
 }

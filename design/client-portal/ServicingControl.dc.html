@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fdf9f3;
+      color: #0f2540;
+      font-family: Poppins, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-wrap: pretty;
+    }
+    a { color: #0f2540; text-decoration: none; }
+    a:hover { color: #1c3f66; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #fdf9f3; padding: 22px 24px">
+
+  <!-- Breadcrumb: this card lives in My Sales > Servicing, on the selected client -->
+  <div style="display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; color: #a29883">
+    <span>My Sales</span>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.6" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg>
+    <span style="color: #8b8271">Servicing</span>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a29883" stroke-width="2.6" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg>
+    <span style="color: #0f2540; font-weight: 700">NURUL AIN BINTI CONTOH</span>
+  </div>
+
+  <!-- Client header, as the Servicing panel already renders it -->
+  <div style="margin-top: 12px; border-radius: 16px; border: 1px solid #efe7da; background: #ffffff; padding: 16px; box-shadow: 0 1px 2px rgba(15,37,64,.05)">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px; border-bottom: 1px solid #f5eee3; padding-bottom: 13px">
+      <div style="min-width: 0">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="border-radius: 7px; background: #f5eee3; padding: 2px 7px; font-size: 10px; font-weight: 700; color: #8b8271">#17</span>
+          <span style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">NURUL AIN BINTI CONTOH</span>
+        </div>
+        <div style="margin-top: 3px; font-size: 11.5px; font-weight: 500; color: #8b8271">Medical Card · Certificate 4048800142 · Commenced 25/05/2026</div>
+      </div>
+      <div style="display: flex; flex: none; align-items: flex-start; gap: 16px">
+        <div style="text-align: right">
+          <div style="font-size: 16px; font-weight: 800; color: #0f2540">RM77.95</div>
+          <div style="font-size: 10.5px; font-weight: 600; color: #a29883">per contribution</div>
+        </div>
+        <div style="border-left: 1px solid #f5eee3; padding-left: 16px; text-align: right">
+          <div style="font-size: 16px; font-weight: 800; color: #fac748">RM311.80</div>
+          <div style="font-size: 10.5px; font-weight: 600; color: #a29883">collected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== The new card ===== -->
+    <div style="margin-top: 15px; border-radius: 14px; border: 1px solid #efe7da; background: #fdf9f3; padding: 15px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 9px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none">
+          <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path>
+          <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path>
+        </svg>
+        <div style="font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f2540">Client portal</div>
+        <div style="{{statusPill}}">{{statusText}}</div>
+        <div style="flex: 1"></div>
+        <div style="font-size: 10.5px; font-weight: 600; color: #a29883">{{headerNote}}</div>
+      </div>
+
+      <sc-if value="{{isNone}}" hint-placeholder-val="{{false}}">
+        <div>
+          <div style="margin-top: 9px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.6; max-width: 560px">
+            Give this client a read-only page showing their certificate, policy status, waiting periods and the guides for their plan. Available because this certificate is inforce.
+          </div>
+          <button onClick="{{generate}}" style="margin-top: 12px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 11px; background: #0f2540; padding: 11px 16px; min-height: 42px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #ffffff; cursor: pointer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Create portal link
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isActive}}" hint-placeholder-val="{{true}}">
+        <div>
+          <!-- The link itself, monospaced so a client reading it back over the
+               phone gets every character right -->
+          <div style="margin-top: 11px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border-radius: 11px; border: 1px solid #e7ded0; background: #ffffff; padding: 9px 9px 9px 13px">
+            <div class="mono" style="min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; color: #0f2540">crm.prestigelegacy.com.my/c/{{token}}</div>
+            <button onClick="{{copy}}" style="flex: none; border: 1px solid #e7ded0; border-radius: 9px; background: #ffffff; padding: 8px 13px; min-height: 38px; font-family: inherit; font-size: 11.5px; font-weight: 700; color: #0f2540; cursor: pointer">{{copyLabel}}</button>
+            <a href="https://wa.me/60123456789" target="_blank" rel="noopener noreferrer" style="display: flex; flex: none; align-items: center; gap: 7px; border-radius: 9px; background: #0f4c35; padding: 8px 13px; min-height: 38px; font-size: 11.5px; font-weight: 700; color: #ffffff">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#ffffff"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Z"></path></svg>
+              Send
+            </a>
+          </div>
+
+          <!-- Proof the client actually opened it -->
+          <div style="margin-top: 11px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px">
+            <div style="border-radius: 11px; border: 1px solid #f5eee3; background: #ffffff; padding: 10px 12px">
+              <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8f7c">Created</div>
+              <div style="margin-top: 3px; font-size: 12.5px; font-weight: 700; color: #0f2540">02/09/2026</div>
+              <div style="font-size: 10.5px; font-weight: 500; color: #a29883">by Kamal Husaini</div>
+            </div>
+            <div style="border-radius: 11px; border: 1px solid #f5eee3; background: #ffffff; padding: 10px 12px">
+              <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8f7c">Opened</div>
+              <div style="margin-top: 3px; font-size: 12.5px; font-weight: 700; color: #0f4c35">7 times</div>
+              <div style="font-size: 10.5px; font-weight: 500; color: #a29883">last 12/09/2026</div>
+            </div>
+            <div style="border-radius: 11px; border: 1px solid #f5eee3; background: #ffffff; padding: 10px 12px">
+              <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8f7c">Access</div>
+              <div style="margin-top: 3px; font-size: 12.5px; font-weight: 700; color: #0f2540">View only</div>
+              <div style="font-size: 10.5px; font-weight: 500; color: #a29883">no sign-in needed</div>
+            </div>
+          </div>
+
+          <sc-if value="{{confirming}}" hint-placeholder-val="{{false}}">
+            <div style="margin-top: 11px; border-radius: 11px; border: 1px solid #f0dfb4; background: #fdf3dd; padding: 13px">
+              <div style="font-size: 12px; font-weight: 700; color: #7a5c14; line-height: 1.5">Revoke this link? It stops working immediately for the client, and anyone holding it sees a closed page. You can issue a new one afterwards.</div>
+              <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px">
+                <button onClick="{{doRevoke}}" style="border: 0; border-radius: 9px; background: #9b2c22; padding: 9px 15px; min-height: 40px; font-family: inherit; font-size: 12px; font-weight: 700; color: #ffffff; cursor: pointer">Yes, revoke it</button>
+                <button onClick="{{cancel}}" style="border: 1px solid #e7ded0; border-radius: 9px; background: #ffffff; padding: 9px 15px; min-height: 40px; font-family: inherit; font-size: 12px; font-weight: 700; color: #0f2540; cursor: pointer">Keep it active</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{notConfirming}}" hint-placeholder-val="{{true}}">
+            <div style="margin-top: 11px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+              <button onClick="{{askRevoke}}" style="border: 1px solid #e7ded0; border-radius: 9px; background: #ffffff; padding: 9px 15px; min-height: 40px; font-family: inherit; font-size: 12px; font-weight: 700; color: #9b2c22; cursor: pointer">Revoke link</button>
+              <div style="min-width: 0; flex: 1; font-size: 10.5px; font-weight: 500; color: #8b8271; line-height: 1.5">Revocable by the owning agent and by any AUM, UM, GM or SuperAdmin above them. Every issue and revoke is written to the audit log.</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isRevoked}}" hint-placeholder-val="{{false}}">
+        <div>
+          <div style="margin-top: 11px; display: flex; align-items: flex-start; gap: 10px; border-radius: 11px; border: 1px solid #f3d9d6; background: #fdeceb; padding: 13px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9b2c22" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6M15 9l-6 6"></path></svg>
+            <div style="min-width: 0; flex: 1">
+              <div style="font-size: 12px; font-weight: 700; color: #9b2c22">Revoked 14/09/2026 by Kamal Husaini</div>
+              <div style="margin-top: 4px; font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">The old link is dead. Anyone opening it now sees the closed page, with no hint that a certificate exists behind it.</div>
+            </div>
+          </div>
+          <button onClick="{{generate}}" style="margin-top: 12px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 11px; background: #0f2540; padding: 11px 16px; min-height: 42px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #ffffff; cursor: pointer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2.4" stroke-linecap="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg>
+            Issue a new link
+          </button>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="margin-top: 13px; display: flex; align-items: flex-start; gap: 9px; border-radius: 12px; border: 1px solid #e7ded0; background: #f5eee3; padding: 12px 13px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a5c14" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+      <div style="font-size: 11.5px; font-weight: 500; color: #5c5648; line-height: 1.55">
+        A portal exists only while the certificate is inforce. If the policy lapses or is terminated, the link closes itself &mdash; nobody has to remember to revoke it.
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":880,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const status = s.status || "active";
+    const confirming = s.confirming === true;
+    const copied = s.copied === true;
+
+    const pill = (bg, fg) =>
+      "border-radius: 999px; padding: 3px 9px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; background: " + bg + "; color: " + fg;
+
+    const byStatus = {
+      none: { text: "NOT ISSUED", style: pill("#f5eee3", "#8b8271"), note: "Certificate is inforce" },
+      active: { text: "ACTIVE", style: pill("#e8f2ec", "#0f4c35"), note: "Client can open this now" },
+      revoked: { text: "REVOKED", style: pill("#fdeceb", "#9b2c22"), note: "Link no longer resolves" },
+    };
+
+    return {
+      token: "9f3c2ab74e1d",
+      statusText: byStatus[status].text,
+      statusPill: byStatus[status].style,
+      headerNote: byStatus[status].note,
+      isNone: status === "none",
+      isActive: status === "active",
+      isRevoked: status === "revoked",
+      confirming: confirming,
+      notConfirming: !confirming,
+      copyLabel: copied ? "Copied" : "Copy",
+      copy: () => this.setState({ status: status, confirming: confirming, copied: true }),
+      askRevoke: () => this.setState({ status: status, confirming: true, copied: copied }),
+      cancel: () => this.setState({ status: status, confirming: false, copied: copied }),
+      doRevoke: () => this.setState({ status: "revoked", confirming: false, copied: false }),
+      generate: () => this.setState({ status: "active", confirming: false, copied: false }),
+    };
+  }
+}
+</script>
+</body>
+</html>
