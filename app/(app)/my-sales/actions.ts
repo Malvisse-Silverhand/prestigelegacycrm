@@ -277,11 +277,19 @@ export type CertificateInput = {
  * The second half of the two-step: underwriting came back, the certificate
  * exists, and the lead becomes a client.
  *
- * Three things happen together and are meant to: the case goes inforce, its
+ * Four things happen together and are meant to: the case goes inforce, its
  * contribution schedule is generated from the commencement date the operator
- * actually gave, and the lead moves to Closed Won/Policy Inforced. Recording
- * a certificate *is* the close -- leaving the stage to be dragged separately
- * is how a board ends up disagreeing with the certificates behind it.
+ * actually gave, the lead's closing date is set to that same commencement
+ * date, and the lead moves to Servicing. Recording a certificate *is* the
+ * close -- leaving the stage to be dragged separately is how a board ends up
+ * disagreeing with the certificates behind it.
+ *
+ * The closing date is the certificate's risk commencement date, not the day
+ * this button happened to be clicked -- a case signed weeks ago is very often
+ * only entered into the CRM today, and every monthly figure (the dashboard,
+ * Statistics, the activity calendar) keys off this date. It is set outright,
+ * not just when empty: the certificate is the ground truth once it exists, so
+ * a corrected commencement date corrects the closing date with it.
  */
 export async function recordCertificate(input: CertificateInput) {
   const profile = await getCurrentProfile();
@@ -317,6 +325,32 @@ export async function recordCertificate(input: CertificateInput) {
     .select("id")
     .maybeSingle();
   if (error || !data) return { error: "Couldn't record this certificate. Please try again." };
+
+  // The closing date follows the certificate, not the calendar -- the
+  // earliest inforce one, since a client can go on to hold more than one
+  // certificate and the closing date means when they first became a client,
+  // not whichever policy was most recently recorded. Recomputed rather than
+  // just written from this certificate so a second, later policy never pushes
+  // an existing client's closing date forward, and so correcting a
+  // commencement date corrects it too.
+  const { data: allCerts } = await supabase
+    .from("case_submissions")
+    .select("commencement_date")
+    .eq("lead_id", existing.lead_id)
+    .eq("status", "inforce")
+    .not("commencement_date", "is", null);
+  const earliestCommencement = (allCerts ?? [])
+    .map((c) => c.commencement_date as string)
+    .sort()[0];
+  if (earliestCommencement) {
+    const { error: closedOnError } = await supabase
+      .from("leads")
+      .update({ closed_on: earliestCommencement })
+      .eq("id", existing.lead_id);
+    if (closedOnError) {
+      console.error("recordCertificate: closed_on update failed", closedOnError);
+    }
+  }
 
   // Rebuilt rather than appended to: a corrected commencement date has to move
   // every due date with it, and ticks are keyed by row so regenerating would

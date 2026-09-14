@@ -64,7 +64,7 @@ export function SetTargetTab({
 
       <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-[22px] pt-5">
       <div className="flex items-center gap-2.5">
-        <div className="flex-1 text-[15px] font-bold text-navy">Set Target</div>
+        <div className="flex-1 text-[15px] font-bold text-navy">Set Monthly Target</div>
         <span className="rounded-[6px] bg-warn-gold-bg px-2 py-1 text-[9.5px] font-bold tracking-[0.06em] text-warn-gold-text">
           {monthLabel(monthDate)}
         </span>

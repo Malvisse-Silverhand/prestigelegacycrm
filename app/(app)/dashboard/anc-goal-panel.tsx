@@ -82,7 +82,7 @@ function ProgressBar({
 // rather than cards -- a white card on navy reads as a hole punched in it.
 function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-[13px] bg-white/[.06] px-3.5 py-2.5">
+    <div className="rounded-[13px] bg-white/[.06] px-3 py-2">
       <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">{label}</div>
       <div
         className={`mt-0.5 text-[19px] font-extrabold tracking-[-0.03em] ${
@@ -103,8 +103,8 @@ function Tile({ label, value, accent }: { label: string; value: string; accent?:
  */
 function AncTotals({ goal }: { goal: Goal }) {
   return (
-    <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
-      <div className="rounded-[13px] bg-white/[.06] p-3.5">
+    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+      <div className="rounded-[13px] bg-white/[.06] p-3">
         <div className="text-[11px] font-bold text-white/70">ANC Inforced</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-[20px] font-extrabold tracking-[-0.03em] text-white">
@@ -114,10 +114,10 @@ function AncTotals({ goal }: { goal: Goal }) {
         </div>
         <div className="text-[10.5px] font-semibold text-white/70">certificates in force</div>
       </div>
-      <div className="rounded-[13px] bg-white/[.06] p-3.5">
+      <div className="rounded-[13px] bg-white/[.06] p-3">
         <div className="text-[11px] font-bold text-white/70">ANC Collected</div>
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-[20px] font-extrabold tracking-[-0.03em] text-green">
+          <span className="text-[20px] font-extrabold tracking-[-0.03em] text-gold">
             {fmtRM(goal.collectedAnc)}
           </span>
           <span className="text-[11px] font-bold text-white/70">ANC</span>
@@ -255,7 +255,7 @@ export function AncGoalPanel({
   // one screen that fixes it.
   if (headline.target <= 0) {
     return (
-      <div className="rounded-2xl bg-navy p-4 dark:ring-1 dark:ring-white/10 lg:p-5">
+      <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
         <div className="text-[13px] font-bold text-white">No ANC target set</div>
         <div className="mt-0.5 text-[12px] font-medium text-white/60">
           Set a monthly ANC target — or a goal with a deadline — in{" "}
@@ -264,7 +264,7 @@ export function AncGoalPanel({
           </Link>
           , and this becomes your progress tracker.
         </div>
-        <div className="mt-3 rounded-[13px] bg-gold p-3.5">
+        <div className="mt-2.5 rounded-[13px] bg-gold p-3">
           <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
@@ -285,7 +285,7 @@ export function AncGoalPanel({
   const style = PACE_STYLE[tone];
 
   return (
-    <div className="rounded-2xl bg-navy p-4 dark:ring-1 dark:ring-white/10 lg:p-5">
+    <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
@@ -293,7 +293,7 @@ export function AncGoalPanel({
           </div>
           <div className="mt-0.5 flex items-center gap-2">
             <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">
-              Overall target progress
+              {campaign ? "Yearly Target" : "Monthly Target"}
             </span>
             {headline.deadline && (
               <span className="rounded-[6px] bg-white/10 px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white">
@@ -310,44 +310,44 @@ export function AncGoalPanel({
       {/* Gold, navy text: the one card in this panel meant to be read first,
           which is also why it now sits above the tiles rather than below
           them. */}
-      <div className="mt-3.5 rounded-[13px] bg-gold p-3.5">
+      <div className="mt-3 rounded-[13px] bg-gold p-3">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/70">
             Overall progress
           </span>
           <span className="text-[11px] font-semibold text-navy/70">{headline.footnote}</span>
         </div>
-        <div className="mt-2">
+        <div className="mt-1.5">
           <ProgressBar pct={headline.pct} tone={tone} onGold />
         </div>
-        <div className="mt-2 text-[11.5px] font-medium text-navy/80">
+        <div className="mt-1.5 text-[11.5px] font-medium text-navy/80">
           {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
         </div>
       </div>
 
-      <div className="mt-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Tile label="Current ANC" value={fmtRM(headline.current)} accent />
         <Tile label="Target" value={fmtRM(headline.target)} />
         <Tile label="Remaining" value={fmtRM(headline.remaining)} />
         <Tile label="Achievement" value={`${headline.pct}%`} />
       </div>
 
-      <div className="mt-2.5 grid gap-2.5 lg:grid-cols-2">
-        <div className="rounded-[13px] bg-white/[.06] p-3.5">
+      <div className="mt-2 grid gap-2 lg:grid-cols-2">
+        <div className="rounded-[13px] bg-white/[.06] p-3">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[12.5px] font-bold text-white">This month</span>
+            <span className="text-[12.5px] font-bold text-white">This Month Target</span>
             <span className="text-[11px] font-semibold text-white/50">
               {fmtRM(goal.monthAnc)}
               {goal.monthAncTarget > 0 ? ` of ${fmtRM(goal.monthAncTarget)}` : ""}
             </span>
           </div>
-          <div className="mt-2">
+          <div className="mt-1.5">
             <ProgressBar
               pct={goal.monthAncPct ?? 0}
               tone={paceOf(goal.monthAncPct ?? 0, goal.monthElapsedPct)}
             />
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/60">
+          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/60">
             <span>
               This week <strong className="font-bold text-white">{fmtRM(goal.weekAnc)}</strong>
               {goal.weekAncTarget > 0 ? ` of ${fmtRM(goal.weekAncTarget)}` : ""}
@@ -362,7 +362,7 @@ export function AncGoalPanel({
 
         {/* Money already in. Gold on navy, because it is the one figure in
             this row that has actually happened. */}
-        <div className="rounded-[13px] bg-gold p-3.5">
+        <div className="rounded-[13px] bg-gold p-3">
           <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">

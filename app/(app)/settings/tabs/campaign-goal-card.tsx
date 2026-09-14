@@ -69,7 +69,7 @@ export function CampaignGoalCard({ campaign }: { campaign: CampaignRow | null })
   return (
     <div className="rounded-[18px] border border-sand bg-white px-[22px] pb-[22px] pt-5">
       <div className="flex items-center gap-2.5">
-        <div className="flex-1 text-[15px] font-bold text-navy">My ANC goal</div>
+        <div className="flex-1 text-[15px] font-bold text-navy">My Yearly Target</div>
         {campaign && (
           <span className="rounded-[6px] bg-success-bg px-2 py-1 text-[9.5px] font-bold tracking-[0.06em] text-green">
             RUNNING
@@ -77,8 +77,8 @@ export function CampaignGoalCard({ campaign }: { campaign: CampaignRow | null })
         )}
       </div>
       <div className="mt-[3px] text-[11.5px] font-medium text-taupe">
-        The headline goal on your dashboard. Spans months and runs to a deadline — separate from
-        the monthly targets below.
+        The Yearly Target card on your dashboard. Spans months and runs to a deadline —
+        separate from the monthly targets set below.
       </div>
 
       <label className="mt-4 block">
