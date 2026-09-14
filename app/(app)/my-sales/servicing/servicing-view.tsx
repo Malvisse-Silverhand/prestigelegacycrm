@@ -188,11 +188,27 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       {selected.commencementDate ? ` · Commenced ${fmtDate(selected.commencementDate)}` : ""}
                     </div>
                   </div>
-                  <div className="flex-none text-right">
-                    <div className="text-[16px] font-extrabold text-navy">
-                      RM{fmtRM(selected.installmentContribution)}
+                  <div className="flex flex-none items-start gap-4">
+                    <div className="text-right">
+                      <div className="text-[16px] font-extrabold text-navy">
+                        RM{fmtRM(selected.installmentContribution)}
+                      </div>
+                      <div className="text-[10.5px] font-semibold text-taupe">per contribution</div>
                     </div>
-                    <div className="text-[10.5px] font-semibold text-taupe">per contribution</div>
+                    {/* What has actually come in against this certificate --
+                        the ticked rows at face value, beside the per-payment
+                        figure they're multiples of. */}
+                    <div className="border-l border-sand-3 pl-4 text-right">
+                      <div className="text-[16px] font-extrabold text-green">
+                        RM{fmtRM(
+                          caseCollected({
+                            installmentContribution: selected.installmentContribution,
+                            paidCount: selected.schedule.filter((r) => r.paid).length,
+                          }),
+                        )}
+                      </div>
+                      <div className="text-[10.5px] font-semibold text-taupe">collected</div>
+                    </div>
                   </div>
                 </div>
                 <div className="pt-4">

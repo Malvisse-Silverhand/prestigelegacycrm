@@ -93,3 +93,54 @@ export function contributionReminder(input: ReminderInput): string {
 
   return lines.join("\n");
 }
+
+const JOMPAY_BILLER_CODE = "16899";
+const JOMPAY_BILLER_NAME = "GREAT EASTERN TAKAFUL-FAMILY";
+const JOMPAY_GUIDE_URL = "https://takaful4us.com/go/jompay-guideline";
+
+export type JompayReminderInput = {
+  clientName: string;
+  /** Bare number, no RM prefix -- typed straight into a bank app's amount field. */
+  certificateNo: string;
+  phone: string;
+  /** The registration/contribution amount, formatted bare for the same reason. */
+  amount: number;
+};
+
+/**
+ * The JomPay payment instructions sent the moment a case comes back from
+ * underwriting -- this is the registration payment that actually activates
+ * the policy, which is why it only shows up on the certificate's first year.
+ *
+ * The certificate number and amount are printed bare, without an "RM" prefix
+ * or thousands separators: JomPay's own Ref-1/Ref-2/Amount fields expect the
+ * plain values, not a formatted string, so this hands the client something
+ * they can copy straight in rather than something they have to first clean up.
+ */
+export function jompayReminder(input: JompayReminderInput): string {
+  const name = input.clientName.trim() || "encik/puan";
+  const amount = input.amount.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return [
+    "Tahniah. Polisi anda lulus proses underwriting!",
+    "",
+    "Untuk aktifkan polisi anda, sila lakukan pembayaran pendaftaran polisi.",
+    "",
+    "Cara Pembayaran",
+    "1. Buka aplikasi bank anda dan cari JomPAY di bawah 'Pay/Pembayaran'",
+    `2. Masukkan Biller Code ${JOMPAY_BILLER_CODE} untuk ${JOMPAY_BILLER_NAME}`,
+    "3. Masukkan 10 digit 'Certificate Number' di bahagian 'Ref-1'",
+    "4. Masukkan nombor telefon bimbit di 'Ref-2'",
+    "5. Letak jumlah 'Contribution Amount'",
+    "6. Jadikan Biller sebagai \"Favourite\"",
+    "",
+    `Untuk certificate ${name};`,
+    `Biller code : ${JOMPAY_BILLER_CODE}`,
+    `Ref 1 : ${input.certificateNo}`,
+    `Ref 2: ${input.phone}`,
+    `Amount: ${amount}`,
+    "",
+    "Info",
+    `Guideline cara pembayaran JomPAY(sama seperti di atas): ${JOMPAY_GUIDE_URL}`,
+  ].join("\n");
+}

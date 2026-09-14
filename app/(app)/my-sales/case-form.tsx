@@ -31,9 +31,19 @@ const inputBase =
   "h-[38px] rounded-[9px] border border-sand-2 bg-cream px-3 text-[12.5px] font-medium text-navy outline-none focus:border-gold";
 const input = `${inputBase} w-full`;
 
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+  className?: string;
+}) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">{label}</span>
       <div className="mt-[5px]">{children}</div>
       {hint && <p className="mt-1 text-[10.5px] font-medium text-taupe">{hint}</p>}
@@ -74,6 +84,13 @@ function numOrNull(v: string) {
   return Number.isFinite(n) ? n : null;
 }
 
+// The religions actually seen on this book, so an agent picks rather than
+// retypes -- and so the same faith is never spelled two different ways
+// across two certificates. "Other" opens a free-text box for anyone outside
+// the list, the same pattern the benefit dropdown below already uses.
+const RELIGION_OPTIONS = ["Islam", "Buddhist", "Christian", "Hindu", "Sikh"] as const;
+const RELIGION_OTHER = "Other";
+
 const EMPTY_NOMINEE: CaseNominee = { name: "", relationship: "", phone: "", percentage: null };
 const EMPTY_BENEFIT: CaseBenefit = {
   benefit: "",
@@ -108,7 +125,10 @@ export function CaseForm({
   const router = useRouter();
   const eg = useSpecimen();
   const [planName, setPlanName] = useState(existing?.planName ?? lead.interest ?? "");
-  const [planType, setPlanType] = useState(existing?.planType ?? "");
+  // No longer collected on this form -- kept as a pass-through rather than a
+  // state so a case that already has one doesn't lose it on the next save,
+  // even though there is no box here to change it.
+  const planType = existing?.planType ?? null;
   const [includesMedicalCard, setIncludesMedicalCard] = useState(existing?.includesMedicalCard ?? false);
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency>(
     existing?.paymentFrequency ?? "monthly",
@@ -127,9 +147,35 @@ export function CaseForm({
   const [idNo, setIdNo] = useState(existing?.idNo ?? "");
   const [gender, setGender] = useState(existing?.gender ?? lead.gender ?? "");
   const [dob, setDob] = useState(existing?.dateOfBirth ?? lead.dateOfBirth ?? "");
-  const [religion, setReligion] = useState(existing?.religion ?? "");
+  // Which option the religion dropdown is on. Derived from the stored value:
+  // a saved religion that isn't on the list must have been typed in as
+  // "Other", and has to come back that way rather than looking unset. A
+  // brand-new case has no value to derive from, and the great majority of
+  // this book is Muslim, so it starts there rather than on a blank field
+  // every case would otherwise need touching.
+  const [religionPick, setReligionPick] = useState<string>(() => {
+    const r = existing?.religion;
+    if (!r) return "Islam";
+    return (RELIGION_OPTIONS as readonly string[]).includes(r) ? r : RELIGION_OTHER;
+  });
+  const [religion, setReligion] = useState(existing?.religion ?? "Islam");
+
+  function pickReligion(choice: string) {
+    setReligionPick(choice);
+    // A preset fills the value outright; "Other" clears it so the free-text
+    // box starts empty rather than carrying the previous pick's name.
+    setReligion(choice === RELIGION_OTHER ? "" : choice);
+  }
+
   const [smoker, setSmoker] = useState<string>(
-    existing?.isSmoker != null ? String(existing.isSmoker) : lead.isSmoker != null ? String(lead.isSmoker) : "",
+    existing?.isSmoker != null
+      ? String(existing.isSmoker)
+      : lead.isSmoker != null
+        ? String(lead.isSmoker)
+        // Most leads reaching this form aren't smokers, so that is the
+        // default rather than an unset "Unknown" every case would need to
+        // deliberately confirm.
+        : "false",
   );
   const [occupation, setOccupation] = useState(existing?.occupation ?? lead.occupation ?? "");
   const [notes, setNotes] = useState(existing?.notes ?? "");
@@ -245,9 +291,6 @@ export function CaseForm({
           <Field label="Plan name">
             <input value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder={eg.planName} className={input} />
           </Field>
-          <Field label="Plan type">
-            <input value={planType} onChange={(e) => setPlanType(e.target.value)} placeholder={eg.planType} className={input} />
-          </Field>
           <Field label="Payment frequency">
             <select
               value={paymentFrequency}
@@ -317,8 +360,32 @@ export function CaseForm({
             </select>
           </Field>
           <Field label="Religion">
-            <input value={religion} onChange={(e) => setReligion(e.target.value)} placeholder={eg.religion} className={input} />
+            {/* An explicit label of its own -- once "Religion (specify)"
+                below can appear, that field's name also contains the word
+                "Religion", and the two need to stay tellable apart. */}
+            <select
+              value={religionPick}
+              onChange={(e) => pickReligion(e.target.value)}
+              aria-label="Religion"
+              className={input}
+            >
+              {RELIGION_OPTIONS.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+              <option value={RELIGION_OTHER}>{RELIGION_OTHER}</option>
+            </select>
           </Field>
+          {religionPick === RELIGION_OTHER && (
+            <Field label="Religion (specify)" className="sm:col-span-2">
+              <input
+                value={religion}
+                onChange={(e) => setReligion(e.target.value)}
+                placeholder="e.g. Taoism"
+                aria-label="Religion (specify)"
+                className={input}
+              />
+            </Field>
+          )}
           <Field label="Smoker">
             <select value={smoker} onChange={(e) => setSmoker(e.target.value)} className={input}>
               <option value="">Unknown</option>

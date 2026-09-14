@@ -10,7 +10,7 @@ import {
 } from "@/lib/waiting-periods";
 import { frequencyLabel, rowStatus, summariseSchedule, type ScheduleStatus } from "@/lib/contribution-schedule";
 import { waLink } from "@/lib/whatsapp";
-import { contributionReminder } from "@/lib/contribution-reminder";
+import { contributionReminder, jompayReminder } from "@/lib/contribution-reminder";
 import { setContributionPaid } from "./actions";
 import { fmtDate, fmtRM } from "./certificate-panel";
 import type { CaseSubmission } from "./types";
@@ -228,30 +228,63 @@ function ContributionChecklist({ submission, today }: { submission: CaseSubmissi
       {error && <div className="mt-2 text-[12px] font-medium text-alert-red">{error}</div>}
 
       <div className="mt-3 flex flex-col gap-2">
-        {byYear.map(([year, rows]) => {
+        {byYear.map(([year, rows], yearIndex) => {
           const openYear = openYears.has(year);
           const yearPaid = rows.filter((r) => r.paid).length;
+          // JomPay instructions activate the policy, so they only belong on
+          // the certificate's very first year -- repeating registration
+          // instructions in 2029 would just be confusing.
+          const isFirstYear = yearIndex === 0;
           return (
             <div key={year} className="rounded-[11px] border border-sand-2 bg-white">
-              <button
-                type="button"
-                onClick={() => toggleYear(year)}
-                aria-expanded={openYear}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-left"
-              >
-                <span className="text-[12.5px] font-bold text-navy">{year}</span>
-                <span className="text-[11px] font-semibold text-taupe">
-                  {yearPaid}/{rows.length} paid
-                </span>
-                <span className="flex-1" />
-                <svg
-                  width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  strokeWidth={2.4} strokeLinecap="round"
-                  className={`text-taupe transition-transform ${openYear ? "rotate-180" : ""}`}
+              <div className="flex w-full items-center gap-2 px-3 py-2">
+                <button
+                  type="button"
+                  onClick={() => toggleYear(year)}
+                  aria-expanded={openYear}
+                  className="flex flex-1 items-center gap-2 py-0.5 text-left"
                 >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
+                  <span className="text-[12.5px] font-bold text-navy">{year}</span>
+                  <span className="text-[11px] font-semibold text-taupe">
+                    {yearPaid}/{rows.length} paid
+                  </span>
+                </button>
+                {isFirstYear && submission.leadPhone && submission.certificateNo && (
+                  <a
+                    href={waLink(
+                      submission.leadPhone,
+                      jompayReminder({
+                        clientName: submission.leadName,
+                        certificateNo: submission.certificateNo,
+                        phone: submission.leadPhone,
+                        amount: submission.installmentContribution ?? 0,
+                      }),
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-none items-center gap-1.5 rounded-[8px] bg-green px-2.5 py-1.5 text-[10.5px] font-semibold text-white hover:brightness-95"
+                  >
+                    <svg width={12} height={12} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.53.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07s.89 2.4 1.01 2.56c.12.17 1.74 2.66 4.22 3.73.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29Z" />
+                    </svg>
+                    Send WhatsApp Reminder (Payment)
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => toggleYear(year)}
+                  aria-label={openYear ? `Collapse ${year}` : `Expand ${year}`}
+                  className="flex-none p-1"
+                >
+                  <svg
+                    width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth={2.4} strokeLinecap="round"
+                    className={`text-taupe transition-transform ${openYear ? "rotate-180" : ""}`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
               {openYear && (
                 <div className="border-t border-sand-3 px-2 pb-2">
                   {rows.map((row) => {
