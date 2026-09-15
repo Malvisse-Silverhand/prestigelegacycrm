@@ -15,7 +15,7 @@ const CASE_SELECT = `
   certificate_issue_date, next_due_date, last_paid_date, lapse_date,
   termination_date, issuing_agent_name, currency, stamp_duty, discount_type,
   certificate_under_trust, notes, submitted_at, inforced_at,
-  leads!case_submissions_lead_id_fkey(lead_no, full_name, phone, pipeline_stage),
+  leads!case_submissions_lead_id_fkey(lead_no, full_name, phone, email, pipeline_stage),
   profiles!case_submissions_agent_id_fkey(full_name),
   case_nominees(name, relationship, phone, percentage, sort_order),
   case_benefits(benefit, sum_covered, installment_contribution, cover_start_date, cover_end_date, contribution_end_date, status, sort_order),
@@ -38,7 +38,7 @@ function toPortalLink(row: Record<string, unknown>): PortalLink {
 }
 
 function toCase(row: RawCase): CaseSubmission {
-  const lead = row.leads as { lead_no: number; full_name: string; phone: string; pipeline_stage: string } | null;
+  const lead = row.leads as { lead_no: number; full_name: string; phone: string; email: string | null; pipeline_stage: string } | null;
   const agent = row.profiles as { full_name: string } | null;
   const nominees = (row.case_nominees ?? []) as Record<string, unknown>[];
   const benefits = (row.case_benefits ?? []) as Record<string, unknown>[];
@@ -54,6 +54,7 @@ function toCase(row: RawCase): CaseSubmission {
     leadNo: lead?.lead_no ?? 0,
     leadName: lead?.full_name ?? "Unknown lead",
     leadPhone: lead?.phone ?? null,
+    leadEmail: lead?.email ?? null,
     leadStage: lead?.pipeline_stage ?? "",
     agentName: agent?.full_name ?? null,
     status: row.status as CaseStatus,

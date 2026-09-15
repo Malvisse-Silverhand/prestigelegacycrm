@@ -22,11 +22,29 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
       (c) =>
         c.leadName.toLowerCase().includes(q) ||
         c.planName.toLowerCase().includes(q) ||
-        (c.certificateNo ?? "").toLowerCase().includes(q),
+        (c.certificateNo ?? "").toLowerCase().includes(q) ||
+        (c.idNo ?? "").toLowerCase().includes(q),
     );
   }, [cases, query]);
 
   const selected = cases.find((c) => c.id === selectedId) ?? null;
+
+  // Same NRIC, more than one certificate: the client portal already combines
+  // these into one login, so the row list should make that pairing visible
+  // too -- an agent skimming similar names needs the NRIC to tell them apart,
+  // not just the plan.
+  const byIdNo = useMemo(() => {
+    const map = new Map<string, CaseSubmission[]>();
+    for (const c of cases) {
+      if (!c.idNo) continue;
+      const list = map.get(c.idNo) ?? [];
+      list.push(c);
+      map.set(c.idNo, list);
+    }
+    return map;
+  }, [cases]);
+
+  const siblingsOf = (c: CaseSubmission) => (c.idNo ? (byIdNo.get(c.idNo) ?? []).filter((s) => s.id !== c.id) : []);
 
   // How much is behind across the whole book -- the one number worth putting
   // at the top of a servicing screen.
@@ -142,6 +160,11 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       {c.planName}
                       {c.certificateNo ? ` · ${c.certificateNo}` : ""}
                     </div>
+                    {c.idNo && (
+                      <div className={`truncate font-mono text-[9.5px] font-medium ${active ? "text-white/45" : "text-taupe-2"}`}>
+                        {c.idNo}
+                      </div>
+                    )}
                     <div className="mt-1 flex items-center gap-1.5">
                       <span
                         className={`rounded-[5px] px-[6px] py-[1px] text-[9.5px] font-bold ${
@@ -161,6 +184,21 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                           }`}
                         >
                           MED
+                        </span>
+                      )}
+                      {/* Same NRIC as another case on this book -- the client
+                          portal already combines them, so this row is not
+                          this person's only certificate. */}
+                      {siblingsOf(c).length > 0 && (
+                        <span
+                          className={`rounded-[5px] px-[6px] py-[1px] text-[9.5px] font-bold ${
+                            active ? "bg-white/15 text-white" : "bg-warn-gold-bg text-warn-gold-text"
+                          }`}
+                          title={`Same NRIC as: ${siblingsOf(c)
+                            .map((s) => s.certificateNo ?? s.planName)
+                            .join(", ")}`}
+                        >
+                          +{siblingsOf(c).length} cert{siblingsOf(c).length > 1 ? "s" : ""}
                         </span>
                       )}
                     </div>
@@ -187,6 +225,9 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       {selected.certificateNo ? ` · Certificate ${selected.certificateNo}` : ""}
                       {selected.commencementDate ? ` · Commenced ${fmtDate(selected.commencementDate)}` : ""}
                     </div>
+                    {selected.idNo && (
+                      <div className="mt-0.5 font-mono text-[10.5px] font-medium text-taupe-2">NRIC {selected.idNo}</div>
+                    )}
                   </div>
                   <div className="flex flex-none items-start gap-4">
                     <div className="text-right">
@@ -211,6 +252,27 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                     </div>
                   </div>
                 </div>
+
+                {/* Same NRIC as another certificate on this book -- the
+                    client's own portal already shows these together, so an
+                    agent switching between the certificates of one client
+                    should be able to as well, without a search. */}
+                {siblingsOf(selected).length > 0 && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[10px] border border-warn-gold-bg bg-warn-gold-bg/60 px-3 py-2">
+                    <span className="text-[10.5px] font-bold text-warn-gold-text">Same client, other certificates:</span>
+                    {siblingsOf(selected).map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSelectedId(s.id)}
+                        className="press rounded-[7px] border border-[#f0dfb4] bg-white px-2 py-1 text-[10.5px] font-semibold text-navy hover:border-navy"
+                      >
+                        {s.certificateNo ?? s.planName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className="pt-4">
                   <ServicingDetail submission={selected} today={today} />
                 </div>

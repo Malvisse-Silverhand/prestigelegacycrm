@@ -42,6 +42,22 @@ export function SubmitCaseView({
   const [filingFor, setFilingFor] = useState<CaseFormLead | null>(null);
   const [openCaseId, setOpenCaseId] = useState<string | null>(null);
 
+  // NRIC -> every already-filed case sharing it, regardless of which lead
+  // filed it. The client portal groups certificates this way already; this is
+  // the same fact surfaced while an agent is still typing, so a second
+  // certificate for someone already in the system reads as "another one for
+  // them" rather than a coincidence worth double-checking by hand.
+  const casesByIdNo = useMemo(() => {
+    const map = new Map<string, { name: string; certificateNo: string | null; planName: string }[]>();
+    for (const c of cases) {
+      if (!c.idNo) continue;
+      const list = map.get(c.idNo) ?? [];
+      list.push({ name: c.leadName, certificateNo: c.certificateNo, planName: c.planName });
+      map.set(c.idNo, list);
+    }
+    return map;
+  }, [cases]);
+
   // The "Submit A Case" entry point and its two routes in.
   const [menuOpen, setMenuOpen] = useState(false);
   const [picking, setPicking] = useState(false);
@@ -488,6 +504,7 @@ export function SubmitCaseView({
                   interest: filingFor.interest,
                 }}
                 benefitOptions={benefitOptions}
+                casesByIdNo={casesByIdNo}
                 onDone={() => setFilingFor(null)}
                 onCancel={() => setFilingFor(null)}
               />

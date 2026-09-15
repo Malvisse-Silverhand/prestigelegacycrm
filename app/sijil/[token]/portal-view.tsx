@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { PortalPayload } from "@/lib/client-portal";
 import {
   PORTAL_STATUS_COPY,
@@ -9,8 +10,11 @@ import {
   PORTAL_COVER_NOTES,
   PORTAL_GUIDES,
   OFFICIAL_PORTAL_URL,
+  OFFICIAL_PORTAL_NAME,
+  PLAN_CATEGORY_LABEL,
   type PortalLang,
 } from "@/lib/portal-copy";
+import { logoutOfPortal } from "./actions";
 
 type Tab = "cert" | "benefits" | "waiting" | "nominees" | "guides";
 
@@ -23,6 +27,8 @@ const COPY = {
   bm: {
     portalTag: "Portal Klien",
     helpAria: "Panduan portal",
+    backToCerts: "Semua Sijil Saya",
+    logout: "Log Keluar",
     certEyebrow: "Sijil Takaful Anda",
     certNo: "No. Sijil",
     plan: "Pelan Asas",
@@ -58,7 +64,6 @@ const COPY = {
     nomineeEmpty: "Tiada penama direkodkan lagi. Sila hubungi ejen anda.",
     allocated: "{n}% diagihkan",
     officialEyebrow: "Sistem Rasmi",
-    officialTitle: "Portal Great Eastern Takaful",
     officialNote: "eConnect — sijil, penyata dan tuntutan rasmi anda.",
     guidesTitle: "Panduan Anda",
     guidesSub: "Panduan yang dipaparkan mengikut manfaat dalam sijil anda.",
@@ -72,7 +77,7 @@ const COPY = {
     onboardSteps: [
       ["Guna menu di bawah", "{tabs} — semuanya satu ketikan sahaja."],
       ["Tukar BM / EN di atas", "Seluruh portal bertukar bahasa serta-merta."],
-      ["Paparan sahaja", "Ini portal agensi untuk rujukan. Untuk urusan rasmi, gunakan butang Portal Great Eastern Takaful."],
+      ["Paparan sahaja", "Ini portal agensi untuk rujukan. Untuk urusan rasmi, gunakan butang iGetInTouch Client Portal."],
     ],
     lapsedTitle: "Perlindungan anda tidak aktif",
     lapsedBody: "Rekod kami menunjukkan sijil ini tidak lagi aktif. Sila hubungi ejen anda untuk menyemak status sebenar dan pilihan pemulihan.",
@@ -86,6 +91,8 @@ const COPY = {
   en: {
     portalTag: "Client Portal",
     helpAria: "Portal guide",
+    backToCerts: "All My Certificates",
+    logout: "Log Out",
     certEyebrow: "Your Takaful Certificate",
     certNo: "Certificate No.",
     plan: "Base Plan",
@@ -121,7 +128,6 @@ const COPY = {
     nomineeEmpty: "No nominees recorded yet. Please speak to your agent.",
     allocated: "{n}% allocated",
     officialEyebrow: "Official System",
-    officialTitle: "Great Eastern Takaful Portal",
     officialNote: "eConnect — your official certificate, statements and claims.",
     guidesTitle: "Your Guides",
     guidesSub: "The guides shown here follow the benefits on your certificate.",
@@ -135,7 +141,7 @@ const COPY = {
     onboardSteps: [
       ["Use the menu below", "{tabs} — each one tap away."],
       ["Switch BM / EN at the top", "The whole portal changes language straight away."],
-      ["View only", "This is an agency portal for reference. For anything official, use the Great Eastern Takaful Portal button."],
+      ["View only", "This is an agency portal for reference. For anything official, use the iGetInTouch Client Portal button."],
     ],
     lapsedTitle: "Your cover is not active",
     lapsedBody: "Our records show this certificate is no longer active. Please contact your agent to check the current status and your options for reinstating it.",
@@ -230,13 +236,19 @@ function writePref(key: string, value: string) {
   for (const listener of prefListeners) listener();
 }
 
-export function PortalView({ payload }: { payload: PortalPayload }) {
+export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
+  const router = useRouter();
+  const [, start] = useTransition();
   const [tab, setTab] = useState<Tab>("cert");
   const [openPeriod, setOpenPeriod] = useState<string | null>(null);
   const [openTip, setOpenTip] = useState<string | null>(null);
   // null = follow the saved preference; set only when the client opens the
   // welcome card from the ? button or dismisses it this visit.
   const [onboardOverride, setOnboardOverride] = useState<boolean | null>(null);
+  // Which certificate is open, when this client has more than one. null means
+  // "still on the card grid" -- a single-certificate client never sees that
+  // state at all, since there is nothing to choose between.
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(payloads.length === 1 ? payloads[0].caseId : null);
 
   const lang = useDevicePref(LANG_KEY, "bm", LANGS);
   const dismissed = useDevicePref(ONBOARD_KEY, "0", FLAGS);
@@ -252,6 +264,25 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
   }
 
   const t = COPY[lang];
+
+  // More than one certificate and none picked yet: the card grid IS the page.
+  // Nothing below this point runs -- there is no "current certificate" to run
+  // it against.
+  if (payloads.length > 1 && !selectedCaseId) {
+    return (
+      <CertificateCards
+        payloads={payloads}
+        lang={lang}
+        onChooseLang={chooseLang}
+        onSelect={(caseId) => {
+          setSelectedCaseId(caseId);
+          setTab("cert");
+        }}
+      />
+    );
+  }
+
+  const payload = payloads.find((p) => p.caseId === selectedCaseId) ?? payloads[0];
   const status = PORTAL_STATUS_COPY[payload.status];
   const periods = PORTAL_PERIODS[lang];
   const conditions = PORTAL_CONDITIONS[lang];
@@ -285,6 +316,19 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
           <div className="text-[13px] font-bold leading-tight tracking-[-0.01em] text-white">Prestige Legacy</div>
           <div className="text-[9.5px] font-semibold uppercase leading-snug tracking-[0.1em] text-gold">{t.portalTag}</div>
         </div>
+        {/* Only ever shown to a client with more than one certificate -- their
+            way back to the card grid without losing their session. */}
+        {payloads.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setSelectedCaseId(null)}
+            aria-label={t.backToCerts}
+            title={t.backToCerts}
+            className="press flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white/10"
+          >
+            <IconGrid className="h-[15px] w-[15px] text-gold" />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setOnboardOverride(true)}
@@ -329,7 +373,14 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
         {tab === "cert" && (
           <>
             <section className="rounded-[20px] bg-navy p-[18px] shadow-[0_8px_20px_-12px_rgba(15,37,64,.4)]">
-              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-gold">{t.certEyebrow}</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-gold">{t.certEyebrow}</div>
+                {payload.planCategory !== "other" && (
+                  <span className="rounded-full bg-white/[0.1] px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-white/80">
+                    {PLAN_CATEGORY_LABEL[payload.planCategory][lang]}
+                  </span>
+                )}
+              </div>
               <div className="mt-1.5 text-[19px] font-bold leading-tight tracking-[-0.02em] text-white">
                 {payload.clientName}
               </div>
@@ -383,6 +434,28 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
                 )}
               </div>
             </section>
+
+            {/* Gold, because it is the one link here that reaches the
+                insurer's own system rather than ours. Shown on the
+                Certificate tab itself, not buried under Guides. */}
+            <a
+              href={OFFICIAL_PORTAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="press flex min-h-11 items-center gap-3 rounded-[16px] bg-gold p-4 shadow-[0_10px_22px_-14px_rgba(15,37,64,.55)]"
+            >
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-navy">
+                <IconCert className="h-[19px] w-[19px] text-gold" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-navy/60">{t.officialEyebrow}</span>
+                <span className="mt-0.5 block text-[14px] font-extrabold leading-tight tracking-[-0.015em] text-navy">
+                  {OFFICIAL_PORTAL_NAME}
+                </span>
+                <span className="mt-0.5 block text-[11px] font-semibold leading-snug text-navy/70">{t.officialNote}</span>
+              </span>
+              <IconExternal className="h-4 w-4 flex-none text-navy" />
+            </a>
 
             <AgentCard payload={payload} t={t} />
           </>
@@ -590,7 +663,7 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
               <span className="min-w-0 flex-1">
                 <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-navy/60">{t.officialEyebrow}</span>
                 <span className="mt-0.5 block text-[14px] font-extrabold leading-tight tracking-[-0.015em] text-navy">
-                  {t.officialTitle}
+                  {OFFICIAL_PORTAL_NAME}
                 </span>
                 <span className="mt-0.5 block text-[11px] font-semibold leading-snug text-navy/70">{t.officialNote}</span>
               </span>
@@ -642,7 +715,19 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
           </div>
         </div>
 
-        <p className="pb-3 pt-0.5 text-center text-[10.5px] font-medium text-taupe">{t.footerViewOnly}</p>
+        <p className="text-center text-[10.5px] font-medium text-taupe">{t.footerViewOnly}</p>
+        <button
+          type="button"
+          onClick={() =>
+            start(async () => {
+              await logoutOfPortal();
+              router.refresh();
+            })
+          }
+          className="press pb-3 pt-0.5 text-center text-[10.5px] font-semibold text-taupe underline underline-offset-2"
+        >
+          {t.logout}
+        </button>
       </main>
 
       {/* Bottom menu: the thumb reaches it, and it never scrolls away. */}
@@ -712,6 +797,150 @@ export function PortalView({ payload }: { payload: PortalPayload }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const CARD_COPY = {
+  bm: {
+    title: "Sijil Takaful Anda",
+    sub: "Anda mempunyai lebih daripada satu sijil dengan kami. Ketik untuk lihat.",
+    certNo: "No. Sijil",
+    disclaimer:
+      "Portal agensi Prestige Legacy, bukan sistem rasmi Great Eastern Takaful Berhad. Untuk maklumat rasmi, sila hubungi ejen anda.",
+    logout: "Log Keluar",
+  },
+  en: {
+    title: "Your Takaful Certificates",
+    sub: "You have more than one certificate with us. Tap one to view it.",
+    certNo: "Certificate No.",
+    disclaimer:
+      "This is the Prestige Legacy agency portal, not the official system of Great Eastern Takaful Berhad. For official information, please contact your agent.",
+    logout: "Log Out",
+  },
+} as const;
+
+/**
+ * What a client with more than one certificate lands on first: one card per
+ * certificate, grouped by nothing more than sharing their own NRIC -- the
+ * database already did that grouping before this ever rendered. Tapping a
+ * card drops into the exact same tabbed view a single-certificate client
+ * gets; nothing about the detail screen knows or cares whether it arrived
+ * from here.
+ */
+function CertificateCards({
+  payloads,
+  lang,
+  onChooseLang,
+  onSelect,
+}: {
+  payloads: PortalPayload[];
+  lang: PortalLang;
+  onChooseLang: (lang: PortalLang) => void;
+  onSelect: (caseId: string) => void;
+}) {
+  const router = useRouter();
+  const [, start] = useTransition();
+  const c = CARD_COPY[lang];
+
+  return (
+    <div className="flex min-h-screen flex-col bg-cream">
+      <header className="flex items-center gap-2.5 bg-navy px-4 py-3">
+        <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-gold">
+          <IconShield className="h-[17px] w-[17px] text-navy" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] font-bold leading-tight tracking-[-0.01em] text-white">Prestige Legacy</div>
+          <div className="text-[9.5px] font-semibold uppercase leading-snug tracking-[0.1em] text-gold">
+            {lang === "bm" ? "Portal Klien" : "Client Portal"}
+          </div>
+        </div>
+        <div className="flex flex-none gap-0.5 rounded-full bg-white/10 p-[3px]">
+          {(["bm", "en"] as const).map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => onChooseLang(code)}
+              className={`press min-h-8 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.04em] ${
+                lang === code ? "bg-gold text-navy" : "text-white/60"
+              }`}
+            >
+              {code}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 px-4 py-5">
+        <div>
+          <h1 className="text-[18px] font-bold tracking-[-0.015em] text-navy">{c.title}</h1>
+          <p className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{c.sub}</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {payloads.map((payload) => {
+            const status = PORTAL_STATUS_COPY[payload.status];
+            return (
+              <button
+                key={payload.caseId}
+                type="button"
+                onClick={() => onSelect(payload.caseId)}
+                className="press flex flex-col rounded-[18px] border border-sand bg-white p-4 text-left shadow-card"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  {payload.planCategory !== "other" && (
+                    <span className="rounded-full bg-info-blue-bg-2 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-info-blue-text">
+                      {PLAN_CATEGORY_LABEL[payload.planCategory][lang]}
+                    </span>
+                  )}
+                  <span className={`ml-auto flex-none rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.06em] ${STATUS_TONE[status.tone]}`}>
+                    {status[lang]}
+                  </span>
+                </div>
+
+                <div className="mt-3 text-[15px] font-bold leading-snug tracking-[-0.01em] text-navy">
+                  {payload.planName ?? "—"}
+                </div>
+                {payload.benefits.length > 1 && (
+                  <div className="mt-0.5 text-[11px] font-medium text-muted">
+                    {(lang === "bm" ? "+ {n} manfaat tambahan" : "+ {n} additional benefits").replace(
+                      "{n}",
+                      String(payload.benefits.length - 1),
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-sand-3 pt-3">
+                  <div>
+                    <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-taupe-2">{c.certNo}</div>
+                    <div className="mt-0.5 font-mono text-[13px] font-bold text-navy">
+                      {payload.certificateNo ?? "—"}
+                    </div>
+                  </div>
+                  <IconChevron className="h-3.5 w-3.5 flex-none -rotate-90 text-taupe" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-1 rounded-[16px] border border-sand-2 bg-white p-3.5 text-[11px] font-medium leading-relaxed text-ink">
+          {c.disclaimer}
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            start(async () => {
+              await logoutOfPortal();
+              router.refresh();
+            })
+          }
+          className="press pb-1 pt-1 text-center text-[10.5px] font-semibold text-taupe underline underline-offset-2"
+        >
+          {c.logout}
+        </button>
+      </main>
     </div>
   );
 }
@@ -816,6 +1045,16 @@ function IconWarn({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} {...stroke}>
       <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
       <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}
+function IconGrid({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...stroke}>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
     </svg>
   );
 }

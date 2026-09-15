@@ -78,6 +78,9 @@ export type CaseSubmission = {
   leadName: string;
   /** The client's own number, for the servicing reminder. */
   leadPhone: string | null;
+  /** So the Servicing card can warn when the client portal's login can never
+   *  succeed -- it needs this or the phone, plus the NRIC, to verify anyone. */
+  leadEmail: string | null;
   leadStage: string;
   agentName: string | null;
   status: CaseStatus;

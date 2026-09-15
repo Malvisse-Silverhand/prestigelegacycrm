@@ -49,6 +49,14 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
   const effective = link?.displayStatus ?? statusFromCase(submission.status);
   const tone = PORTAL_STATUS_COPY[effective as keyof typeof PORTAL_STATUS_COPY];
 
+  // The portal now sits behind a login: email-or-phone plus the last 4 of the
+  // NRIC. Without an NRIC on file, or without at least one of email/phone,
+  // nobody can ever pass that check -- the link would open to a form nobody
+  // can fill in. Worth catching here, before an agent sends a dead link.
+  const missingIdNo = !submission.idNo;
+  const missingContact = !submission.leadEmail && !submission.leadPhone;
+  const loginBlocked = missingIdNo || missingContact;
+
   function run(fn: () => Promise<{ error: string | null }>) {
     setError(null);
     start(async () => {
@@ -71,11 +79,11 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
   const waMessage = [
     `Assalamualaikum & salam sejahtera ${submission.leadName}.`,
     "",
-    "Ini pautan portal peribadi untuk sijil takaful anda. Di dalamnya ada nombor sijil, status perlindungan, senarai manfaat, tempoh menunggu dan penama anda.",
+    "Ini pautan portal peribadi untuk sijil takaful anda. Di dalamnya ada nombor sijil, status perlindungan, senarai manfaat, tempoh menunggu dan penama anda. Jika anda ada lebih daripada satu sijil dengan kami, semuanya akan dipaparkan sekali.",
     "",
     url,
     "",
-    "Pautan ini untuk anda sahaja. Simpan untuk rujukan pada bila-bila masa.",
+    "Untuk log masuk, anda perlu masukkan e-mel atau nombor telefon yang didaftarkan, berserta 4 digit terakhir NRIC anda.",
     "",
     "Terima kasih,",
   ].join("\n");
@@ -91,12 +99,26 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
         )}
       </div>
 
+      {loginBlocked && (
+        <div className="mt-2 rounded-[10px] border border-[#f0dfb4] bg-warn-gold-bg p-3">
+          <div className="text-[11.5px] font-bold text-warn-gold-text">
+            {missingIdNo ? "No NRIC on file" : "No email or phone on the lead"}
+          </div>
+          <div className="mt-1 text-[11px] font-medium leading-relaxed text-warn-gold-text">
+            {missingIdNo
+              ? "The client portal logs clients in with their NRIC's last 4 digits. Add the ID number on this case before sending a link."
+              : "Login also needs the client's own email or phone number to match against. Add one to the lead before sending a link."}
+          </div>
+        </div>
+      )}
+
       {!link ? (
         <>
           <p className="mt-1 text-[11.5px] font-medium leading-relaxed text-muted">
             A view-only page for {submission.leadName}: certificate number, status, benefits, waiting periods and
-            nominees. No IC number, no phone numbers, no agency figures. The link is the only credential, so treat it
-            like one — and revoke it here the moment it should stop working.
+            nominees — and every other certificate on file under the same NRIC, shown together. No IC number, no
+            phone numbers, no agency figures. Locked behind a login (email or phone, plus the last 4 of the NRIC), so
+            the link alone is not enough to open it.
           </p>
           <button
             type="button"

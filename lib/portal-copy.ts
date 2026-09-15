@@ -174,15 +174,35 @@ export const PORTAL_COVER_NOTES: Record<PortalLang, string[]> = {
   ],
 };
 
-// The one product mapping in the portal. A certificate carrying any of these
-// catalogue benefits is a medical certificate: it gets the waiting periods and
-// the medical guides. Matched on the Settings > Benefits name, lowercased, so
-// adding a second medical product is one line here and nothing else.
-export const MEDICAL_BENEFITS = ["i-medi evolusi"];
+// The product mapping in the portal. Matched on the Settings > Benefits name,
+// lowercased, so adding a product to either list is one line here and nothing
+// else. Medical decides the Waiting tab and the medical guides; the category
+// decides the badge shown on a certificate's card when a client has more than
+// one -- both are read off the SAME base benefit, so they can never disagree
+// about what a certificate is.
+export const MEDICAL_BENEFITS = ["i-medi evolusi", "i-medi signature"];
+export const HIBAH_BENEFITS = ["i-great nova", "i-great chinta", "i-great mega plus"];
 
 export function hasMedicalBenefit(benefitNames: string[]): boolean {
   return benefitNames.some((name) => MEDICAL_BENEFITS.includes(name.trim().toLowerCase()));
 }
+
+export type PlanCategory = "medical" | "hibah" | "other";
+
+/** The category card badge follows the BASE benefit -- the one that names the
+ *  plan -- not any rider that happens to be attached alongside it. */
+export function planCategoryFor(baseBenefitName: string | null): PlanCategory {
+  const name = (baseBenefitName ?? "").trim().toLowerCase();
+  if (MEDICAL_BENEFITS.includes(name)) return "medical";
+  if (HIBAH_BENEFITS.includes(name)) return "hibah";
+  return "other";
+}
+
+export const PLAN_CATEGORY_LABEL: Record<PlanCategory, { bm: string; en: string }> = {
+  medical: { bm: "Kad Perubatan", en: "Medical Card" },
+  hibah: { bm: "Hibah & Life Takaful", en: "Hibah & Life Takaful" },
+  other: { bm: "Pelan Takaful", en: "Takaful Plan" },
+};
 
 export const PORTAL_GUIDES = {
   journey: {
@@ -211,9 +231,13 @@ export type PortalGuideKey = keyof typeof PORTAL_GUIDES;
 
 /**
  * The official insurer portal. Highlighted wherever it appears, because it is
- * the one link on the page that leaves the agency's system.
+ * the one link on the page that leaves the agency's system. The name is the
+ * product's own -- "iGetInTouch Client Portal" -- and stays the same in both
+ * languages, the way a product name does; only the eyebrow and note around it
+ * are translated. The link opens straight on their login screen.
  */
-export const OFFICIAL_PORTAL_URL = "https://igetintouch.greateasterntakaful.com/econnect-new/";
+export const OFFICIAL_PORTAL_URL = "https://igetintouch.greateasterntakaful.com/econnect-new/#/login";
+export const OFFICIAL_PORTAL_NAME = "iGetInTouch Client Portal";
 
 /**
  * Which guides a client sees follows the benefits on their certificate.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PAYMENT_FREQUENCIES, type PaymentFrequency } from "@/lib/contribution-schedule";
 import { waLink } from "@/lib/whatsapp";
@@ -112,6 +112,7 @@ export function CaseForm({
   lead,
   existing,
   benefitOptions,
+  casesByIdNo,
   onDone,
   onCancel,
 }: {
@@ -119,6 +120,10 @@ export function CaseForm({
   existing?: CaseSubmission | null;
   /** The catalogue maintained in Settings. Empty leaves only "Others". */
   benefitOptions: BenefitOption[];
+  /** NRIC -> every already-filed case sharing it. Optional: only the "file a
+   *  new case" screen has this list on hand; editing an existing case skips
+   *  the hint rather than requiring every call site to supply it. */
+  casesByIdNo?: Map<string, { name: string; certificateNo: string | null; planName: string }[]>;
   onDone?: () => void;
   onCancel?: () => void;
 }) {
@@ -145,6 +150,7 @@ export function CaseForm({
   const [proposerName, setProposerName] = useState(existing?.proposerName ?? lead.fullName);
   const [personCovered, setPersonCovered] = useState(existing?.personCoveredName ?? lead.fullName);
   const [idNo, setIdNo] = useState(existing?.idNo ?? "");
+  const idNoMatches = useMemo(() => casesByIdNo?.get(idNo.trim()) ?? [], [casesByIdNo, idNo]);
   const [gender, setGender] = useState(existing?.gender ?? lead.gender ?? "");
   const [dob, setDob] = useState(existing?.dateOfBirth ?? lead.dateOfBirth ?? "");
   // Which option the religion dropdown is on. Derived from the stored value:
@@ -348,6 +354,14 @@ export function CaseForm({
           </Field>
           <Field label="ID no">
             <input value={idNo} onChange={(e) => setIdNo(e.target.value)} placeholder={eg.idNo} className={input} />
+            {/* Same NRIC already on file, under a different case: worth
+                surfacing while the agent is still typing, not after the fact
+                -- this is the same grouping the client portal itself uses. */}
+            {idNoMatches.length > 0 && (
+              <p className="mt-1 text-[10.5px] font-medium text-warn-gold-text">
+                Already on file: {idNoMatches.map((m) => m.certificateNo ?? m.planName).join(", ")} ({idNoMatches[0].name})
+              </p>
+            )}
           </Field>
           <Field label="Date of birth">
             <input type="date" value={dob ?? ""} onChange={(e) => setDob(e.target.value)} className={input} />
