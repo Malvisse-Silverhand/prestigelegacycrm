@@ -57,6 +57,11 @@ export const SIDEBAR_NAV: NavItem[] = [
     // An Aspirant Unit Manager has agents reporting to them, so they get the
     // roster too -- RLS narrows it to just their own downline.
     roles: ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"],
+    children: [
+      { href: "/team", label: "Team Roster" },
+      // The Dashboard is personal now; the combined figures live here.
+      { href: "/team/performance", label: "Team Performance" },
+    ],
   },
   { href: "/quotations", label: "Quotation", icon: QuotationIcon },
   {

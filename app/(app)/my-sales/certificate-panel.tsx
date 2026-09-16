@@ -1,5 +1,6 @@
 "use client";
 
+import { PLAN_CATEGORY_LABEL } from "@/lib/plan-catalogue";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { frequencyLabel } from "@/lib/contribution-schedule";
@@ -158,11 +159,11 @@ export function CertificatePanel({
             <span className={`rounded-[6px] px-2 py-[2px] text-[9.5px] font-bold uppercase tracking-[0.06em] ${CASE_STATUS_TONE[submission.status]}`}>
               {CASE_STATUS_LABEL[submission.status]}
             </span>
-            {submission.includesMedicalCard && (
-              <span className="rounded-[6px] bg-info-blue-bg px-2 py-[2px] text-[9.5px] font-bold text-info-blue-text">
-                MEDICAL CARD
+            {submission.planCategories.map((key) => (
+              <span key={key} className="rounded-[6px] bg-info-blue-bg px-2 py-[2px] text-[9.5px] font-bold uppercase text-info-blue-text">
+                {PLAN_CATEGORY_LABEL[key]}
               </span>
-            )}
+            ))}
           </div>
           <div className="mt-0.5 text-[11.5px] font-medium text-taupe">
             {submission.certificateNo ? `Certificate ${submission.certificateNo}` : "No certificate number yet"}

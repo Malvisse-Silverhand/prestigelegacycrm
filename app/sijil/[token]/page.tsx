@@ -35,7 +35,7 @@ export default async function ClientPortalPage({ params }: { params: Promise<{ t
     // whichever certificates still carry a live link -- never from which
     // specific token they used to log in. A link revoked mid-session drops
     // out of this list on the very next render with no extra plumbing.
-    const certificates = await getPortalCertificates(session.idNo, today);
+    const certificates = await getPortalCertificates(session, today);
     if (certificates.length === 0) return <PortalClosed />;
 
     void recordPortalOpens(certificates.map((c) => c.linkId));

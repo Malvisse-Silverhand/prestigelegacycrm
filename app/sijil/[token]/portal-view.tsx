@@ -8,12 +8,20 @@ import {
   PORTAL_CONDITIONS,
   PORTAL_PERIODS,
   PORTAL_COVER_NOTES,
-  PORTAL_GUIDES,
   OFFICIAL_PORTAL_URL,
   OFFICIAL_PORTAL_NAME,
   PLAN_CATEGORY_LABEL,
+  CARELINE_NUMBER,
+  CARELINE_TEL,
+  CARELINE_HOURS,
   type PortalLang,
 } from "@/lib/portal-copy";
+import {
+  MEDICAL_GUIDE,
+  HIBAH_GUIDE,
+  MEDICAL_GUIDE_URL,
+  HIBAH_GUIDE_URL,
+} from "@/lib/portal-guides";
 import { logoutOfPortal } from "./actions";
 
 type Tab = "cert" | "benefits" | "waiting" | "nominees" | "guides";
@@ -70,6 +78,19 @@ const COPY = {
     agentTitle: "Ejen Anda",
     agentRole: "Perunding Takaful Bertauliah",
     agentCta: "Hubungi melalui WhatsApp",
+    careline: "Careline GET",
+    guideTabMedical: "Kad Perubatan",
+    guideTabMedicalSub: "Guna kad & tuntutan",
+    guideTabHibah: "Hibah",
+    guideTabHibahSub: "Penama & tuntutan",
+    guideFull: "Baca panduan penuh di takaful4us.com",
+    contestableEyebrow: "Tempoh Penyiasatan",
+    contestableOpen: "Aktif sehingga {date}",
+    contestableOpenBody:
+      "Dalam tempoh lima tahun ini, pengendali boleh menyiasat dan menolak tuntutan jika ada maklumat penting yang tidak diisytiharkan semasa permohonan. Pastikan semua maklumat kesihatan anda betul — hubungi ejen anda jika ada yang perlu dibetulkan.",
+    contestablePassed: "Tamat — sijil tidak lagi boleh dipertikaikan",
+    contestablePassedBody:
+      "Tempoh penyiasatan lima tahun bagi sijil ini telah tamat. Tuntutan tidak lagi boleh ditolak atas sebab tidak mengisytiharkan maklumat, kecuali dalam kes penipuan yang terbukti.",
     onboardTitle: "Selamat datang",
     onboardSub: "Tiga perkara sebelum anda mula.",
     onboardCta: "Saya faham, mula",
@@ -134,6 +155,19 @@ const COPY = {
     agentTitle: "Your Agent",
     agentRole: "Licensed Takaful Consultant",
     agentCta: "Message on WhatsApp",
+    careline: "GET Careline",
+    guideTabMedical: "Medical Card",
+    guideTabMedicalSub: "Using it & claiming",
+    guideTabHibah: "Hibah",
+    guideTabHibahSub: "Nominees & claims",
+    guideFull: "Read the full guide at takaful4us.com",
+    contestableEyebrow: "Contestable Period",
+    contestableOpen: "Open until {date}",
+    contestableOpenBody:
+      "During these five years the operator may investigate and decline a claim where something material was not disclosed at application. Make sure your health details are right — speak to your agent if anything needs correcting.",
+    contestablePassed: "Closed — this certificate is now incontestable",
+    contestablePassedBody:
+      "The five-year investigation period on this certificate has passed. A claim can no longer be declined for non-disclosure, except in a case of proven fraud.",
     onboardTitle: "Welcome",
     onboardSub: "Three things before you start.",
     onboardCta: "Got it, let's go",
@@ -242,6 +276,12 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
   const [tab, setTab] = useState<Tab>("cert");
   const [openPeriod, setOpenPeriod] = useState<string | null>(null);
   const [openTip, setOpenTip] = useState<string | null>(null);
+  // Which of the two guides is open. Starts on the one that matches the
+  // certificate being read, so a hibah client is not handed a medical card
+  // guide to dismiss first.
+  const [guideTab, setGuideTab] = useState<"medical" | "hibah">(
+    payloads.length === 1 && !payloads[0].hasMedical ? "hibah" : "medical",
+  );
   // null = follow the saved preference; set only when the client opens the
   // welcome card from the ? button or dismisses it this visit.
   const [onboardOverride, setOnboardOverride] = useState<boolean | null>(null);
@@ -277,6 +317,8 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
         onSelect={(caseId) => {
           setSelectedCaseId(caseId);
           setTab("cert");
+          const chosen = payloads.find((p) => p.caseId === caseId);
+          if (chosen) setGuideTab(chosen.hasMedical ? "medical" : "hibah");
         }}
       />
     );
@@ -457,7 +499,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
               <IconExternal className="h-4 w-4 flex-none text-navy" />
             </a>
 
-            <AgentCard payload={payload} t={t} />
+            <AgentCard payload={payload} t={t} lang={lang} />
           </>
         )}
 
@@ -670,37 +712,146 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
               <IconExternal className="h-4 w-4 flex-none text-navy" />
             </a>
 
-            <div>
-              <h2 className="text-[15px] font-bold tracking-[-0.01em] text-navy">{t.guidesTitle}</h2>
-              <p className="mt-0.5 text-[11.5px] font-medium leading-relaxed text-muted">{t.guidesSub}</p>
-              <div className="mt-3 flex flex-col gap-2.5">
-                {payload.guideKeys.map((key) => {
-                  const guide = PORTAL_GUIDES[key];
-                  return (
-                    <a
-                      key={key}
-                      href={guide.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="press flex min-h-11 items-center gap-3 rounded-[16px] border border-sand bg-white p-3.5 shadow-card"
-                    >
-                      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[12px] bg-info-blue-bg-2">
-                        <IconBook className="h-4 w-4 text-info-blue-text" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-bold leading-snug tracking-[-0.01em] text-navy">
-                          {guide[lang].title}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] font-medium leading-snug text-muted">{guide[lang].note}</span>
-                      </span>
-                      <IconExternal className="h-[15px] w-[15px] flex-none text-taupe" />
-                    </a>
-                  );
-                })}
-              </div>
+            {/* Two guides, each a page of its own rather than a link out.
+                Which one opens first follows the certificate being viewed --
+                a client reading their hibah certificate wants the hibah
+                guide, not a menu. */}
+            <div className="flex gap-2">
+              {(["medical", "hibah"] as const).map((key) => {
+                const on = guideTab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setGuideTab(key)}
+                    aria-pressed={on}
+                    className={`press flex min-h-[54px] flex-1 flex-col items-center justify-center gap-0.5 rounded-[16px] border px-2 ${
+                      on ? "border-navy bg-navy text-white" : "border-sand bg-white text-navy"
+                    }`}
+                  >
+                    <span className="text-[13px] font-bold tracking-[-0.01em]">
+                      {key === "medical" ? t.guideTabMedical : t.guideTabHibah}
+                    </span>
+                    <span className={`text-[10px] font-medium ${on ? "text-white/70" : "text-taupe"}`}>
+                      {key === "medical" ? t.guideTabMedicalSub : t.guideTabHibahSub}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <AgentCard payload={payload} t={t} />
+            {/* Personal, and only on the hibah guide: when THIS certificate
+                stops being contestable. */}
+            {guideTab === "hibah" && payload.contestable && (
+              <div
+                className={`rounded-[16px] border p-4 ${
+                  payload.contestable.passed ? "border-[#cfe8da] bg-success-bg" : "border-sand-2 bg-warn-gold-bg"
+                }`}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-taupe-2">
+                  {t.contestableEyebrow}
+                </div>
+                <div
+                  className={`mt-1 text-[14px] font-extrabold tracking-[-0.015em] ${
+                    payload.contestable.passed ? "text-green" : "text-warn-gold-text"
+                  }`}
+                >
+                  {payload.contestable.passed
+                    ? t.contestablePassed
+                    : t.contestableOpen.replace("{date}", fmtDate(payload.contestable.endsOn))}
+                </div>
+                <p className="mt-1.5 text-[11.5px] font-medium leading-relaxed text-ink">
+                  {payload.contestable.passed ? t.contestablePassedBody : t.contestableOpenBody}
+                </p>
+              </div>
+            )}
+
+            {(guideTab === "medical" ? MEDICAL_GUIDE : HIBAH_GUIDE).map((section) => (
+              <section key={section.id} className="rounded-[16px] border border-sand bg-white p-4 shadow-card">
+                <h2 className="text-[14px] font-bold tracking-[-0.01em] text-navy">{section.title[lang]}</h2>
+                {section.intro && (
+                  <p className="mt-1 text-[11.5px] font-medium leading-relaxed text-ink">{section.intro[lang]}</p>
+                )}
+
+                {section.steps && (
+                  <ol className="mt-3 flex flex-col gap-2.5">
+                    {section.steps.map((step, i) => (
+                      <li key={step.title[lang]} className="flex items-start gap-2.5">
+                        <span className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-info-blue-bg-2 text-[10.5px] font-extrabold text-info-blue-text">
+                          {i + 1}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[12.5px] font-bold leading-snug text-navy">{step.title[lang]}</span>
+                          <span className="mt-0.5 block text-[11.5px] font-medium leading-relaxed text-ink">
+                            {step.body[lang]}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+
+                {section.bullets && (
+                  <ul className="mt-2.5 flex flex-col gap-1.5">
+                    {section.bullets.map((b) => (
+                      <li key={b[lang]} className="flex items-start gap-2">
+                        <span className="mt-1.5 h-1 w-1 flex-none rounded-full bg-taupe" />
+                        <span className="text-[11.5px] font-medium leading-relaxed text-ink">{b[lang]}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {section.callout && (
+                  <div
+                    className={`mt-3 rounded-[12px] border p-3 text-[11.5px] font-medium leading-relaxed ${
+                      section.callout.tone === "warn"
+                        ? "border-[#f0dfb4] bg-warn-gold-bg text-warn-gold-text"
+                        : section.callout.tone === "good"
+                          ? "border-[#cfe8da] bg-success-bg text-green"
+                          : "border-sand-2 bg-info-blue-bg-2 text-info-blue-text"
+                    }`}
+                  >
+                    {section.callout.text[lang]}
+                  </div>
+                )}
+
+                {section.links && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {section.links.map((link) => (
+                      <a
+                        key={link.url}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="press flex min-h-11 items-center gap-2.5 rounded-[12px] border border-sand-2 bg-cream px-3 py-2.5"
+                      >
+                        <IconExternal className="h-3.5 w-3.5 flex-none text-taupe" />
+                        <span className="min-w-0 flex-1 text-[12px] font-bold text-navy">{link.label[lang]}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </section>
+            ))}
+
+            {/* The full agency guide, for anyone who wants the long version. */}
+            <a
+              href={guideTab === "medical" ? MEDICAL_GUIDE_URL : HIBAH_GUIDE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="press flex min-h-11 items-center gap-3 rounded-[16px] border border-sand bg-white p-3.5 shadow-card"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[12px] bg-info-blue-bg-2">
+                <IconBook className="h-4 w-4 text-info-blue-text" />
+              </span>
+              <span className="min-w-0 flex-1 text-[13px] font-bold leading-snug tracking-[-0.01em] text-navy">
+                {t.guideFull}
+              </span>
+              <IconExternal className="h-[15px] w-[15px] flex-none text-taupe" />
+            </a>
+
+            <AgentCard payload={payload} t={t} lang={lang} />
           </section>
         )}
 
@@ -945,7 +1096,7 @@ function CertificateCards({
   );
 }
 
-function AgentCard({ payload, t }: { payload: PortalPayload; t: Copy }) {
+function AgentCard({ payload, t, lang }: { payload: PortalPayload; t: Copy; lang: PortalLang }) {
   return (
     <section className="rounded-[16px] border border-sand bg-white p-4 shadow-card">
       <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-taupe-2">{t.agentTitle}</div>
@@ -969,6 +1120,20 @@ function AgentCard({ payload, t }: { payload: PortalPayload; t: Copy }) {
           {t.agentCta}
         </a>
       )}
+
+      {/* The operator's own line, beside the agent rather than instead of
+          them: out of hours, or when the agent cannot be reached, a client
+          holding a certificate needs a number that always answers. */}
+      <a
+        href={CARELINE_TEL}
+        className="press mt-2 flex min-h-[46px] items-center justify-center gap-2 rounded-[12px] border border-sand-2 bg-cream p-3 text-[12.5px] font-bold text-navy"
+      >
+        <IconPhone className="h-4 w-4 text-green" />
+        <span>
+          {t.careline} {CARELINE_NUMBER}
+        </span>
+      </a>
+      <div className="mt-1 text-center text-[10.5px] font-medium text-taupe">{CARELINE_HOURS[lang]}</div>
     </section>
   );
 }
@@ -1045,6 +1210,13 @@ function IconWarn({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} {...stroke}>
       <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
       <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}
+function IconPhone({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...stroke}>
+      <path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z" />
     </svg>
   );
 }

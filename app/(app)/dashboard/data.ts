@@ -112,7 +112,20 @@ function activityLabel(activityType: string, content: string | null) {
   }
 }
 
-export type MonitorScope = { agentId?: string; unitId?: string };
+/**
+ * Whose figures to build.
+ *
+ *   * nothing        -- this person's own book, and only theirs. The
+ *                       Dashboard is personal: a manager's own ANC should
+ *                       not silently include everything their downline
+ *                       closed.
+ *   * { agentId }    -- monitor mode, one agent.
+ *   * { unitId }     -- monitor mode, one unit.
+ *   * { teamWide }   -- everything RLS lets this person see. What Team
+ *                       Performance is for, and the only scope that still
+ *                       aggregates other people.
+ */
+export type MonitorScope = { agentId?: string; unitId?: string; teamWide?: boolean };
 
 export async function getDashboardStats(profile: CurrentProfile, monitorScope?: MonitorScope) {
   const supabase = await createClient();
@@ -128,6 +141,11 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
   else if (monitorScope?.unitId) leadsQuery = leadsQuery.eq("unit_id", monitorScope.unitId);
+  // No scope at all means "mine". RLS would happily return the whole downline
+  // for a manager, which is what Team Performance is for -- the Dashboard is
+  // this person's own book, and their ANC should not quietly include
+  // everything their agents closed.
+  else if (!monitorScope?.teamWide) leadsQuery = leadsQuery.eq("agent_id", profile.id);
 
   // Window for the activity calendar, as a date the DB can compare against.
   const calendarStart = new Date();
@@ -651,6 +669,11 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     assignment,
     unassignedPool,
     isManager: profile.role !== "agent",
+    // True only where the figures actually aggregate other people. The
+    // Dashboard's team widgets key off this, not off the viewer's role: a
+    // manager looking at their own personal book has no team breakdown to
+    // show, because none of these numbers are team numbers.
+    isTeamWide: Boolean(monitorScope?.teamWide),
   };
 }
 

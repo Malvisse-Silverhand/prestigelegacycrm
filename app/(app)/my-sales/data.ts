@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { WON_STAGES } from "@/lib/pipeline-stages";
+import { cleanCategories } from "@/lib/plan-catalogue";
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
 import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption, PortalLink } from "./types";
 
@@ -8,7 +9,7 @@ import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption, Portal
 // their team's, and none of that scoping is repeated in this file.
 
 const CASE_SELECT = `
-  id, lead_id, agent_id, status, plan_name, plan_type, includes_medical_card,
+  id, lead_id, agent_id, status, plan_name, plan_type, plan_categories,
   payment_frequency, payment_method, installment_contribution, sum_covered,
   proposer_name, person_covered_name, id_no, gender, date_of_birth, religion,
   is_smoker, occupation, certificate_no, commencement_date,
@@ -61,7 +62,7 @@ function toCase(row: RawCase): CaseSubmission {
 
     planName: row.plan_name as string,
     planType: (row.plan_type as string) ?? null,
-    includesMedicalCard: Boolean(row.includes_medical_card),
+    planCategories: cleanCategories(row.plan_categories as string[] | null),
     paymentFrequency: row.payment_frequency as PaymentFrequency,
     paymentMethod: (row.payment_method as string) ?? null,
     installmentContribution: num(row.installment_contribution),

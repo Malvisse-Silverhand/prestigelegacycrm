@@ -237,6 +237,15 @@ export type PortalGuideKey = keyof typeof PORTAL_GUIDES;
  * are translated. The link opens straight on their login screen.
  */
 export const OFFICIAL_PORTAL_URL = "https://igetintouch.greateasterntakaful.com/econnect-new/#/login";
+
+/**
+ * Great Eastern Takaful's own careline. On the portal beside the agent, not
+ * instead of them: out of hours, or when the agent is unreachable, a client
+ * holding a certificate needs a number that always answers.
+ */
+export const CARELINE_NUMBER = "1300-13-8338";
+export const CARELINE_TEL = "tel:1300138338";
+export const CARELINE_HOURS = { bm: "Isnin–Jumaat, 8:30 pagi–5:15 petang", en: "Mon–Fri, 8:30am–5:15pm" };
 export const OFFICIAL_PORTAL_NAME = "iGetInTouch Client Portal";
 
 /**

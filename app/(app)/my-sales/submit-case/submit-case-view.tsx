@@ -9,6 +9,7 @@ import { LeadFormFields } from "@/app/(app)/leads/lead-form-fields";
 import { createLeadForCase } from "../actions";
 import { CaseForm, type CaseFormLead } from "../case-form";
 import { CertificatePanel, fmtRM } from "../certificate-panel";
+import { PLAN_CATEGORIES, PLAN_CATEGORY_LABEL, type PlanCategoryKey } from "@/lib/plan-catalogue";
 import {
   CASE_STATUS_LABEL,
   CASE_STATUS_TONE,
@@ -36,6 +37,7 @@ export function SubmitCaseView({
   benefitOptions: BenefitOption[];
 }) {
   const [statusFilter, setStatusFilter] = useState<CaseStatus | "all">("all");
+  const [planFilter, setPlanFilter] = useState<PlanCategoryKey | "all">("all");
   const [caseQuery, setCaseQuery] = useState("");
   const [leadQuery, setLeadQuery] = useState("");
   const [onlyReady, setOnlyReady] = useState(true);
@@ -124,6 +126,7 @@ export function SubmitCaseView({
     const q = caseQuery.trim().toLowerCase();
     return cases.filter((c) => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (planFilter !== "all" && !c.planCategories.includes(planFilter)) return false;
       if (!q) return true;
       return (
         c.leadName.toLowerCase().includes(q) ||
@@ -131,7 +134,7 @@ export function SubmitCaseView({
         (c.certificateNo ?? "").toLowerCase().includes(q)
       );
     });
-  }, [cases, statusFilter, caseQuery]);
+  }, [cases, statusFilter, planFilter, caseQuery]);
 
   const visibleLeads = useMemo(() => {
     const q = leadQuery.trim().toLowerCase();
@@ -296,7 +299,7 @@ export function SubmitCaseView({
         {/* ---- Cases already filed ---- */}
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-[14px] font-bold text-navy">Cases filed ({cases.length})</div>
+            <div className="text-[14px] font-bold text-navy">Manage cases ({cases.length})</div>
             <input
               value={caseQuery}
               onChange={(e) => setCaseQuery(e.target.value)}
@@ -319,6 +322,38 @@ export function SubmitCaseView({
                 {f.label}
               </button>
             ))}
+          </div>
+
+          {/* By what the certificate covers, not by its plan name: a case
+              tagged Medical Card is one whether it was filed as i-MEDI
+              EVOLUSI or as free text years ago. */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">Plan</span>
+            <button
+              type="button"
+              onClick={() => setPlanFilter("all")}
+              className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
+                planFilter === "all" ? "bg-green text-white" : "border border-sand-2 bg-white text-navy"
+              }`}
+            >
+              All plans
+            </button>
+            {PLAN_CATEGORIES.map((key) => {
+              const count = cases.filter((c) => c.planCategories.includes(key)).length;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPlanFilter(key)}
+                  className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
+                    planFilter === key ? "bg-green text-white" : "border border-sand-2 bg-white text-navy"
+                  }`}
+                >
+                  {PLAN_CATEGORY_LABEL[key]}
+                  <span className={planFilter === key ? "ml-1.5 text-white/70" : "ml-1.5 text-taupe"}>{count}</span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-3 flex flex-col gap-2.5">

@@ -4,6 +4,16 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PAYMENT_FREQUENCIES, type PaymentFrequency } from "@/lib/contribution-schedule";
 import { waLink } from "@/lib/whatsapp";
+import {
+  PLAN_GROUPS,
+  PLAN_OTHER,
+  PLAN_CATEGORIES,
+  PLAN_CATEGORY_LABEL,
+  cleanCategories,
+  defaultCategoriesFor,
+  isKnownPlan,
+  type PlanCategoryKey,
+} from "@/lib/plan-catalogue";
 import { saveCase } from "./actions";
 import { useSpecimen } from "./use-specimen";
 import {
@@ -134,7 +144,37 @@ export function CaseForm({
   // state so a case that already has one doesn't lose it on the next save,
   // even though there is no box here to change it.
   const planType = existing?.planType ?? null;
-  const [includesMedicalCard, setIncludesMedicalCard] = useState(existing?.includesMedicalCard ?? false);
+  const [planCategories, setPlanCategories] = useState<PlanCategoryKey[]>(existing?.planCategories ?? []);
+
+  // Which entry in the dropdown is selected, as opposed to the name that gets
+  // saved. An existing case whose plan is not on the list lands on "Others"
+  // with its original name intact in the box beneath.
+  const [planChoice, setPlanChoice] = useState(() => {
+    const current = existing?.planName ?? lead.interest ?? "";
+    if (!current) return "";
+    return isKnownPlan(current) ? current.trim() : PLAN_OTHER;
+  });
+
+  function choosePlan(choice: string) {
+    setPlanChoice(choice);
+    if (choice === PLAN_OTHER) {
+      // Keep whatever was already typed; "Others" only opens the box.
+      return;
+    }
+    setPlanName(choice);
+    // The product suggests what this case is. Only ever adds -- a tag the
+    // agent ticked by hand is never taken away by changing the plan.
+    const suggested = defaultCategoriesFor(choice);
+    if (suggested.length > 0) {
+      setPlanCategories((current) => cleanCategories([...current, ...suggested]));
+    }
+  }
+
+  function toggleCategory(key: PlanCategoryKey) {
+    setPlanCategories((current) =>
+      current.includes(key) ? current.filter((k) => k !== key) : cleanCategories([...current, key]),
+    );
+  }
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency>(
     existing?.paymentFrequency ?? "monthly",
   );
@@ -259,7 +299,7 @@ export function CaseForm({
           leadId: lead.id,
           planName,
           planType,
-          includesMedicalCard,
+          planCategories,
           paymentFrequency,
           paymentMethod,
           installmentContribution: numOrNull(installment),
@@ -295,7 +335,30 @@ export function CaseForm({
         <div className="text-[13px] font-bold text-navy">Plan</div>
         <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
           <Field label="Plan name">
-            <input value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder={eg.planName} className={input} />
+            <select value={planChoice} onChange={(e) => choosePlan(e.target.value)} aria-label="Plan name" className={input}>
+              <option value="">—</option>
+              {PLAN_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.plans.map((p) => (
+                    <option key={p.name} value={p.name}>{p.name}</option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value={PLAN_OTHER}>{PLAN_OTHER}</option>
+            </select>
+            {/* Cases filed before this dropdown existed carry free text, and
+                the operator adds products faster than this ships -- so
+                "Others" keeps a box to type into rather than forcing a
+                rename onto whoever opens an old case. */}
+            {planChoice === PLAN_OTHER && (
+              <input
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                placeholder={eg.planName}
+                aria-label="Plan name (specify)"
+                className={`mt-2 ${input}`}
+              />
+            )}
           </Field>
           <Field label="Payment frequency">
             <select
@@ -318,28 +381,35 @@ export function CaseForm({
             <input type="number" step="0.01" value={sumCovered} onChange={(e) => setSumCovered(e.target.value)} placeholder={eg.sumCovered} className={input} />
           </Field>
         </div>
-        <label className="mt-2.5 flex items-start gap-2.5 rounded-[10px] border border-sand-2 bg-cream px-3 py-2.5">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={includesMedicalCard}
-            aria-label="This certificate includes medical card cover"
-            onClick={() => setIncludesMedicalCard((v) => !v)}
-            className={`mt-[1px] flex h-[21px] w-[38px] flex-none items-center rounded-full px-[3px] transition-colors ${
-              includesMedicalCard ? "justify-end bg-green" : "justify-start bg-sand-2"
-            }`}
-          >
-            <span className="h-[15px] w-[15px] rounded-full bg-white" />
-          </button>
-          <span className="min-w-0">
-            <span className="block text-[12.5px] font-semibold text-navy">
-              This certificate includes medical card cover
-            </span>
-            <span className="block text-[11px] font-medium text-taupe">
-              Turns on the waiting periods and the Great Journey guide for this client in Servicing.
-            </span>
-          </span>
-        </label>
+        {/* Several, not one: a hibah plan with a medical rider is both, and
+            the old single toggle could only ever say one of them. Picking a
+            plan pre-selects its usual tags; these are what actually get
+            read downstream. */}
+        <div className="mt-2.5 rounded-[10px] border border-sand-2 bg-cream px-3 py-2.5">
+          <div className="text-[12.5px] font-semibold text-navy">What this certificate covers</div>
+          <div className="mt-0.5 text-[11px] font-medium text-taupe">
+            Pick every kind that applies. Medical Card turns on the waiting periods and the Great Journey guide for
+            this client in Servicing and in their portal.
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {PLAN_CATEGORIES.map((key) => {
+              const on = planCategories.includes(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleCategory(key)}
+                  className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
+                    on ? "bg-navy text-white" : "border border-sand-2 bg-white text-navy hover:border-navy"
+                  }`}
+                >
+                  {PLAN_CATEGORY_LABEL[key]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       {/* ---- Insured ---- */}

@@ -11,6 +11,7 @@ import {
 import { frequencyLabel, rowStatus, summariseSchedule, type ScheduleStatus } from "@/lib/contribution-schedule";
 import { waLink } from "@/lib/whatsapp";
 import { contributionReminder, jompayReminder } from "@/lib/contribution-reminder";
+import { hasMedicalBenefit } from "@/lib/portal-copy";
 import { setContributionPaid } from "./actions";
 import { PortalLinkCard } from "./portal-link-card";
 import { fmtDate, fmtRM } from "./certificate-panel";
@@ -337,6 +338,19 @@ function ContributionChecklist({ submission, today }: { submission: CaseSubmissi
  * `today` comes from the server so the waiting-period maths and every row
  * status agree between the server render and the browser.
  */
+/**
+ * Whether waiting periods apply. The same rule the client portal uses, so the
+ * two screens cannot disagree about what a certificate is: the agent's own
+ * tag decides it, and the benefit names cover every case filed before the
+ * tags existed.
+ */
+function isMedicalCase(submission: CaseSubmission): boolean {
+  return (
+    submission.planCategories.includes("medical_card") ||
+    hasMedicalBenefit(submission.benefits.map((b) => b.benefit))
+  );
+}
+
 export function ServicingDetail({ submission, today }: { submission: CaseSubmission; today: string }) {
   return (
     // A grid, not a single stack: the client portal card gets its own column
@@ -348,14 +362,14 @@ export function ServicingDetail({ submission, today }: { submission: CaseSubmiss
     // columns on anything short of a very wide monitor.
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start">
       <div className="flex flex-col gap-4">
-        {submission.includesMedicalCard && submission.commencementDate ? (
+        {isMedicalCase(submission) && submission.commencementDate ? (
           <WaitingPeriods commencementDate={submission.commencementDate} today={today} />
         ) : (
           <div className="rounded-[12px] border border-dashed border-sand-2 bg-cream p-3.5">
             <div className="text-[12.5px] font-semibold text-navy">No medical card cover on this certificate</div>
             <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-              Waiting periods and the Great Journey guide only apply to medical card plans. Turn on
-              &ldquo;includes medical card cover&rdquo; on the case if that is wrong.
+              Waiting periods and the Great Journey guide only apply to medical card cover. Tag the case
+              &ldquo;Medical Card&rdquo; under what this certificate covers if that is wrong.
             </div>
           </div>
         )}

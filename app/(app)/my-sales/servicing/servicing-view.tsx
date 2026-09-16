@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { summariseSchedule } from "@/lib/contribution-schedule";
 import { caseAnc, caseCollected } from "@/lib/case-anc";
+import { PLAN_CATEGORY_LABEL, PLAN_CATEGORY_SHORT } from "@/lib/plan-catalogue";
 import { LeadNo } from "@/components/lead-no";
 import { EmptyState } from "@/components/empty-state";
 import { ServicingDetail } from "../servicing-detail";
@@ -177,15 +178,17 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       >
                         {summary.overdue > 0 ? `${summary.overdue} overdue` : `${summary.paid}/${summary.total} paid`}
                       </span>
-                      {c.includesMedicalCard && (
+                      {c.planCategories.map((key) => (
                         <span
+                          key={key}
+                          title={PLAN_CATEGORY_LABEL[key]}
                           className={`rounded-[5px] px-[6px] py-[1px] text-[9.5px] font-bold ${
                             active ? "bg-white/15 text-white" : "bg-info-blue-bg text-info-blue-text"
                           }`}
                         >
-                          MED
+                          {PLAN_CATEGORY_SHORT[key]}
                         </span>
-                      )}
+                      ))}
                       {/* Same NRIC as another case on this book -- the client
                           portal already combines them, so this row is not
                           this person's only certificate. */}

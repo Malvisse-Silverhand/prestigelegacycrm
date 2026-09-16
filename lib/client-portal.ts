@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { toWaNumber } from "@/lib/landing-public";
 import { waitingPeriodsFor, type WaitingPeriodStatus } from "@/lib/waiting-periods";
 import { hasMedicalBenefit, guideKeysFor, statusFromCase, planCategoryFor, type PortalGuideKey, type PortalStatus, type PlanCategory } from "@/lib/portal-copy";
+import { cleanCategories } from "@/lib/plan-catalogue";
+import { contestableStatus, type ContestableStatus } from "@/lib/portal-guides";
 
 // Re-exported so server callers can reach them from here, but they are defined
 // in portal-copy: the client view needs them too, and that module has no
@@ -40,6 +42,12 @@ export type PortalPayload = {
   /** Empty unless the certificate carries a medical benefit. */
   waitingPeriods: WaitingPeriodStatus[];
   hasMedical: boolean;
+  /** Life/hibah cover, which is what makes the contestable window apply. */
+  isLife: boolean;
+  /** Null unless this is life/hibah cover with a commencement date. */
+  contestable: ContestableStatus | null;
+  /** What the agent tagged this certificate as carrying, where they have. */
+  planCategories: string[];
   guideKeys: PortalGuideKey[];
   agent: { name: string; initials: string; waNumber: string };
 };
@@ -59,7 +67,7 @@ export type PortalNominee = {
 };
 
 const CASE_SELECT = `id, status, plan_name, payment_frequency, installment_contribution, certificate_no,
-       includes_medical_card, commencement_date, next_due_date, person_covered_name, id_no,
+       plan_categories, commencement_date, next_due_date, person_covered_name, id_no,
        leads!case_submissions_lead_id_fkey(full_name, email, phone),
        profiles!case_submissions_agent_id_fkey(full_name, phone),
        case_nominees(name, relationship, percentage, sort_order),
@@ -72,7 +80,7 @@ type CaseRow = {
   payment_frequency: string;
   installment_contribution: number | null;
   certificate_no: string | null;
-  includes_medical_card: boolean | null;
+  plan_categories: string[] | null;
   commencement_date: string | null;
   next_due_date: string | null;
   person_covered_name: string | null;
@@ -93,16 +101,14 @@ function buildPayload(row: CaseRow, link: LinkRow, today: string): PortalPayload
   const benefitNames = benefitRows.map((b) => b.benefit);
   const baseBenefit = benefitRows[0]?.benefit ?? null;
 
-  // Two ways a certificate counts as medical, and either is enough:
-  //
-  //   * it carries a catalogue benefit named in MEDICAL_BENEFITS, or
-  //   * the agent ticked "includes medical card cover" on the case.
-  //
-  // The flag is what the Servicing page already keys its own waiting-period
-  // panel off, so honouring it here keeps the two screens from disagreeing --
-  // and it is the escape hatch for a medical product nobody has added to the
-  // mapping yet.
-  const medical = hasMedicalBenefit(benefitNames) || Boolean(row.includes_medical_card);
+  // Two sources, and either is enough. `plan_categories` is what the agent
+  // said THIS certificate carries; the benefit-name mapping is what a plan
+  // usually is, and covers every case filed before the tags existed. The
+  // Servicing page keys its own waiting-period panel off the same tags, so
+  // the two screens cannot disagree about what a certificate is.
+  const tagged = cleanCategories(row.plan_categories);
+  const medical = tagged.includes("medical_card") || hasMedicalBenefit(benefitNames);
+  const isLife = tagged.includes("hibah") || planCategoryFor(baseBenefit) === "hibah";
 
   const nominees = (row.case_nominees ?? [])
     .slice()
@@ -120,7 +126,14 @@ function buildPayload(row: CaseRow, link: LinkRow, today: string): PortalPayload
     clientName: row.person_covered_name || lead?.full_name || "",
     certificateNo: row.certificate_no,
     planName: baseBenefit ?? row.plan_name,
-    planCategory: planCategoryFor(baseBenefit),
+    // The badge follows the agent's tags where they exist, and the base
+    // benefit only where they do not.
+    planCategory: tagged.includes("medical_card")
+      ? "medical"
+      : tagged.includes("hibah")
+        ? "hibah"
+        : planCategoryFor(baseBenefit),
+    planCategories: tagged,
     benefits: benefitRows.map((b, i) => ({
       name: b.benefit,
       sumCovered: b.sum_covered === null ? null : Number(b.sum_covered),
@@ -136,6 +149,11 @@ function buildPayload(row: CaseRow, link: LinkRow, today: string): PortalPayload
     waitingPeriods: medical && row.commencement_date ? waitingPeriodsFor(row.commencement_date, today) : [],
     hasMedical: medical,
     guideKeys: guideKeysFor(benefitNames, medical),
+    isLife,
+    // The one date in the guides that is personal: when this certificate
+    // stops being contestable. Resolved here, server-side, against the same
+    // `today` every other date on the page is.
+    contestable: isLife && row.commencement_date ? contestableStatus(row.commencement_date, today) : null,
     agent: {
       name: agentName,
       initials: initialsOf(agentName),
@@ -228,27 +246,52 @@ export function matchesIdentity(anchor: PortalAnchor, emailOrPhone: string, last
  * no per-certificate re-authentication, because access was never encoded in
  * the session, only identity was.
  */
-export async function getPortalCertificates(idNo: string, today: string): Promise<PortalPayload[]> {
+export async function getPortalCertificates(
+  identity: { idNo: string; email: string | null },
+  today: string,
+): Promise<PortalPayload[]> {
   const admin = createAdminClient();
 
   // `!inner` plus a filter on the embedded table's own column turns this into
   // a real inner join: a case with no live link, or none at all, drops out of
   // the result entirely rather than coming back with a null link.
-  const { data, error } = await admin
-    .from("case_submissions")
-    .select(`${CASE_SELECT}, client_portal_links!inner(id, display_status, revoked_at)`)
-    .eq("id_no", idNo)
-    .filter("client_portal_links.revoked_at", "is", null)
-    .order("commencement_date", { ascending: false, nullsFirst: false });
+  const withLiveLink = () =>
+    admin
+      .from("case_submissions")
+      .select(`${CASE_SELECT}, client_portal_links!inner(id, display_status, revoked_at)`)
+      .filter("client_portal_links.revoked_at", "is", null);
 
-  if (error || !data) {
-    if (error) Sentry.captureException(error, { tags: { fn: "getPortalCertificates" } });
-    return [];
+  // Two queries rather than one `or`: the second condition lives on an
+  // embedded table (the lead's email), and PostgREST cannot OR across the
+  // join boundary. Merged and de-duplicated below.
+  const byNric = withLiveLink().eq("id_no", identity.idNo);
+  const byEmail = identity.email
+    ? withLiveLink().filter("leads.email", "eq", identity.email)
+    : null;
+
+  const [nricResult, emailResult] = await Promise.all([byNric, byEmail]);
+
+  for (const result of [nricResult, emailResult]) {
+    if (result?.error) Sentry.captureException(result.error, { tags: { fn: "getPortalCertificates" } });
   }
 
-  return (data as unknown as (CaseRow & { client_portal_links: LinkRow[] })[]).map((row) =>
-    buildPayload(row, row.client_portal_links[0], today),
-  );
+  const rows = [
+    ...((nricResult?.data ?? []) as unknown as (CaseRow & { client_portal_links: LinkRow[] })[]),
+    ...((emailResult?.data ?? []) as unknown as (CaseRow & { client_portal_links: LinkRow[] })[]),
+  ];
+
+  // A case matching on both NRIC and email comes back twice.
+  const seen = new Set<string>();
+  const unique = rows.filter((row) => {
+    if (seen.has(row.id)) return false;
+    seen.add(row.id);
+    return true;
+  });
+
+  // Newest cover first, the way a client thinks about their own certificates.
+  unique.sort((a, b) => (b.commencement_date ?? "").localeCompare(a.commencement_date ?? ""));
+
+  return unique.map((row) => buildPayload(row, row.client_portal_links[0], today));
 }
 
 /**

@@ -7,6 +7,7 @@ import { buildSchedule, type PaymentFrequency } from "@/lib/contribution-schedul
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { createLead } from "@/app/(app)/leads/actions";
 import { PORTAL_STATUSES } from "@/lib/client-portal";
+import { cleanCategories } from "@/lib/plan-catalogue";
 import type { CaseNominee, CaseBenefit } from "./types";
 
 // Stages from which a case may be filed. Submission is the gate the request
@@ -71,7 +72,7 @@ export type CaseInput = {
   leadId: string;
   planName: string;
   planType: string | null;
-  includesMedicalCard: boolean;
+  planCategories: string[];
   paymentFrequency: PaymentFrequency;
   paymentMethod: string | null;
   installmentContribution: number | null;
@@ -149,7 +150,7 @@ export async function saveCase(input: CaseInput) {
     lead_id: input.leadId,
     plan_name: input.planName.trim(),
     plan_type: input.planType?.trim() || null,
-    includes_medical_card: input.includesMedicalCard,
+    plan_categories: cleanCategories(input.planCategories),
     payment_frequency: input.paymentFrequency,
     payment_method: input.paymentMethod?.trim() || null,
     installment_contribution: input.installmentContribution,

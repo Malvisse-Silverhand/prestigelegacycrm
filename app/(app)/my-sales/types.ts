@@ -1,4 +1,5 @@
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
+import type { PlanCategoryKey } from "@/lib/plan-catalogue";
 
 export type CaseStatus = "submitted" | "inforce" | "rejected" | "withdrawn";
 
@@ -88,7 +89,11 @@ export type CaseSubmission = {
   // Filed at submission
   planName: string;
   planType: string | null;
-  includesMedicalCard: boolean;
+  /** What kind of cover this certificate carries. Replaces the old single
+   *  "includes medical card" flag: a certificate routinely carries more than
+   *  one kind, and every screen now asks whether the set contains what it
+   *  cares about. */
+  planCategories: PlanCategoryKey[];
   paymentFrequency: PaymentFrequency;
   paymentMethod: string | null;
   installmentContribution: number | null;

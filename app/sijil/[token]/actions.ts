@@ -38,7 +38,7 @@ export async function loginToPortal(token: string, emailOrPhone: string, last4: 
   }
 
   const jar = await cookies();
-  jar.set(PORTAL_SESSION_COOKIE, createSessionToken(anchor.idNo), {
+  jar.set(PORTAL_SESSION_COOKIE, createSessionToken(anchor.idNo, anchor.leadEmail), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

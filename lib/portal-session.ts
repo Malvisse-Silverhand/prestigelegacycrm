@@ -28,14 +28,20 @@ const SESSION_TTL_SECONDS = 60 * 60 * 12;
 
 export const PORTAL_SESSION_COOKIE = "pl_portal_session";
 
-export type PortalSession = { idNo: string };
+/**
+ * Who the browser proved itself to be. Both identifiers are carried because a
+ * client's certificates are grouped by either -- see getPortalCertificates.
+ */
+export type PortalSession = { idNo: string; email: string | null };
 
-const SEPARATOR = "|";
-
-/** `<base64url(idNo|exp)>.<base64url(hmac)>` -- opaque to the browser. */
-export function createSessionToken(idNo: string): string {
+/** `<base64url(json)>.<base64url(hmac)>` -- opaque to the browser.
+ *
+ *  JSON rather than a positional separator: the payload has grown once
+ *  already, and an email address is not something to go splitting on
+ *  punctuation. */
+export function createSessionToken(idNo: string, email: string | null): string {
   const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
-  const payload = idNo + SEPARATOR + String(exp);
+  const payload = JSON.stringify({ idNo, email: email ?? null, exp });
   const encoded = Buffer.from(payload, "utf8").toString("base64url");
   const sig = createHmac("sha256", signingKey()).update(encoded).digest("base64url");
   return `${encoded}.${sig}`;
@@ -56,19 +62,19 @@ export function verifySessionToken(token: string | undefined | null): PortalSess
   // secret, so branching on it first leaks nothing extra.
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
 
-  let payload: string;
+  let parsed: { idNo?: unknown; email?: unknown; exp?: unknown };
   try {
-    payload = Buffer.from(encoded, "base64url").toString("utf8");
+    parsed = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
   } catch {
     return null;
   }
-  const sep = payload.lastIndexOf(SEPARATOR);
-  if (sep < 1) return null;
-  const idNo = payload.slice(0, sep);
-  const exp = Number(payload.slice(sep + 1));
+
+  const idNo = typeof parsed.idNo === "string" ? parsed.idNo : "";
+  const email = typeof parsed.email === "string" && parsed.email ? parsed.email : null;
+  const exp = typeof parsed.exp === "number" ? parsed.exp : NaN;
   if (!idNo || !Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return null;
 
-  return { idNo };
+  return { idNo, email };
 }
 
 export const PORTAL_SESSION_MAX_AGE = SESSION_TTL_SECONDS;
