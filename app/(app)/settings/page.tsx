@@ -13,6 +13,7 @@ import {
   getJoinRequests,
   getTrackingCode,
   getTrackablePages,
+  getMyProfileDetails,
 } from "./data";
 import { getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { SettingsView } from "./settings-view";
@@ -66,6 +67,7 @@ export default async function SettingsPage() {
     trackingCode,
     trackablePages,
     benefits,
+    myProfile,
   ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
@@ -85,6 +87,7 @@ export default async function SettingsPage() {
       // Everything, not just what is on offer, so a retired benefit can be
       // brought back rather than retyped.
       canManageBenefitCatalogue ? getBenefitOptions(false) : Promise.resolve([]),
+      getMyProfileDetails(profile),
     ]);
 
   return (
@@ -105,6 +108,7 @@ export default async function SettingsPage() {
       trackablePages={trackablePages}
       benefits={benefits}
       currentUserId={profile.id}
+      myProfile={myProfile}
     />
   );
 }

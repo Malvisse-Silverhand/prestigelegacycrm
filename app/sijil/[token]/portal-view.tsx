@@ -31,6 +31,10 @@ type Tab = "cert" | "benefits" | "waiting" | "nominees" | "guides";
 const LANG_KEY = "pl-portal-lang";
 const ONBOARD_KEY = "pl-portal-onboarded";
 
+// A fixed name, not translated, the same way OFFICIAL_PORTAL_NAME is: this is
+// the button, not a sentence.
+const AGENT_WHATSAPP_LABEL = "WhatsApp Agent";
+
 const COPY = {
   bm: {
     portalTag: "Portal Klien",
@@ -77,7 +81,6 @@ const COPY = {
     guidesSub: "Panduan yang dipaparkan mengikut manfaat dalam sijil anda.",
     agentTitle: "Ejen Anda",
     agentRole: "Perunding Takaful Bertauliah",
-    agentCta: "Hubungi melalui WhatsApp",
     careline: "Careline GET",
     guideTabMedical: "Kad Perubatan",
     guideTabMedicalSub: "Guna kad & tuntutan",
@@ -154,7 +157,6 @@ const COPY = {
     guidesSub: "The guides shown here follow the benefits on your certificate.",
     agentTitle: "Your Agent",
     agentRole: "Licensed Takaful Consultant",
-    agentCta: "Message on WhatsApp",
     careline: "GET Careline",
     guideTabMedical: "Medical Card",
     guideTabMedicalSub: "Using it & claiming",
@@ -1100,7 +1102,7 @@ function AgentCard({ payload, t, lang }: { payload: PortalPayload; t: Copy; lang
   return (
     <section className="rounded-[16px] border border-sand bg-white p-4 shadow-card">
       <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-taupe-2">{t.agentTitle}</div>
-      <div className="mt-2.5 flex items-center gap-3">
+      <div className="mt-2.5 flex items-start gap-3">
         <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-navy text-[14px] font-bold text-gold">
           {payload.agent.initials}
         </span>
@@ -1108,18 +1110,23 @@ function AgentCard({ payload, t, lang }: { payload: PortalPayload; t: Copy; lang
           <span className="block text-[14px] font-bold tracking-[-0.01em] text-navy">{payload.agent.name}</span>
           <span className="mt-0.5 block text-[11.5px] font-medium text-muted">{t.agentRole}</span>
         </span>
+        {/* The agent's own registered phone number -- set on their profile in
+            Settings > My Profile. Nothing renders here at all if it is
+            blank, rather than a button that opens WhatsApp to nowhere. */}
+        {payload.agent.waNumber && (
+          <a
+            href={`https://wa.me/${payload.agent.waNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={AGENT_WHATSAPP_LABEL}
+            title={AGENT_WHATSAPP_LABEL}
+            className="press flex min-h-11 flex-none items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-green px-2.5 py-2 text-[10.5px] font-bold leading-tight text-white"
+          >
+            <IconWhatsApp className="h-[15px] w-[15px] flex-none" />
+            {AGENT_WHATSAPP_LABEL}
+          </a>
+        )}
       </div>
-      {payload.agent.waNumber && (
-        <a
-          href={`https://wa.me/${payload.agent.waNumber}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="press mt-3 flex min-h-[46px] items-center justify-center gap-2 rounded-[12px] bg-green p-3.5 text-[13px] font-bold text-white"
-        >
-          <IconWhatsApp className="h-4 w-4" />
-          {t.agentCta}
-        </a>
-      )}
 
       {/* The operator's own line, beside the agent rather than instead of
           them: out of hours, or when the agent cannot be reached, a client

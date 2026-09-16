@@ -1313,3 +1313,68 @@ export async function reorderBenefit(id: string, direction: "up" | "down") {
   revalidatePath("/my-sales/submit-case");
   return { error: null };
 }
+
+// --- My Profile ----------------------------------------------------------
+//
+// Self-service, and deliberately narrow: this only ever touches the caller's
+// OWN row, taken from getCurrentProfile() rather than a userId argument, so
+// there is no privilege check to get wrong -- nobody can point this action at
+// someone else's account.
+//
+// Runs through the admin client because the normal authenticated grant on
+// `profiles` covers only `is_active` (see the RLS hardening migrations) --
+// name, phone and email all need the service role, the same way
+// resetUserPasswordNow does for auth.users.
+export async function updateMyProfile(input: { fullName: string; phone: string; email: string }) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+
+  const fullName = input.fullName.trim();
+  const phoneDigits = input.phone.trim();
+  const email = input.email.trim().toLowerCase();
+
+  // Same rules the join form applies to a brand-new agent -- this is that
+  // same information, just edited later rather than typed once at signup.
+  if (fullName.length < 2) return { error: "Enter your full name." };
+  if (!/^\d{9,11}$/.test(phoneDigits.replace(/\D/g, ""))) return { error: "Enter a valid phone number." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "Enter a valid email address." };
+
+  const admin = createAdminClient();
+
+  // Email doubles as the login identity, so it goes through Auth first --
+  // if another account already holds it, this is where that surfaces, before
+  // anything on the profile row changes.
+  if (email !== profile.email.toLowerCase()) {
+    const { error: authError } = await admin.auth.admin.updateUserById(profile.id, {
+      email,
+      email_confirm: true,
+    });
+    if (authError) {
+      const taken = authError.message?.toLowerCase().includes("already");
+      return { error: taken ? "That email is already in use by another account." : "Couldn't update your email. Please try again." };
+    }
+  }
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ full_name: fullName, phone: phoneDigits, email })
+    .eq("id", profile.id);
+  if (profileError) {
+    Sentry.captureException(profileError, { tags: { action: "updateMyProfile" } });
+    return { error: "Couldn't save your profile. Please try again." };
+  }
+
+  // A self-edit rather than an admin acting on someone else, but still worth
+  // a trace: this phone number is what the client portal's WhatsApp button
+  // uses, and this email is what the account logs in with.
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    target_id: profile.id,
+    action: "profile_self_update",
+  });
+  if (auditError) console.error("updateMyProfile: audit_log insert failed", auditError);
+
+  revalidatePath("/settings");
+  revalidatePath("/me");
+  return { error: null };
+}

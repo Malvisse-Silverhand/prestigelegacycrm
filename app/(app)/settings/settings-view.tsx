@@ -27,9 +27,12 @@ import { WebhooksTab } from "./tabs/webhooks-tab";
 import { JoinRequestsTab } from "./tabs/join-requests-tab";
 import { TrackingCodeTab } from "./tabs/tracking-code-tab";
 import { BenefitsTab } from "./tabs/benefits-tab";
+import { MyProfileTab } from "./tabs/my-profile-tab";
 import type { BenefitOption } from "@/app/(app)/my-sales/types";
+import type { MyProfileDetails } from "./data";
 
 const TABS = [
+  "My Profile",
   "Users & Hierarchy",
   "Join Requests",
   "Roles & Permissions",
@@ -47,6 +50,7 @@ type Tab = (typeof TABS)[number];
 // tab appears in exactly one group; anything a role can't see is dropped from
 // its group, and an empty group disappears.
 const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
+  { heading: "Account", tabs: ["My Profile"] },
   { heading: "People", tabs: ["Users & Hierarchy", "Join Requests", "Roles & Permissions"] },
   { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Lead Sources"] },
   { heading: "Sales", tabs: ["Benefits"] },
@@ -55,6 +59,7 @@ const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
 ];
 
 const DESCRIPTIONS: Record<Tab, string> = {
+  "My Profile": "Your own name, phone number and email",
   "Users & Hierarchy": "Who is in the organisation and who they report to",
   "Join Requests": "Agents who signed up through a shared invite link",
   "Roles & Permissions": "What each role can see and do",
@@ -84,6 +89,7 @@ export function SettingsView({
   trackablePages,
   benefits,
   currentUserId,
+  myProfile,
 }: {
   role: Role;
   orgTree: OrgTree;
@@ -101,6 +107,7 @@ export function SettingsView({
   trackablePages: TrackablePage[];
   benefits: BenefitOption[];
   currentUserId: string;
+  myProfile: MyProfileDetails;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log and Tracking Code
@@ -110,7 +117,7 @@ export function SettingsView({
   // managers.
   const isManager = role === "superadmin" || role === "group_manager" || role === "unit_manager";
   const visibleTabs = !isManager
-    ? (["Set Target"] as const as readonly Tab[])
+    ? (["My Profile", "Set Target"] as const as readonly Tab[])
     : role === "superadmin"
       ? TABS
       : role === "group_manager"
@@ -201,6 +208,7 @@ export function SettingsView({
             <div className="mt-[2px] text-[12.5px] font-medium text-muted">{DESCRIPTIONS[tab]}</div>
           </div>
 
+          {tab === "My Profile" && <MyProfileTab details={myProfile} />}
           {tab === "Users & Hierarchy" && (
             <UsersHierarchyTab
               role={role}

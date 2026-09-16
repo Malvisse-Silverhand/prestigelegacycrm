@@ -583,3 +583,19 @@ export async function getTrackablePages(profile: CurrentProfile): Promise<Tracka
     agentName: (p.profiles as unknown as { full_name: string } | null)?.full_name ?? "—",
   }));
 }
+
+// Everything My Profile needs about the signed-in user. Separate from
+// getCurrentProfile() deliberately -- that function is cached per request and
+// used everywhere for identity checks, and phone is the one column it has
+// never needed until now, so it doesn't belong on that shared shape.
+export type MyProfileDetails = { fullName: string; email: string; phone: string | null };
+
+export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyProfileDetails> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("full_name, email, phone").eq("id", profile.id).maybeSingle();
+  return {
+    fullName: data?.full_name ?? profile.full_name,
+    email: data?.email ?? profile.email,
+    phone: data?.phone ?? null,
+  };
+}
