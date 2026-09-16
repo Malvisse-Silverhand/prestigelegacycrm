@@ -27,6 +27,7 @@ import {
 export type CaseFormLead = {
   id: string;
   fullName: string;
+  email?: string | null;
   dateOfBirth?: string | null;
   gender?: string | null;
   isSmoker?: boolean | null;
@@ -190,6 +191,10 @@ export function CaseForm({
   const [proposerName, setProposerName] = useState(existing?.proposerName ?? lead.fullName);
   const [personCovered, setPersonCovered] = useState(existing?.personCoveredName ?? lead.fullName);
   const [idNo, setIdNo] = useState(existing?.idNo ?? "");
+  // The client portal logs in against this, so it is collected on the case
+  // and written back to the lead on save rather than left to whoever
+  // happened to fill in the lead form.
+  const [clientEmail, setClientEmail] = useState(lead.email ?? "");
   const idNoMatches = useMemo(() => casesByIdNo?.get(idNo.trim()) ?? [], [casesByIdNo, idNo]);
   const [gender, setGender] = useState(existing?.gender ?? lead.gender ?? "");
   const [dob, setDob] = useState(existing?.dateOfBirth ?? lead.dateOfBirth ?? "");
@@ -307,6 +312,7 @@ export function CaseForm({
           proposerName,
           personCoveredName: personCovered,
           idNo,
+          clientEmail,
           gender: gender || null,
           dateOfBirth: dob || null,
           religion,
@@ -422,8 +428,15 @@ export function CaseForm({
           <Field label="Person covered">
             <input value={personCovered} onChange={(e) => setPersonCovered(e.target.value)} className={input} />
           </Field>
-          <Field label="ID no">
-            <input value={idNo} onChange={(e) => setIdNo(e.target.value)} placeholder={eg.idNo} className={input} />
+          <Field label="ID no (required)" hint="The client portal identifies a client by their NRIC.">
+            <input
+              value={idNo}
+              onChange={(e) => setIdNo(e.target.value)}
+              placeholder={eg.idNo}
+              required
+              aria-required="true"
+              className={`${input} ${idNo.trim() ? "" : "border-alert-red"}`}
+            />
             {/* Same NRIC already on file, under a different case: worth
                 surfacing while the agent is still typing, not after the fact
                 -- this is the same grouping the client portal itself uses. */}
@@ -432,6 +445,17 @@ export function CaseForm({
                 Already on file: {idNoMatches.map((m) => m.certificateNo ?? m.planName).join(", ")} ({idNoMatches[0].name})
               </p>
             )}
+          </Field>
+          <Field label="Client email (required)" hint="Saved to the lead. Used to log in where a certificate has no NRIC.">
+            <input
+              type="email"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+              placeholder="nama@email.com"
+              required
+              aria-required="true"
+              className={`${input} ${clientEmail.trim() ? "" : "border-alert-red"}`}
+            />
           </Field>
           <Field label="Date of birth">
             <input type="date" value={dob ?? ""} onChange={(e) => setDob(e.target.value)} className={input} />
@@ -694,7 +718,7 @@ export function CaseForm({
         <button
           type="button"
           onClick={handleSave}
-          disabled={pending || !planName.trim()}
+          disabled={pending || !planName.trim() || !idNo.trim() || !clientEmail.trim()}
           className="h-[42px] flex-1 rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : existing ? "Save changes" : "File this case"}

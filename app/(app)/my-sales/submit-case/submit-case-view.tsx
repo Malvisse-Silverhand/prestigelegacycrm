@@ -82,6 +82,7 @@ export function SubmitCaseView({
     setFilingFor({
       id: l.id,
       fullName: l.fullName,
+      email: l.email,
       dateOfBirth: l.dateOfBirth,
       gender: l.gender,
       isSmoker: l.isSmoker,
@@ -102,13 +103,14 @@ export function SubmitCaseView({
           return;
         }
         const lead = result.lead as {
-          id: string; full_name: string; date_of_birth: string | null;
+          id: string; full_name: string; email: string | null; date_of_birth: string | null;
           gender: string | null; is_smoker: boolean | null; occupation: string | null; interest: string | null;
         };
         setFreshOpen(false);
         setFilingFor({
           id: lead.id,
           fullName: lead.full_name,
+          email: lead.email ?? null,
           dateOfBirth: lead.date_of_birth,
           gender: lead.gender,
           isSmoker: lead.is_smoker,
@@ -405,6 +407,7 @@ export function SubmitCaseView({
                           lead={{
                             id: c.leadId,
                             fullName: c.leadName,
+                            email: c.leadEmail,
                             dateOfBirth: lead?.dateOfBirth ?? c.dateOfBirth,
                             gender: lead?.gender ?? c.gender,
                             isSmoker: lead?.isSmoker ?? c.isSmoker,
@@ -536,6 +539,7 @@ export function SubmitCaseView({
                 lead={{
                   id: filingFor.id,
                   fullName: filingFor.fullName,
+                  email: filingFor.email,
                   dateOfBirth: filingFor.dateOfBirth,
                   gender: filingFor.gender,
                   isSmoker: filingFor.isSmoker,

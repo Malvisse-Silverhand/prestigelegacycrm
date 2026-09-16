@@ -25,7 +25,9 @@ export { PORTAL_STATUSES, PORTAL_STATUS_COPY, statusFromCase, type PortalStatus 
  */
 export type PortalPayload = {
   caseId: string;
-  linkId: string;
+  /** Null for a certificate the agent has not issued a link for yet -- it is
+   *  still this client's certificate, and still theirs to see. */
+  linkId: string | null;
   status: PortalStatus;
   clientName: string;
   certificateNo: string | null;
@@ -73,6 +75,21 @@ const CASE_SELECT = `id, status, plan_name, payment_frequency, installment_contr
        case_nominees(name, relationship, percentage, sort_order),
        case_benefits(benefit, sum_covered, sort_order)`;
 
+/**
+ * The same columns with `leads` joined INNER.
+ *
+ * This distinction is load-bearing, not cosmetic. PostgREST treats a filter
+ * on an embedded column as a filter on the EMBED unless the embed is
+ * `!inner` -- so with a plain embed, `leads.email=eq.x` returns every parent
+ * row and merely nulls the lead on the ones that do not match. That is
+ * exactly how one client came to see four clients' certificates. Any query
+ * that filters on a `leads.*` column must use this select.
+ */
+const CASE_SELECT_INNER = CASE_SELECT.replace(
+  "leads!case_submissions_lead_id_fkey(",
+  "leads!case_submissions_lead_id_fkey!inner(",
+);
+
 type CaseRow = {
   id: string;
   status: string;
@@ -93,7 +110,7 @@ type CaseRow = {
 
 type LinkRow = { id: string; display_status: string | null; revoked_at: string | null };
 
-function buildPayload(row: CaseRow, link: LinkRow, today: string): PortalPayload {
+function buildPayload(row: CaseRow, link: LinkRow | null, today: string): PortalPayload {
   const lead = row.leads;
   const agent = row.profiles;
 
@@ -119,8 +136,8 @@ function buildPayload(row: CaseRow, link: LinkRow, today: string): PortalPayload
 
   return {
     caseId: row.id,
-    linkId: link.id,
-    status: (link.display_status as PortalStatus | null) ?? statusFromCase(row.status),
+    linkId: link?.id ?? null,
+    status: (link?.display_status as PortalStatus | null) ?? statusFromCase(row.status),
     // The person covered is who the certificate is about; the lead name is the
     // fallback for older cases filed before that field existed.
     clientName: row.person_covered_name || lead?.full_name || "",
@@ -240,11 +257,25 @@ export function matchesIdentity(anchor: PortalAnchor, emailOrPhone: string, last
 }
 
 /**
- * Every certificate presently visible to a verified NRIC: every case sharing
- * that exact id_no with a live (non-revoked) portal link. Revoking any one of
- * them takes effect the moment this next runs -- there is no cached list and
- * no per-certificate re-authentication, because access was never encoded in
- * the session, only identity was.
+ * Every certificate belonging to the identity that just logged in.
+ *
+ * ONE key decides the grouping, never a union of two:
+ *
+ *   * the NRIC, whenever the certificate they logged in against has one --
+ *     it is the only identifier that actually identifies a person; or
+ *   * the lead's email, but ONLY as a fallback for a certificate filed with
+ *     no NRIC on it at all.
+ *
+ * It used to run both and merge the results, which leaked: `leads` is a
+ * LEFT-JOIN embed, so `leads.email=eq.x` never restricted which parent rows
+ * came back -- it only nulled out the embedded lead on the rows that did not
+ * match. The email branch therefore returned every case with a live portal
+ * link, belonging to anyone. Both queries here now filter on a column of
+ * `case_submissions` itself, or on an embed marked `!inner`, which is what
+ * makes a filter on an embedded column actually exclude parent rows.
+ *
+ * Revoking a link still takes effect on the very next render: access was
+ * never encoded in the session, only identity was.
  */
 export async function getPortalCertificates(
   identity: { idNo: string; email: string | null },
@@ -252,46 +283,59 @@ export async function getPortalCertificates(
 ): Promise<PortalPayload[]> {
   const admin = createAdminClient();
 
-  // `!inner` plus a filter on the embedded table's own column turns this into
-  // a real inner join: a case with no live link, or none at all, drops out of
-  // the result entirely rather than coming back with a null link.
-  const withLiveLink = () =>
-    admin
-      .from("case_submissions")
-      .select(`${CASE_SELECT}, client_portal_links!inner(id, display_status, revoked_at)`)
-      .filter("client_portal_links.revoked_at", "is", null);
+  const idNo = identity.idNo?.trim() ?? "";
+  const email = identity.email?.trim() ?? "";
 
-  // Two queries rather than one `or`: the second condition lives on an
-  // embedded table (the lead's email), and PostgREST cannot OR across the
-  // join boundary. Merged and de-duplicated below.
-  const byNric = withLiveLink().eq("id_no", identity.idNo);
-  const byEmail = identity.email
-    ? withLiveLink().filter("leads.email", "eq", identity.email)
-    : null;
+  // Neither identifier: nothing to group by, so nothing is returned. Better
+  // an empty portal than somebody else's certificates.
+  if (!idNo && !email) return [];
 
-  const [nricResult, emailResult] = await Promise.all([byNric, byEmail]);
+  // The link embed is deliberately NOT `!inner` here. Once someone has proved
+  // who they are, every certificate that is theirs belongs on the page --
+  // including one the agent never got round to issuing a link for. The link
+  // is the way in and the revocation switch, not a per-certificate paywall.
+  let query = admin
+    .from("case_submissions")
+    .select(
+      `${idNo ? CASE_SELECT : CASE_SELECT_INNER}, client_portal_links(id, display_status, revoked_at)`,
+    );
 
-  for (const result of [nricResult, emailResult]) {
-    if (result?.error) Sentry.captureException(result.error, { tags: { fn: "getPortalCertificates" } });
+  if (idNo) {
+    // NRIC first, and alone. A certificate carrying an NRIC is grouped by it
+    // and by nothing else, so two people sharing a household email never see
+    // each other's cover.
+    query = query.eq("id_no", idNo);
+  } else {
+    // No NRIC on the certificate they proved themselves against, so the email
+    // is all there is. Restricted to cases that ALSO have no NRIC: a case
+    // that has one belongs to whoever that NRIC identifies, not to whoever
+    // happens to share an address with them.
+    query = query.filter("leads.email", "eq", email).is("id_no", null);
   }
 
-  const rows = [
-    ...((nricResult?.data ?? []) as unknown as (CaseRow & { client_portal_links: LinkRow[] })[]),
-    ...((emailResult?.data ?? []) as unknown as (CaseRow & { client_portal_links: LinkRow[] })[]),
-  ];
-
-  // A case matching on both NRIC and email comes back twice.
-  const seen = new Set<string>();
-  const unique = rows.filter((row) => {
-    if (seen.has(row.id)) return false;
-    seen.add(row.id);
-    return true;
+  const { data, error } = await query.order("commencement_date", {
+    ascending: false,
+    nullsFirst: false,
   });
 
-  // Newest cover first, the way a client thinks about their own certificates.
-  unique.sort((a, b) => (b.commencement_date ?? "").localeCompare(a.commencement_date ?? ""));
+  if (error || !data) {
+    if (error) Sentry.captureException(error, { tags: { fn: "getPortalCertificates" } });
+    return [];
+  }
 
-  return unique.map((row) => buildPayload(row, row.client_portal_links[0], today));
+  const rows = data as unknown as (CaseRow & { client_portal_links: LinkRow[] })[];
+
+  return rows
+    .map((row) => {
+      const links = row.client_portal_links ?? [];
+      const live = links.find((l) => !l.revoked_at) ?? null;
+      // A link that was issued and then revoked is a deliberate act: that
+      // certificate stays hidden. A certificate that never had one is simply
+      // one the agent has not shared yet, and is still theirs to see.
+      const deliberatelyRevoked = links.length > 0 && !live;
+      return deliberatelyRevoked ? null : buildPayload(row, live, today);
+    })
+    .filter((p): p is PortalPayload => p !== null);
 }
 
 /**

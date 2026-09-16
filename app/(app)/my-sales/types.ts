@@ -137,6 +137,8 @@ export type SubmittableLead = {
   id: string;
   leadNo: number;
   fullName: string;
+  /** Seeds the required email on the case form. */
+  email: string | null;
   phone: string;
   stage: string;
   agentName: string | null;

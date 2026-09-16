@@ -179,7 +179,7 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       .select(
         // The last four are only here to prefill the case form: the same
         // person's details, already typed once on the lead.
-        "id, lead_no, full_name, phone, pipeline_stage, interest, date_of_birth, gender, is_smoker, occupation, profiles!leads_agent_id_fkey(full_name)",
+        "id, lead_no, full_name, phone, email, pipeline_stage, interest, date_of_birth, gender, is_smoker, occupation, profiles!leads_agent_id_fkey(full_name)",
       )
       .order("lead_no", { ascending: false }),
     supabase.from("case_submissions").select("lead_id, status"),
@@ -201,6 +201,7 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       lead_no: number;
       full_name: string;
       phone: string;
+      email: string | null;
       pipeline_stage: string;
       interest: string | null;
       date_of_birth: string | null;
@@ -213,6 +214,7 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       id: row.id,
       leadNo: row.lead_no,
       fullName: row.full_name,
+      email: row.email ?? null,
       phone: row.phone,
       stage: row.pipeline_stage,
       agentName: row.profiles?.full_name ?? null,

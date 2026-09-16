@@ -38,7 +38,7 @@ export default async function ClientPortalPage({ params }: { params: Promise<{ t
     const certificates = await getPortalCertificates(session, today);
     if (certificates.length === 0) return <PortalClosed />;
 
-    void recordPortalOpens(certificates.map((c) => c.linkId));
+    void recordPortalOpens(certificates.map((c) => c.linkId).filter((id): id is string => id !== null));
     return <PortalView payloads={certificates} />;
   }
 

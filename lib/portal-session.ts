@@ -72,7 +72,14 @@ export function verifySessionToken(token: string | undefined | null): PortalSess
   const idNo = typeof parsed.idNo === "string" ? parsed.idNo : "";
   const email = typeof parsed.email === "string" && parsed.email ? parsed.email : null;
   const exp = typeof parsed.exp === "number" ? parsed.exp : NaN;
-  if (!idNo || !Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return null;
+
+  // At least one identifier, not specifically an NRIC. In practice the login
+  // step only ever mints a session with one, because proving identity means
+  // giving the last 4 of the NRIC -- but the grouping query understands an
+  // email-only identity, and a session type that could not express one would
+  // be lying about its own contract.
+  if (!idNo && !email) return null;
+  if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return null;
 
   return { idNo, email };
 }

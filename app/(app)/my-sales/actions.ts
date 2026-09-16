@@ -73,6 +73,8 @@ export type CaseInput = {
   planName: string;
   planType: string | null;
   planCategories: string[];
+  /** Written back to the lead: the portal logs in against it. */
+  clientEmail?: string | null;
   paymentFrequency: PaymentFrequency;
   paymentMethod: string | null;
   installmentContribution: number | null;
@@ -128,6 +130,20 @@ export async function saveCase(input: CaseInput) {
   if (!profile) return { error: "Not signed in.", caseId: null };
   if (!input.planName.trim()) return { error: "Give the plan a name.", caseId: null };
 
+  // NRIC and email are what the client portal identifies a person by -- the
+  // NRIC first, the email only where there is no NRIC. A case filed without
+  // either cannot be grouped with that client's other certificates and
+  // cannot be logged into at all, so it is refused here rather than
+  // discovered months later by a client who cannot get in.
+  const idNo = input.idNo?.trim() ?? "";
+  if (!idNo) {
+    return { error: "An NRIC / ID number is required -- the client portal identifies a client by it.", caseId: null };
+  }
+  const clientEmail = input.clientEmail?.trim() ?? "";
+  if (!clientEmail) {
+    return { error: "A client email is required -- it is the fallback the client portal logs in against.", caseId: null };
+  }
+
   const supabase = await createClient();
 
   // RLS would already stop a lead this person can't see, but the stage gate is
@@ -144,6 +160,18 @@ export async function saveCase(input: CaseInput) {
       error: "This lead has to reach the Submission stage before a case can be filed against it.",
       caseId: null,
     };
+  }
+
+  // The portal matches on the LEAD's email, so what the agent typed here has
+  // to reach the lead or the two will disagree about who this client is.
+  if (clientEmail) {
+    const { error: leadEmailError } = await supabase
+      .from("leads")
+      .update({ email: clientEmail })
+      .eq("id", input.leadId);
+    if (leadEmailError) {
+      return { error: "Couldn't save the client's email against the lead.", caseId: null };
+    }
   }
 
   const row = {
