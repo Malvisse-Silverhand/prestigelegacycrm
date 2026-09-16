@@ -24,7 +24,8 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
         c.leadName.toLowerCase().includes(q) ||
         c.planName.toLowerCase().includes(q) ||
         (c.certificateNo ?? "").toLowerCase().includes(q) ||
-        (c.idNo ?? "").toLowerCase().includes(q),
+        (c.idNo ?? "").toLowerCase().includes(q) ||
+        (c.leadEmail ?? "").toLowerCase().includes(q),
     );
   }, [cases, query]);
 
@@ -161,9 +162,10 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       {c.planName}
                       {c.certificateNo ? ` · ${c.certificateNo}` : ""}
                     </div>
-                    {c.idNo && (
-                      <div className={`truncate font-mono text-[9.5px] font-medium ${active ? "text-white/45" : "text-taupe-2"}`}>
-                        {c.idNo}
+                    {(c.idNo || c.leadEmail) && (
+                      <div className={`truncate text-[9.5px] font-medium ${active ? "text-white/45" : "text-taupe-2"}`}>
+                        <span className="font-mono">{c.idNo ?? "no NRIC"}</span>
+                        {c.leadEmail ? ` · ${c.leadEmail}` : " · no email"}
                       </div>
                     )}
                     <div className="mt-1 flex items-center gap-1.5">
@@ -228,9 +230,18 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
                       {selected.certificateNo ? ` · Certificate ${selected.certificateNo}` : ""}
                       {selected.commencementDate ? ` · Commenced ${fmtDate(selected.commencementDate)}` : ""}
                     </div>
-                    {selected.idNo && (
-                      <div className="mt-0.5 font-mono text-[10.5px] font-medium text-taupe-2">NRIC {selected.idNo}</div>
-                    )}
+                    {/* The two identifiers the client portal groups certificates
+                        by. Shown together because "why does this client see
+                        that certificate" is always answered by one of them. */}
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-medium">
+                      <span className={selected.idNo ? "font-mono text-taupe-2" : "font-semibold text-alert-red"}>
+                        {selected.idNo ? `NRIC ${selected.idNo}` : "No NRIC on file"}
+                      </span>
+                      <span className="text-sand-2">·</span>
+                      <span className={selected.leadEmail ? "text-taupe-2" : "font-semibold text-alert-red"}>
+                        {selected.leadEmail ?? "No email on file"}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex flex-none items-start gap-4">
                     <div className="text-right">

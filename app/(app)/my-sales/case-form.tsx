@@ -446,7 +446,11 @@ export function CaseForm({
               </p>
             )}
           </Field>
-          <Field label="Client email (required)" hint="Saved to the lead. Used to log in where a certificate has no NRIC.">
+          <Field
+            label="Client email (required)"
+            hint="Saved back to the lead. The client portal logs in against it."
+            className="sm:col-span-2"
+          >
             <input
               type="email"
               value={clientEmail}
@@ -718,7 +722,7 @@ export function CaseForm({
         <button
           type="button"
           onClick={handleSave}
-          disabled={pending || !planName.trim() || !idNo.trim() || !clientEmail.trim()}
+          disabled={pending || !planName.trim() || !idNo.trim() || !(clientEmail.trim() || lead.email)}
           className="h-[42px] flex-1 rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : existing ? "Save changes" : "File this case"}

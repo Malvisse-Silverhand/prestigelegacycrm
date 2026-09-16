@@ -139,10 +139,6 @@ export async function saveCase(input: CaseInput) {
   if (!idNo) {
     return { error: "An NRIC / ID number is required -- the client portal identifies a client by it.", caseId: null };
   }
-  const clientEmail = input.clientEmail?.trim() ?? "";
-  if (!clientEmail) {
-    return { error: "A client email is required -- it is the fallback the client portal logs in against.", caseId: null };
-  }
 
   const supabase = await createClient();
 
@@ -151,7 +147,7 @@ export async function saveCase(input: CaseInput) {
   // and a Server Action can be called without it.
   const { data: lead } = await supabase
     .from("leads")
-    .select("id, pipeline_stage")
+    .select("id, pipeline_stage, email")
     .eq("id", input.leadId)
     .maybeSingle();
   if (!lead) return { error: "That lead could not be found.", caseId: null };
@@ -162,12 +158,29 @@ export async function saveCase(input: CaseInput) {
     };
   }
 
+  // What has to be true is that the CLIENT ends up with an email on file, not
+  // that this particular form field carried it. So the lead's own email
+  // counts: a form that failed to prefill -- or an older screen that has no
+  // email box at all -- must not strand an agent whose client already has one
+  // recorded.
+  const typedEmail = input.clientEmail?.trim() ?? "";
+  const clientEmail = typedEmail || (lead.email ?? "").trim();
+  if (!clientEmail) {
+    return {
+      error:
+        "A client email is required -- the client portal logs in against it. Add one in the Client email box, or on the lead.",
+      caseId: null,
+    };
+  }
+
   // The portal matches on the LEAD's email, so what the agent typed here has
   // to reach the lead or the two will disagree about who this client is.
-  if (clientEmail) {
+  // Skipped when it is already what the lead says, to avoid touching the row
+  // on every save.
+  if (typedEmail && typedEmail !== (lead.email ?? "").trim()) {
     const { error: leadEmailError } = await supabase
       .from("leads")
-      .update({ email: clientEmail })
+      .update({ email: typedEmail })
       .eq("id", input.leadId);
     if (leadEmailError) {
       return { error: "Couldn't save the client's email against the lead.", caseId: null };

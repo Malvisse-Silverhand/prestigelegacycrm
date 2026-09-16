@@ -391,6 +391,9 @@ export function LeadDetailContent({
                 lead={{
                   id: lead.id,
                   fullName: lead.full_name,
+                  // The case form requires this and writes it back here, so
+                  // it has to arrive already filled in when the lead has one.
+                  email: lead.email,
                   dateOfBirth: lead.date_of_birth,
                   gender: lead.gender,
                   isSmoker: lead.is_smoker,
