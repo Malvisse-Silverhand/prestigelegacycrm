@@ -336,20 +336,24 @@ export function SubmitCaseView({
                       type="button"
                       onClick={() => setOpenCaseId(open ? null : c.id)}
                       aria-expanded={open}
-                      className="flex w-full flex-wrap items-center gap-2.5 px-4 py-3 text-left"
+                      className="flex w-full flex-wrap items-center gap-2.5 px-4 py-3 text-left sm:flex-nowrap"
                     >
-                      <div className="min-w-0 flex-1">
+                      {/* Client, its own column -- name and status only, so a
+                          long plan name never pushes the status pill or
+                          crowds the case details beside it. */}
+                      <div className="min-w-0 flex-1 sm:basis-[46%]">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate text-[13px] font-bold text-navy">{c.leadName}</span>
                           <span className={`rounded-[6px] px-2 py-[2px] text-[9.5px] font-bold uppercase tracking-[0.06em] ${CASE_STATUS_TONE[c.status]}`}>
                             {CASE_STATUS_LABEL[c.status]}
                           </span>
                         </div>
-                        <div className="mt-0.5 truncate text-[11px] font-medium text-taupe">
-                          {c.planName}
-                          {c.certificateNo ? ` · ${c.certificateNo}` : ""}
-                          {c.installmentContribution != null ? ` · RM${fmtRM(c.installmentContribution)}` : ""}
-                        </div>
+                      </div>
+                      {/* Case details, its own column. */}
+                      <div className="min-w-0 flex-1 truncate text-[11px] font-medium text-taupe sm:text-right">
+                        {c.planName}
+                        {c.certificateNo ? ` · ${c.certificateNo}` : ""}
+                        {c.installmentContribution != null ? ` · RM${fmtRM(c.installmentContribution)}` : ""}
                       </div>
                       <svg
                         width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"

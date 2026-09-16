@@ -339,26 +339,36 @@ function ContributionChecklist({ submission, today }: { submission: CaseSubmissi
  */
 export function ServicingDetail({ submission, today }: { submission: CaseSubmission; today: string }) {
   return (
-    <div className="flex flex-col gap-4">
-      {submission.includesMedicalCard && submission.commencementDate ? (
-        <WaitingPeriods commencementDate={submission.commencementDate} today={today} />
-      ) : (
-        <div className="rounded-[12px] border border-dashed border-sand-2 bg-cream p-3.5">
-          <div className="text-[12.5px] font-semibold text-navy">No medical card cover on this certificate</div>
-          <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-            Waiting periods and the Great Journey guide only apply to medical card plans. Turn on
-            &ldquo;includes medical card cover&rdquo; on the case if that is wrong.
+    // A grid, not a single stack: the client portal card gets its own column
+    // on a wide screen rather than sitting under the contribution checklist,
+    // where the two read as one block. "grid" with no base grid-cols already
+    // stacks a narrow screen one item per row. This panel already sits inside
+    // the wide half of the Servicing page's own lg: split, so the nested
+    // split waits for xl: -- splitting again at lg: would squeeze both
+    // columns on anything short of a very wide monitor.
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start">
+      <div className="flex flex-col gap-4">
+        {submission.includesMedicalCard && submission.commencementDate ? (
+          <WaitingPeriods commencementDate={submission.commencementDate} today={today} />
+        ) : (
+          <div className="rounded-[12px] border border-dashed border-sand-2 bg-cream p-3.5">
+            <div className="text-[12.5px] font-semibold text-navy">No medical card cover on this certificate</div>
+            <div className="mt-0.5 text-[11.5px] font-medium text-muted">
+              Waiting periods and the Great Journey guide only apply to medical card plans. Turn on
+              &ldquo;includes medical card cover&rdquo; on the case if that is wrong.
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="border-t border-sand-3 pt-3.5">
-        <ContributionChecklist submission={submission} today={today} />
+        <div className="border-t border-sand-3 pt-3.5">
+          <ContributionChecklist submission={submission} today={today} />
+        </div>
       </div>
 
-      {/* Under the checklist, because issuing the link is the last thing an
-          agent does once the certificate is settled. */}
-      <div className="border-t border-sand-3 pt-3.5">
+      {/* Its own column, with its own divider on the wide layout -- an agent
+          revoking a link should never have to scroll past the schedule to
+          reach it, and the two should never read as one block. */}
+      <div className="border-t border-sand-3 pt-3.5 xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0">
         <PortalLinkCard submission={submission} />
       </div>
     </div>
