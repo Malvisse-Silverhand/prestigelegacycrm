@@ -12,6 +12,7 @@ import {
   cleanCategories,
   defaultCategoriesFor,
   isKnownPlan,
+  BENEFIT_STATUSES,
   type PlanCategoryKey,
 } from "@/lib/plan-catalogue";
 import { saveCase } from "./actions";
@@ -678,7 +679,16 @@ export function CaseForm({
                   <input type="number" step="0.01" value={b.installmentContribution ?? ""} onChange={(e) => updateBenefit(i, { installmentContribution: numOrNull(e.target.value) })} placeholder={eg.benefitContribution} aria-label={`Benefit ${i + 1} contribution`} className={`${input} bg-white`} />
                 </Cell>
                 <Cell label="Status">
-                  <input value={b.status ?? ""} onChange={(e) => updateBenefit(i, { status: e.target.value })} placeholder="Inforce" aria-label={`Benefit ${i + 1} status`} className={`${input} bg-white`} />
+                  <select
+                    value={b.status ?? BENEFIT_STATUSES[0]}
+                    onChange={(e) => updateBenefit(i, { status: e.target.value })}
+                    aria-label={`Benefit ${i + 1} status`}
+                    className={`${input} bg-white`}
+                  >
+                    {BENEFIT_STATUSES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </Cell>
               </div>
             </div>

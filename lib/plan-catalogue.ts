@@ -78,6 +78,15 @@ export const PLAN_OPTIONS: PlanOption[] = PLAN_GROUPS.flatMap((g) => g.plans);
  */
 export const PLAN_OTHER = "Others";
 
+/**
+ * Whether one benefit on a certificate is still being paid for. Free text
+ * before this -- every row on the book today reads exactly "Inforce", so the
+ * dropdown loses nothing by being closed rather than open like the plan
+ * name's "Others" escape hatch.
+ */
+export const BENEFIT_STATUSES = ["Inforce", "Inforce Potential Lapse", "Lapsed"] as const;
+export type BenefitStatus = (typeof BENEFIT_STATUSES)[number];
+
 export function isKnownPlan(name: string): boolean {
   return PLAN_OPTIONS.some((p) => p.name === name.trim());
 }
