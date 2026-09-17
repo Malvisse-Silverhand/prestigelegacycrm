@@ -64,6 +64,8 @@ export type PortalBenefit = {
   sumCovered: number | null;
   /** True for the first benefit on the certificate: the one that names the plan. */
   isBase: boolean;
+  /** From the catalogue in Settings > Benefits. Null when there is no match. */
+  description: string | null;
 };
 
 /** One contribution that has fallen due and has not been ticked off. */
@@ -120,7 +122,12 @@ type CaseRow = {
 
 type LinkRow = { id: string; display_status: string | null; revoked_at: string | null };
 
-function buildPayload(row: CaseRow, link: LinkRow | null, today: string): PortalPayload {
+function buildPayload(
+  row: CaseRow,
+  link: LinkRow | null,
+  today: string,
+  descriptions: Map<string, string>,
+): PortalPayload {
   const lead = row.leads;
   const agent = row.profiles;
 
@@ -175,6 +182,11 @@ function buildPayload(row: CaseRow, link: LinkRow | null, today: string): Portal
       name: b.benefit,
       sumCovered: b.sum_covered === null ? null : Number(b.sum_covered),
       isBase: i === 0,
+      // The catalogue holds the description, not the case row -- matched by
+      // name because case_benefits carries no id back to it (a benefit can be
+      // hand-typed via "Others"). Null for anything with no match, rather
+      // than the certificate's own name repeated back as a description.
+      description: descriptions.get(b.benefit.trim().toLowerCase()) ?? null,
     })),
     contribution: installment,
     frequency: row.payment_frequency,
@@ -335,14 +347,21 @@ export async function getPortalCertificates(
     query = query.filter("leads.email", "eq", email).is("id_no", null);
   }
 
-  const { data, error } = await query.order("commencement_date", {
-    ascending: false,
-    nullsFirst: false,
-  });
+  const [{ data, error }, { data: catalogueRows }] = await Promise.all([
+    query.order("commencement_date", { ascending: false, nullsFirst: false }),
+    // The whole catalogue, every time: it is a handful of rows maintained in
+    // Settings, and matching happens in memory below rather than per-benefit.
+    admin.from("benefit_catalogue").select("name, description"),
+  ]);
 
   if (error || !data) {
     if (error) Sentry.captureException(error, { tags: { fn: "getPortalCertificates" } });
     return [];
+  }
+
+  const descriptions = new Map<string, string>();
+  for (const c of catalogueRows ?? []) {
+    if (c.description) descriptions.set((c.name as string).trim().toLowerCase(), c.description as string);
   }
 
   const rows = data as unknown as (CaseRow & { client_portal_links: LinkRow[] })[];
@@ -355,7 +374,7 @@ export async function getPortalCertificates(
       // certificate stays hidden. A certificate that never had one is simply
       // one the agent has not shared yet, and is still theirs to see.
       const deliberatelyRevoked = links.length > 0 && !live;
-      return deliberatelyRevoked ? null : buildPayload(row, live, today);
+      return deliberatelyRevoked ? null : buildPayload(row, live, today, descriptions);
     })
     .filter((p): p is PortalPayload => p !== null);
 }

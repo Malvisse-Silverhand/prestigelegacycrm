@@ -40,7 +40,7 @@ const COPY = {
     portalTag: "Portal Klien",
     helpAria: "Panduan portal",
     backToCerts: "Lihat Semua Sijil",
-    amountDueTitle: "Jumlah Perlu Dibayar",
+    amountDueTitle: "Jumlah Tertunggak",
     amountDueClear: "CLEAR",
     amountDueClearNote: "Tiada sumbangan tertunggak. Terima kasih.",
     amountDueTotal: "Jumlah tertunggak",
@@ -122,7 +122,7 @@ const COPY = {
     portalTag: "Client Portal",
     helpAria: "Portal guide",
     backToCerts: "View All Certificates",
-    amountDueTitle: "Amount Due",
+    amountDueTitle: "Contribution Due",
     amountDueClear: "CLEAR",
     amountDueClearNote: "Nothing outstanding. Thank you.",
     amountDueTotal: "Total outstanding",
@@ -486,45 +486,45 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
 
                 {/* What is actually owed, before what comes next: a client
                     opening this wants "do I owe anything" answered first, and
-                    answered plainly either way. */}
+                    answered plainly either way. Every color here is picked
+                    for THIS card, sitting on the dark navy certificate
+                    section -- the light-background red and the dark-on-light
+                    green that this box borrows everywhere else on the portal
+                    are both close to invisible here. */}
                 <div
                   className={`rounded-[12px] px-3.5 py-3 ${
-                    payload.amountsDue.length > 0 ? "bg-alert-red-bg" : "bg-white/[0.07]"
+                    payload.amountsDue.length > 0 ? "bg-[rgba(216,90,79,.22)]" : "bg-white/[0.07]"
                   }`}
                 >
-                  <div
-                    className={`text-[9.5px] font-semibold uppercase tracking-[0.08em] ${
-                      payload.amountsDue.length > 0 ? "text-alert-red" : "text-white/50"
-                    }`}
-                  >
+                  <div className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-white">
                     {t.amountDueTitle}
                   </div>
 
                   {payload.amountsDue.length === 0 ? (
                     <>
-                      <div className="mt-1 text-[16px] font-extrabold tracking-[0.06em] text-green">
+                      <div className="mt-1 text-[16px] font-extrabold tracking-[0.06em] text-[#8fe6bd]">
                         {t.amountDueClear}
                       </div>
-                      <div className="mt-0.5 text-[11px] font-medium text-white/60">{t.amountDueClearNote}</div>
+                      <div className="mt-0.5 text-[11px] font-medium text-white/70">{t.amountDueClearNote}</div>
                     </>
                   ) : (
                     <>
                       <div className="mt-1 flex items-baseline justify-between gap-2">
-                        <span className="text-[18px] font-extrabold tracking-[-0.02em] text-alert-red">
+                        <span className="text-[18px] font-extrabold tracking-[-0.02em] text-white">
                           {fmtRM(payload.totalDue) ?? "—"}
                         </span>
-                        <span className="text-[10.5px] font-semibold text-alert-red/80">
+                        <span className="text-[10.5px] font-semibold text-[#ffb4ab]">
                           {(payload.amountsDue.length === 1 ? t.amountDueOne : t.amountDueMany).replace(
                             "{n}",
                             String(payload.amountsDue.length),
                           )}
                         </span>
                       </div>
-                      <ul className="mt-2 flex flex-col gap-1 border-t border-alert-red/20 pt-2">
+                      <ul className="mt-2 flex flex-col gap-1 border-t border-white/15 pt-2">
                         {payload.amountsDue.map((d) => (
                           <li key={d.dueDate} className="flex items-baseline justify-between gap-2">
-                            <span className="text-[11.5px] font-semibold text-ink">{fmtDate(d.dueDate)}</span>
-                            <span className="text-[11.5px] font-bold text-alert-red">{fmtRM(d.amount) ?? "—"}</span>
+                            <span className="text-[11.5px] font-semibold text-white/80">{fmtDate(d.dueDate)}</span>
+                            <span className="text-[11.5px] font-bold text-white">{fmtRM(d.amount) ?? "—"}</span>
                           </li>
                         ))}
                       </ul>
@@ -586,6 +586,12 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
                       {b.isBase ? t.base : t.rider}
                     </span>
                   </div>
+                  {/* From the catalogue in Settings > Benefits -- small
+                      because it is explanatory rather than a heading, but
+                      never so small it stops being read. */}
+                  {b.description && (
+                    <p className="mt-1 text-[11px] font-medium leading-relaxed text-muted">{b.description}</p>
+                  )}
                   <div className="mt-2.5 flex items-baseline justify-between gap-2.5 border-t border-sand-3 pt-2.5">
                     <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-taupe-2">{t.sumCovered}</span>
                     <span className="text-[14px] font-extrabold tracking-[-0.02em] text-navy">
