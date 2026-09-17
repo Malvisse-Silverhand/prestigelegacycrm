@@ -39,7 +39,13 @@ const COPY = {
   bm: {
     portalTag: "Portal Klien",
     helpAria: "Panduan portal",
-    backToCerts: "Semua Sijil Saya",
+    backToCerts: "Lihat Semua Sijil",
+    amountDueTitle: "Jumlah Perlu Dibayar",
+    amountDueClear: "CLEAR",
+    amountDueClearNote: "Tiada sumbangan tertunggak. Terima kasih.",
+    amountDueTotal: "Jumlah tertunggak",
+    amountDueOne: "{n} sumbangan tertunggak",
+    amountDueMany: "{n} sumbangan tertunggak",
     logout: "Log Keluar",
     certEyebrow: "Sijil Takaful Anda",
     certNo: "No. Sijil",
@@ -115,7 +121,13 @@ const COPY = {
   en: {
     portalTag: "Client Portal",
     helpAria: "Portal guide",
-    backToCerts: "All My Certificates",
+    backToCerts: "View All Certificates",
+    amountDueTitle: "Amount Due",
+    amountDueClear: "CLEAR",
+    amountDueClearNote: "Nothing outstanding. Thank you.",
+    amountDueTotal: "Total outstanding",
+    amountDueOne: "{n} contribution outstanding",
+    amountDueMany: "{n} contributions outstanding",
     logout: "Log Out",
     certEyebrow: "Your Takaful Certificate",
     certNo: "Certificate No.",
@@ -366,11 +378,13 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
           <button
             type="button"
             onClick={() => setSelectedCaseId(null)}
-            aria-label={t.backToCerts}
             title={t.backToCerts}
-            className="press flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white/10"
+            className="press flex min-h-8 flex-none items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1.5 text-[10.5px] font-bold leading-tight text-gold"
           >
-            <IconGrid className="h-[15px] w-[15px] text-gold" />
+            <IconGrid className="h-[14px] w-[14px] flex-none" />
+            {/* The label is the point: an icon alone left clients with more
+                than one certificate unsure there was anywhere to go back to. */}
+            <span className="whitespace-nowrap">{t.backToCerts}</span>
           </button>
         )}
         <button
@@ -468,6 +482,54 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
                     <div className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-white/50">{t.commenced}</div>
                     <div className="mt-1 text-[13px] font-bold text-white">{fmtDate(payload.commencementDate)}</div>
                   </div>
+                </div>
+
+                {/* What is actually owed, before what comes next: a client
+                    opening this wants "do I owe anything" answered first, and
+                    answered plainly either way. */}
+                <div
+                  className={`rounded-[12px] px-3.5 py-3 ${
+                    payload.amountsDue.length > 0 ? "bg-alert-red-bg" : "bg-white/[0.07]"
+                  }`}
+                >
+                  <div
+                    className={`text-[9.5px] font-semibold uppercase tracking-[0.08em] ${
+                      payload.amountsDue.length > 0 ? "text-alert-red" : "text-white/50"
+                    }`}
+                  >
+                    {t.amountDueTitle}
+                  </div>
+
+                  {payload.amountsDue.length === 0 ? (
+                    <>
+                      <div className="mt-1 text-[16px] font-extrabold tracking-[0.06em] text-green">
+                        {t.amountDueClear}
+                      </div>
+                      <div className="mt-0.5 text-[11px] font-medium text-white/60">{t.amountDueClearNote}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-1 flex items-baseline justify-between gap-2">
+                        <span className="text-[18px] font-extrabold tracking-[-0.02em] text-alert-red">
+                          {fmtRM(payload.totalDue) ?? "—"}
+                        </span>
+                        <span className="text-[10.5px] font-semibold text-alert-red/80">
+                          {(payload.amountsDue.length === 1 ? t.amountDueOne : t.amountDueMany).replace(
+                            "{n}",
+                            String(payload.amountsDue.length),
+                          )}
+                        </span>
+                      </div>
+                      <ul className="mt-2 flex flex-col gap-1 border-t border-alert-red/20 pt-2">
+                        {payload.amountsDue.map((d) => (
+                          <li key={d.dueDate} className="flex items-baseline justify-between gap-2">
+                            <span className="text-[11.5px] font-semibold text-ink">{fmtDate(d.dueDate)}</span>
+                            <span className="text-[11.5px] font-bold text-alert-red">{fmtRM(d.amount) ?? "—"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
 
                 {payload.nextDueDate && payload.status === "inforce" && (

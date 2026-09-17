@@ -88,6 +88,33 @@ export function ServicingCalendar({
     return { due, paid };
   }, [duesByDay, year, month, daysInMonth]);
 
+  // Everything unpaid and already due, whatever month is on screen. The
+  // calendar moves; what a client owes today does not.
+  const dueNow = useMemo(() => {
+    let amount = 0;
+    let count = 0;
+    let earliest: string | null = null;
+    for (const [dueDate, entries] of duesByDay) {
+      if (dueDate > today) continue;
+      for (const entry of entries) {
+        if (entry.paid) continue;
+        amount += entry.amount ?? 0;
+        count++;
+        if (!earliest || dueDate < earliest) earliest = dueDate;
+      }
+    }
+    return { amount, count, earliest };
+  }, [duesByDay, today]);
+
+  // Jumping the calendar to the oldest unpaid day is the whole point of the
+  // bell: it puts the money that is late on screen in one click.
+  function goToEarliestDue() {
+    if (!dueNow.earliest) return;
+    setYear(Number(dueNow.earliest.slice(0, 4)));
+    setMonth(Number(dueNow.earliest.slice(5, 7)) - 1);
+    setOpenDay(dueNow.earliest);
+  }
+
   const openEntries = openDay ? (duesByDay.get(openDay) ?? []) : [];
 
   return (
@@ -100,6 +127,27 @@ export function ServicingCalendar({
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {/* Silent when nothing is late -- a bell that always rings teaches
+              an agent to ignore it. */}
+          {dueNow.count > 0 && (
+            <button
+              type="button"
+              onClick={goToEarliestDue}
+              title={`${dueNow.count} contribution${dueNow.count === 1 ? "" : "s"} due, RM${fmtRM(dueNow.amount)} outstanding`}
+              className="press mr-1 flex min-h-8 items-center gap-1.5 rounded-[9px] border border-[#f0cdc9] bg-alert-red-bg px-2.5 text-alert-red"
+            >
+              <span className="relative flex-none">
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8.5a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7" />
+                  <path d="M10.5 19.5a1.8 1.8 0 0 0 3 0" />
+                </svg>
+                <span className="absolute -right-1 -top-1 flex h-[13px] min-w-[13px] items-center justify-center rounded-full bg-alert-red px-[3px] text-[8.5px] font-bold text-white">
+                  {dueNow.count}
+                </span>
+              </span>
+              <span className="text-[11.5px] font-bold">RM{fmtRM(dueNow.amount)} due</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => step(-1)}

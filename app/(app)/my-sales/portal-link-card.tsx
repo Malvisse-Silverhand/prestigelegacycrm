@@ -76,16 +76,28 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
     }
   }
 
+  // The agency's own wording, kept verbatim. The bullet list and the closing
+  // note are deliberate: the note is what stops a forwarded link being taken
+  // for Great Eastern's official portal.
   const waMessage = [
     `Assalamualaikum & salam sejahtera ${submission.leadName}.`,
     "",
-    "Ini pautan portal peribadi untuk sijil takaful anda. Di dalamnya ada nombor sijil, status perlindungan, senarai manfaat, tempoh menunggu dan penama anda. Jika anda ada lebih daripada satu sijil dengan kami, semuanya akan dipaparkan sekali.",
+    "Ini link portal klien untuk sijil takaful anda. Di dalamnya anda boleh periksa",
+    "",
+    "* Nombor sijil",
+    "* Status perlindungan",
+    "* Senarai manfaat/riders",
+    "* Tempoh menunggu dan penama anda. ",
+    "",
+    "",
+    "Jika anda ada lebih daripada satu sijil dengan kami, semuanya akan dipaparkan sekali.",
     "",
     url,
     "",
-    "Untuk log masuk, anda perlu masukkan e-mel atau nombor telefon yang didaftarkan, berserta 4 digit terakhir NRIC anda.",
+    "Untuk log masuk, anda hanya perlu masukkan e-mel atau nombor telefon yang didaftarkan, berserta 4 digit terakhir NRIC anda.",
     "",
     "Terima kasih,",
+    "Note: Portal ini adalah portal klien yang dibuat oleh agensi,  bukan portal rasmi Great Eastern. Ia untuk mudahkan monitoring & cepatkan pemahaman cara claim anda nanti. Boleh share dengan ahli keluarga jika perlu",
   ].join("\n");
 
   return (

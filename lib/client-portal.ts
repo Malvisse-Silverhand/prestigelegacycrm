@@ -40,6 +40,11 @@ export type PortalPayload = {
   frequency: string;
   commencementDate: string | null;
   nextDueDate: string | null;
+  /** Every contribution already due and still unticked, oldest first. Empty
+   *  means nothing is outstanding -- the portal says so in as many words. */
+  amountsDue: PortalDue[];
+  /** What those rows add up to. 0 when the list is empty. */
+  totalDue: number;
   nominees: PortalNominee[];
   /** Empty unless the certificate carries a medical benefit. */
   waitingPeriods: WaitingPeriodStatus[];
@@ -61,6 +66,9 @@ export type PortalBenefit = {
   isBase: boolean;
 };
 
+/** One contribution that has fallen due and has not been ticked off. */
+export type PortalDue = { dueDate: string; amount: number | null };
+
 /** Name and share only. No phone number, no IC -- see the note above. */
 export type PortalNominee = {
   name: string;
@@ -73,7 +81,8 @@ const CASE_SELECT = `id, status, plan_name, payment_frequency, installment_contr
        leads!case_submissions_lead_id_fkey(full_name, email, phone),
        profiles!case_submissions_agent_id_fkey(full_name, phone),
        case_nominees(name, relationship, percentage, sort_order),
-       case_benefits(benefit, sum_covered, sort_order)`;
+       case_benefits(benefit, sum_covered, sort_order),
+       contribution_schedule(seq, due_date, paid)`;
 
 /**
  * The same columns with `leads` joined INNER.
@@ -106,6 +115,7 @@ type CaseRow = {
   profiles: { full_name: string; phone: string | null } | null;
   case_nominees: { name: string; relationship: string | null; percentage: number | null; sort_order: number }[];
   case_benefits: { benefit: string; sum_covered: number | null; sort_order: number }[];
+  contribution_schedule: { seq: number; due_date: string; paid: boolean }[];
 };
 
 type LinkRow = { id: string; display_status: string | null; revoked_at: string | null };
@@ -117,6 +127,10 @@ function buildPayload(row: CaseRow, link: LinkRow | null, today: string): Portal
   const benefitRows = (row.case_benefits ?? []).slice().sort((a, b) => a.sort_order - b.sort_order);
   const benefitNames = benefitRows.map((b) => b.benefit);
   const baseBenefit = benefitRows[0]?.benefit ?? null;
+
+  // One name for the per-contribution figure: the card shows it, and every
+  // outstanding row is a multiple of it.
+  const installment = row.installment_contribution === null ? null : Number(row.installment_contribution);
 
   // Two sources, and either is enough. `plan_categories` is what the agent
   // said THIS certificate carries; the benefit-name mapping is what a plan
@@ -131,6 +145,12 @@ function buildPayload(row: CaseRow, link: LinkRow | null, today: string): Portal
     .slice()
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((n) => ({ name: n.name, relationship: n.relationship, percentage: n.percentage === null ? null : Number(n.percentage) }));
+
+  const amountsDue = (row.contribution_schedule ?? [])
+    .filter((r) => !r.paid && r.due_date <= today)
+    .sort((a, b) => a.due_date.localeCompare(b.due_date))
+    .map((r) => ({ dueDate: r.due_date, amount: installment }));
+  const totalDue = amountsDue.reduce((sum, d) => sum + (d.amount ?? 0), 0);
 
   const agentName = agent?.full_name ?? "";
 
@@ -156,10 +176,12 @@ function buildPayload(row: CaseRow, link: LinkRow | null, today: string): Portal
       sumCovered: b.sum_covered === null ? null : Number(b.sum_covered),
       isBase: i === 0,
     })),
-    contribution: row.installment_contribution === null ? null : Number(row.installment_contribution),
+    contribution: installment,
     frequency: row.payment_frequency,
     commencementDate: row.commencement_date,
     nextDueDate: row.next_due_date,
+    amountsDue,
+    totalDue,
     nominees,
     // Waiting periods only mean something where there is a medical benefit,
     // and they need a commencement date to count from.
