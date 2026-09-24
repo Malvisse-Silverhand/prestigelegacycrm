@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { signOutAction } from "@/lib/sign-out-action";
 
 // Shared by the sidebar and /me sign-out buttons so both get the same
 // busy-guard and error handling instead of two independently drifting copies.
@@ -16,10 +16,9 @@ export function useSignOut() {
     setPending(true);
     setError(null);
     try {
-      const supabase = createClient();
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) {
-        setError("Couldn't sign out. Please try again.");
+      const result = await signOutAction();
+      if (result.error) {
+        setError(result.error);
         return;
       }
       router.push("/login");
