@@ -12,20 +12,20 @@ function initialsFrom(name: string) {
   return (first + last).toUpperCase() || "?";
 }
 
-// auth.getUser() always revalidates against the Auth server -- unlike
-// getSession(), it's a real network round trip every time, by design. A
-// single request commonly calls getCurrentProfile() more than once (a
-// Server Action, then the page it revalidates re-rendering in the same
-// response), which without this would fire that same GET /auth/v1/user
-// request back to back. React's cache() memoizes it per request instead.
+// auth.getClaims() verifies the session token's signature locally against
+// the project's cached ES256 public key -- no round trip to the Auth server,
+// which getUser() made on every page (a legacy HS256 token still falls back
+// to getUser() inside the SDK). The profile row read below is still live, so
+// a deleted user gets no profile. A single request commonly calls this more
+// than once (a Server Action, then the page it revalidates re-rendering in
+// the same response); React's cache() memoizes it per request.
 export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
 
-  if (!user) return null;
-  return getProfileById(user.id);
+  if (!userId) return null;
+  return getProfileById(userId);
 });
 
 // `units` has two FK paths to/from `profiles` (profiles.unit_id -> units.id,

@@ -25,11 +25,18 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not run code between createServerClient and getUser() — a stray
+  // Do not run code between createServerClient and getClaims() — a stray
   // await here can randomly log users out (see @supabase/ssr docs).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  //
+  // getClaims() rather than getUser(): the project signs sessions with an
+  // asymmetric key (ES256), so the token's signature is checked right here
+  // against the cached public key instead of a round trip to the Auth server
+  // on every navigation. It still refreshes an expired session first, and a
+  // legacy HS256 token falls back to getUser() inside the SDK. The trade-off
+  // is that a signed-out-elsewhere or deleted user keeps passing this gate
+  // until their access token expires; RLS already works the same way.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub ?? null;
 
   // "/" is the public homepage -- viewable without a session, unlike every
   // other route. A signed-in user hitting it gets sent straight to their
@@ -68,14 +75,14 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/sijil/") ||
     request.nextUrl.pathname.startsWith("/tools/");
 
-  if (!user && !isPublicRoute) {
+  if (!userId && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && request.nextUrl.pathname === "/") {
+  if (userId && request.nextUrl.pathname === "/") {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = "/dashboard";
     dashboardUrl.search = "";
@@ -87,14 +94,14 @@ export async function updateSession(request: NextRequest) {
   // exempt as well -- an invited user following the emailed link is doing
   // exactly what this gate wants, and it clears the same flag on save.
   if (
-    user &&
+    userId &&
     request.nextUrl.pathname !== "/change-password" &&
     request.nextUrl.pathname !== "/reset-password"
   ) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("must_change_password")
-      .eq("id", user.id)
+      .eq("id", userId)
       .maybeSingle();
 
     if (profile?.must_change_password) {
