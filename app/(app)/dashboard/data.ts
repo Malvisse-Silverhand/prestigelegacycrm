@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import { leadPotentialAnc, type AncQuotation } from "@/lib/lead-anc";
-import { caseAncByLead, sumCaseAnc, COUNTED_CASE_STATUSES, type AncCase } from "@/lib/case-anc";
+import { caseAncByLead, COUNTED_CASE_STATUSES, yearTotals, type AncCase, type YearCase } from "@/lib/case-anc";
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
 import { malaysiaDayKey, malaysiaDaysAgo, malaysiaDateTime } from "@/lib/malaysia-date";
 import { upcomingBirthdays, malaysiaToday, type Birthday } from "@/lib/birthdays";
+import { MONTH_LONG } from "./calendar-period";
 
 type LeadRow = {
   id: string;
@@ -124,8 +125,13 @@ function activityLabel(activityType: string, content: string | null) {
  *   * { teamWide }   -- everything RLS lets this person see. What Team
  *                       Performance is for, and the only scope that still
  *                       aggregates other people.
+ *
+ * `salesOnly` skips the activity-calendar queries (lead_activity,
+ * appointments) entirely -- the Dashboard's "Whole team" / "Downline team"
+ * card only needs the sales/target figures, not a second full activity
+ * calendar's worth of rows fetched and discarded.
  */
-export type MonitorScope = { agentId?: string; unitId?: string; teamWide?: boolean };
+export type MonitorScope = { agentId?: string; unitId?: string; teamWide?: boolean; salesOnly?: boolean };
 
 export async function getDashboardStats(profile: CurrentProfile, monitorScope?: MonitorScope) {
   const supabase = await createClient();
@@ -138,6 +144,9 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // PostgREST returns nothing at all for it.
       "id, lead_no, full_name, phone, date_of_birth, status, pipeline_stage, agent_id, lead_source, follow_up_date, created_at, updated_at, closed_on, profiles!leads_agent_id_fkey(full_name, avatar_initials)",
     )
+    // A deleted lead is gone from every scope, not just the default one -- a
+    // monitored agent or a team-wide view has no business counting it either.
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (monitorScope?.agentId) leadsQuery = leadsQuery.eq("agent_id", monitorScope.agentId);
   else if (monitorScope?.unitId) leadsQuery = leadsQuery.eq("unit_id", monitorScope.unitId);
@@ -173,37 +182,54 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       // Every case a submitted or inforce certificate carries, so ANC can be
       // tallied the same way the Sales Pipeline and Statistics tally it --
       // see the merge into ancByLead below for why this outranks a quotation.
+      // Widened past `paid` with the columns a *calendar-year* total needs:
+      // when a certificate actually went inforce, and which due dates were
+      // paid -- see yearTotals in lib/case-anc for how these get used.
       supabase
         .from("case_submissions")
-        .select("lead_id, status, payment_frequency, installment_contribution, contribution_schedule(paid)")
+        .select(
+          "lead_id, status, payment_frequency, installment_contribution, commencement_date, certificate_issue_date, inforced_at, contribution_schedule(paid, due_date)",
+        )
         .in("status", COUNTED_CASE_STATUSES as unknown as string[]),
       supabase
         .from("targets")
         .select("agent_id, noc_target, anc_target, approach_target")
         .eq("month", `${todayKey().slice(0, 7)}-01`),
-      supabase.from("profiles").select("id"),
+      supabase.from("profiles").select("id, unit_id"),
       // RLS ("activity visible if lead visible") scopes this to the same leads
       // the caller can already see, so no extra filtering is needed here.
-      supabase
-        .from("lead_activity")
-        .select("id, created_at, lead_id, activity_type, content")
-        .gte("created_at", calendarStartKey),
+      // Skipped for a salesOnly scope -- the team sales card built from it
+      // doesn't render a calendar, so there is nothing to fetch this for.
+      monitorScope?.salesOnly
+        ? Promise.resolve({ data: [] as { id: string; created_at: string; lead_id: string | null; activity_type: string; content: string | null }[] })
+        : supabase
+            .from("lead_activity")
+            .select("id, created_at, lead_id, activity_type, content")
+            .gte("created_at", calendarStartKey),
       // Same story for appointments: their RLS is inherited from leads, so the
       // caller only ever sees the ones on leads they can already open.
-      supabase
-        .from("appointments")
-        .select("id, lead_id, scheduled_at, location, status, leads(full_name)")
-        .neq("status", "cancelled")
-        .gte("scheduled_at", calendarStartKey),
+      monitorScope?.salesOnly
+        ? Promise.resolve({ data: [] as { id: string; lead_id: string; scheduled_at: string; location: string | null; status: string; leads: { full_name: string } | null }[] })
+        : supabase
+            .from("appointments")
+            .select("id, lead_id, scheduled_at, location, status, leads(full_name)")
+            .neq("status", "cancelled")
+            .gte("scheduled_at", calendarStartKey),
       // The viewer's own goal, not the team's: a campaign is a personal
-      // commitment, so a manager looking at team numbers still sees their
-      // own road to target above them.
-      supabase
-        .from("anc_campaigns")
-        .select("name, target_anc, start_date, deadline")
-        .eq("agent_id", profile.id)
-        .eq("is_active", true)
-        .maybeSingle(),
+      // commitment, so it only ever applies to a personal (non-aggregate)
+      // scope. teamWide and unitId both aggregate other people's numbers --
+      // mixing one person's yearly campaign into that would misreport a
+      // team total as if it were progress toward an individual's goal, so
+      // the query is skipped for those scopes rather than fetched and
+      // discarded.
+      monitorScope?.teamWide || monitorScope?.unitId
+        ? Promise.resolve({ data: null })
+        : supabase
+            .from("anc_campaigns")
+            .select("name, target_anc, start_date, deadline")
+            .eq("agent_id", profile.id)
+            .eq("is_active", true)
+            .maybeSingle(),
     ]);
 
   const allLeads = leads ?? [];
@@ -228,7 +254,16 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   // so re-scope here to the team this profile can actually see via `profiles` RLS
   // (which IS correctly unit/group-scoped) rather than trusting the raw targets rows.
   const teamProfileIds = new Set((teamProfiles ?? []).map((p) => p.id));
-  const targetsInScope = (targets ?? []).filter((t) => teamProfileIds.has(t.agent_id));
+  // Who counts as "in scope" for a target sum -- narrower than teamProfileIds
+  // whenever the caller asked for one unit rather than everyone RLS shows: a
+  // Unit Manager's own dashboard should not silently pick up another unit's
+  // targets just because `profiles` RLS also lets them read that unit.
+  const memberIds = monitorScope?.teamWide
+    ? teamProfileIds
+    : monitorScope?.unitId
+      ? new Set((teamProfiles ?? []).filter((p) => p.unit_id === monitorScope.unitId).map((p) => p.id))
+      : new Set([profile.id]);
+  const targetsInScope = (targets ?? []).filter((t) => memberIds.has(t.agent_id));
   const monthTarget = targetsInScope.reduce((sum, t) => sum + (t.noc_target ?? 0), 0);
   // The money and approach equivalents of monthTarget, scoped the same way:
   // an agent sees their own row, a manager the sum across their team.
@@ -277,20 +312,41 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   // quotation on file -- which a case filed straight from Submit Case never
   // creates one for -- counted as RM 0 here while the pipeline board and
   // Servicing both showed their real certificate.
+  type CaseRawRow = {
+    lead_id: string;
+    status: string;
+    payment_frequency: PaymentFrequency;
+    installment_contribution: number | string | null;
+    commencement_date: string | null;
+    certificate_issue_date: string | null;
+    inforced_at: string | null;
+    contribution_schedule: { paid: boolean; due_date: string | null }[] | null;
+  };
   const caseRows: AncCase[] = (caseData ?? []).map((row) => {
-    const r = row as unknown as {
-      lead_id: string;
-      status: string;
-      payment_frequency: PaymentFrequency;
-      installment_contribution: number | string | null;
-      contribution_schedule: { paid: boolean }[] | null;
-    };
+    const r = row as unknown as CaseRawRow;
     return {
       leadId: r.lead_id,
       status: r.status,
       paymentFrequency: r.payment_frequency,
       installmentContribution: r.installment_contribution == null ? null : Number(r.installment_contribution),
       paidCount: (r.contribution_schedule ?? []).filter((x) => x.paid).length,
+    };
+  });
+  // The same rows, widened with what a calendar-year total needs -- see
+  // yearTotals in lib/case-anc.
+  const yearCases: YearCase[] = (caseData ?? []).map((row) => {
+    const r = row as unknown as CaseRawRow;
+    return {
+      leadId: r.lead_id,
+      status: r.status,
+      paymentFrequency: r.payment_frequency,
+      installmentContribution: r.installment_contribution == null ? null : Number(r.installment_contribution),
+      commencementDate: r.commencement_date,
+      certificateIssueDate: r.certificate_issue_date,
+      inforcedAtKey: r.inforced_at ? malaysiaDayKey(r.inforced_at) : null,
+      paidDueDates: (r.contribution_schedule ?? [])
+        .filter((x) => x.paid && x.due_date)
+        .map((x) => x.due_date as string),
     };
   });
   const casedAncByLead = caseAncByLead(caseRows);
@@ -382,19 +438,26 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
   const dayOfMonth = Number(today.slice(8, 10));
   const monthWeeksLeft = Math.max(1, Math.ceil((daysInMonth - dayOfMonth + 1) / 7));
   const monthAncRemaining = Math.max(0, monthAncTarget - monthAnc);
+  // How many cases actually closed this month -- the number behind the
+  // "Closing" stat, distinct from monthAnc which is the money those cases
+  // are worth.
+  const monthClosedCount = monthClosed.length;
 
-  // Cumulative across every certificate this profile (or the monitored
-  // agent/unit) can see -- not scoped to the month, because collected cash
-  // and an inforced certificate don't reset on the 1st the way a target
-  // does. The same two figures Sales Pipeline, Servicing and Statistics
-  // report, so this panel can't tell a different story than the rest of the
-  // app.
-  const bookTotals = sumCaseAnc(casedAncByLead, allLeads.map((l) => l.id));
+  // Calendar-year totals, not all-time: "inforced since 1 Jan" and
+  // "contributions due in <year>" reset every January the way the rest of
+  // this panel already resets every month, so a certificate that has been
+  // inforce for three years doesn't keep inflating this year's number
+  // forever. See yearTotals in lib/case-anc for the date rule (commencement
+  // over certificate-issue over inforced_at) and why.
+  const year = today.slice(0, 4);
+  const yt = yearTotals(yearCases, new Set(allLeads.map((l) => l.id)), year);
+  const monthLabel = `${MONTH_LONG[Number(monthPrefix.slice(5, 7)) - 1]} ${monthPrefix.slice(0, 4)}`;
 
   const goal = {
     campaign,
-    inforcedAnc: bookTotals.inforcedAnc,
-    collectedAnc: bookTotals.collected,
+    inforcedAnc: yt.inforcedAnc,
+    collectedAnc: yt.collected,
+    year,
     // Same reason as the campaign's own elapsedPct above: this decides words
     // on screen, so it is settled once on the server.
     monthElapsedPct: Math.round((dayOfMonth / daysInMonth) * 100),
@@ -402,6 +465,8 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
     monthAnc,
     monthAncRemaining,
     monthAncPct: monthAncTarget > 0 ? Math.round((monthAnc / monthAncTarget) * 1000) / 10 : null,
+    monthClosedCount,
+    monthLabel,
     // Auto-paced from what is left rather than a flat target/4: by the last
     // week of a month behind plan, a flat figure understates the real ask.
     weekAncTarget: monthAncTarget > 0 ? Math.round(monthAncRemaining / monthWeeksLeft) : 0,
@@ -411,6 +476,10 @@ export async function getDashboardStats(profile: CurrentProfile, monitorScope?: 
       avgCaseSize && avgCaseSize > 0 ? Math.ceil(monthAncRemaining / avgCaseSize) : null,
     approachTargetPerDay,
     closedAncAllTime,
+    // How many people this scope's target sum is drawn from -- a personal
+    // scope is always 1, a team scope's card wants to say how big "the team"
+    // actually is.
+    memberCount: memberIds.size,
   };
 
   const overdue = allLeads.filter(

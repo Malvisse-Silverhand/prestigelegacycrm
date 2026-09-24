@@ -293,7 +293,12 @@ export async function getTargetableMembers(profile: CurrentProfile): Promise<Tar
       .from("profiles")
       .select("id, full_name, role")
       .in("role", ["group_manager", "unit_manager", "aspirant_unit_manager", "agent"]);
-    return sort((data ?? []) as TargetableMember[]);
+    // A SuperAdmin's own row carries role "superadmin", which the query above
+    // never returns (it only asks for the ranks below) -- withSelf adds it
+    // back in, the same way every other branch here includes the caller.
+    // can_set_target_for() already allows a SuperAdmin to set their own
+    // target; this is what makes the picker offer it.
+    return withSelf((data ?? []) as TargetableMember[]);
   }
 
   // group_manager: everyone inside their units, plus anyone reporting straight

@@ -40,6 +40,7 @@ export default async function TeamPerformancePage() {
       <DashboardView
         profile={profile}
         stats={stats}
+        primaryVariant="team"
         notifications={await getNotifications()}
         today={malaysiaToday()}
       />

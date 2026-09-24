@@ -86,3 +86,55 @@ export function sumCaseAnc(byLead: Map<string, LeadCaseAnc>, leadIds: Iterable<s
   }
   return { anc, inforcedAnc, collected };
 }
+
+/**
+ * A case, widened with what a *calendar year* total needs: the date its
+ * certificate actually went inforce, and which of its schedule rows have
+ * been paid.
+ */
+export type YearCase = {
+  leadId: string;
+  status: string;
+  paymentFrequency: PaymentFrequency;
+  installmentContribution: number | null;
+  commencementDate: string | null;
+  certificateIssueDate: string | null;
+  inforcedAtKey: string | null;
+  /** Due dates (YYYY-MM-DD) of this case's schedule rows that are ticked paid. */
+  paidDueDates: string[];
+};
+
+/**
+ * The date a case's certificate is treated as having gone inforce, for
+ * "since 1 Jan <year>" purposes.
+ *
+ * commencementDate wins when it's on file -- that's the date cover actually
+ * started. certificateIssueDate is the next best thing. inforced_at (when the
+ * row was ticked inforce in this CRM) is last on purpose: a September 2026
+ * bulk data-entry pass ticked years of old business inforce in a single
+ * afternoon, and using that timestamp would report all of it as September
+ * business instead of whenever it actually started.
+ */
+export function caseInforceDate(c: Pick<YearCase, "commencementDate" | "certificateIssueDate" | "inforcedAtKey">): string | null {
+  return c.commencementDate ?? c.certificateIssueDate ?? c.inforcedAtKey;
+}
+
+/**
+ * ANC inforced since 1 Jan of `year`, and contributions paid that were due
+ * in `year`, across inforce cases belonging to a lead in `leadIds`.
+ */
+export function yearTotals(
+  cases: YearCase[],
+  leadIds: Set<string>,
+  year: string,
+): { inforcedAnc: number; collected: number } {
+  let inforcedAnc = 0, collected = 0;
+  for (const c of cases) {
+    if (c.status !== "inforce" || !leadIds.has(c.leadId)) continue;
+    if (caseInforceDate(c)?.startsWith(year)) inforcedAnc += caseAnc(c);
+    if (c.installmentContribution != null) {
+      collected += c.installmentContribution * c.paidDueDates.filter((d) => d.startsWith(year)).length;
+    }
+  }
+  return { inforcedAnc, collected };
+}

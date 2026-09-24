@@ -39,6 +39,21 @@ function subtitleFor(profile: CurrentProfile) {
   }
 }
 
+// The "Whole team" / "Downline team" section below Personal Sales -- title,
+// hint and the AncGoalPanel eyebrow all keyed off the same kind + role so
+// they can't drift out of sync with each other.
+function teamSectionMeta(kind: "whole" | "downline", role: CurrentProfile["role"], memberCount: number) {
+  const title = kind === "whole" ? "Whole Team Sales" : "Downline Team Sales";
+  const hint =
+    kind === "whole"
+      ? role === "superadmin"
+        ? "Everyone in the agency, combined"
+        : "Everyone in your group, combined"
+      : "You and your downline, combined";
+  const teamLabel = `${kind === "whole" ? "Whole team" : "Downline team"} · ${memberCount} member${memberCount === 1 ? "" : "s"}`;
+  return { title, hint, teamLabel };
+}
+
 function donutArcs(counts: DashboardStats["statusCounts"], total: number, dark: boolean) {
   let cumulative = 0;
   return STATUS_META.filter((s) => s.key !== "unassigned").map((s) => {
@@ -67,11 +82,21 @@ function fmtRM(n: number) {
 export function DashboardView({
   profile,
   stats,
+  teamSales,
+  primaryVariant = "personal",
   notifications,
   today,
 }: {
   profile: CurrentProfile;
   stats: DashboardStats;
+  /** The viewer's team, aggregated -- absent for an agent (no team) and in
+   *  monitor mode (that already shows the monitored person's own scope). */
+  teamSales?: { goal: DashboardStats["goal"]; kind: "whole" | "downline"; role: CurrentProfile["role"] } | null;
+  /** "team" swaps the primary Sales section's own wording to match what
+   *  `stats` actually holds -- Team Performance renders this same view with
+   *  a team-wide `stats`, not a personal one, so its own goal card has to
+   *  read as "Team Sales", not "Personal Sales". */
+  primaryVariant?: "personal" | "team";
   notifications: NotificationRow[];
   /** Today in Malaysia, computed on the server. See dateFromKey for why. */
   today: string;
@@ -108,6 +133,13 @@ export function DashboardView({
 
   const arcs = donutArcs(stats.statusCounts, stats.statusTotal, dark);
   const widgets = useWidgetPrefs();
+  const teamMeta = teamSales
+    ? teamSectionMeta(teamSales.kind, teamSales.role, teamSales.goal.memberCount)
+    : null;
+  // Team Performance passes `primaryVariant="team"` with no `teamSales` of
+  // its own (its `stats` already is the team-wide figures) -- this is that
+  // card's eyebrow, built from the same memberCount the goal itself carries.
+  const primaryTeamLabel = `Team · ${stats.goal.memberCount} member${stats.goal.memberCount === 1 ? "" : "s"}`;
 
   return (
     <div>
@@ -135,11 +167,21 @@ export function DashboardView({
               them in one row made the money read as just another counter. */}
           {widgets.on("goal") && (
             <section>
-              <SectionLabel title="Sales" hint="Targets, closings and daily activity" />
+              <SectionLabel
+                title={primaryVariant === "team" ? "Team Sales" : "Personal Sales"}
+                hint={primaryVariant === "team" ? "Everyone in scope, combined" : "Your own cases and targets"}
+              />
               <AncGoalPanel
                 goal={stats.goal}
-                closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
+                variant={primaryVariant}
+                teamLabel={primaryVariant === "team" ? primaryTeamLabel : undefined}
               />
+              {teamSales && teamMeta && (
+                <div className="mt-3">
+                  <SectionLabel title={teamMeta.title} hint={teamMeta.hint} />
+                  <AncGoalPanel goal={teamSales.goal} variant="team" teamLabel={teamMeta.teamLabel} />
+                </div>
+              )}
             </section>
           )}
 
@@ -480,11 +522,21 @@ export function DashboardView({
         <div className="flex flex-col gap-[11px] px-5 pt-4">
           {widgets.on("goal") && (
             <section>
-              <SectionLabel title="Sales" hint="Targets and closings" />
+              <SectionLabel
+                title={primaryVariant === "team" ? "Team Sales" : "Personal Sales"}
+                hint={primaryVariant === "team" ? "Everyone in scope, combined" : "Your own cases and targets"}
+              />
               <AncGoalPanel
                 goal={stats.goal}
-                closing={{ label: period.closedLabel, anc: period.closedAnc, count: period.closedCount }}
+                variant={primaryVariant}
+                teamLabel={primaryVariant === "team" ? primaryTeamLabel : undefined}
               />
+              {teamSales && teamMeta && (
+                <div className="mt-3">
+                  <SectionLabel title={teamMeta.title} hint={teamMeta.hint} />
+                  <AncGoalPanel goal={teamSales.goal} variant="team" teamLabel={teamMeta.teamLabel} />
+                </div>
+              )}
             </section>
           )}
 

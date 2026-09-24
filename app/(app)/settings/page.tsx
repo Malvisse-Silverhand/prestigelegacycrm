@@ -17,6 +17,7 @@ import {
 } from "./data";
 import { getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { SettingsView } from "./settings-view";
+import { malaysiaDayKey } from "@/lib/malaysia-date";
 
 const EMPTY_ORG_TREE = {
   superadmins: [],
@@ -31,8 +32,10 @@ const EMPTY_DISTRIBUTION = {
 };
 
 function currentMonthDate() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  // Malaysia's calendar month, not the server's UTC one -- for the last eight
+  // hours of every Malaysian day the two disagree, and Set Target would read
+  // and write to the wrong month's row. See lib/malaysia-date.
+  return `${malaysiaDayKey().slice(0, 7)}-01`;
 }
 
 export default async function SettingsPage() {

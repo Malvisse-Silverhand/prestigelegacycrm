@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/lib/profile-types";
 import { computeAgentMetrics, type MinimalLead, type MinimalActivity } from "./metrics";
 import { getStaleAfterDays } from "@/lib/staleness-server";
+import { malaysiaDayKey } from "@/lib/malaysia-date";
 
 export { getStaleAfterDays };
 
@@ -43,8 +44,8 @@ async function fetchLeadsAndActivity(unitIds: string[] | null) {
 export type UnitTargetRow = { agentId: string; fullName: string; ancTarget: number | null; nocTarget: number | null };
 
 export function currentMonthDate() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  // Malaysia's calendar month, not the server's UTC one -- see lib/malaysia-date.
+  return `${malaysiaDayKey().slice(0, 7)}-01`;
 }
 
 // Scoped exactly like the leads/quotations pattern: only agents in the unit

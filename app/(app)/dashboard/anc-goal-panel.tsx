@@ -78,6 +78,35 @@ function ProgressBar({
   );
 }
 
+// A ProgressBar with its "X of Y" reading sat directly beside it, rather than
+// above it on its own line -- this is the shape used everywhere a bar now
+// carries a number (Overall progress, the monthly bar inside MonthBlock).
+// flex-wrap rather than a fixed row: at phone width (360px) a long label next
+// to a bar that still needs room to read as a bar would overflow, so the
+// label is allowed to drop to its own line there instead.
+function ProgressRow({
+  pct,
+  tone,
+  onGold,
+  label,
+}: {
+  pct: number;
+  tone: keyof typeof PACE_STYLE;
+  onGold?: boolean;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2.5">
+      <div className="min-w-0 flex-1">
+        <ProgressBar pct={pct} tone={tone} onGold={onGold} />
+      </div>
+      <span className={`shrink-0 whitespace-nowrap text-[11.5px] font-bold ${onGold ? "text-navy" : "text-white"}`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
 // Everything in this panel sits on navy, so the tiles are translucent white
 // rather than cards -- a white card on navy reads as a hole punched in it.
 function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
@@ -96,34 +125,115 @@ function Tile({ label, value, accent }: { label: string; value: string; accent?:
 }
 
 /**
- * All-time, not scoped to the month: what every certificate on this book is
- * worth over a year, and what has actually been paid in against it. The same
- * two figures Sales Pipeline, Servicing and Statistics report, so this panel
- * can never tell a different story than the rest of the app.
+ * Calendar-year, not all-time: what every certificate on this book is worth
+ * since it went inforce this year, and what has actually been paid in
+ * against dues in this year. Scoped to `goal.year` rather than forever so a
+ * certificate that has sat inforce for three years doesn't keep inflating
+ * this figure every year after -- see yearTotals in lib/case-anc for the
+ * exact date rule.
  */
 function AncTotals({ goal }: { goal: Goal }) {
   return (
     <div className="mt-2 grid gap-2 sm:grid-cols-2">
       <div className="rounded-[13px] bg-white/[.06] p-3">
-        <div className="text-[11px] font-bold text-white/70">ANC Inforced</div>
+        <div className="text-[11px] font-bold text-white/70">Total ANC Inforced [{goal.year}]</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-[20px] font-extrabold tracking-[-0.03em] text-white">
             {fmtRM(goal.inforcedAnc)}
           </span>
           <span className="text-[11px] font-bold text-white/70">ANC</span>
         </div>
-        <div className="text-[10.5px] font-semibold text-white/70">certificates in force</div>
+        <div className="text-[10.5px] font-semibold text-white/70">certificates in force since 1 Jan {goal.year}</div>
       </div>
       <div className="rounded-[13px] bg-white/[.06] p-3">
-        <div className="text-[11px] font-bold text-white/70">ANC Collected</div>
+        <div className="text-[11px] font-bold text-white/70">Total ANC Collected [{goal.year}]</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-[20px] font-extrabold tracking-[-0.03em] text-gold">
             {fmtRM(goal.collectedAnc)}
           </span>
           <span className="text-[11px] font-bold text-white/70">ANC</span>
         </div>
-        <div className="text-[10.5px] font-semibold text-white/70">contributions ticked</div>
+        <div className="text-[10.5px] font-semibold text-white/70">contributions paid, due in {goal.year}</div>
       </div>
+    </div>
+  );
+}
+
+// The monthly figures, in one block -- replaces what used to be two separate
+// pieces ("This Month Target" and the gold "This month closing" tile): the
+// money target, what has actually closed against it, and how many cases that
+// was, read together rather than split across two cards that could disagree
+// about which month they meant.
+function MonthBlock({ goal, tip }: { goal: Goal; tip?: string }) {
+  const pct = goal.monthAncPct ?? 0;
+  const tone = paceOf(pct, goal.monthElapsedPct);
+  const style = PACE_STYLE[tone];
+  const hasTarget = goal.monthAncTarget > 0;
+
+  return (
+    <div className="rounded-[13px] bg-white/[.06] p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[12.5px] font-bold text-white">This Month · {goal.monthLabel}</span>
+        {hasTarget && (
+          <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${style.chip}`}>
+            {style.label} · {pct}%
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">Current Month ANC</div>
+          <div className="mt-0.5 text-[16px] font-extrabold tracking-[-0.03em] text-gold lg:text-[19px]">
+            {fmtRM(goal.monthAnc)}
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">This Month Target</div>
+          <div className="mt-0.5 text-[16px] font-extrabold tracking-[-0.03em] text-white lg:text-[19px]">
+            {hasTarget ? (
+              fmtRM(goal.monthAncTarget)
+            ) : (
+              <Link href="/settings" className="text-gold underline underline-offset-2">
+                Set target
+              </Link>
+            )}
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/50">Closing</div>
+          <div className="mt-0.5 text-[16px] font-extrabold tracking-[-0.03em] text-white lg:text-[19px]">
+            {goal.monthClosedCount}
+          </div>
+          <div className="text-[10.5px] font-semibold text-white/50">
+            {goal.monthClosedCount === 1 ? "case closed" : "cases closed"}
+          </div>
+        </div>
+      </div>
+
+      {hasTarget && (
+        <div className="mt-2.5">
+          <ProgressRow
+            pct={pct}
+            tone={tone}
+            label={`${fmtRM(goal.monthAnc)} of ${fmtRM(goal.monthAncTarget)}`}
+          />
+        </div>
+      )}
+
+      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/60">
+        <span>
+          This week <strong className="font-bold text-white">{fmtRM(goal.weekAnc)}</strong>
+          {goal.weekAncTarget > 0 ? ` of ${fmtRM(goal.weekAncTarget)}` : ""}
+        </span>
+        {goal.avgCaseSize != null && (
+          <span>
+            Avg case <strong className="font-bold text-white">{fmtRM(goal.avgCaseSize)}</strong>
+          </span>
+        )}
+      </div>
+
+      {tip && <div className="mt-1.5 text-[11px] font-medium text-white/60">{tip}</div>}
     </div>
   );
 }
@@ -211,169 +321,146 @@ export function ApproachScoreboard({ days, target }: { days: ApproachDay[]; targ
 
 export function AncGoalPanel({
   goal,
-  closing,
+  variant = "personal",
+  teamLabel,
 }: {
   goal: Goal;
-  /** This month's closings -- money already in, so it belongs with the
-   *  sales figures rather than up among the lead counters. */
-  closing: { label: string; anc: number; count: number };
+  /** "team" sits under a team-wide or downline scope -- data.ts never
+   *  attaches a personal campaign to one of those, so this variant only
+   *  ever renders the monthly-target layout, never the yearly one. */
+  variant?: "personal" | "team";
+  /** The eyebrow for the team variant, e.g. "Whole team · 24 members". Built
+   *  by the caller, which knows the role and the kind of team this is. */
+  teamLabel?: string;
 }) {
   const { campaign } = goal;
 
-  // A campaign paces against its own window; without one, the month is the
-  // window and the figures come from Set Target instead.
-  const headline = campaign
-    ? {
-        eyebrow: `${campaign.name} · Road to ${fmtRM(campaign.targetAnc)}`,
-        deadline: fmtDeadline(campaign.deadline),
-        current: campaign.currentAnc,
-        target: campaign.targetAnc,
-        remaining: campaign.remaining,
-        pct: campaign.achievementPct,
-        elapsedPct: campaign.elapsedPct,
-        weeklyNeeded: campaign.weeklyNeeded,
-        casesNeeded: campaign.casesNeeded,
-        footnote:
-          campaign.daysLeft > 0
-            ? `${campaign.daysLeft} day${campaign.daysLeft === 1 ? "" : "s"} left`
-            : "Deadline reached",
-      }
-    : {
-        eyebrow: "Monthly ANC target",
-        deadline: null,
-        current: goal.monthAnc,
-        target: goal.monthAncTarget,
-        remaining: goal.monthAncRemaining,
-        pct: goal.monthAncPct ?? 0,
-        elapsedPct: goal.monthElapsedPct,
-        weeklyNeeded: goal.weekAncTarget,
-        casesNeeded: goal.casesNeededThisMonth,
-        footnote: null,
-      };
+  // WITH a campaign: it paces against its own window, and the month sits
+  // underneath it as one block among others. Personal only -- data.ts skips
+  // the campaign query entirely for a team-wide or unit scope, since a
+  // campaign is one person's own commitment, not a team's.
+  if (campaign) {
+    const tone = paceOf(campaign.achievementPct, campaign.elapsedPct);
+    const style = PACE_STYLE[tone];
+    const footnote =
+      campaign.daysLeft > 0
+        ? `${campaign.daysLeft} day${campaign.daysLeft === 1 ? "" : "s"} left`
+        : "Deadline reached";
 
-  // Nothing to pace against: rather than a card full of zeroes, point at the
-  // one screen that fixes it.
-  if (headline.target <= 0) {
     return (
       <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
-        <div className="text-[13px] font-bold text-white">No ANC target set</div>
-        <div className="mt-0.5 text-[12px] font-medium text-white/60">
-          Set a monthly ANC target — or a goal with a deadline — in{" "}
-          <Link href="/settings" className="font-semibold text-gold underline underline-offset-2">
-            Settings › Set Target
-          </Link>
-          , and this becomes your progress tracker.
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
+              {campaign.name} · Road to {fmtRM(campaign.targetAnc)}
+            </div>
+            <div className="mt-0.5 flex items-center gap-2">
+              <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">Yearly Target</span>
+              <span className="rounded-[6px] bg-white/10 px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white">
+                {fmtDeadline(campaign.deadline)}
+              </span>
+            </div>
+          </div>
+          <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${style.chip}`}>
+            {style.label} · {campaign.achievementPct}%
+          </span>
         </div>
-        <div className="mt-2.5 rounded-[13px] bg-gold p-3">
-          <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
-              {fmtRM(closing.anc)}
+
+        {/* Gold, navy text: the one card in this panel meant to be read
+            first. */}
+        <div className="mt-3 rounded-[13px] bg-gold p-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/70">
+              Overall progress
             </span>
-            <span className="text-[11px] font-bold text-navy/70">ANC</span>
+            <span className="text-[11px] font-semibold text-navy/70">{footnote}</span>
           </div>
-          <div className="text-[10.5px] font-semibold text-navy/70">
-            {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
+          <div className="mt-1.5">
+            <ProgressRow
+              pct={campaign.achievementPct}
+              tone={tone}
+              onGold
+              label={`${fmtRM(campaign.currentAnc)} of ${fmtRM(campaign.targetAnc)}`}
+            />
+          </div>
+          <div className="mt-1.5 text-[11.5px] font-medium text-navy/80">
+            {tipFor(tone, campaign.remaining, campaign.weeklyNeeded, campaign.casesNeeded, goal.avgCaseSize)}
           </div>
         </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Tile label="Remaining" value={fmtRM(campaign.remaining)} />
+          <Tile label="Achievement" value={`${campaign.achievementPct}%`} />
+        </div>
+
+        <div className="mt-2">
+          <MonthBlock goal={goal} />
+        </div>
+
         <AncTotals goal={goal} />
       </div>
     );
   }
 
-  const tone = paceOf(headline.pct, headline.elapsedPct);
+  // WITHOUT a campaign: the month itself is the window, and the figures come
+  // from Set Target. Always the layout for a team/downline card, and for a
+  // personal one with no campaign running.
+  const pct = goal.monthAncPct ?? 0;
+  const tone = paceOf(pct, goal.monthElapsedPct);
   const style = PACE_STYLE[tone];
+  const hasTarget = goal.monthAncTarget > 0;
 
   return (
     <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
-            {headline.eyebrow}
+            {variant === "team" ? teamLabel : "Monthly ANC target"}
           </div>
-          <div className="mt-0.5 flex items-center gap-2">
-            <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">
-              {campaign ? "Yearly Target" : "Monthly Target"}
-            </span>
-            {headline.deadline && (
-              <span className="rounded-[6px] bg-white/10 px-2 py-[3px] text-[9.5px] font-bold tracking-[0.06em] text-white">
-                {headline.deadline}
-              </span>
-            )}
+          <div className="mt-0.5 text-[17px] font-extrabold tracking-[-0.02em] text-white">
+            {variant === "team" ? "Team Monthly Target" : "Monthly Target"}
           </div>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${style.chip}`}>
-          {style.label} · {headline.pct}%
-        </span>
-      </div>
-
-      {/* Gold, navy text: the one card in this panel meant to be read first,
-          which is also why it now sits above the tiles rather than below
-          them. */}
-      <div className="mt-3 rounded-[13px] bg-gold p-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/70">
-            Overall progress
+        {hasTarget && (
+          <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${style.chip}`}>
+            {style.label} · {pct}%
           </span>
-          <span className="text-[11px] font-semibold text-navy/70">{headline.footnote}</span>
-        </div>
-        <div className="mt-1.5">
-          <ProgressBar pct={headline.pct} tone={tone} onGold />
-        </div>
-        <div className="mt-1.5 text-[11.5px] font-medium text-navy/80">
-          {tipFor(tone, headline.remaining, headline.weeklyNeeded, headline.casesNeeded, goal.avgCaseSize)}
-        </div>
+        )}
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <Tile label="Current ANC" value={fmtRM(headline.current)} accent />
-        <Tile label="Target" value={fmtRM(headline.target)} />
-        <Tile label="Remaining" value={fmtRM(headline.remaining)} />
-        <Tile label="Achievement" value={`${headline.pct}%`} />
-      </div>
-
-      <div className="mt-2 grid gap-2 lg:grid-cols-2">
-        <div className="rounded-[13px] bg-white/[.06] p-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[12.5px] font-bold text-white">This Month Target</span>
-            <span className="text-[11px] font-semibold text-white/50">
-              {fmtRM(goal.monthAnc)}
-              {goal.monthAncTarget > 0 ? ` of ${fmtRM(goal.monthAncTarget)}` : ""}
-            </span>
-          </div>
-          <div className="mt-1.5">
-            <ProgressBar
-              pct={goal.monthAncPct ?? 0}
-              tone={paceOf(goal.monthAncPct ?? 0, goal.monthElapsedPct)}
-            />
-          </div>
-          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/60">
-            <span>
-              This week <strong className="font-bold text-white">{fmtRM(goal.weekAnc)}</strong>
-              {goal.weekAncTarget > 0 ? ` of ${fmtRM(goal.weekAncTarget)}` : ""}
-            </span>
-            {goal.avgCaseSize != null && (
-              <span>
-                Avg case <strong className="font-bold text-white">{fmtRM(goal.avgCaseSize)}</strong>
-              </span>
-            )}
-          </div>
+      {/* Nothing to pace against yet -- point at the one screen that fixes
+          it, rather than a card full of zeroes. */}
+      {!hasTarget && (
+        <div className="mt-0.5 text-[12px] font-medium text-white/60">
+          {variant === "team" ? (
+            <>
+              No monthly ANC targets set for this team yet — set them in{" "}
+              <Link href="/settings" className="font-semibold text-gold underline underline-offset-2">
+                Settings › Set Target
+              </Link>
+              .
+            </>
+          ) : (
+            <>
+              Set a monthly ANC target — or a goal with a deadline — in{" "}
+              <Link href="/settings" className="font-semibold text-gold underline underline-offset-2">
+                Settings › Set Target
+              </Link>
+              , and this becomes your progress tracker.
+            </>
+          )}
         </div>
+      )}
 
-        {/* Money already in. Gold on navy, because it is the one figure in
-            this row that has actually happened. */}
-        <div className="rounded-[13px] bg-gold p-3">
-          <div className="text-[11px] font-bold text-navy/70">{closing.label}</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[24px] font-extrabold tracking-[-0.03em] text-navy">
-              {fmtRM(closing.anc)}
-            </span>
-            <span className="text-[11px] font-bold text-navy/70">ANC</span>
-          </div>
-          <div className="text-[10.5px] font-semibold text-navy/70">
-            {closing.count} polic{closing.count === 1 ? "y" : "ies"} inforced
-          </div>
-        </div>
+      <div className="mt-3">
+        <MonthBlock
+          goal={goal}
+          tip={
+            hasTarget
+              ? tipFor(tone, goal.monthAncRemaining, goal.weekAncTarget, goal.casesNeededThisMonth, goal.avgCaseSize)
+              : undefined
+          }
+        />
       </div>
 
       <AncTotals goal={goal} />

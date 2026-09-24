@@ -26,14 +26,33 @@ export default async function DashboardPage({
     monitorTarget = await getProfileById(monitorId);
   }
 
-  const stats = await getDashboardStats(
-    monitorTarget ?? profile,
-    monitorTarget
-      ? monitorTarget.role === "agent"
-        ? { agentId: monitorTarget.id }
-        : { unitId: monitorTarget.unit_id ?? undefined }
-      : undefined,
-  );
+  // Whose "team" this profile has one of, and what kind -- a SuperAdmin or
+  // Group Manager runs the whole agency/group, a Unit Manager or Aspirant UM
+  // runs their downline. An agent has no team to show a card for. Only asked
+  // for outside monitor mode: monitor mode already shows the monitored
+  // person's own scope, and layering a second team card under it would be
+  // showing the viewer's team, not the monitored person's.
+  const teamKind = monitorTarget
+    ? null
+    : profile.role === "superadmin" || profile.role === "group_manager"
+      ? "whole"
+      : profile.role === "unit_manager" || profile.role === "aspirant_unit_manager"
+        ? "downline"
+        : null;
+
+  const [stats, teamStats] = await Promise.all([
+    getDashboardStats(
+      monitorTarget ?? profile,
+      monitorTarget
+        ? monitorTarget.role === "agent"
+          ? { agentId: monitorTarget.id }
+          : { unitId: monitorTarget.unit_id ?? undefined }
+        : undefined,
+    ),
+    teamKind
+      ? getDashboardStats(profile, { teamWide: true, salesOnly: true })
+      : Promise.resolve(null),
+  ]);
 
   if (monitorTarget) {
     const supabase = await createClient();
@@ -63,6 +82,7 @@ export default async function DashboardPage({
       <DashboardView
         profile={monitorTarget ?? profile}
         stats={stats}
+        teamSales={teamStats ? { goal: teamStats.goal, kind: teamKind as "whole" | "downline", role: profile.role } : null}
         notifications={await getNotifications()}
         today={malaysiaToday()}
       />
