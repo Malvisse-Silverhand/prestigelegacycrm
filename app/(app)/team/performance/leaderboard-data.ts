@@ -24,7 +24,7 @@ type CaseRow = {
   commencement_date: string | null;
   certificate_issue_date: string | null;
   inforced_at: string | null;
-  profiles: { full_name: string; avatar_initials: string | null } | null;
+  profiles: { full_name: string; avatar_initials: string | null; role: string } | null;
 };
 
 /**
@@ -41,6 +41,13 @@ type CaseRow = {
  * caseInforceDate/caseAnc -- the same ones the dashboard's own "Total ANC
  * Inforced [year]" figure uses, so this board can't disagree with it about
  * what counts as this year's business.
+ *
+ * A SuperAdmin can now VIEW this board (see LEADERBOARD_ROLES in
+ * team/performance/page.tsx and dashboard-view.tsx), but is never RANKED on
+ * it -- the same "oversees everyone, isn't one of the agents" rule the Team
+ * Roster org chart already applies. If a SuperAdmin ever happens to be the
+ * agent_id on a case, that row is dropped before it can accumulate into an
+ * entry, so no SuperAdmin ever appears in the ranked list.
  */
 export async function getTeamLeaderboard(): Promise<LeaderboardEntry[]> {
   const supabase = await createClient();
@@ -49,7 +56,7 @@ export async function getTeamLeaderboard(): Promise<LeaderboardEntry[]> {
   const { data } = await supabase
     .from("case_submissions")
     .select(
-      "agent_id, status, payment_frequency, installment_contribution, commencement_date, certificate_issue_date, inforced_at, profiles!case_submissions_agent_id_fkey(full_name, avatar_initials)",
+      "agent_id, status, payment_frequency, installment_contribution, commencement_date, certificate_issue_date, inforced_at, profiles!case_submissions_agent_id_fkey(full_name, avatar_initials, role)",
     )
     .eq("status", "inforce");
 
@@ -57,6 +64,7 @@ export async function getTeamLeaderboard(): Promise<LeaderboardEntry[]> {
   for (const raw of (data ?? []) as unknown[]) {
     const row = raw as CaseRow;
     if (!row.agent_id) continue;
+    if (row.profiles?.role === "superadmin") continue;
 
     const inforceDate = caseInforceDate({
       commencementDate: row.commencement_date,

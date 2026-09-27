@@ -20,11 +20,18 @@ import { ManageWidgets, DashboardClock, useWidgetPrefs } from "./widgets";
 import { LeaderboardCard } from "@/app/(app)/team/performance/leaderboard-card";
 import type { LeaderboardEntry } from "@/app/(app)/team/performance/leaderboard-data";
 
-// Kamal: "leaderboard ... visible only for GM, UM, AUM." Checked here too,
-// not just by the caller -- Team Performance is the only page that ever
-// passes a `leaderboard` prop, but an agent's or SuperAdmin's own profile
-// should never render one even if it did.
-const LEADERBOARD_ROLES: CurrentProfile["role"][] = ["group_manager", "unit_manager", "aspirant_unit_manager"];
+// Kamal: "leaderboard ... visible for GM, UM, AUM" and later widened to
+// SuperAdmin too. Checked here as well as by the caller -- Team Performance
+// is the only page that ever passes a `leaderboard` prop, but an agent's own
+// profile should never render one even if it did. SuperAdmin never appears
+// AS an entry (see leaderboard-data.ts) -- this only governs who can view
+// the section at all.
+const LEADERBOARD_ROLES: CurrentProfile["role"][] = [
+  "superadmin",
+  "group_manager",
+  "unit_manager",
+  "aspirant_unit_manager",
+];
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },

@@ -6,10 +6,12 @@ import { DashboardView } from "@/app/(app)/dashboard/dashboard-view";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { getTeamLeaderboard } from "./leaderboard-data";
 
-// Kamal: "leaderboard for agents ... visible only for GM, UM, AUM." SuperAdmin
-// is deliberately left off that list even though they can see this page too,
-// so the query below is skipped for them rather than fetched and discarded.
-const LEADERBOARD_ROLES = ["group_manager", "unit_manager", "aspirant_unit_manager"] as const;
+// Kamal: "leaderboard for agents ... visible for GM, UM, AUM" and later
+// widened to SuperAdmin too -- but SuperAdmin is never RANKED on it (see
+// leaderboard-data.ts, which drops any case where the agent is a
+// SuperAdmin before it can become an entry). Viewing and appearing are
+// deliberately separate rules.
+const LEADERBOARD_ROLES = ["superadmin", "group_manager", "unit_manager", "aspirant_unit_manager"] as const;
 
 /**
  * The team-wide half of what the Dashboard used to be.
