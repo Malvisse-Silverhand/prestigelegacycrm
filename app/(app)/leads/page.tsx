@@ -8,6 +8,8 @@ import { ImportButton } from "./import/import-button";
 import { ExportCsvButton } from "./export-csv-button";
 import { LeadRowActions } from "./lead-row-actions";
 import { DeletedRowActions } from "./deleted-row-actions";
+import { DeleteLeadIcon } from "./delete-lead-icon";
+import { SwipeToDeleteLeadCard } from "./swipe-to-delete-lead-card";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon, LeadsIcon, WhatsAppIcon } from "@/components/icons";
 import { waLink } from "@/lib/whatsapp";
@@ -189,7 +191,10 @@ export default async function LeadsPage({
                     <div className="truncate font-medium">{lead.state ?? "—"}</div>
                     <div className="truncate font-medium">{lead.occupation ?? "—"}</div>
                     <div className="font-medium">{fmtCreated(lead.created_at)}</div>
-                    <div><StatusBadge status={lead.status} /></div>
+                    <div className="flex flex-col items-start gap-1">
+                      <StatusBadge status={lead.status} />
+                      {isSuperAdmin && !viewingDeleted && <DeleteLeadIcon lead={lead} />}
+                    </div>
                     <div className="truncate font-semibold text-green">
                       {viewingDeleted
                         ? (lead.deleted_by_profile?.full_name ?? "—")
@@ -225,8 +230,8 @@ export default async function LeadsPage({
                 const fu = fmtFollowUp(lead.follow_up_date);
                 const tag = productTag(lead.interest);
                 const potential = leadPotentialAnc(lead.quotations);
-                return (
-                  <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5 shadow-card">
+                const card = (
+                  <div className="rounded-2xl border border-sand bg-white p-3.5 shadow-card">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-1.5">
@@ -271,6 +276,19 @@ export default async function LeadsPage({
                       <LeadRowActions lead={lead} canManage={canManage} variant="labels" />
                     </div>
                   </div>
+                );
+
+                // Only a SuperAdmin can actually delete (deleteLead enforces
+                // the same check server-side), and the Deleted view has its
+                // own Restore/Delete forever actions already -- swipe is
+                // additive there for nobody, so it's skipped rather than
+                // reaching for a gesture that would just fail.
+                return isSuperAdmin && !viewingDeleted ? (
+                  <SwipeToDeleteLeadCard key={lead.id} lead={lead}>
+                    {card}
+                  </SwipeToDeleteLeadCard>
+                ) : (
+                  <div key={lead.id}>{card}</div>
                 );
               })}
             </div>
