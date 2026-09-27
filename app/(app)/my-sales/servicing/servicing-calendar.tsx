@@ -137,7 +137,7 @@ export function ServicingCalendar({
   }
 
   return (
-    <div className="rounded-[16px] border border-sand bg-white p-4">
+    <div className="rounded-[16px] border border-sand bg-white p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="text-[14px] font-bold text-navy">Contribution calendar</div>

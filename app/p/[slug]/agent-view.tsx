@@ -53,6 +53,14 @@ export function AgentLandingView({ page }: { page: PublicLandingPage }) {
   const headerUrl = content.agentHeaderUrl || agent.headerUrl || "";
   const photoUrl = content.agentPhotoUrl || agent.photoUrl || "";
   const personalLogoUrl = content.agentLogoUrl || agent.logoUrl || "";
+  // Neither the page nor the agent has their own header photo: fall back to
+  // the site-wide cover a SuperAdmin sets in Settings > Branding, or -- if
+  // that's never been set either -- the built-in red pattern every page
+  // showed before that setting existed. Either way it's a stock/branded
+  // background, so it still gets the gradient + blobs treatment below (keyed
+  // off `headerUrl`, not this) rather than the minimal overlay a real photo
+  // gets.
+  const brandCoverSrc = page.brandCoverUrl || "/brand/ge-pattern-red.jpg";
   const year = new Date().getFullYear();
 
   const socials = [
@@ -115,8 +123,8 @@ export function AgentLandingView({ page }: { page: PublicLandingPage }) {
             // eslint-disable-next-line @next/next/no-img-element -- arbitrary agent-uploaded URL
             <img src={headerUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element -- local asset shown behind a color overlay
-            <img src="/brand/ge-pattern-red.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+            // eslint-disable-next-line @next/next/no-img-element -- site-wide default, shown behind a color overlay
+            <img src={brandCoverSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
           )}
           <div
             className="absolute inset-0"

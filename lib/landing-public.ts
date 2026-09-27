@@ -1,7 +1,7 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getBrandLogoUrl } from "@/lib/site-settings";
+import { getBrandLogoUrl, getBrandCoverUrl } from "@/lib/site-settings";
 import { withDefaults, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 export type PublicLandingPage = {
@@ -15,6 +15,8 @@ export type PublicLandingPage = {
   // and the page falls back to a text wordmark. Not per-agent, unlike
   // agent.logoUrl below.
   brandLogoUrl: string | null;
+  /** Header fallback when neither the page nor the agent's profile has one. */
+  brandCoverUrl: string | null;
   agent: {
     id: string;
     fullName: string;
@@ -95,9 +97,10 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
     // Columns not there yet -- fall through with nulls.
   }
 
-  // Tolerant on its own (see getBrandLogoUrl) -- a missing column or row
-  // never blocks the page, it just falls back to the text wordmark.
-  const brandLogoUrl = await getBrandLogoUrl();
+  // Tolerant on their own (see getBrandLogoUrl/getBrandCoverUrl) -- a missing
+  // column or row never blocks the page, it just falls back to the built-in
+  // defaults (the text wordmark, the red pattern image).
+  const [brandLogoUrl, brandCoverUrl] = await Promise.all([getBrandLogoUrl(), getBrandCoverUrl()]);
 
   return {
     id: data.id as string,
@@ -106,6 +109,7 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
     layout: (data.layout as LandingLayout) ?? "full",
     content: withDefaults(data.content),
     brandLogoUrl,
+    brandCoverUrl,
     agent: {
       id: agent.id,
       fullName: agent.full_name,

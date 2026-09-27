@@ -46,7 +46,7 @@ export function QuickAction({ compact = false }: { compact?: boolean }) {
           {/* Catches the next click anywhere else, so the menu closes the way
               a menu is expected to. */}
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute top-full right-0 z-30 mt-1.5 w-[218px] rounded-[14px] border border-sand-2 bg-white p-1.5 shadow-elevated dark:border-white/10 dark:bg-[#12283f]">
+          <div className="absolute top-full right-0 z-30 mt-1.5 w-[218px] max-w-[calc(100vw-5.5rem)] rounded-[14px] border border-sand-2 bg-white p-1.5 shadow-elevated dark:border-white/10 dark:bg-[#12283f]">
             <div className="px-2 pt-1 pb-1.5 text-[9.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
               Quick action
             </div>

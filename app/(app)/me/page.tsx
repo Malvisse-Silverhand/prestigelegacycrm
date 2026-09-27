@@ -6,7 +6,7 @@ export default async function MePage() {
   if (!profile) return null;
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-4 px-5 py-8 lg:hidden">
+    <div className="mx-auto flex max-w-md flex-col gap-4 px-5 py-5 lg:hidden">
       <div className="flex items-center gap-3 rounded-2xl border border-sand bg-white p-4">
         <div className="flex h-12 w-12 flex-none items-center justify-center rounded-[13px] bg-navy text-sm font-bold text-gold">
           {profile.avatar_initials}

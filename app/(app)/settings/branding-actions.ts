@@ -137,3 +137,48 @@ export async function saveBrandLogo(url: string) {
   revalidatePath("/settings");
   return { error: null };
 }
+
+// --- Site Branding: the landing page header cover --------------------------
+//
+// Same shape as saveBrandLogo -- one shared value on site_settings, SuperAdmin
+// only, checked here and in RLS. This is the header background an Agent
+// Landing Page uses when neither the page's own settings nor the agent's
+// profile has a header image of its own (see the priority order in
+// app/p/[slug]/agent-view.tsx). Replacing it re-themes every such page at
+// once; the built-in red pattern is what every page already showed before
+// this setting existed, so leaving it unset changes nothing.
+export async function saveBrandCover(url: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") return { error: "Not allowed." };
+
+  const trimmed = url.trim();
+  const ownPrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/landing-assets/${profile.id}/`;
+  if (trimmed !== "" && !trimmed.startsWith(ownPrefix)) return { error: "Invalid image." };
+
+  const coverUrl = trimmed || null;
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("site_settings")
+    .update({
+      brand_cover_url: coverUrl,
+      updated_at: new Date().toISOString(),
+      updated_by: profile.id,
+    })
+    .eq("id", true);
+
+  if (error) {
+    if (error.code === "42703") return { error: "Run the latest database migration first." };
+    Sentry.captureException(error, { tags: { action: "saveBrandCover" } });
+    return { error: "Couldn't save the cover image. Please try again." };
+  }
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "site_brand_cover",
+    metadata: { has_cover: coverUrl !== null },
+  });
+  if (auditError) console.error("saveBrandCover: audit_log insert failed", auditError);
+
+  revalidatePath("/settings");
+  return { error: null };
+}

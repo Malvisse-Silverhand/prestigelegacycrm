@@ -196,7 +196,7 @@ export function NotificationBell({
 
       {open && (
         <div
-          className={`absolute z-40 mt-2 w-[320px] overflow-hidden rounded-[16px] border border-sand bg-white shadow-elevated dark:border-white/10 dark:bg-[#12283f] ${
+          className={`absolute z-40 mt-2 w-[320px] max-w-[calc(100vw-5.5rem)] overflow-hidden rounded-[16px] border border-sand bg-white shadow-elevated dark:border-white/10 dark:bg-[#12283f] ${
             compact ? "right-0" : "right-0"
           }`}
         >

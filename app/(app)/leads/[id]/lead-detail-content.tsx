@@ -279,7 +279,7 @@ export function LeadDetailContent({
 
   return (
     <div className="overflow-hidden rounded-[20px] bg-cream shadow-elevated">
-      <div className="flex items-start gap-4 bg-navy p-[26px] text-white">
+      <div className="flex items-start gap-4 bg-navy p-4 sm:p-[26px] text-white">
         <div className="flex h-[50px] w-[50px] flex-none items-center justify-center rounded-[15px] bg-gold text-[17px] font-extrabold text-navy">
           {initials}
         </div>
@@ -312,7 +312,7 @@ export function LeadDetailContent({
         )}
       </div>
 
-      <div className="flex gap-2 border-b border-sand bg-white p-4">
+      <div className="flex gap-2 border-b border-sand bg-white p-3 sm:p-4">
         <a
           href={`tel:${lead.phone}`}
           className="flex h-11 flex-1 items-center justify-center gap-[7px] rounded-[11px] bg-navy text-[13px] font-semibold text-white"
@@ -338,7 +338,7 @@ export function LeadDetailContent({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
-        <div className="max-h-[70vh] overflow-y-auto p-[26px]">
+        <div className="max-h-[70vh] overflow-y-auto p-4 sm:p-[26px]">
           {/* Two tabs, not two pages: the lead is still one record. The second
               stays locked until the lead reaches Submission, because there is
               nothing to put in it before then. */}
@@ -409,7 +409,7 @@ export function LeadDetailContent({
             )
           ) : (
           <>
-          <div className="rounded-[16px] border border-sand bg-white p-[18px]">
+          <div className="rounded-[16px] border border-sand bg-white p-3 sm:p-[18px]">
             <div className="flex items-center justify-between">
               <div className="text-[14.5px] font-bold text-navy">Lead details</div>
               <button
@@ -572,7 +572,7 @@ export function LeadDetailContent({
           )}
         </div>
 
-        <div className="flex flex-col gap-[18px] border-t border-sand bg-white p-[22px] lg:border-l lg:border-t-0">
+        <div className="flex flex-col gap-[18px] border-t border-sand bg-white p-4 sm:p-[22px] lg:border-l lg:border-t-0">
           <div>
             <div className="text-[10.5px] font-bold tracking-[0.1em] text-taupe-2 uppercase">
               Pipeline stage

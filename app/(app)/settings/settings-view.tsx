@@ -71,7 +71,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   Benefits: "The benefits agents can pick when submitting a case",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
   "Tracking Code": "Meta and TikTok pixels on your landing pages",
-  Branding: "The insurer logo shown on every Agent Landing Page",
+  Branding: "The insurer logo and header cover shown on every Agent Landing Page",
   "Audit Log": "Every sensitive action, and who took it",
 };
 
@@ -91,6 +91,7 @@ export function SettingsView({
   trackingCode,
   trackablePages,
   brandLogoUrl,
+  brandCoverUrl,
   benefits,
   currentUserId,
   myProfile,
@@ -110,6 +111,7 @@ export function SettingsView({
   trackingCode: TrackingCodeSettings;
   trackablePages: TrackablePage[];
   brandLogoUrl: string | null;
+  brandCoverUrl: string | null;
   benefits: BenefitOption[];
   currentUserId: string;
   myProfile: MyProfileDetails;
@@ -117,7 +119,8 @@ export function SettingsView({
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log, Tracking Code and
   // Branding stay SuperAdmin-only -- tracking code runs script on the public
-  // site and Branding sets the insurer logo every agent's page shows, so both
+  // site and Branding sets the insurer logo and header cover every agent's
+  // page shows, so both
   // sit with the role that already has full control. Webhooks is org-wide
   // integration config, so it matches its RLS audience: superadmin + group
   // managers.
@@ -252,7 +255,9 @@ export function SettingsView({
           {tab === "Tracking Code" && role === "superadmin" && (
             <TrackingCodeTab initial={trackingCode} pages={trackablePages} />
           )}
-          {tab === "Branding" && role === "superadmin" && <BrandingTab initial={brandLogoUrl} />}
+          {tab === "Branding" && role === "superadmin" && (
+            <BrandingTab initial={brandLogoUrl} initialCover={brandCoverUrl} />
+          )}
           {tab === "Audit Log" && role === "superadmin" && <AuditLogTab entries={auditLog ?? []} />}
         </div>
       </div>

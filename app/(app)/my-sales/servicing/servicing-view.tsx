@@ -98,7 +98,7 @@ export function ServicingView({
             Clients whose policy is inforce
           </div>
         </div>
-        <div className="px-5 py-8 lg:px-[30px]">
+        <div className="px-5 py-5 sm:py-8 lg:px-[30px]">
           <EmptyState
             icon={
               <svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="text-green">
@@ -237,7 +237,7 @@ export function ServicingView({
           </aside>
 
           {/* ---- The selected client ---- */}
-          <div className="rounded-[16px] border border-sand bg-white p-4">
+          <div className="rounded-[16px] border border-sand bg-white p-3 sm:p-4">
             {selected ? (
               <>
                 <div className="flex flex-wrap items-start justify-between gap-2 border-b border-sand-3 pb-3">

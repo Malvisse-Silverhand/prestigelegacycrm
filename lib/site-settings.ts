@@ -42,3 +42,15 @@ export const getBrandLogoUrl = cache(async (): Promise<string | null> => {
   if (error || !data) return null;
   return (data.brand_logo_url as string | null) ?? null;
 });
+
+// The header background every Agent Landing Page falls back to when neither
+// the page nor the agent's profile has its own header image. Same tolerance
+// rules as getBrandLogoUrl: no column yet, or nothing uploaded, both mean
+// "let the caller use its own built-in default" (the red pattern image).
+export const getBrandCoverUrl = cache(async (): Promise<string | null> => {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("site_settings").select("brand_cover_url").eq("id", true).maybeSingle();
+
+  if (error || !data) return null;
+  return (data.brand_cover_url as string | null) ?? null;
+});
