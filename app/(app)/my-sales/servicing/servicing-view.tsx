@@ -1,15 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { summariseSchedule } from "@/lib/contribution-schedule";
 import { caseAnc, caseCollected } from "@/lib/case-anc";
 import { PLAN_CATEGORY_LABEL, PLAN_CATEGORY_SHORT } from "@/lib/plan-catalogue";
-import { LeadNo } from "@/components/lead-no";
 import { EmptyState } from "@/components/empty-state";
-import { ServicingDetail } from "../servicing-detail";
-import { fmtDate, fmtRM } from "../certificate-panel";
 import { ServicingCalendar } from "./servicing-calendar";
+import { ServicingClientModal } from "./servicing-client-modal";
 import type { CaseSubmission } from "../types";
 import type { BirthdayRow } from "@/lib/birthdays";
 
@@ -22,7 +19,9 @@ export function ServicingView({
   birthdays: BirthdayRow[];
   today: string;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(cases[0]?.id ?? null);
+  // No default selection -- the detail now opens as a modal, so "selected"
+  // means "the modal is open for this client", not "shown in the panel".
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   // A birthday's "View" action has no case to open when the person has no
@@ -151,22 +150,25 @@ export function ServicingView({
           onSelectLead={onSelectLead}
         />
 
-        <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-          {/* ---- Clients ---- */}
-          <aside className="rounded-[16px] border border-sand bg-white p-3.5">
-            <div className="text-[13px] font-bold text-navy">Clients</div>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search…"
-              aria-label="Search clients"
-              className="mt-2 h-[34px] w-full rounded-[9px] border border-sand-2 bg-cream px-3 text-[12px] font-medium text-navy outline-none focus:border-gold placeholder:text-taupe"
-            />
-            <div className="mt-2 flex max-h-[420px] flex-col gap-1.5 overflow-y-auto pr-1">
-              {visible.length === 0 && (
-                <p className="py-4 text-center text-[12px] font-medium text-muted">Nothing matches that.</p>
-              )}
-              {visible.map((c) => {
+        {/* ---- Clients ---- */}
+        {/* Click a card to open its detail as a modal (below) -- this used to
+            share the row with a permanently-open detail column, which meant
+            a narrow 300px list even on a wide monitor and an empty "pick a
+            client" panel taking up half the page before the first click. */}
+        <div className="rounded-[16px] border border-sand bg-white p-3.5">
+          <div className="text-[13px] font-bold text-navy">Clients</div>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search…"
+            aria-label="Search clients"
+            className="mt-2 h-[34px] w-full rounded-[9px] border border-sand-2 bg-cream px-3 text-[12px] font-medium text-navy outline-none focus:border-gold placeholder:text-taupe"
+          />
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {visible.length === 0 && (
+              <p className="col-span-full py-4 text-center text-[12px] font-medium text-muted">Nothing matches that.</p>
+            )}
+            {visible.map((c) => {
                 const summary = summariseSchedule(c.schedule, today);
                 const active = c.id === selectedId;
                 return (
@@ -234,94 +236,19 @@ export function ServicingView({
                 );
               })}
             </div>
-          </aside>
-
-          {/* ---- The selected client ---- */}
-          <div className="rounded-[16px] border border-sand bg-white p-3 sm:p-4">
-            {selected ? (
-              <>
-                <div className="flex flex-wrap items-start justify-between gap-2 border-b border-sand-3 pb-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <LeadNo no={selected.leadNo} />
-                      <Link href={`/leads/${selected.leadId}`} className="truncate text-[15px] font-bold text-navy hover:underline">
-                        {selected.leadName}
-                      </Link>
-                    </div>
-                    <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-                      {selected.planName}
-                      {selected.certificateNo ? ` · Certificate ${selected.certificateNo}` : ""}
-                      {selected.commencementDate ? ` · Commenced ${fmtDate(selected.commencementDate)}` : ""}
-                    </div>
-                    {/* The two identifiers the client portal groups certificates
-                        by. Shown together because "why does this client see
-                        that certificate" is always answered by one of them. */}
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-medium">
-                      <span className={selected.idNo ? "font-mono text-taupe-2" : "font-semibold text-alert-red"}>
-                        {selected.idNo ? `NRIC ${selected.idNo}` : "No NRIC on file"}
-                      </span>
-                      <span className="text-sand-2">·</span>
-                      <span className={selected.leadEmail ? "text-taupe-2" : "font-semibold text-alert-red"}>
-                        {selected.leadEmail ?? "No email on file"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-none items-start gap-4">
-                    <div className="text-right">
-                      <div className="text-[16px] font-extrabold text-navy">
-                        RM{fmtRM(selected.installmentContribution)}
-                      </div>
-                      <div className="text-[10.5px] font-semibold text-taupe">per contribution</div>
-                    </div>
-                    {/* What has actually come in against this certificate --
-                        the ticked rows at face value, beside the per-payment
-                        figure they're multiples of. */}
-                    <div className="border-l border-sand-3 pl-4 text-right">
-                      <div className="text-[16px] font-extrabold text-green">
-                        RM{fmtRM(
-                          caseCollected({
-                            installmentContribution: selected.installmentContribution,
-                            paidCount: selected.schedule.filter((r) => r.paid).length,
-                          }),
-                        )}
-                      </div>
-                      <div className="text-[10.5px] font-semibold text-taupe">collected</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Same NRIC as another certificate on this book -- the
-                    client's own portal already shows these together, so an
-                    agent switching between the certificates of one client
-                    should be able to as well, without a search. */}
-                {siblingsOf(selected).length > 0 && (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[10px] border border-warn-gold-bg bg-warn-gold-bg/60 px-3 py-2">
-                    <span className="text-[10.5px] font-bold text-warn-gold-text">Same client, other certificates:</span>
-                    {siblingsOf(selected).map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setSelectedId(s.id)}
-                        className="press rounded-[7px] border border-[#f0dfb4] bg-white px-2 py-1 text-[10.5px] font-semibold text-navy hover:border-navy"
-                      >
-                        {s.certificateNo ?? s.planName}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                <div className="pt-4">
-                  <ServicingDetail submission={selected} today={today} />
-                </div>
-              </>
-            ) : (
-              <p className="py-10 text-center text-[12.5px] font-medium text-muted">
-                Pick a client on the left.
-              </p>
-            )}
           </div>
         </div>
-      </div>
+
+      {selected && (
+        <ServicingClientModal
+          submission={selected}
+          today={today}
+          siblings={siblingsOf(selected)}
+          onSelectSibling={setSelectedId}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </div>
   );
 }
+

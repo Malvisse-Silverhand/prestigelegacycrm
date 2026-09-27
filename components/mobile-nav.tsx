@@ -225,19 +225,23 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
             </div>
           </div>
           <ThemeToggle className="flex-none" />
-        </div>
-        <div className="px-3">
+          {/* A small, deliberate icon -- not the full-width labelled row this
+              used to be. That row sat directly under where a thumb lands to
+              open this same drawer (the bottom nav's Menu button), so it was
+              catching the tap meant to open the menu, not close it. A
+              32px icon next to the theme toggle needs its own aim. */}
           <button
             type="button"
             onClick={signOut}
             disabled={pending}
-            className="mt-2 flex w-full items-center gap-2 rounded-[10px] px-[13px] py-[10px] text-[12.5px] font-medium text-white/50 disabled:opacity-60"
+            aria-label={pending ? "Signing out…" : "Sign Out"}
+            title="Sign Out"
+            className="press flex h-8 w-8 flex-none items-center justify-center rounded-[10px] text-white/45 hover:bg-white/10 hover:text-white/85 disabled:opacity-60"
           >
             <SignOutIcon width={15} height={15} />
-            {pending ? "Signing out…" : "Sign Out"}
           </button>
-          {error && <div className="px-[13px] pt-1 text-[11px] font-medium text-alert-red">{error}</div>}
         </div>
+        {error && <div className="px-[18px] pt-2 text-[11px] font-medium text-alert-red">{error}</div>}
       </div>
     </div>
   );
