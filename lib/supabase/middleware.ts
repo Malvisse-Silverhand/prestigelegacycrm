@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAgentLandingPath } from "@/lib/agent-slug";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -68,12 +69,18 @@ export async function updateSession(request: NextRequest) {
   // accounts -- the token in the path is the only credential, the page
   // resolves it server-side, and a revoked token renders the same dead end as
   // one that was never real.
+  //
+  // /<agent-slug>/<page-slug> is the same public landing page as /p/<slug>,
+  // just namespaced under the agent. Exactly two path segments, first one not
+  // a reserved app route -- server-action POSTs from that page target the
+  // same path, so they're covered by the same check.
   const isPublicRoute =
     PUBLIC_ROUTES.includes(request.nextUrl.pathname) ||
     request.nextUrl.pathname.startsWith("/join/") ||
     request.nextUrl.pathname.startsWith("/p/") ||
     request.nextUrl.pathname.startsWith("/sijil/") ||
-    request.nextUrl.pathname.startsWith("/tools/");
+    request.nextUrl.pathname.startsWith("/tools/") ||
+    isAgentLandingPath(request.nextUrl.pathname);
 
   if (!userId && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone();

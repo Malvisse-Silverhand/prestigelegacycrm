@@ -22,6 +22,7 @@ import {
   MEDICAL_GUIDE_URL,
   HIBAH_GUIDE_URL,
 } from "@/lib/portal-guides";
+import { PaymentHelpButton } from "./payment-help";
 import { logoutOfPortal } from "./actions";
 
 type Tab = "cert" | "benefits" | "waiting" | "nominees" | "guides";
@@ -528,6 +529,9 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
                           </li>
                         ))}
                       </ul>
+                      <div className="mt-3">
+                        <PaymentHelpButton payload={payload} lang={lang} tone="onDark" />
+                      </div>
                     </>
                   )}
                 </div>
@@ -1102,45 +1106,57 @@ function CertificateCards({
           {payloads.map((payload) => {
             const status = PORTAL_STATUS_COPY[payload.status];
             return (
-              <button
-                key={payload.caseId}
-                type="button"
-                onClick={() => onSelect(payload.caseId)}
-                className="press flex flex-col rounded-[18px] border border-sand bg-white p-4 text-left shadow-card"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  {payload.planCategory !== "other" && (
-                    <span className="rounded-full bg-info-blue-bg-2 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-info-blue-text">
-                      {PLAN_CATEGORY_LABEL[payload.planCategory][lang]}
-                    </span>
-                  )}
-                  <span className={`ml-auto flex-none rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.06em] ${STATUS_TONE[status.tone]}`}>
-                    {status[lang]}
-                  </span>
-                </div>
-
-                <div className="mt-3 text-[15px] font-bold leading-snug tracking-[-0.01em] text-navy">
-                  {payload.planName ?? "—"}
-                </div>
-                {payload.benefits.length > 1 && (
-                  <div className="mt-0.5 text-[11px] font-medium text-muted">
-                    {(lang === "bm" ? "+ {n} manfaat tambahan" : "+ {n} additional benefits").replace(
-                      "{n}",
-                      String(payload.benefits.length - 1),
+              <div key={payload.caseId} className="flex flex-col rounded-[18px] border border-sand bg-white shadow-card">
+                {/* A plain <button> would have to nest the payment-help button
+                    inside it, and a button can't contain another button. The
+                    card is a div; everything that was the button's content
+                    moves into this inner button instead, with the same
+                    visuals. */}
+                <button
+                  type="button"
+                  onClick={() => onSelect(payload.caseId)}
+                  className="press flex flex-col p-4 text-left"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    {payload.planCategory !== "other" && (
+                      <span className="rounded-full bg-info-blue-bg-2 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-info-blue-text">
+                        {PLAN_CATEGORY_LABEL[payload.planCategory][lang]}
+                      </span>
                     )}
+                    <span className={`ml-auto flex-none rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.06em] ${STATUS_TONE[status.tone]}`}>
+                      {status[lang]}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 text-[15px] font-bold leading-snug tracking-[-0.01em] text-navy">
+                    {payload.planName ?? "—"}
+                  </div>
+                  {payload.benefits.length > 1 && (
+                    <div className="mt-0.5 text-[11px] font-medium text-muted">
+                      {(lang === "bm" ? "+ {n} manfaat tambahan" : "+ {n} additional benefits").replace(
+                        "{n}",
+                        String(payload.benefits.length - 1),
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-sand-3 pt-3">
+                    <div>
+                      <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-taupe-2">{c.certNo}</div>
+                      <div className="mt-0.5 font-mono text-[13px] font-bold text-navy">
+                        {payload.certificateNo ?? "—"}
+                      </div>
+                    </div>
+                    <IconChevron className="h-3.5 w-3.5 flex-none -rotate-90 text-taupe" />
+                  </div>
+                </button>
+
+                {payload.amountsDue.length > 0 && (
+                  <div className="px-4 pb-4">
+                    <PaymentHelpButton payload={payload} lang={lang} tone="onLight" />
                   </div>
                 )}
-
-                <div className="mt-3 flex items-center justify-between gap-2 border-t border-sand-3 pt-3">
-                  <div>
-                    <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-taupe-2">{c.certNo}</div>
-                    <div className="mt-0.5 font-mono text-[13px] font-bold text-navy">
-                      {payload.certificateNo ?? "—"}
-                    </div>
-                  </div>
-                  <IconChevron className="h-3.5 w-3.5 flex-none -rotate-90 text-taupe" />
-                </div>
-              </button>
+              </div>
             );
           })}
         </div>

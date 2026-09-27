@@ -21,7 +21,10 @@ export { PORTAL_STATUSES, PORTAL_STATUS_COPY, statusFromCase, type PortalStatus 
  * Deliberately absent, and to stay absent: IC / ID number, underwriting
  * notes, nominee phone numbers, the agent's own commission or ANC figures,
  * and every other client -- including every other client who happens to
- * share this one's NRIC.
+ * share this one's NRIC. The one phone number that IS included is the
+ * certificate owner's own (`clientPhone`), so the JomPAY guide can prefill
+ * Ref 2 with it -- the client is already behind their own login when they
+ * see it, and it is their own number being read back to them.
  */
 export type PortalPayload = {
   caseId: string;
@@ -30,6 +33,10 @@ export type PortalPayload = {
   linkId: string | null;
   status: PortalStatus;
   clientName: string;
+  /** The certificate owner's own phone, digits with a leading 0 (the way a
+   *  bank app expects it) -- for the JomPAY guide's Ref 2 field only. Null
+   *  when the lead has none on file, which falls back to a placeholder. */
+  clientPhone: string | null;
   certificateNo: string | null;
   /** The base benefit names the plan -- there is no hardcoded plan label. */
   planName: string | null;
@@ -168,6 +175,7 @@ function buildPayload(
     // The person covered is who the certificate is about; the lead name is the
     // fallback for older cases filed before that field existed.
     clientName: row.person_covered_name || lead?.full_name || "",
+    clientPhone: toLocalPhone(lead?.phone ?? null),
     certificateNo: row.certificate_no,
     planName: baseBenefit ?? row.plan_name,
     // The badge follows the agent's tags where they exist, and the base
@@ -211,6 +219,20 @@ function buildPayload(
       waNumber: toWaNumber(agent?.phone ?? null),
     },
   };
+}
+
+/**
+ * The digits a client would actually type into their bank app's JomPAY Ref 2
+ * field: a leading 0, not the `60` country-code form `toWaNumber` produces
+ * for wa.me links. Null for anything that doesn't look like a phone number at
+ * all, so the guide falls back to its placeholder rather than a stray digit.
+ */
+function toLocalPhone(phone: string | null): string | null {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("60")) return "0" + digits.slice(2);
+  if (digits.startsWith("0")) return digits;
+  return digits;
 }
 
 function initialsOf(name: string): string {

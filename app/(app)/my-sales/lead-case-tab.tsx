@@ -64,7 +64,7 @@ export function LeadCaseTab({
             href="/my-sales/submit-case"
             className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy hover:border-navy"
           >
-            Submit Case
+            Manage Cases
           </Link>
           <button
             type="button"

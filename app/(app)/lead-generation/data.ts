@@ -14,9 +14,20 @@ export type LandingPageRow = {
   agentId: string;
   agentName: string;
   createdAt: string;
+  // The owning agent's public URL segment. Read through a separate tolerant
+  // query below, so the list still renders before the 20260927090000
+  // migration has added the column.
+  agentSlug: string | null;
 };
 
-export type LandingPageDetail = LandingPageRow & { content: LandingContent };
+export type LandingPageDetail = LandingPageRow & {
+  content: LandingContent;
+  // The owning agent's profile-level default images (Settings > My Profile),
+  // used as the fallback preview in the builder's image fields when a page
+  // hasn't overridden them. Null before the migration or when the owner has
+  // set none.
+  ownerBranding: { logoUrl: string | null; headerUrl: string | null; photoUrl: string | null } | null;
+};
 
 // RLS (can_manage_landing_page) already scopes this to the caller's own pages
 // plus anyone beneath them, so there is no scope logic to repeat here.
@@ -27,7 +38,12 @@ export async function getLandingPages(): Promise<LandingPageRow[]> {
     .select("id, slug, name, product, layout, is_published, view_count, lead_count, agent_id, created_at, profiles!landing_pages_agent_id_fkey(full_name)")
     .order("created_at", { ascending: false });
 
-  return (data ?? []).map(toRow);
+  const rows = (data ?? []) as RawRow[];
+  const agentSlugs = await getAgentSlugs(
+    supabase,
+    Array.from(new Set(rows.map((r) => r.agent_id))),
+  );
+  return rows.map((r) => toRow(r, agentSlugs.get(r.agent_id) ?? null));
 }
 
 export async function getLandingPage(id: string): Promise<LandingPageDetail | null> {
@@ -39,7 +55,57 @@ export async function getLandingPage(id: string): Promise<LandingPageDetail | nu
     .maybeSingle();
 
   if (!data) return null;
-  return { ...toRow(data), content: withDefaults(data.content) };
+
+  const agentSlugs = await getAgentSlugs(supabase, [data.agent_id]);
+  const ownerBranding = await getOwnerBranding(supabase, data.agent_id);
+
+  return {
+    ...toRow(data, agentSlugs.get(data.agent_id) ?? null),
+    content: withDefaults(data.content),
+    ownerBranding,
+  };
+}
+
+// Tolerant: these columns only exist once the 20260927090000 migration has
+// been applied. A failure (missing column, etc) is swallowed and every agent
+// simply has no slug yet -- the list and the builder still render.
+async function getAgentSlugs(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  agentIds: string[],
+): Promise<Map<string, string | null>> {
+  const map = new Map<string, string | null>();
+  if (agentIds.length === 0) return map;
+  try {
+    const { data, error } = await supabase.from("profiles").select("id, agent_slug").in("id", agentIds);
+    if (error || !data) return map;
+    for (const row of data as { id: string; agent_slug: string | null }[]) {
+      map.set(row.id, row.agent_slug ?? null);
+    }
+  } catch {
+    // Column not there yet.
+  }
+  return map;
+}
+
+async function getOwnerBranding(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  agentId: string,
+): Promise<LandingPageDetail["ownerBranding"]> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("landing_logo_url, landing_header_url, landing_photo_url")
+      .eq("id", agentId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      logoUrl: (data.landing_logo_url as string | null) ?? null,
+      headerUrl: (data.landing_header_url as string | null) ?? null,
+      photoUrl: (data.landing_photo_url as string | null) ?? null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 // Totals across whatever the caller can see -- the header strip on the list.
@@ -88,7 +154,7 @@ type RawRow = {
   profiles?: unknown;
 };
 
-function toRow(data: RawRow): LandingPageRow {
+function toRow(data: RawRow, agentSlug: string | null): LandingPageRow {
   const agent = data.profiles as unknown as { full_name: string } | null;
   return {
     id: data.id,
@@ -102,5 +168,6 @@ function toRow(data: RawRow): LandingPageRow {
     agentId: data.agent_id,
     agentName: agent?.full_name ?? "—",
     createdAt: data.created_at,
+    agentSlug,
   };
 }

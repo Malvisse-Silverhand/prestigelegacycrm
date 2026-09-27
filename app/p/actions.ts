@@ -108,3 +108,129 @@ export async function captureLandingLead(input: {
 
   return { error: null };
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DOB_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+// The Agent Landing Page's own 7-field form. Same visitor, same rate-limit
+// bucket and same "no account, re-resolve the slug ourselves" posture as
+// captureLandingLead -- this is a second, separate entry point rather than a
+// branch of that one because the fields (DOB, gender, smoker, occupation,
+// interest) and validation are different enough that sharing would mean more
+// branching than code.
+export async function captureAgentFormLead(input: {
+  slug: string;
+  name: string;
+  phone: string;
+  email?: string;
+  dob: string;
+  gender: string;
+  smoker: boolean;
+  occupation: string;
+  interest?: string | null;
+}) {
+  const allowed = await checkRateLimit("landing-lead-ip", await clientIp(), 10, 60 * 60);
+  if (!allowed) return { error: "Terlalu banyak percubaan. Cuba lagi sebentar nanti." };
+
+  const name = input.name?.trim() ?? "";
+  const phone = input.phone?.trim() ?? "";
+  const email = input.email?.trim().toLowerCase() ?? "";
+  const occupation = input.occupation?.trim() ?? "";
+  const interest = (input.interest ?? "").trim().slice(0, 60) || null;
+
+  if (name.length < 2) return { error: "Nama tidak lengkap." };
+  if (phone.replace(/\D/g, "").length < 9) return { error: "Nombor telefon tidak sah." };
+  if (email && !EMAIL_RE.test(email)) return { error: "Alamat e-mel tidak sah." };
+  if (!DOB_RE.test(input.dob ?? "")) return { error: "Tarikh lahir tidak sah." };
+  const dobDate = new Date(`${input.dob}T00:00:00Z`);
+  const now = new Date();
+  if (Number.isNaN(dobDate.getTime()) || dobDate.getTime() >= now.getTime()) {
+    return { error: "Tarikh lahir tidak sah." };
+  }
+  const age = (now.getTime() - dobDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+  if (age < 0 || age > 100) return { error: "Tarikh lahir tidak sah." };
+  if (input.gender !== "male" && input.gender !== "female") return { error: "Sila pilih jantina." };
+  if (typeof input.smoker !== "boolean") return { error: "Sila nyatakan status merokok." };
+  if (occupation.length < 2 || occupation.length > 80) return { error: "Pekerjaan tidak sah." };
+
+  const admin = createAdminClient();
+
+  const { data: page } = await admin
+    .from("landing_pages")
+    .select("id, agent_id, is_published, profiles!landing_pages_agent_id_fkey(unit_id)")
+    .eq("slug", input.slug)
+    .maybeSingle();
+  if (!page || !page.is_published) return { error: "Halaman ini tidak lagi menerima permohonan." };
+
+  const owner = page.profiles as unknown as { unit_id: string | null } | null;
+
+  // Same phone on the same page twice is the visitor re-submitting, not a new
+  // person: update what we know rather than creating a duplicate the agent
+  // then has to merge by hand.
+  const { data: existing } = await admin
+    .from("leads")
+    .select("id")
+    .eq("agent_id", page.agent_id)
+    .eq("phone", phone)
+    .maybeSingle();
+
+  const row = {
+    full_name: name,
+    phone,
+    email: email || null,
+    date_of_birth: input.dob,
+    gender: input.gender as "male" | "female",
+    is_smoker: input.smoker,
+    occupation,
+    interest,
+    lead_source: "Landing Page" as const,
+    agent_id: page.agent_id,
+    unit_id: owner?.unit_id ?? null,
+    status: "warm" as const,
+    pipeline_stage: "new" as const,
+  };
+
+  const { data: lead, error } = existing
+    ? await admin
+        .from("leads")
+        .update({
+          full_name: name,
+          email: row.email,
+          date_of_birth: row.date_of_birth,
+          gender: row.gender,
+          is_smoker: row.is_smoker,
+          occupation: row.occupation,
+          ...(interest ? { interest } : {}),
+        })
+        .eq("id", existing.id)
+        .select("id, full_name, phone, email, lead_source, interest, status, created_at")
+        .maybeSingle()
+    : await admin
+        .from("leads")
+        .insert(row)
+        .select("id, full_name, phone, email, lead_source, interest, status, created_at")
+        .maybeSingle();
+
+  if (error || !lead) {
+    Sentry.captureException(error ?? new Error("agent landing lead insert returned no row"), {
+      tags: { action: "captureAgentFormLead" },
+      extra: { slug: input.slug },
+    });
+    return { error: "Maaf, maklumat anda tidak dapat dihantar. Cuba sekali lagi." };
+  }
+
+  // Everything below is bookkeeping -- the visitor has already converted, so
+  // none of it may fail their submission.
+  if (!existing) {
+    await admin.rpc("increment_landing_lead", { page_id: page.id });
+    await admin.from("lead_activity").insert({
+      lead_id: lead.id as string,
+      actor_id: page.agent_id,
+      activity_type: "created",
+      content: `Lead masuk dari borang Agent Landing Page (${input.slug})`,
+    });
+    await dispatchWebhook("lead_created", { ...lead, source: "agent_landing_page", slug: input.slug });
+  }
+
+  return { error: null };
+}

@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { rowStatus } from "@/lib/contribution-schedule";
+import { occurrencesInRange, type BirthdayRow } from "@/lib/birthdays";
 import { fmtRM } from "../certificate-panel";
+import { DayModal } from "./day-modal";
 import type { CaseSubmission } from "../types";
 
 const MONTHS = [
@@ -30,12 +32,16 @@ function pad(n: number) {
  */
 export function ServicingCalendar({
   cases,
+  birthdays,
   today,
   onSelectCase,
+  onSelectLead,
 }: {
   cases: CaseSubmission[];
+  birthdays: BirthdayRow[];
   today: string;
   onSelectCase: (caseId: string) => void;
+  onSelectLead: (leadId: string) => void;
 }) {
   // Anchored on the server's today, then moved by the arrows. Never reads a
   // clock during render, so the first paint can't disagree with hydration.
@@ -67,6 +73,21 @@ export function ServicingCalendar({
   const firstOfMonth = new Date(Date.UTC(year, month, 1));
   const leading = (firstOfMonth.getUTCDay() + 6) % 7;
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+
+  // Every won client's birthday landing somewhere in the visible month --
+  // recurs every year, so it can't come from a fixed "next 30 days" list the
+  // way the dashboard's card does.
+  const firstKey = `${year}-${pad(month + 1)}-01`;
+  const lastKey = `${year}-${pad(month + 1)}-${pad(daysInMonth)}`;
+  const birthdaysByDay = useMemo(
+    () => occurrencesInRange(birthdays, firstKey, lastKey, today),
+    [birthdays, firstKey, lastKey, today],
+  );
+
+  // Which birthday leads already have a certificate on this book -- decides
+  // whether the day modal's "View" opens the case directly or falls back to
+  // the lead's own detail page.
+  const caseLeadIds = useMemo(() => new Set(cases.map((c) => c.leadId)), [cases]);
 
   function step(by: number) {
     const next = new Date(Date.UTC(year, month + by, 1));
@@ -114,8 +135,6 @@ export function ServicingCalendar({
     setMonth(Number(dueNow.earliest.slice(5, 7)) - 1);
     setOpenDay(dueNow.earliest);
   }
-
-  const openEntries = openDay ? (duesByDay.get(openDay) ?? []) : [];
 
   return (
     <div className="rounded-[16px] border border-sand bg-white p-4">
@@ -196,19 +215,23 @@ export function ServicingCalendar({
           const day = i + 1;
           const key = `${year}-${pad(month + 1)}-${pad(day)}`;
           const entries = duesByDay.get(key) ?? [];
+          const dayBirthdays = birthdaysByDay.get(key) ?? [];
           const isToday = key === today;
           const anyOverdue = entries.some((e) => e.overdue);
           const allPaid = entries.length > 0 && entries.every((e) => e.paid);
+          const sel = openDay === key;
 
           return (
             <button
               key={key}
               type="button"
-              disabled={entries.length === 0}
-              onClick={() => setOpenDay(openDay === key ? null : key)}
-              aria-label={`${day} ${MONTHS[month]}${entries.length ? `, ${entries.length} contribution due` : ""}`}
-              className={`min-h-[54px] rounded-[9px] border px-1 py-1.5 text-left transition-colors disabled:cursor-default ${
-                openDay === key
+              disabled={entries.length === 0 && dayBirthdays.length === 0}
+              onClick={() => setOpenDay(key)}
+              aria-label={`${day} ${MONTHS[month]}${entries.length ? `, ${entries.length} contribution due` : ""}${
+                dayBirthdays.length ? `, ${dayBirthdays.length} birthday${dayBirthdays.length === 1 ? "" : "s"}` : ""
+              }`}
+              className={`relative min-h-[54px] rounded-[9px] border px-1 py-1.5 text-left transition-colors disabled:cursor-default ${
+                sel
                   ? "border-navy bg-navy"
                   : entries.length === 0
                     ? "border-sand-3 bg-white"
@@ -217,19 +240,33 @@ export function ServicingCalendar({
                       : anyOverdue
                         ? "border-transparent bg-alert-red-bg"
                         : "border-transparent bg-warn-gold-bg"
-              } ${isToday && openDay !== key ? "ring-1 ring-gold" : ""}`}
+              } ${isToday && !sel ? "ring-1 ring-gold" : ""}`}
             >
               <div
                 className={`text-[11px] font-bold ${
-                  openDay === key ? "text-white" : isToday ? "text-warn-gold-text" : "text-navy"
+                  sel ? "text-white" : isToday ? "text-warn-gold-text" : "text-navy"
                 }`}
               >
                 {day}
               </div>
               {entries.length > 0 && (
-                <div className={`mt-0.5 text-[9.5px] font-semibold ${openDay === key ? "text-white/70" : "text-taupe-2"}`}>
+                <div className={`mt-0.5 text-[9.5px] font-semibold ${sel ? "text-white/70" : "text-taupe-2"}`}>
                   {entries.length} due
                 </div>
+              )}
+              {dayBirthdays.length > 0 && (
+                <svg
+                  width={13}
+                  height={13}
+                  viewBox="0 0 24 24"
+                  aria-hidden
+                  className={`absolute bottom-1 right-1 ${sel ? "text-gold" : "text-warn-gold-text"}`}
+                >
+                  <path d="M12 3c.9 1 .9 2 0 3-.9-1-.9-2 0-3z" fill="#fac748" stroke="#c9552f" strokeWidth={1} />
+                  <path d="M12 6.5V10" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+                  <path d="M5 21h14v-7a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3z" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinejoin="round" />
+                  <path d="M5 16c1.4 1.2 2.8 1.2 4.2 0s2.8-1.2 4.2 0 2.8 1.2 4.2 0" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
+                </svg>
               )}
             </button>
           );
@@ -237,36 +274,21 @@ export function ServicingCalendar({
       </div>
 
       {openDay && (
-        <div className="mt-3 rounded-[11px] border border-sand-2 bg-cream p-3">
-          <div className="text-[11.5px] font-bold text-navy">
-            {openDay.slice(8, 10)} {MONTHS[month]} {year} · {openEntries.length} contribution
-            {openEntries.length === 1 ? "" : "s"}
-          </div>
-          <div className="mt-2 flex flex-col gap-1.5">
-            {openEntries.map((e, i) => (
-              <button
-                key={`${e.caseId}-${i}`}
-                type="button"
-                onClick={() => onSelectCase(e.caseId)}
-                className="flex items-center gap-2 rounded-[9px] bg-white px-2.5 py-2 text-left hover:ring-1 hover:ring-navy"
-              >
-                <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-navy">{e.clientName}</span>
-                <span className="flex-none text-[11.5px] font-bold text-navy">RM{fmtRM(e.amount)}</span>
-                <span
-                  className={`flex-none rounded-[5px] px-[6px] py-[1px] text-[9.5px] font-bold ${
-                    e.paid
-                      ? "bg-success-bg text-green"
-                      : e.overdue
-                        ? "bg-alert-red-bg text-alert-red"
-                        : "bg-warn-gold-bg text-warn-gold-text"
-                  }`}
-                >
-                  {e.paid ? "Paid" : e.overdue ? "Overdue" : "Due"}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <DayModal
+          title={`${openDay.slice(8, 10)} ${MONTHS[Number(openDay.slice(5, 7)) - 1]} ${openDay.slice(0, 4)}`}
+          dues={duesByDay.get(openDay) ?? []}
+          birthdays={birthdaysByDay.get(openDay) ?? []}
+          caseLeadIds={caseLeadIds}
+          onSelectCase={(caseId) => {
+            onSelectCase(caseId);
+            setOpenDay(null);
+          }}
+          onSelectLead={(leadId) => {
+            onSelectLead(leadId);
+            setOpenDay(null);
+          }}
+          onClose={() => setOpenDay(null)}
+        />
       )}
     </div>
   );

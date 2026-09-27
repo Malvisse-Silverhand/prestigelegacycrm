@@ -11,10 +11,27 @@ import { ServicingDetail } from "../servicing-detail";
 import { fmtDate, fmtRM } from "../certificate-panel";
 import { ServicingCalendar } from "./servicing-calendar";
 import type { CaseSubmission } from "../types";
+import type { BirthdayRow } from "@/lib/birthdays";
 
-export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today: string }) {
+export function ServicingView({
+  cases,
+  birthdays,
+  today,
+}: {
+  cases: CaseSubmission[];
+  birthdays: BirthdayRow[];
+  today: string;
+}) {
   const [selectedId, setSelectedId] = useState<string | null>(cases[0]?.id ?? null);
   const [query, setQuery] = useState("");
+
+  // A birthday's "View" action has no case to open when the person has no
+  // certificate on this book yet (still Closed Won, not yet filed) -- Link
+  // to their Lead Detail page instead in day-modal.tsx.
+  function onSelectLead(leadId: string) {
+    const match = cases.find((c) => c.leadId === leadId);
+    if (match) setSelectedId(match.id);
+  }
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -126,7 +143,13 @@ export function ServicingView({ cases, today }: { cases: CaseSubmission[]; today
       </div>
 
       <div className="flex flex-col gap-4 px-5 py-5 lg:px-[30px]">
-        <ServicingCalendar cases={cases} today={today} onSelectCase={setSelectedId} />
+        <ServicingCalendar
+          cases={cases}
+          birthdays={birthdays}
+          today={today}
+          onSelectCase={setSelectedId}
+          onSelectLead={onSelectLead}
+        />
 
         <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
           {/* ---- Clients ---- */}

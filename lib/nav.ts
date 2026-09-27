@@ -8,6 +8,7 @@ import {
   CalendarIcon,
   FunnelIcon,
   MySalesIcon,
+  ServicingIcon,
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
@@ -39,17 +40,12 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
-  // Sits after Appointment because that is where it falls in the work: a case
-  // is filed once the meetings are done, and serviced once it is inforced.
-  {
-    href: "/my-sales/submit-case",
-    label: "My Sales",
-    icon: MySalesIcon,
-    children: [
-      { href: "/my-sales/submit-case", label: "Submit Case" },
-      { href: "/my-sales/servicing", label: "Servicing" },
-    ],
-  },
+  // Both sit after Appointment because that is where they fall in the work: a
+  // case is filed once the meetings are done, and serviced once it is
+  // inforced. Two top-level items rather than a "My Sales" group -- each is
+  // its own destination, not a step on the way to the other.
+  { href: "/my-sales/submit-case", label: "Manage Cases", icon: MySalesIcon },
+  { href: "/my-sales/servicing", label: "Servicing", icon: ServicingIcon },
   {
     href: "/team",
     label: "My Team",
@@ -103,7 +99,7 @@ export const MOBILE_NAV_LEFT = [
 
 export const MOBILE_NAV_RIGHT = [
   { href: "/pipeline", label: "Pipeline", icon: PipelineIcon },
-  { href: "/quotations", label: "Quote", icon: QuotationIcon },
+  { href: "/my-sales/servicing", label: "Servicing", icon: ServicingIcon },
 ];
 
 export function visibleNav(role: Role) {

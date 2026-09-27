@@ -11,7 +11,9 @@ export type LandingProduct = "medical" | "hibah" | "both";
 // `medical` is the long-form consultative funnel: the cost-of-treatment
 // case, benefits, why-this-adviser, an adviser profile, social proof and the
 // panel of operators, ending at the same calculators as every other layout.
-export type LandingLayout = "full" | "quickquote" | "medical";
+// `agent` is the digital-profile-card layout: photo, socials, products and a
+// short lead form -- no calculator embed at all.
+export type LandingLayout = "full" | "quickquote" | "medical" | "agent";
 
 export type LandingBenefit = { title: string; body: string };
 export type LandingTestimonial = { quote: string; name: string; meta: string };
@@ -19,6 +21,8 @@ export type LandingFaq = { q: string; a: string };
 export type LandingCostRow = { label: string; amount: string };
 export type LandingStat = { value: string; label: string };
 export type LandingProvider = { name: string; logoUrl: string };
+export type LandingAgentProduct = { name: string; badge: string; interest: string };
+export type LandingAgentSocials = { tiktok: string; threads: string; instagram: string; facebook: string };
 
 export type LandingContent = {
   heroEyebrow: string;
@@ -55,6 +59,36 @@ export type LandingContent = {
   advisorStats: LandingStat[];
   providersTitle: string;
   providers: LandingProvider[];
+
+  // ---- agent layout only ---------------------------------------------------
+  // The digital profile card: falls back to DEFAULT_CONTENT the same way the
+  // medical fields do, so switching a page to this layout renders complete
+  // rather than blank.
+  agentTagline: string;
+  agentSubTagline: string;
+  agentQuote: string;
+  agentCtaForm: string;
+  agentCtaWhatsapp: string;
+  agentWhatsappMessage: string;
+  agentCtaShare: string;
+  agentBadges: string[];
+  agentProductsTitle: string;
+  agentProductsPill: string;
+  agentProducts: LandingAgentProduct[];
+  agentFormEyebrow: string;
+  agentFormTitle: string;
+  agentFormBody: string;
+  agentFormSubmit: string;
+  agentFormSuccessTitle: string;
+  agentFormSuccessBody: string;
+  agentCallCta: string;
+  agentFooterLine: string;
+  agentSocials: LandingAgentSocials;
+  // Page-level overrides of the agent's profile-level default images
+  // (profiles.landing_logo_url etc). Blank means "use the profile default".
+  agentLogoUrl: string;
+  agentHeaderUrl: string;
+  agentPhotoUrl: string;
 };
 
 // Written as a real first draft, not lorem ipsum: a new page is publishable
@@ -180,6 +214,37 @@ export const DEFAULT_CONTENT: LandingContent = {
     { name: "AIA Public Takaful", logoUrl: "" },
     { name: "Takaful Malaysia", logoUrl: "" },
   ],
+
+  agentTagline: "Trusted Takaful Advisor",
+  agentSubTagline: "Protecting Income. Securing Futures.",
+  agentQuote:
+    "Membantu Keluarga & Pemilik Perniagaan Melindungi Pendapatan Melalui Perancangan Takaful Yang Strategik.",
+  agentCtaForm: "Semak Pelan Sesuai (Quotation)",
+  agentCtaWhatsapp: "Sesi Santai WhatsApp",
+  agentWhatsappMessage:
+    "Assalamualaikum {nama}, saya berminat nak tahu lebih lanjut tentang pelan perlindungan takaful. Boleh kita aturkan sesi penerangan ringkas?",
+  agentCtaShare: "Kongsi Kad Profil Pintar",
+  agentBadges: ["Patuh Syariah", "Sesi Santai", "Pelan Mesra Bajet"],
+  agentProductsTitle: "Produk Perlindungan",
+  agentProductsPill: "Sila Pilih & Mohon",
+  agentProducts: [
+    { name: "Medical Card", badge: "Syor", interest: "Medical Card" },
+    { name: "Hibah Takaful", badge: "Popular", interest: "Hibah" },
+    { name: "Income Protection", badge: "", interest: "Income Protection" },
+    { name: "Sakit Kritikal", badge: "", interest: "Critical Illness" },
+  ],
+  agentFormEyebrow: "Konsultasi Percuma",
+  agentFormTitle: "Semak Pelan Takaful Yang Sesuai",
+  agentFormBody: "Isi butiran ringkas di bawah. {nama} akan menghubungi anda secepat mungkin.",
+  agentFormSubmit: "Hantar",
+  agentFormSuccessTitle: "Terima kasih!",
+  agentFormSuccessBody: "Maklumat anda telah diterima. {nama} akan menghubungi anda tidak lama lagi.",
+  agentCallCta: "Hubungi Segera",
+  agentFooterLine: "Pengantara Takaful Berdaftar dengan Great Eastern Takaful Berhad.",
+  agentSocials: { tiktok: "", threads: "", instagram: "", facebook: "" },
+  agentLogoUrl: "",
+  agentHeaderUrl: "",
+  agentPhotoUrl: "",
 };
 
 // Merges a stored document over the defaults one key at a time, so a page
@@ -228,6 +293,38 @@ export function withDefaults(raw: unknown): LandingContent {
     advisorStats: arr<LandingStat>(c.advisorStats, DEFAULT_CONTENT.advisorStats),
     providersTitle: str(c.providersTitle, DEFAULT_CONTENT.providersTitle),
     providers: arr<LandingProvider>(c.providers, DEFAULT_CONTENT.providers),
+
+    agentTagline: str(c.agentTagline, DEFAULT_CONTENT.agentTagline),
+    agentSubTagline: str(c.agentSubTagline, DEFAULT_CONTENT.agentSubTagline),
+    agentQuote: str(c.agentQuote, DEFAULT_CONTENT.agentQuote),
+    agentCtaForm: str(c.agentCtaForm, DEFAULT_CONTENT.agentCtaForm),
+    agentCtaWhatsapp: str(c.agentCtaWhatsapp, DEFAULT_CONTENT.agentCtaWhatsapp),
+    agentWhatsappMessage: str(c.agentWhatsappMessage, DEFAULT_CONTENT.agentWhatsappMessage),
+    agentCtaShare: str(c.agentCtaShare, DEFAULT_CONTENT.agentCtaShare),
+    agentBadges: arr<string>(c.agentBadges, DEFAULT_CONTENT.agentBadges),
+    agentProductsTitle: str(c.agentProductsTitle, DEFAULT_CONTENT.agentProductsTitle),
+    agentProductsPill: str(c.agentProductsPill, DEFAULT_CONTENT.agentProductsPill),
+    agentProducts: arr<LandingAgentProduct>(c.agentProducts, DEFAULT_CONTENT.agentProducts),
+    agentFormEyebrow: str(c.agentFormEyebrow, DEFAULT_CONTENT.agentFormEyebrow),
+    agentFormTitle: str(c.agentFormTitle, DEFAULT_CONTENT.agentFormTitle),
+    agentFormBody: str(c.agentFormBody, DEFAULT_CONTENT.agentFormBody),
+    agentFormSubmit: str(c.agentFormSubmit, DEFAULT_CONTENT.agentFormSubmit),
+    agentFormSuccessTitle: str(c.agentFormSuccessTitle, DEFAULT_CONTENT.agentFormSuccessTitle),
+    agentFormSuccessBody: str(c.agentFormSuccessBody, DEFAULT_CONTENT.agentFormSuccessBody),
+    agentCallCta: str(c.agentCallCta, DEFAULT_CONTENT.agentCallCta),
+    agentFooterLine: str(c.agentFooterLine, DEFAULT_CONTENT.agentFooterLine),
+    // Social / image URL fields: a blank is a real choice (hide the icon, use
+    // the profile default), so an empty string must stay empty rather than
+    // falling back -- only a non-string (missing key) gets the default "".
+    agentSocials: {
+      tiktok: typeof c.agentSocials?.tiktok === "string" ? c.agentSocials.tiktok : "",
+      threads: typeof c.agentSocials?.threads === "string" ? c.agentSocials.threads : "",
+      instagram: typeof c.agentSocials?.instagram === "string" ? c.agentSocials.instagram : "",
+      facebook: typeof c.agentSocials?.facebook === "string" ? c.agentSocials.facebook : "",
+    },
+    agentLogoUrl: typeof c.agentLogoUrl === "string" ? c.agentLogoUrl : "",
+    agentHeaderUrl: typeof c.agentHeaderUrl === "string" ? c.agentHeaderUrl : "",
+    agentPhotoUrl: typeof c.agentPhotoUrl === "string" ? c.agentPhotoUrl : "",
   };
 }
 

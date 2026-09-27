@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
@@ -17,8 +17,9 @@ import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
 import { QuotationModal } from "@/components/quotation-modal";
-import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, ChevronRightIcon, PipelineIcon, TableIcon } from "@/components/icons";
+import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, PipelineIcon, TableIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
+import { MobileBoard } from "./mobile-board";
 
 // Same interest -> tool mapping InterestDropdown uses. No mapped tool (no
 // interest set yet, or a product without a calculator) falls back to
@@ -73,11 +74,23 @@ export function PipelineView({
   const router = useRouter();
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [dragLeadId, setDragLeadId] = useState<string | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
   const [movePending, startTransition] = useTransition();
-  const [mobileStage, setMobileStage] = useState<PipelineStage>("follow_up");
   const [view, setView] = useState<"board" | "table">("board");
   const [quoteModal, setQuoteModal] = useState<{ url: string; leadName: string } | null>(null);
+
+  // Optimistic pipeline moves: the card jumps to its new column immediately
+  // on both desktop drag-and-drop and every mobile move path (long-press
+  // drag, the Move sheet, Undo). It settles once updateStage's
+  // revalidatePath("/pipeline") brings a fresh `leads` prop back down, so
+  // there is no flicker -- the optimistic value already matches what the
+  // server confirms.
+  const [optimisticLeads, applyMove] = useOptimistic(
+    leads,
+    (state, move: { id: string; stage: PipelineStage }) =>
+      state.map((l) => (l.id === move.id ? { ...l, pipeline_stage: move.stage } : l)),
+  );
 
   // Same stale gate Lead Detail had: group_manager/superadmin were excluded
   // because they had no `leads` UPDATE RLS policy at the time, which
@@ -111,15 +124,15 @@ export function PipelineView({
   const columns = useMemo(() => {
     const map: Record<string, PipelineLead[]> = {};
     for (const s of STAGES) map[s.value] = [];
-    for (const lead of leads) {
+    for (const lead of optimisticLeads) {
       (map[lead.pipeline_stage] ??= []).push(lead);
     }
     return map;
-  }, [leads]);
+  }, [optimisticLeads]);
 
   const casedAnc = useMemo(() => caseAncByLead(caseRows), [caseRows]);
 
-  const totalLeads = leads.length;
+  const totalLeads = optimisticLeads.length;
   const totalValue = STAGES.reduce((sum, s) => sum + stagePotentialValue(s.value, columns[s.value], casedAnc), 0);
   // Split the same per-column figures the board already computes into what
   // is still open and what has actually closed, rather than the one blended
@@ -136,32 +149,35 @@ export function PipelineView({
   // Money actually received, from the contributions ticked on each checklist.
   // Not annualised: inflating collected cash to a yearly figure would report
   // income that has not arrived.
-  const collectedValue = leads.reduce((sum, l) => sum + (casedAnc.get(l.id)?.collected ?? 0), 0);
+  const collectedValue = optimisticLeads.reduce((sum, l) => sum + (casedAnc.get(l.id)?.collected ?? 0), 0);
 
   function moveStage(leadId: string, stage: PipelineStage) {
     setOpenCardId(null);
     setMoveError(null);
+    const current = optimisticLeads.find((l) => l.id === leadId);
+    if (!current || current.pipeline_stage === stage) return; // nothing to do
     startTransition(async () => {
-      // No optimistic move -- `columns` is derived straight from server-fetched
-      // `leads`, so a rejected update just leaves the card where it already
-      // was once refresh() re-fetches. The one gap was silence: surface the
-      // rejection instead of failing invisibly. This is also where the
-      // "no quotation yet" block on entering Quoted actually gets enforced --
-      // updateStage rejects it server-side, this just displays that rejection.
+      // The card jumps to `stage` immediately. If updateStage rejects it
+      // (e.g. Quoted without a quotation on file), there is no fresh `leads`
+      // prop coming to correct the board -- revalidatePath only runs on the
+      // success path -- so refresh() explicitly re-syncs it once the
+      // optimistic value has reverted back to the last confirmed `leads`.
+      applyMove({ id: leadId, stage });
       try {
         const result = await updateStage(leadId, stage, STAGES.find((s) => s.value === stage)!.label);
         if (result.error) {
           setMoveError(result.error);
-        } else {
           router.refresh();
         }
       } catch {
         setMoveError("Couldn't connect. Check your internet connection and try again.");
+        router.refresh();
       }
     });
   }
 
   function handleDrop(stage: PipelineStage) {
+    setDragOverStage(null);
     if (dragLeadId) moveStage(dragLeadId, stage);
     setDragLeadId(null);
   }
@@ -241,8 +257,19 @@ export function PipelineView({
             return (
               <div
                 key={stage.value}
-                className="flex w-[240px] flex-none flex-col gap-2.5"
-                onDragOver={(e) => e.preventDefault()}
+                className={
+                  "flex w-[240px] flex-none flex-col gap-2.5 rounded-[16px] transition-colors " +
+                  (dragOverStage === stage.value ? "bg-gold/10 ring-2 ring-gold/60" : "")
+                }
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  setDragOverStage(stage.value);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverStage(stage.value);
+                }}
+                onDragLeave={() => setDragOverStage((s) => (s === stage.value ? null : s))}
                 onDrop={() => handleDrop(stage.value)}
               >
                 <div className="rounded-xl border border-sand bg-white px-3 py-2.5">
@@ -305,117 +332,18 @@ export function PipelineView({
         )}
       </div>
 
-      {/* Mobile */}
-      <div className="lg:hidden">
-        <div className="bg-navy px-5 pt-3.5 pb-4 text-white">
-          <div className="text-base font-bold">Sales Pipeline</div>
-          <div className="mt-3.5 flex gap-1.5 overflow-x-auto">
-            {STAGES.filter((s) => !s.value.startsWith("closed") || columns[s.value].length > 0).map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setMobileStage(s.value)}
-                className={
-                  mobileStage === s.value
-                    ? "flex-none rounded-full bg-gold px-3 py-1.5 text-[11.5px] font-bold text-navy"
-                    : "flex-none rounded-full bg-white/[.09] px-3 py-1.5 text-[11.5px] font-semibold text-white/75"
-                }
-              >
-                {s.label} {columns[s.value].length}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-baseline justify-between px-5 pt-3.5">
-          <span className="text-[12.5px] font-bold text-navy">
-            {STAGES.find((s) => s.value === mobileStage)?.label} · {columns[mobileStage].length} leads
-          </span>
-          <span className="text-[11.5px] font-semibold text-taupe">
-            {fmtRM(toAnc(stagePotentialValue(mobileStage, columns[mobileStage], casedAnc)))} ANC
-            {stageCollected(columns[mobileStage], casedAnc) > 0 &&
-              ` · ${fmtRM(stageCollected(columns[mobileStage], casedAnc))} collected`}
-          </span>
-        </div>
-
-        {moveError && (
-          <div className="mx-5 mt-3 rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">
-            {moveError}
-          </div>
-        )}
-
-        <div className="flex flex-col gap-2.5 px-5 pt-3 pb-8">
-          {columns[mobileStage].length === 0 && (
-            <p className="py-6 text-center text-[13px] text-muted">No leads in this stage.</p>
-          )}
-          {columns[mobileStage].map((lead) => {
-            const tag = productTag(lead.interest);
-            const potential = leadPotentialAnc(lead.quotations);
-            const staleDays = daysSinceLastActivity(lead);
-            const stale = staleDays >= staleAfterDays;
-            const nextStage = STAGES[Math.min(STAGES.findIndex((s) => s.value === mobileStage) + 1, STAGES.length - 1)];
-            return (
-              <div key={lead.id} className="rounded-2xl border border-sand bg-white p-3.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-1.5">
-                      <LeadNo no={lead.lead_no} />
-                      <Link href={`/leads/${lead.id}`} className="truncate text-[14.5px] font-bold text-navy">
-                        {lead.full_name}
-                      </Link>
-                    </div>
-                    <div className="mt-0.5 text-xs font-medium text-muted-2">{lead.phone}</div>
-                  </div>
-                  {stale && (
-                    <span className="flex-none rounded-[6px] bg-alert-red-bg px-[7px] py-1 text-[9.5px] font-bold text-alert-red">
-                      STALE {staleDays}d
-                    </span>
-                  )}
-                </div>
-                {(tag || potential) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {tag && (
-                      <span className={`rounded-[6px] px-[7px] py-[2px] text-[9.5px] font-bold ${tag.cls}`}>{tag.label}</span>
-                    )}
-                    <AncBadge potential={potential} />
-                  </div>
-                )}
-                {isToday(lead.follow_up_date) && (
-                  <div className="mt-2.5 rounded-[10px] border border-[#f7e9c2] bg-warn-gold-bg px-2.5 py-2 text-[11.5px] font-semibold text-warn-gold-text">
-                    Callback today
-                  </div>
-                )}
-                <div className="mt-3 grid grid-cols-4 gap-1.5">
-                  <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-navy" aria-label="Call">
-                    <PhoneIcon width={15} height={15} className="text-gold" />
-                  </a>
-                  <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green" aria-label="WhatsApp">
-                    <WhatsAppIcon width={16} height={16} fill="#fff" />
-                  </a>
-                  <button type="button" onClick={() => openQuotation(lead)} className="flex h-11 items-center justify-center rounded-[11px] border border-[#f0dfb4] bg-warn-gold-bg" aria-label="Quotation estimate">
-                    <QuotationIcon width={15} height={15} className="text-warn-gold-text" />
-                  </button>
-                  {canManageStage ? (
-                    <button
-                      type="button"
-                      onClick={() => moveStage(lead.id, nextStage.value)}
-                      disabled={movePending}
-                      className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream disabled:opacity-50"
-                      aria-label={`Move to ${nextStage.label}`}
-                    >
-                      <ChevronRightIcon width={15} height={15} className="text-navy" />
-                    </button>
-                  ) : (
-                    <Link href={`/leads/${lead.id}`} className="flex h-11 items-center justify-center rounded-[11px] border border-sand-2 bg-cream" aria-label="Open lead">
-                      <ChevronRightIcon width={15} height={15} className="text-navy" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Mobile: one stage per screen, swipeable, with long-press drag
+          between columns. See mobile-board.tsx. */}
+      <MobileBoard
+        columns={columns}
+        stages={STAGES}
+        moveStage={moveStage}
+        movePending={movePending}
+        moveError={moveError}
+        openQuotation={openQuotation}
+        casedAnc={casedAnc}
+        staleAfterDays={staleAfterDays}
+      />
 
       <QuotationModal
         url={quoteModal?.url ?? null}

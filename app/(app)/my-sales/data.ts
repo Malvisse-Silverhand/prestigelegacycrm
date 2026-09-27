@@ -2,7 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { WON_STAGES } from "@/lib/pipeline-stages";
 import { cleanCategories } from "@/lib/plan-catalogue";
 import type { PaymentFrequency } from "@/lib/contribution-schedule";
-import type { CaseSubmission, CaseStatus, SubmittableLead, BenefitOption, PortalLink } from "./types";
+import {
+  PRE_SUBMISSION_STAGES,
+  SUBMITTABLE_STAGES,
+  type CaseSubmission,
+  type CaseStatus,
+  type SubmittableLead,
+  type BenefitOption,
+  type PortalLink,
+} from "./types";
 
 // Every query here leans on the RLS already written for these tables, which
 // inherits lead visibility -- so an agent gets their own book, a manager gets
@@ -166,10 +174,12 @@ export async function getServicingCases(): Promise<CaseSubmission[]> {
 }
 
 /**
- * Leads that can be picked in Submit Case. Every lead is fetchable -- an agent
- * looking for someone shouldn't have to guess which list they are on -- but
- * only those that have reached Submission can actually have a case filed,
- * which `canSubmit` says outright rather than leaving the button to explain.
+ * Leads that can be picked in Manage Cases. Every lead is fetchable -- an
+ * agent looking for someone shouldn't have to guess which list they are on --
+ * but only those a case can actually be filed for say so through `canSubmit`,
+ * which covers Submission and later as well as every earlier stage up to
+ * Appointment (`preSubmission`); filing from one of those moves the lead to
+ * Submission. Closed Lost is never included.
  */
 export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
   const supabase = await createClient();
@@ -210,6 +220,15 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       occupation: string | null;
       profiles: { full_name: string } | null;
     };
+    // A case recorded late against an already-inforced client is still a
+    // legitimate filing, and once one of those cases is inforce the lead
+    // belongs to Servicing rather than this queue.
+    const isSettled = settled.has(row.id);
+    const preSubmission =
+      (PRE_SUBMISSION_STAGES as readonly string[]).includes(row.pipeline_stage) && !isSettled;
+    const canSubmit =
+      ((SUBMITTABLE_STAGES as readonly string[]).includes(row.pipeline_stage) || preSubmission) &&
+      !isSettled;
     return {
       id: row.id,
       leadNo: row.lead_no,
@@ -224,13 +243,12 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
       isSmoker: row.is_smoker,
       occupation: row.occupation,
       caseCount: caseCounts.get(row.id) ?? 0,
-      inforced: settled.has(row.id),
-      // Submission is the gate, and everything past it too: a case recorded
-      // late against an already-inforced client is still a legitimate filing.
-      // Once one of those cases is inforce the submission has succeeded, and
-      // the lead belongs to Servicing rather than this queue.
-      canSubmit:
-        ["submission", "closed_won", "servicing"].includes(row.pipeline_stage) && !settled.has(row.id),
+      inforced: isSettled,
+      // Earlier than Submission, but filing is still allowed -- it will move
+      // this lead to Submission. Closed Lost is never in either set, so it
+      // is never pre-submission and never submittable.
+      preSubmission,
+      canSubmit,
     };
   });
 }

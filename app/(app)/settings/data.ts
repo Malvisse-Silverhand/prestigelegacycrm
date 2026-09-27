@@ -593,14 +593,36 @@ export async function getTrackablePages(profile: CurrentProfile): Promise<Tracka
 // getCurrentProfile() deliberately -- that function is cached per request and
 // used everywhere for identity checks, and phone is the one column it has
 // never needed until now, so it doesn't belong on that shared shape.
-export type MyProfileDetails = { fullName: string; email: string; phone: string | null };
+export type MyProfileDetails = {
+  fullName: string;
+  email: string;
+  phone: string | null;
+  agentSlug: string | null;
+  landingLogoUrl: string | null;
+  landingHeaderUrl: string | null;
+  landingPhotoUrl: string | null;
+};
 
 export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyProfileDetails> {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("full_name, email, phone").eq("id", profile.id).maybeSingle();
+
+  // Separate, tolerant query: these four columns exist only once the Agent
+  // Landing Page migration has run, so a page load before then must still
+  // render My Profile rather than fail on the select above.
+  const { data: branding, error: brandingError } = await supabase
+    .from("profiles")
+    .select("agent_slug, landing_logo_url, landing_header_url, landing_photo_url")
+    .eq("id", profile.id)
+    .maybeSingle();
+
   return {
     fullName: data?.full_name ?? profile.full_name,
     email: data?.email ?? profile.email,
     phone: data?.phone ?? null,
+    agentSlug: brandingError ? null : (branding?.agent_slug ?? null),
+    landingLogoUrl: brandingError ? null : (branding?.landing_logo_url ?? null),
+    landingHeaderUrl: brandingError ? null : (branding?.landing_header_url ?? null),
+    landingPhotoUrl: brandingError ? null : (branding?.landing_photo_url ?? null),
   };
 }

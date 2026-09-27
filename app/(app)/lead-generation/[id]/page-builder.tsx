@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LandingPageDetail } from "../data";
 import type { LandingContent, LandingProduct } from "@/lib/landing-content";
-import { saveLandingContent, saveLandingSettings, setLandingPublished } from "../actions";
+import { landingPath } from "@/lib/agent-slug";
+import { ImageUploadField } from "@/components/image-upload-field";
+import { saveLandingContent, saveLandingSettings, setLandingPublished, saveAgentSlug } from "../actions";
 
 const FIELD =
   "mt-1.5 w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 py-2.5 text-[13px] font-medium text-navy outline-none focus:border-gold";
@@ -20,13 +22,18 @@ type Tab =
   | "testimonials"
   | "providers"
   | "faq"
+  | "profile"
+  | "buttons"
+  | "products"
+  | "form"
   | "settings";
 
-// The medical funnel has four bands the standard template doesn't, so its
-// tabs only appear for that layout -- editing sections a page will never
-// render is just noise.
+// The medical funnel has four bands the standard template doesn't, and the
+// agent layout is its own thing entirely (a profile card, not a marketing
+// page) -- each layout only shows the tabs for sections it actually renders.
 const MEDICAL_ONLY: Tab[] = ["problem", "why", "advisor", "providers"];
 const STANDARD_ONLY: Tab[] = ["faq"];
+const AGENT_ONLY: Tab[] = ["profile", "buttons", "products", "form"];
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "hero", label: "Hero" },
@@ -37,16 +44,24 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "testimonials", label: "Testimonials" },
   { key: "providers", label: "Operators" },
   { key: "faq", label: "FAQ" },
+  { key: "profile", label: "Profile" },
+  { key: "buttons", label: "Buttons" },
+  { key: "products", label: "Products" },
+  { key: "form", label: "Form" },
   { key: "settings", label: "Settings" },
 ];
 
 export function PageBuilder({ page }: { page: LandingPageDetail }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("hero");
   const isMedical = page.layout === "medical";
-  const visibleTabs = TABS.filter((t) =>
-    isMedical ? !STANDARD_ONLY.includes(t.key) : !MEDICAL_ONLY.includes(t.key),
-  );
+  const isAgent = page.layout === "agent";
+  const [tab, setTab] = useState<Tab>(isAgent ? "profile" : "hero");
+  const visibleTabs = TABS.filter((t) => {
+    if (t.key === "settings") return true;
+    if (isAgent) return AGENT_ONLY.includes(t.key);
+    if (AGENT_ONLY.includes(t.key)) return false;
+    return isMedical ? !STANDARD_ONLY.includes(t.key) : !MEDICAL_ONLY.includes(t.key);
+  });
   const [content, setContent] = useState<LandingContent>(page.content);
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
@@ -56,6 +71,17 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // The agent link belongs to the agent, not this page, so it saves through
+  // its own action and its own pending/error state rather than riding along
+  // with the page's Save button.
+  const [agentSlug, setAgentSlug] = useState(page.agentSlug);
+  const [agentSlugInput, setAgentSlugInput] = useState(page.agentSlug ?? "");
+  const [agentSlugError, setAgentSlugError] = useState<string | null>(null);
+  const [agentSlugSaved, setAgentSlugSaved] = useState(false);
+  const [slugPending, startSlugTransition] = useTransition();
+
+  const publicPath = landingPath(agentSlug, slug);
 
   function edit<K extends keyof LandingContent>(key: K, value: LandingContent[K]) {
     setContent((c) => ({ ...c, [key]: value }));
@@ -84,6 +110,22 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
       } catch {
         setError("Couldn't connect. Check your internet connection and try again.");
       }
+    });
+  }
+
+  function saveAgentLink() {
+    setAgentSlugError(null);
+    setAgentSlugSaved(false);
+    startSlugTransition(async () => {
+      const result = await saveAgentSlug(page.id, agentSlugInput);
+      if (result.error) {
+        setAgentSlugError(result.error);
+        return;
+      }
+      setAgentSlug(result.agentSlug);
+      if (result.agentSlug) setAgentSlugInput(result.agentSlug);
+      setAgentSlugSaved(true);
+      router.refresh();
     });
   }
 
@@ -118,13 +160,13 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
               {published ? "LIVE" : "DRAFT"}
             </span>
           </div>
-          <div className="mt-1 font-mono text-[12px] font-medium text-muted">/p/{slug}</div>
+          <div className="mt-1 font-mono text-[12px] font-medium text-muted">{publicPath}</div>
         </div>
 
         <div className="flex flex-none flex-wrap items-center gap-2.5">
           {published && (
             <a
-              href={`/p/${slug}`}
+              href={publicPath}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-[11px] border border-sand-2 bg-white px-4 py-3 text-[12.5px] font-semibold text-navy"
@@ -365,6 +407,145 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
             </Card>
           )}
 
+          {tab === "profile" && (
+            <Card title="Profile" hint="Your photo, tagline, quote and socials on the profile card.">
+              <Text label="Tagline" value={content.agentTagline} onChange={(v) => edit("agentTagline", v)} />
+              <Text label="Sub-tagline" value={content.agentSubTagline} onChange={(v) => edit("agentSubTagline", v)} />
+              <Area label="Quote" value={content.agentQuote} onChange={(v) => edit("agentQuote", v)} rows={3} />
+
+              <div className="mt-5 grid gap-4 border-t border-sand pt-4 sm:grid-cols-3">
+                <ImageUploadField
+                  label="Logo"
+                  kind="logo"
+                  value={content.agentLogoUrl}
+                  onChange={(v) => edit("agentLogoUrl", v)}
+                  hint="Blank = use the image from Settings › My Profile"
+                  fallbackPreview={page.ownerBranding?.logoUrl ?? null}
+                />
+                <ImageUploadField
+                  label="Header background"
+                  kind="header"
+                  value={content.agentHeaderUrl}
+                  onChange={(v) => edit("agentHeaderUrl", v)}
+                  hint="Blank = use the image from Settings › My Profile"
+                  fallbackPreview={page.ownerBranding?.headerUrl ?? null}
+                />
+                <ImageUploadField
+                  label="Profile photo"
+                  kind="photo"
+                  value={content.agentPhotoUrl}
+                  onChange={(v) => edit("agentPhotoUrl", v)}
+                  hint="Blank = use the image from Settings › My Profile"
+                  fallbackPreview={page.ownerBranding?.photoUrl ?? null}
+                />
+              </div>
+
+              <div className="mt-5 border-t border-sand pt-4">
+                <span className={LABEL}>Social links</span>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Text
+                    label="TikTok URL"
+                    value={content.agentSocials.tiktok}
+                    onChange={(v) => edit("agentSocials", { ...content.agentSocials, tiktok: v })}
+                  />
+                  <Text
+                    label="Threads URL"
+                    value={content.agentSocials.threads}
+                    onChange={(v) => edit("agentSocials", { ...content.agentSocials, threads: v })}
+                  />
+                  <Text
+                    label="Instagram URL"
+                    value={content.agentSocials.instagram}
+                    onChange={(v) => edit("agentSocials", { ...content.agentSocials, instagram: v })}
+                  />
+                  <Text
+                    label="Facebook URL"
+                    value={content.agentSocials.facebook}
+                    onChange={(v) => edit("agentSocials", { ...content.agentSocials, facebook: v })}
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {tab === "buttons" && (
+            <Card title="Buttons" hint="The three call-to-action buttons on the card, and your trust badges.">
+              <Text label="Form button" value={content.agentCtaForm} onChange={(v) => edit("agentCtaForm", v)} />
+              <Text label="WhatsApp button" value={content.agentCtaWhatsapp} onChange={(v) => edit("agentCtaWhatsapp", v)} />
+              <Area
+                label="WhatsApp message"
+                value={content.agentWhatsappMessage}
+                onChange={(v) => edit("agentWhatsappMessage", v)}
+                rows={3}
+              />
+              <p className="-mt-1 text-[11px] font-medium text-taupe">
+                {"{nama}"} becomes your first name.
+              </p>
+              <Text label="Share button" value={content.agentCtaShare} onChange={(v) => edit("agentCtaShare", v)} />
+              <List
+                label="Trust badge"
+                items={content.agentBadges}
+                onChange={(v) => edit("agentBadges", v)}
+                blank=""
+                render={(item, set) => <Text label="Badge" value={item} onChange={set} />}
+              />
+            </Card>
+          )}
+
+          {tab === "products" && (
+            <Card title="Products" hint="The product tiles a visitor taps before filling in the form.">
+              <Text
+                label="Section heading"
+                value={content.agentProductsTitle}
+                onChange={(v) => edit("agentProductsTitle", v)}
+              />
+              <Text label="Pill text" value={content.agentProductsPill} onChange={(v) => edit("agentProductsPill", v)} />
+              <List
+                label="Product"
+                items={content.agentProducts}
+                onChange={(v) => edit("agentProducts", v)}
+                blank={{ name: "", badge: "", interest: "" }}
+                render={(item, set) => (
+                  <>
+                    <Text label="Name" value={item.name} onChange={(v) => set({ ...item, name: v })} />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Text label="Badge (optional)" value={item.badge} onChange={(v) => set({ ...item, badge: v })} />
+                      <Text
+                        label="Interest sent to lead"
+                        value={item.interest}
+                        onChange={(v) => set({ ...item, interest: v })}
+                      />
+                    </div>
+                  </>
+                )}
+              />
+            </Card>
+          )}
+
+          {tab === "form" && (
+            <Card title="Form" hint="The calculator sits above this on the page; these are the lead-capture texts around it.">
+              <Text label="Eyebrow" value={content.agentFormEyebrow} onChange={(v) => edit("agentFormEyebrow", v)} />
+              <Text label="Title" value={content.agentFormTitle} onChange={(v) => edit("agentFormTitle", v)} />
+              <Area label="Body" value={content.agentFormBody} onChange={(v) => edit("agentFormBody", v)} rows={2} />
+              <Text label="Submit button" value={content.agentFormSubmit} onChange={(v) => edit("agentFormSubmit", v)} />
+              <Text
+                label="Success title"
+                value={content.agentFormSuccessTitle}
+                onChange={(v) => edit("agentFormSuccessTitle", v)}
+              />
+              <Area
+                label="Success body"
+                value={content.agentFormSuccessBody}
+                onChange={(v) => edit("agentFormSuccessBody", v)}
+                rows={2}
+              />
+              <div className="mt-5 border-t border-sand pt-4">
+                <Text label="Call button" value={content.agentCallCta} onChange={(v) => edit("agentCallCta", v)} />
+                <Text label="Footer line" value={content.agentFooterLine} onChange={(v) => edit("agentFooterLine", v)} />
+              </div>
+            </Card>
+          )}
+
           {tab === "settings" && (
             <Card title="Settings" hint="The name is for you; the slug is the public link.">
               <Text
@@ -379,7 +560,9 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
               <label className="mt-3.5 block">
                 <span className={LABEL}>Public link</span>
                 <div className="mt-1.5 flex items-center gap-0 overflow-hidden rounded-[10px] border border-sand-2 bg-cream">
-                  <span className="px-3.5 py-2.5 font-mono text-[12.5px] text-taupe">/p/</span>
+                  <span className="px-3.5 py-2.5 font-mono text-[12.5px] text-taupe">
+                    {isAgent ? `/${agentSlug ?? "…"}/` : "/p/"}
+                  </span>
                   <input
                     value={slug}
                     onChange={(e) => {
@@ -395,7 +578,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                 </span>
               </label>
               <label className="mt-3.5 block">
-                <span className={LABEL}>Calculators</span>
+                <span className={LABEL}>{isAgent ? "Form" : "Calculators"}</span>
                 <select
                   value={product}
                   onChange={(e) => {
@@ -409,7 +592,55 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                   <option value="medical">Medical Card only</option>
                   <option value="hibah">Hibah only</option>
                 </select>
+                {isAgent && (
+                  <span className="mt-1.5 block text-[11px] font-medium text-taupe">
+                    Plus a lead form (Full Name, Phone, Email, DOB, Gender, Smoker, Occupation) — each submission
+                    becomes a Warm lead.
+                  </span>
+                )}
               </label>
+
+              {isAgent && (
+                <div className="mt-5 rounded-[12px] border border-sand-2 bg-cream px-4 py-3.5">
+                  <div className="text-[12.5px] font-bold text-navy">Your agent link</div>
+                  <div className="mt-1 text-[11.5px] font-medium leading-relaxed text-muted">
+                    Every landing page you own shares this one link segment. Old links stop working if you change it;
+                    /p/&hellip; links keep working regardless.
+                  </div>
+                  <div className="mt-3 flex items-center gap-0 overflow-hidden rounded-[10px] border border-sand-2 bg-white">
+                    <span className="px-3.5 py-2.5 font-mono text-[12.5px] text-taupe">/</span>
+                    <input
+                      value={agentSlugInput}
+                      onChange={(e) => {
+                        setAgentSlugInput(e.target.value);
+                        setAgentSlugSaved(false);
+                        setAgentSlugError(null);
+                      }}
+                      className="flex-1 bg-transparent py-2.5 pr-3.5 font-mono text-[13px] font-medium text-navy outline-none"
+                      placeholder="nama-anda"
+                    />
+                  </div>
+                  {agentSlugError && (
+                    <div className="mt-2 rounded-[8px] bg-alert-red-bg px-3 py-2 text-[11.5px] font-semibold text-alert-red">
+                      {agentSlugError}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <span className="text-[10.5px] font-medium text-taupe">
+                      This changes the link of every landing page you own. Old /{agentSlug ?? "…"}/&hellip; links stop
+                      working; /p/&hellip; links keep working.
+                    </span>
+                    <button
+                      type="button"
+                      disabled={slugPending || !agentSlugInput.trim()}
+                      onClick={saveAgentLink}
+                      className="flex-none rounded-[9px] bg-navy px-3.5 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
+                    >
+                      {slugPending ? "Saving…" : agentSlugSaved ? "Saved" : "Save agent link"}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-5 rounded-[12px] bg-info-blue-bg-2 px-4 py-3.5">
                 <div className="text-[12.5px] font-bold text-info-blue-text">Leads go to {page.agentName}</div>
@@ -470,7 +701,8 @@ function Area({
 }
 
 // Add / remove / reorder a repeated section. Generic so hero points (strings)
-// and benefits/testimonials/FAQ (objects) all go through one control.
+// and benefits/testimonials/FAQ/agent products (objects) all go through one
+// control.
 function List<T>({
   label,
   items,

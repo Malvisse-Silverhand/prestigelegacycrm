@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPublicLandingPage, recordLandingView } from "@/lib/landing-public";
-import { LandingPageView } from "./landing-view";
-import { MedicalLandingView } from "./medical-view";
-import { TrackingCode } from "@/components/tracking-code";
+import { RenderLanding } from "./render-landing";
 
 export async function generateMetadata({
   params,
@@ -13,6 +11,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = await getPublicLandingPage(slug);
   if (!page) return { title: "Halaman tidak dijumpai" };
+
+  if (page.layout === "agent") {
+    const photo = page.content.agentPhotoUrl || page.agent.photoUrl || undefined;
+    return {
+      title: `${page.agent.fullName} — Profil Digital Takaful`,
+      description: page.content.agentQuote,
+      openGraph: { title: page.agent.fullName, description: page.content.agentQuote, images: photo ? [photo] : undefined },
+      robots: { index: false, follow: false },
+    };
+  }
 
   const title = `${page.content.heroHeadline} ${page.content.heroHighlight}`.trim();
   return {
@@ -39,20 +47,5 @@ export default async function PublicLandingPage({
   // Fire-and-forget: a visit counter must never delay or break the page.
   void recordLandingView(page.id);
 
-  return (
-    <>
-      {/* Page components render inside <body>, so "head" here means the top of
-          the document body -- first thing parsed, before any content. That is
-          early enough for a pixel to fire; it is not literally inside <head>,
-          and the Settings screen says so. */}
-      <TrackingCode slot="head" />
-      <TrackingCode slot="body" />
-      {page.layout === "medical" ? (
-        <MedicalLandingView page={page} />
-      ) : (
-        <LandingPageView page={page} />
-      )}
-      <TrackingCode slot="footer" />
-    </>
-  );
+  return <RenderLanding page={page} />;
 }

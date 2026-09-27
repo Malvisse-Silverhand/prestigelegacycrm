@@ -40,6 +40,18 @@ export type BenefitOption = {
 
 export const BENEFIT_OTHER = "Others";
 
+// Stages a case can be filed from. Submission is the stage a lead reaches on
+// its own; the two won stages are included because recording a case late,
+// against a client already on the books, is a legitimate filing rather than a
+// mistake to block.
+export const SUBMITTABLE_STAGES = ["submission", "closed_won", "servicing"] as const;
+
+// Earlier stages where a case can still be filed -- filing moves the lead to
+// Submission automatically, so an agent doesn't have to leave this list to
+// drag the card first. Closed Lost is deliberately excluded: a case can never
+// be filed for a lead that has been marked lost.
+export const PRE_SUBMISSION_STAGES = ["new", "contacted", "follow_up", "quoted", "appointment"] as const;
+
 export type CaseBenefit = {
   benefit: string;
   sumCovered: number | null;
@@ -150,7 +162,12 @@ export type SubmittableLead = {
   caseCount: number;
   /** A case on this lead has come back inforce: the submission succeeded. */
   inforced: boolean;
-  /** Only leads that have reached Submission can have a case filed. */
+  /** Stage is earlier than Submission but a case can still be filed for it --
+   *  filing will move this lead to Submission. */
+  preSubmission: boolean;
+  /** A case can be filed for this lead: it is at Submission or later, or it
+   *  is an earlier stage that filing is still allowed to pull forward.
+   *  Closed Lost is never included. */
   canSubmit: boolean;
 };
 

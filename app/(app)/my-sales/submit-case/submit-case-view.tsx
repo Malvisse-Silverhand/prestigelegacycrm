@@ -77,6 +77,10 @@ export function SubmitCaseView({
       (l) => l.fullName.toLowerCase().includes(q) || l.phone.includes(q) || String(l.leadNo) === q.replace(/^#/, ""),
     );
   }, [readyLeads, pickQuery]);
+  // The picker groups the same list under two headings rather than sorting it
+  // -- Submission and later is where the work usually is, so it stays first.
+  const pickableAtSubmission = useMemo(() => pickable.filter((l) => !l.preSubmission), [pickable]);
+  const pickableEarlier = useMemo(() => pickable.filter((l) => l.preSubmission), [pickable]);
 
   function openCaseFor(l: SubmittableLead) {
     setFilingFor({
@@ -140,15 +144,22 @@ export function SubmitCaseView({
 
   const visibleLeads = useMemo(() => {
     const q = leadQuery.trim().toLowerCase();
-    return leads.filter((l) => {
-      if (onlyReady && !l.canSubmit) return false;
-      if (!q) return true;
-      return (
-        l.fullName.toLowerCase().includes(q) ||
-        l.phone.includes(q) ||
-        String(l.leadNo) === q.replace(/^#/, "")
-      );
-    });
+    return leads
+      .filter((l) => {
+        if (onlyReady && !l.canSubmit) return false;
+        if (!q) return true;
+        return (
+          l.fullName.toLowerCase().includes(q) ||
+          l.phone.includes(q) ||
+          String(l.leadNo) === q.replace(/^#/, "")
+        );
+      })
+      // Submission and later first, then the earlier-stage leads that can
+      // still be filed; newest lead first within each group.
+      .sort((a, b) => {
+        if (a.preSubmission !== b.preSubmission) return a.preSubmission ? 1 : -1;
+        return b.leadNo - a.leadNo;
+      });
   }, [leads, leadQuery, onlyReady]);
 
   const awaiting = cases.filter((c) => c.status === "submitted").length;
@@ -159,7 +170,7 @@ export function SubmitCaseView({
     <div>
       <div className="flex flex-wrap items-start gap-3 border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
         <div className="min-w-0 flex-1">
-          <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Submit Case</div>
+          <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Manage Cases</div>
           <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">
             {awaiting} awaiting underwriting · {inforce} inforce · {readyCount} lead
             {readyCount === 1 ? "" : "s"} ready to file
@@ -191,7 +202,7 @@ export function SubmitCaseView({
                 >
                   <span className="block text-[12.5px] font-bold text-navy">Submit Existing Case</span>
                   <span className="block text-[11px] font-medium text-taupe">
-                    Pick a lead that has reached Submission
+                    Pick a lead from your pipeline
                   </span>
                 </button>
                 <button
@@ -217,7 +228,8 @@ export function SubmitCaseView({
             <div>
               <div className="text-[14px] font-bold text-navy">File a case</div>
               <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-                A case can be filed once the lead reaches the Submission stage.
+                Leads at Submission are ready to file. Leads earlier in the pipeline can be filed too --
+                filing moves them to Submission.
               </div>
             </div>
             <label className="flex items-center gap-2 text-[11.5px] font-semibold text-navy">
@@ -227,7 +239,7 @@ export function SubmitCaseView({
                 onChange={(e) => setOnlyReady(e.target.checked)}
                 className="h-[15px] w-[15px] accent-[#0f2540]"
               />
-              Only leads ready to file
+              Only leads I can file
             </label>
           </div>
 
@@ -243,7 +255,7 @@ export function SubmitCaseView({
             {visibleLeads.length === 0 ? (
               <p className="py-6 text-center text-[12.5px] font-medium text-muted">
                 {onlyReady
-                  ? "No leads are at the Submission stage yet. Move one there on the Sales Pipeline first."
+                  ? "No leads can be filed yet. Move one along the Sales Pipeline first."
                   : "No leads match that search."}
               </p>
             ) : (
@@ -256,9 +268,16 @@ export function SubmitCaseView({
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                       <LeadNo no={l.leadNo} />
                       <div className="min-w-0">
-                        <Link href={`/leads/${l.id}`} className="block truncate text-[12.5px] font-bold text-navy hover:underline">
-                          {l.fullName}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Link href={`/leads/${l.id}`} className="block truncate text-[12.5px] font-bold text-navy hover:underline">
+                            {l.fullName}
+                          </Link>
+                          {l.preSubmission && (
+                            <span className="flex-none rounded-[6px] bg-warn-gold-bg px-2 py-[2px] text-[9.5px] font-bold text-warn-gold-text">
+                              Before Submission · {stageLabel(l.stage)}
+                            </span>
+                          )}
+                        </div>
                         <div className="truncate text-[10.5px] font-medium text-taupe">
                           {stageLabel(l.stage)}
                           {l.agentName ? ` · ${l.agentName}` : ""}
@@ -284,11 +303,14 @@ export function SubmitCaseView({
                         Inforce · Servicing
                       </Link>
                     ) : (
+                      // The only lead that ever lands here is Closed Lost --
+                      // every other stage is either fileable now or fileable
+                      // once filing pulls it forward.
                       <span
-                        title="This lead has to reach the Submission stage first"
+                        title="A case can't be filed for a Closed Lost lead."
                         className="flex-none rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[11.5px] font-semibold text-taupe-2"
                       >
-                        Not at Submission
+                        Not fileable
                       </span>
                     )}
                   </div>
@@ -433,7 +455,7 @@ export function SubmitCaseView({
               <div>
                 <div className="text-[15px] font-bold text-navy">Submit an existing case</div>
                 <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-                  Leads that have reached the Submission stage.
+                  Leads you can file a case for.
                 </div>
               </div>
               <button type="button" onClick={() => setPicking(false)} className="flex-none text-[12px] font-semibold text-muted">
@@ -449,31 +471,64 @@ export function SubmitCaseView({
               className="mt-3.5 h-[38px] w-full rounded-[10px] border border-sand-2 bg-cream px-3.5 text-[12.5px] font-medium text-navy outline-none focus:border-gold placeholder:text-taupe"
             />
 
-            <div className="mt-3 flex max-h-[50vh] flex-col gap-1.5 overflow-y-auto pr-1">
+            <div className="mt-3 flex max-h-[50vh] flex-col gap-3 overflow-y-auto pr-1">
               {pickable.length === 0 ? (
                 <p className="py-8 text-center text-[12.5px] font-medium text-muted">
                   {readyLeads.length === 0
-                    ? "No leads are at the Submission stage yet. Move one there on the Sales Pipeline, or start a fresh case instead."
+                    ? "No leads can be filed yet. Move one along the Sales Pipeline, or start a fresh case instead."
                     : "No leads match that search."}
                 </p>
               ) : (
-                pickable.map((l) => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => { setPicking(false); openCaseFor(l); }}
-                    className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
-                  >
-                    <LeadNo no={l.leadNo} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[12.5px] font-bold text-navy">{l.fullName}</span>
-                      <span className="block truncate text-[10.5px] font-medium text-taupe">
-                        {stageLabel(l.stage)}
-                        {l.caseCount > 0 ? ` · ${l.caseCount} case${l.caseCount === 1 ? "" : "s"} filed` : ""}
-                      </span>
-                    </span>
-                  </button>
-                ))
+                <>
+                  {pickableAtSubmission.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">
+                        At Submission
+                      </div>
+                      {pickableAtSubmission.map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => { setPicking(false); openCaseFor(l); }}
+                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
+                        >
+                          <LeadNo no={l.leadNo} />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[12.5px] font-bold text-navy">{l.fullName}</span>
+                            <span className="block truncate text-[10.5px] font-medium text-taupe">
+                              {stageLabel(l.stage)}
+                              {l.caseCount > 0 ? ` · ${l.caseCount} case${l.caseCount === 1 ? "" : "s"} filed` : ""}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {pickableEarlier.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">
+                        Earlier in the pipeline
+                      </div>
+                      {pickableEarlier.map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => { setPicking(false); openCaseFor(l); }}
+                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
+                        >
+                          <LeadNo no={l.leadNo} />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[12.5px] font-bold text-navy">{l.fullName}</span>
+                            <span className="block truncate text-[10.5px] font-medium text-taupe">
+                              {stageLabel(l.stage)}
+                              {l.caseCount > 0 ? ` · ${l.caseCount} case${l.caseCount === 1 ? "" : "s"} filed` : ""}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

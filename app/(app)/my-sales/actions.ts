@@ -8,13 +8,7 @@ import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { createLead } from "@/app/(app)/leads/actions";
 import { PORTAL_STATUSES } from "@/lib/client-portal";
 import { cleanCategories } from "@/lib/plan-catalogue";
-import type { CaseNominee, CaseBenefit } from "./types";
-
-// Stages from which a case may be filed. Submission is the gate the request
-// asked for; the two won stages are included because recording a case late,
-// against a client already on the books, is a legitimate filing rather than a
-// mistake to block.
-const SUBMITTABLE_STAGES = ["submission", "closed_won", "servicing"];
+import { PRE_SUBMISSION_STAGES, SUBMITTABLE_STAGES, type CaseNominee, type CaseBenefit } from "./types";
 
 /**
  * Regenerates a case's contribution schedule from its commencement date and
@@ -151,9 +145,14 @@ export async function saveCase(input: CaseInput) {
     .eq("id", input.leadId)
     .maybeSingle();
   if (!lead) return { error: "That lead could not be found.", caseId: null };
-  if (!SUBMITTABLE_STAGES.includes(lead.pipeline_stage)) {
+  // Submission and later, plus every earlier stage up to Appointment, may
+  // have a case filed against them -- filing from an earlier stage moves the
+  // lead to Submission below. Closed Lost is the only stage excluded from
+  // both lists, so it is the only way this check can fail.
+  const wasPreSubmission = PRE_SUBMISSION_STAGES.includes(lead.pipeline_stage);
+  if (!SUBMITTABLE_STAGES.includes(lead.pipeline_stage) && !wasPreSubmission) {
     return {
-      error: "This lead has to reach the Submission stage before a case can be filed against it.",
+      error: "A case can't be filed for a Closed Lost lead.",
       caseId: null,
     };
   }
@@ -208,6 +207,10 @@ export async function saveCase(input: CaseInput) {
     updated_at: new Date().toISOString(),
   };
 
+  // Set only when a brand-new case is filed and the stage move it triggers
+  // fails -- editing a case already on file never touches the lead's stage.
+  let warning: string | undefined;
+
   let caseId = input.caseId ?? null;
   if (caseId) {
     // Read before writing: the schedule has to be rebuilt if the frequency
@@ -254,6 +257,17 @@ export async function saveCase(input: CaseInput) {
       .maybeSingle();
     if (error || !data) return { error: "Couldn't file this case. Please try again.", caseId: null };
     caseId = data.id;
+
+    // Filing from an earlier stage is what pulls the lead forward -- the
+    // agent shouldn't have to leave this list to drag the card themselves
+    // first. The case itself has already been filed at this point, so a
+    // failure here is reported as a warning rather than undone.
+    if (wasPreSubmission) {
+      const staged = await updateStage(input.leadId, "submission", "Submission");
+      if (staged.error) {
+        warning = `Case filed, but the lead couldn't be moved to Submission: ${staged.error}`;
+      }
+    }
   }
 
   await supabase.from("case_nominees").delete().eq("submission_id", caseId);
@@ -271,7 +285,8 @@ export async function saveCase(input: CaseInput) {
   revalidatePath("/my-sales/submit-case");
   revalidatePath("/my-sales/servicing");
   revalidatePath(`/leads/${input.leadId}`);
-  return { error: null, caseId };
+  revalidatePath("/pipeline");
+  return { error: null, caseId, warning };
 }
 
 /**

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LandingPageRow } from "./data";
 import { PRODUCT_LABEL, type LandingProduct, type LandingLayout } from "@/lib/landing-content";
+import { landingPath } from "@/lib/agent-slug";
 import { createLandingPage, setLandingPublished, deleteLandingPage } from "./actions";
 import { EmptyState } from "@/components/empty-state";
 import { CalendarIcon } from "@/components/icons";
@@ -16,10 +17,12 @@ const PRODUCT_TONE: Record<LandingProduct, string> = {
 };
 
 // The public URL is built in the browser so it always matches the host the
-// agent is actually on -- localhost, a preview, or production.
-function publicUrl(slug: string) {
-  if (typeof window === "undefined") return `/p/${slug}`;
-  return `${window.location.origin}/p/${slug}`;
+// agent is actually on -- localhost, a preview, or production. Namespaced
+// under the agent's own slug once they have one; /p/<slug> otherwise.
+function publicUrl(agentSlug: string | null, slug: string) {
+  const path = landingPath(agentSlug, slug);
+  if (typeof window === "undefined") return path;
+  return `${window.location.origin}${path}`;
 }
 
 export function LeadGenerationView({
@@ -68,9 +71,9 @@ export function LeadGenerationView({
     });
   }
 
-  async function copy(slug: string) {
+  async function copy(agentSlug: string | null, slug: string) {
     try {
-      await navigator.clipboard.writeText(publicUrl(slug));
+      await navigator.clipboard.writeText(publicUrl(agentSlug, slug));
       setCopied(slug);
       setTimeout(() => setCopied((c) => (c === slug ? null : c)), 2000);
     } catch {
@@ -166,10 +169,12 @@ export function LeadGenerationView({
                         </span>
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11.5px] font-medium text-muted">/p/{p.slug}</span>
+                        <span className="font-mono text-[11.5px] font-medium text-muted">
+                          {landingPath(p.agentSlug, p.slug)}
+                        </span>
                         <button
                           type="button"
-                          onClick={() => copy(p.slug)}
+                          onClick={() => copy(p.agentSlug, p.slug)}
                           className="rounded-[7px] border border-sand-2 bg-white px-2 py-[3px] text-[10.5px] font-semibold text-navy"
                         >
                           {copied === p.slug ? "Copied" : "Copy"}
@@ -190,7 +195,7 @@ export function LeadGenerationView({
                         </Link>
                         {p.isPublished && (
                           <a
-                            href={`/p/${p.slug}`}
+                            href={landingPath(p.agentSlug, p.slug)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy"
@@ -251,16 +256,21 @@ export function LeadGenerationView({
               >
                 <option value="full">Standard — hero, benefits, testimonials, FAQ</option>
                 <option value="medical">Medical Card funnel — long-form, builds the case first</option>
+                <option value="agent">Agent Landing Page — profile card, products and lead form</option>
               </select>
               <span className="mt-1 block text-[11px] font-medium text-taupe">
                 {layout === "medical"
                   ? "Cost-of-treatment case, benefits, why you, your profile, testimonials and the panel of operators — then the calculator."
-                  : "The shorter page: hero, benefits, testimonials and FAQ around the calculator."}
+                  : layout === "agent"
+                    ? "A mobile profile card: your photo, socials, products and a short lead form, alongside the same calculator every other template uses."
+                    : "The shorter page: hero, benefits, testimonials and FAQ around the calculator."}
               </span>
             </label>
 
             <label className="mt-3.5 block">
-              <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">Calculators</span>
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2">
+                {layout === "agent" ? "Form" : "Calculators"}
+              </span>
               <select
                 value={product}
                 onChange={(e) => setProduct(e.target.value as LandingProduct)}
@@ -270,6 +280,12 @@ export function LeadGenerationView({
                 <option value="medical">Medical Card only</option>
                 <option value="hibah">Hibah only</option>
               </select>
+              {layout === "agent" && (
+                <span className="mt-1 block text-[11px] font-medium text-taupe">
+                  Plus a lead form (Full Name, Phone, Email, DOB, Gender, Smoker, Occupation) — each submission becomes
+                  a Warm lead.
+                </span>
+              )}
             </label>
 
             {canChooseOwner && (
