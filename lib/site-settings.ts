@@ -30,3 +30,15 @@ export const getTrackingSettings = cache(async (): Promise<TrackingSettings> => 
     enabled: data.tracking_enabled ?? true,
   };
 });
+
+// The insurer logo shown on every Agent Landing Page, set once by a
+// SuperAdmin in Settings > Branding rather than per agent. Tolerant of the
+// column not existing yet (pre-migration) and of there being no logo set at
+// all -- both simply mean "show the text placeholder" to the caller.
+export const getBrandLogoUrl = cache(async (): Promise<string | null> => {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("site_settings").select("brand_logo_url").eq("id", true).maybeSingle();
+
+  if (error || !data) return null;
+  return (data.brand_logo_url as string | null) ?? null;
+});

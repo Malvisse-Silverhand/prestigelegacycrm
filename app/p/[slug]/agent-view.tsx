@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PublicLandingPage } from "@/lib/landing-public";
 import { tabsFor, type LandingAgentProduct } from "@/lib/landing-content";
+import { BrandWordmark } from "@/components/brand-wordmark";
 import { AgentLeadForm } from "./agent-lead-form";
 import { useLandingCapture } from "./use-landing-capture";
 
@@ -37,7 +38,6 @@ export function AgentLandingView({ page }: { page: PublicLandingPage }) {
   const { content, agent } = page;
   const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [geLogoOk, setGeLogoOk] = useState(true);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const tabs = tabsFor(page.product);
@@ -213,20 +213,23 @@ export function AgentLandingView({ page }: { page: PublicLandingPage }) {
           </Reveal>
         )}
 
-        {/* GE TAKAFUL LOGO BOX */}
-        {geLogoOk && (
-          <Reveal className="mt-5 flex justify-center px-6" delay={90}>
-            <div className="flex w-full max-w-[220px] items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element -- needs onError to hide the box gracefully */}
-              <img
-                src="/brand/great-eastern-takaful.png"
-                alt="Great Eastern Takaful"
-                className="h-10 w-full object-contain"
-                onError={() => setGeLogoOk(false)}
-              />
-            </div>
-          </Reveal>
-        )}
+        {/* GE TAKAFUL LOGO BOX -- the real logo once a SuperAdmin uploads one
+            in Settings > Branding (site-wide, not per-agent), a text wordmark
+            until then. No onError fallback needed any more: the URL only
+            ever comes from that upload flow, not a guessed static path. */}
+        <Reveal className="mt-5 flex justify-center px-6" delay={90}>
+          <div className="flex w-full max-w-[220px] items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            {page.brandLogoUrl ? (
+              // Uploaded straight to Supabase Storage at an arbitrary path
+              // (see ImageUploadField) -- next/image would need it added to
+              // remotePatterns, so this stays a plain <img>.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={page.brandLogoUrl} alt="Great Eastern Takaful" className="h-10 w-full object-contain" />
+            ) : (
+              <BrandWordmark />
+            )}
+          </div>
+        </Reveal>
 
         {/* QUOTE */}
         <Reveal className="mt-5 px-6" delay={120}>

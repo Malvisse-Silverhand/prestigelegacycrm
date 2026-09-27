@@ -16,6 +16,7 @@ import {
   getMyProfileDetails,
 } from "./data";
 import { getBenefitOptions } from "@/app/(app)/my-sales/data";
+import { getBrandLogoUrl } from "@/lib/site-settings";
 import { SettingsView } from "./settings-view";
 import { malaysiaDayKey } from "@/lib/malaysia-date";
 
@@ -69,6 +70,7 @@ export default async function SettingsPage() {
     joinRequests,
     trackingCode,
     trackablePages,
+    brandLogoUrl,
     benefits,
     myProfile,
   ] = await Promise.all([
@@ -87,6 +89,9 @@ export default async function SettingsPage() {
       // return an empty shape for anyone else, so skip the round trip.
       getTrackingCode(profile),
       getTrackablePages(profile),
+      // Branding is SuperAdmin-only too, like Audit Log and Tracking Code --
+      // skip the round trip for anyone else.
+      profile.role === "superadmin" ? getBrandLogoUrl() : Promise.resolve(null),
       // Everything, not just what is on offer, so a retired benefit can be
       // brought back rather than retyped.
       canManageBenefitCatalogue ? getBenefitOptions(false) : Promise.resolve([]),
@@ -109,6 +114,7 @@ export default async function SettingsPage() {
       joinRequests={joinRequests}
       trackingCode={trackingCode}
       trackablePages={trackablePages}
+      brandLogoUrl={brandLogoUrl}
       benefits={benefits}
       currentUserId={profile.id}
       myProfile={myProfile}

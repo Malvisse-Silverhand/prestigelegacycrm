@@ -90,3 +90,50 @@ export async function saveMyLandingImages(input: { logoUrl: string; headerUrl: s
   revalidatePath("/settings");
   return { error: null };
 }
+
+// --- Site Branding: the insurer logo on Agent Landing Pages ----------------
+//
+// SuperAdmin only -- this is the one logo shared by every agent's page, not a
+// per-profile default like saveMyLandingImages above, so it lives on the
+// site_settings singleton next to the tracking code. Checked here as well as
+// in RLS, same as saveTrackingCode.
+//
+// The uploaded file itself still goes through ImageUploadField straight to
+// the uploader's own folder in Storage (Server Actions cap out at 1 MB) --
+// this action only ever sees the resulting public URL, and only accepts one
+// that actually lives under that folder.
+export async function saveBrandLogo(url: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") return { error: "Not allowed." };
+
+  const trimmed = url.trim();
+  const ownPrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/landing-assets/${profile.id}/`;
+  if (trimmed !== "" && !trimmed.startsWith(ownPrefix)) return { error: "Invalid image." };
+
+  const logoUrl = trimmed || null;
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("site_settings")
+    .update({
+      brand_logo_url: logoUrl,
+      updated_at: new Date().toISOString(),
+      updated_by: profile.id,
+    })
+    .eq("id", true);
+
+  if (error) {
+    if (error.code === "42703") return { error: "Run the latest database migration first." };
+    Sentry.captureException(error, { tags: { action: "saveBrandLogo" } });
+    return { error: "Couldn't save the logo. Please try again." };
+  }
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "site_brand_logo",
+    metadata: { has_logo: logoUrl !== null },
+  });
+  if (auditError) console.error("saveBrandLogo: audit_log insert failed", auditError);
+
+  revalidatePath("/settings");
+  return { error: null };
+}

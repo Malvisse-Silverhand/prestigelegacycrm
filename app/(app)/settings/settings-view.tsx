@@ -26,6 +26,7 @@ import { AuditLogTab } from "./tabs/audit-log-tab";
 import { WebhooksTab } from "./tabs/webhooks-tab";
 import { JoinRequestsTab } from "./tabs/join-requests-tab";
 import { TrackingCodeTab } from "./tabs/tracking-code-tab";
+import { BrandingTab } from "./tabs/branding-tab";
 import { BenefitsTab } from "./tabs/benefits-tab";
 import { MyProfileTab } from "./tabs/my-profile-tab";
 import type { BenefitOption } from "@/app/(app)/my-sales/types";
@@ -42,6 +43,7 @@ const TABS = [
   "Benefits",
   "Webhooks",
   "Tracking Code",
+  "Branding",
   "Audit Log",
 ] as const;
 type Tab = (typeof TABS)[number];
@@ -54,7 +56,7 @@ const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
   { heading: "People", tabs: ["Users & Hierarchy", "Join Requests", "Roles & Permissions"] },
   { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Lead Sources"] },
   { heading: "Sales", tabs: ["Benefits"] },
-  { heading: "Integrations", tabs: ["Webhooks", "Tracking Code"] },
+  { heading: "Integrations", tabs: ["Webhooks", "Tracking Code", "Branding"] },
   { heading: "Security", tabs: ["Audit Log"] },
 ];
 
@@ -69,6 +71,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   Benefits: "The benefits agents can pick when submitting a case",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
   "Tracking Code": "Meta and TikTok pixels on your landing pages",
+  Branding: "The insurer logo shown on every Agent Landing Page",
   "Audit Log": "Every sensitive action, and who took it",
 };
 
@@ -87,6 +90,7 @@ export function SettingsView({
   joinRequests,
   trackingCode,
   trackablePages,
+  brandLogoUrl,
   benefits,
   currentUserId,
   myProfile,
@@ -105,14 +109,16 @@ export function SettingsView({
   joinRequests: JoinRequestRow[];
   trackingCode: TrackingCodeSettings;
   trackablePages: TrackablePage[];
+  brandLogoUrl: string | null;
   benefits: BenefitOption[];
   currentUserId: string;
   myProfile: MyProfileDetails;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
-  // everything else is hierarchy administration. Audit Log and Tracking Code
-  // stay SuperAdmin-only -- tracking code runs script on the public site, so
-  // it sits with the role that already has full control. Webhooks is org-wide
+  // everything else is hierarchy administration. Audit Log, Tracking Code and
+  // Branding stay SuperAdmin-only -- tracking code runs script on the public
+  // site and Branding sets the insurer logo every agent's page shows, so both
+  // sit with the role that already has full control. Webhooks is org-wide
   // integration config, so it matches its RLS audience: superadmin + group
   // managers.
   const isManager = role === "superadmin" || role === "group_manager" || role === "unit_manager";
@@ -121,9 +127,14 @@ export function SettingsView({
     : role === "superadmin"
       ? TABS
       : role === "group_manager"
-        ? TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code")
+        ? TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Branding")
         : TABS.filter(
-          (t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Webhooks" && t !== "Benefits",
+          (t) =>
+            t !== "Audit Log" &&
+            t !== "Tracking Code" &&
+            t !== "Branding" &&
+            t !== "Webhooks" &&
+            t !== "Benefits",
         );
   const [tab, setTab] = useState<Tab>(visibleTabs[0]);
 
@@ -241,6 +252,7 @@ export function SettingsView({
           {tab === "Tracking Code" && role === "superadmin" && (
             <TrackingCodeTab initial={trackingCode} pages={trackablePages} />
           )}
+          {tab === "Branding" && role === "superadmin" && <BrandingTab initial={brandLogoUrl} />}
           {tab === "Audit Log" && role === "superadmin" && <AuditLogTab entries={auditLog ?? []} />}
         </div>
       </div>

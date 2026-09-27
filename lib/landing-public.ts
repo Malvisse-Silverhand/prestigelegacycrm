@@ -1,6 +1,7 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getBrandLogoUrl } from "@/lib/site-settings";
 import { withDefaults, type LandingContent, type LandingLayout, type LandingProduct } from "@/lib/landing-content";
 
 export type PublicLandingPage = {
@@ -9,6 +10,11 @@ export type PublicLandingPage = {
   product: LandingProduct;
   layout: LandingLayout;
   content: LandingContent;
+  // The site-wide insurer logo set by a SuperAdmin in Settings > Branding --
+  // null means no logo has been uploaded (or the migration hasn't run yet),
+  // and the page falls back to a text wordmark. Not per-agent, unlike
+  // agent.logoUrl below.
+  brandLogoUrl: string | null;
   agent: {
     id: string;
     fullName: string;
@@ -89,12 +95,17 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
     // Columns not there yet -- fall through with nulls.
   }
 
+  // Tolerant on its own (see getBrandLogoUrl) -- a missing column or row
+  // never blocks the page, it just falls back to the text wordmark.
+  const brandLogoUrl = await getBrandLogoUrl();
+
   return {
     id: data.id as string,
     slug: data.slug as string,
     product: (data.product as LandingProduct) ?? "both",
     layout: (data.layout as LandingLayout) ?? "full",
     content: withDefaults(data.content),
+    brandLogoUrl,
     agent: {
       id: agent.id,
       fullName: agent.full_name,
