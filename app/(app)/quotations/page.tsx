@@ -21,7 +21,7 @@ export default async function QuotationsPage() {
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-5 lg:px-[30px] py-5">
+      <div className="sticky top-0 z-20 lg:static border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Quotation</div>
         <div className="mt-[3px] text-[13px] font-medium text-muted">
           {quotations.length} quotation{quotations.length === 1 ? "" : "s"} · every quotation is saved against

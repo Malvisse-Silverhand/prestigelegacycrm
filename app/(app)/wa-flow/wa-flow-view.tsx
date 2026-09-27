@@ -115,7 +115,7 @@ export function WaFlowView({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
+      <div className="sticky top-0 z-20 lg:static flex flex-wrap items-start justify-between gap-4 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div>
           <div className="flex items-center gap-2.5">
             <WhatsAppIcon width={20} height={20} className="text-green" />

@@ -12,6 +12,7 @@ import { ActivityCalendar } from "./activity-calendar";
 import { BirthdayCard } from "@/components/birthday-card";
 import { UpcomingAppointmentsCard, FollowUpLeadsCard, RecentLeadsCard } from "@/components/dashboard-lists";
 import { QuickAction } from "./quick-action";
+import { WelcomeFlourish } from "./welcome-flourish";
 import { anchorFor, dateFromKey, periodStats, type Granularity } from "./calendar-period";
 import { RebalanceButton } from "./rebalance-button";
 import { AncGoalPanel, ApproachScoreboard } from "./anc-goal-panel";
@@ -84,6 +85,7 @@ export function DashboardView({
   stats,
   teamSales,
   primaryVariant = "personal",
+  mobileTitle = "Dashboard",
   notifications,
   today,
 }: {
@@ -97,6 +99,12 @@ export function DashboardView({
    *  a team-wide `stats`, not a personal one, so its own goal card has to
    *  read as "Team Sales", not "Personal Sales". */
   primaryVariant?: "personal" | "team";
+  /** The mobile app bar's own title -- "Dashboard" everywhere this view is
+   *  the whole page. Team Performance renders its own plain title above this
+   *  same view, and that title scrolls away under this bar's sticky navy one
+   *  once the page is scrolled, so it passes its own name here rather than
+   *  leaving "Dashboard" as the thing left on screen. */
+  mobileTitle?: string;
   notifications: NotificationRow[];
   /** Today in Malaysia, computed on the server. See dateFromKey for why. */
   today: string;
@@ -143,6 +151,8 @@ export function DashboardView({
 
   return (
     <div>
+      <WelcomeFlourish firstName={profile.full_name.split(" ")[0] || profile.full_name} />
+
       {/* Desktop */}
       <div className="hidden bg-cream dark:bg-[#0b1a2b] lg:block">
         <div className="flex items-start gap-4 border-b border-sand bg-white px-[30px] py-5 dark:border-white/10 dark:bg-[#12283f]">
@@ -490,7 +500,7 @@ export function DashboardView({
 
       {/* Mobile */}
       <div className="bg-cream dark:bg-[#0b1a2b] lg:hidden">
-        <div className="bg-navy px-5 pt-3.5 pb-5 text-white dark:bg-[#12283f] dark:border-b dark:border-white/[.07]">
+        <div className="sticky top-0 z-20 lg:static bg-navy/85 backdrop-blur-md px-5 pt-3.5 pb-5 text-white lg:bg-navy lg:backdrop-blur-none dark:bg-[#12283f]/85 lg:dark:bg-[#12283f] dark:border-b dark:border-white/[.07]">
           <div className="flex items-center gap-[11px]">
             <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gold text-sm font-bold text-navy">
               {profile.avatar_initials}
@@ -499,7 +509,7 @@ export function DashboardView({
               <div className="text-[11.5px] font-medium text-white/55 dark:text-[#7f93aa]">
                 {profile.full_name}
               </div>
-              <div className="text-[15.5px] font-bold">Dashboard</div>
+              <div className="text-[15.5px] font-bold">{mobileTitle}</div>
             </div>
             <QuickAction compact />
             <NotificationBell initial={notifications} compact />

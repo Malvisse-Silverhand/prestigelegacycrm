@@ -168,7 +168,7 @@ export function SubmitCaseView({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start gap-3 border-b border-sand bg-white px-5 py-4 lg:px-[30px] lg:py-5">
+      <div className="sticky top-0 z-20 lg:static flex flex-wrap items-start gap-3 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-4 lg:bg-white lg:backdrop-blur-none lg:px-[30px] lg:py-5">
         <div className="min-w-0 flex-1">
           <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">Manage Cases</div>
           <div className="mt-[3px] text-[12.5px] font-medium text-muted lg:text-[13px]">

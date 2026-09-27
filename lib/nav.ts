@@ -105,3 +105,8 @@ export const MOBILE_NAV_RIGHT = [
 export function visibleNav(role: Role) {
   return SIDEBAR_NAV.filter((item) => !item.roles || item.roles.includes(role));
 }
+
+// External, so it isn't a NavItem -- it opens a different site entirely
+// rather than routing inside the CRM, and always opens in a new tab so the
+// agent's place in the CRM is never lost.
+export const TRAINING_URL = "https://training.prestigelegacy.com.my/";

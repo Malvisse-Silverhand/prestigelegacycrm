@@ -32,6 +32,18 @@ export default function LoginPage() {
         return;
       }
 
+      // Read once, by the dashboard's WelcomeFlourish, then cleared -- so it
+      // shows on the very next dashboard paint (even after a forced
+      // /change-password detour) and never again until the next sign-in.
+      // sessionStorage.setItem is synchronous, so this is guaranteed to land
+      // before the navigation below starts.
+      try {
+        sessionStorage.setItem("pl_welcome", "1");
+      } catch {
+        // Storage can throw in a locked-down browser context -- signing in
+        // still works, the dashboard just opens without the flourish.
+      }
+
       // Sign-in just wrote fresh auth cookies, so hand the whole document to
       // the server rather than pushing client-side: same push/refresh race as
       // the password pages, and the middleware gets a clean request to route

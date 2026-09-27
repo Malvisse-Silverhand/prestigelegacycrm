@@ -102,13 +102,20 @@ const COPY = {
     contestablePassedBody:
       "Tempoh penyiasatan lima tahun bagi sijil ini telah tamat. Tuntutan tidak lagi boleh ditolak atas sebab tidak mengisytiharkan maklumat, kecuali dalam kes penipuan yang terbukti.",
     onboardTitle: "Selamat datang",
-    onboardSub: "Tiga perkara sebelum anda mula.",
+    onboardSub: "Apa yang ada dalam portal ini.",
     onboardCta: "Saya faham, mula",
     onboardMute: "Jangan tunjuk lagi",
     onboardSteps: [
-      ["Guna menu di bawah", "{tabs} — semuanya satu ketikan sahaja."],
-      ["Tukar BM / EN di atas", "Seluruh portal bertukar bahasa serta-merta."],
-      ["Paparan sahaja", "Ini portal agensi untuk rujukan. Untuk urusan rasmi, gunakan butang iGetInTouch Client Portal."],
+      ["Semua di satu tempat", "{tabs} — sijil, manfaat, tempoh menunggu dan penama, semuanya satu ketikan."],
+      ["Ada lebih daripada satu sijil?", "Semuanya dipaparkan bersama di sini di bawah satu log masuk sahaja."],
+      [
+        "Caruman tertunggak?",
+        "Tekan “Cara Bayar Caruman” pada sijil berkenaan untuk panduan JomPAY, atau cara tukar ke kad kredit/debit.",
+      ],
+      [
+        "Tukar bahasa & paparan sahaja",
+        "BM / EN di atas menukar bahasa serta-merta. Ini portal agensi untuk rujukan — untuk urusan rasmi, guna butang iGetInTouch Client Portal.",
+      ],
     ],
     lapsedTitle: "Perlindungan anda tidak aktif",
     lapsedBody: "Rekod kami menunjukkan sijil ini tidak lagi aktif. Sila hubungi ejen anda untuk menyemak status sebenar dan pilihan pemulihan.",
@@ -184,13 +191,20 @@ const COPY = {
     contestablePassedBody:
       "The five-year investigation period on this certificate has passed. A claim can no longer be declined for non-disclosure, except in a case of proven fraud.",
     onboardTitle: "Welcome",
-    onboardSub: "Three things before you start.",
+    onboardSub: "What's in this portal.",
     onboardCta: "Got it, let's go",
     onboardMute: "Don't show this again",
     onboardSteps: [
-      ["Use the menu below", "{tabs} — each one tap away."],
-      ["Switch BM / EN at the top", "The whole portal changes language straight away."],
-      ["View only", "This is an agency portal for reference. For anything official, use the iGetInTouch Client Portal button."],
+      ["Everything in one place", "{tabs} — certificate, benefits, waiting periods and nominees, each one tap away."],
+      ["More than one certificate?", "They're all shown together here, under one login."],
+      [
+        "Contribution due?",
+        "Tap “How to Pay” on that certificate for the JomPAY guide, or how to switch to a credit/debit card.",
+      ],
+      [
+        "Language & view only",
+        "Switch BM / EN at the top any time. This is an agency portal for reference — for anything official, use the iGetInTouch Client Portal button.",
+      ],
     ],
     lapsedTitle: "Your cover is not active",
     lapsedBody: "Our records show this certificate is no longer active. Please contact your agent to check the current status and your options for reinstating it.",

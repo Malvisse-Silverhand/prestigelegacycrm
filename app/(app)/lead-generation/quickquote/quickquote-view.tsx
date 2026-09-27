@@ -70,7 +70,7 @@ export function QuickQuoteView({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-sand bg-white px-5 py-5 lg:px-[30px]">
+      <div className="sticky top-0 z-20 lg:static flex flex-wrap items-start justify-between gap-4 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div>
           <Link href="/lead-generation" className="press text-[12px] font-semibold text-taupe hover:text-navy">
             ← Lead Generation

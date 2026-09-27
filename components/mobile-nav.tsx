@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { MOBILE_NAV_LEFT, MOBILE_NAV_RIGHT, visibleNav } from "@/lib/nav";
-import { SignOutIcon, ChevronDownIcon } from "@/components/icons";
+import { MOBILE_NAV_LEFT, MOBILE_NAV_RIGHT, visibleNav, TRAINING_URL } from "@/lib/nav";
+import { SignOutIcon, ChevronDownIcon, TrainingIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
 import { useSignOut } from "@/lib/use-sign-out";
 import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
@@ -198,7 +198,22 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
           })}
         </nav>
 
-        <div className="mt-auto flex items-center gap-[10px] border-t border-white/10 px-[18px] pt-[18px]">
+        {/* Same fixture the desktop sidebar pins above its profile card --
+            leaves the CRM entirely, so it sits outside the scrolling list. */}
+        <div className="mt-auto px-3">
+          <a
+            href={TRAINING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="flex items-center gap-[11px] rounded-[10px] py-[9px] pr-[6px] pl-[13px] text-[13.5px] font-medium text-white/65"
+          >
+            <TrainingIcon width={17} height={17} />
+            Training
+          </a>
+        </div>
+
+        <div className="flex items-center gap-[10px] border-t border-white/10 px-[18px] pt-[18px]">
           <div className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-green text-[11.5px] font-bold text-white">
             {profile.avatar_initials}
           </div>

@@ -30,7 +30,7 @@ export default async function AuditLogPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-4 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
+      <div className="sticky top-0 z-20 lg:static flex items-center gap-4 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div className="flex-1">
           <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">Audit Log</div>
           <div className="mt-[3px] text-[13px] font-medium text-muted">

@@ -5,8 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSignOut } from "@/lib/use-sign-out";
-import { visibleNav } from "@/lib/nav";
-import { SignOutIcon, ChevronDownIcon } from "@/components/icons";
+import { visibleNav, TRAINING_URL } from "@/lib/nav";
+import { SignOutIcon, ChevronDownIcon, TrainingIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
 import { ROLE_LABEL, type CurrentProfile } from "@/lib/profile-types";
 
@@ -94,7 +94,22 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
         })}
       </nav>
 
-      <div className="mt-auto flex items-center gap-[10px] border-t border-white/10 px-[18px] pt-[18px]">
+      {/* Pinned just above the profile card, not inside the scrolling nav
+          list above -- it leaves the CRM entirely, so it reads as a fixed
+          fixture of the shell rather than one more destination in the app. */}
+      <div className="mt-auto px-3">
+        <a
+          href={TRAINING_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-[11px] rounded-[10px] py-[8px] pr-[6px] pl-[13px] text-[13px] font-medium text-white/65 hover:bg-white/5 hover:text-white/90"
+        >
+          <TrainingIcon width={17} height={17} />
+          Training
+        </a>
+      </div>
+
+      <div className="flex items-center gap-[10px] border-t border-white/10 px-[18px] pt-[18px]">
         <div className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-green text-[11.5px] font-bold text-white">
           {profile.avatar_initials}
         </div>

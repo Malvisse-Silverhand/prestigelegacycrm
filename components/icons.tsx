@@ -222,3 +222,16 @@ export const ServicingIcon = (p: IconProps) =>
       <path d="m2 15 6 6" />
     </>,
   );
+
+// A graduation cap for the Training link -- the one nav entry that leaves
+// the CRM entirely, so it reads as "external" at a glance rather than as
+// just another internal page.
+export const TrainingIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <path d="M22 10 12 5 2 10l10 5 10-5Z" />
+      <path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" />
+      <path d="M22 10v6" />
+    </>,
+  );

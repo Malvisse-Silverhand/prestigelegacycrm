@@ -54,6 +54,22 @@ body {
   font-family: var(--font-poppins), sans-serif;
 }
 
+/* Two small things that make every screen feel like an installed app rather
+   than a page opened in a browser tab, at basically no cost:
+   - No grey flash on tap. iOS/Android's built-in "you tapped something"
+     highlight is a mobile-browser tell; `.press` (below) already gives every
+     tappable element its own feedback, so the built-in one is redundant.
+   - No rubber-band/pull-to-refresh at the very edge of the page. Anything
+     that scrolls on its own (a modal, the Clients list) keeps its own
+     natural bounce -- this only stops the whole page moving as a unit. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 /* ---------------------------------------------------------------------------
    SYSTEM-WIDE DARK THEME
    The palette above is baked into utilities by `@theme inline`, so it can't be

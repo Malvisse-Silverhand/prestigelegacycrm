@@ -41,6 +41,7 @@ export default async function TeamPerformancePage() {
         profile={profile}
         stats={stats}
         primaryVariant="team"
+        mobileTitle="Team Performance"
         notifications={await getNotifications()}
         today={malaysiaToday()}
       />

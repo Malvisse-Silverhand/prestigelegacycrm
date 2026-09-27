@@ -144,7 +144,13 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
       ) : (
         <>
           <div className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-sand-2 bg-white px-3 py-2.5">
-            <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-ink">{url}</span>
+            {/* min-w-0 on the flex item and truncate on a block child of its
+                own -- not both on the same span -- is what actually clips a
+                long URL here instead of pushing the row past the card edge
+                (the same split the sidebar's name/role text uses). */}
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-mono text-[11px] text-ink">{url}</div>
+            </div>
             <button
               type="button"
               onClick={copy}

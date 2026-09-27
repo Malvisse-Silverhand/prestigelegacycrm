@@ -167,7 +167,7 @@ export function SettingsView({
 
   return (
     <div>
-      <div className="border-b border-sand bg-white px-5 lg:px-[30px] py-5">
+      <div className="sticky top-0 z-20 lg:static border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">System Settings</div>
         <div className="mt-[3px] text-[13px] font-medium text-muted">
           Organisation structure, roles, and lead distribution rules

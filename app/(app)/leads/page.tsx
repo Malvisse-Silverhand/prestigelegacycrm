@@ -91,7 +91,7 @@ export default async function LeadsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 border-b border-sand bg-white px-5 lg:px-[30px] py-3.5 lg:py-5">
+      <div className="sticky top-0 z-20 lg:static flex items-center justify-between gap-3 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-3.5 lg:bg-white lg:backdrop-blur-none lg:px-[30px] lg:py-5">
         <div className="min-w-0">
           <div className="text-[18px] font-extrabold tracking-[-0.02em] text-navy lg:text-[22px]">
             Lead Management

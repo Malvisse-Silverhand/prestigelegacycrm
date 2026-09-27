@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -19,6 +19,21 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Prestige Legacy CRM",
   description: "Agent portal for Prestige Legacy leads, quotations, and pipeline.",
+};
+
+// viewportFit: "cover" is what actually turns on env(safe-area-inset-*) --
+// without it every safe-area padding in the app (the mobile bottom nav, the
+// bottom sheets, the drawer) silently resolves to 0 on a notched iPhone. The
+// theme colours tint the status bar / home-indicator area itself, so it
+// reads as part of the app rather than a strip of browser chrome above it.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fdf9f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1a2b" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

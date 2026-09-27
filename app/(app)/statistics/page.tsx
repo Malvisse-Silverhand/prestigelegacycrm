@@ -82,7 +82,7 @@ export default async function StatisticsPage({
 
   return (
     <div>
-      <div className="flex items-center gap-3.5 border-b border-sand bg-white px-5 lg:px-[30px] py-5">
+      <div className="sticky top-0 z-20 lg:static flex items-center gap-3.5 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
         <div className="flex-1">
           <div className="text-2xl font-extrabold tracking-[-0.025em] text-navy">Statistics</div>
           <div className="mt-0.5 text-[13px] font-medium text-muted">
