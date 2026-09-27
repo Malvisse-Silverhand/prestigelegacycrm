@@ -4,6 +4,12 @@ import { getDashboardStats } from "@/app/(app)/dashboard/data";
 import { getNotifications } from "@/app/(app)/notifications/actions";
 import { DashboardView } from "@/app/(app)/dashboard/dashboard-view";
 import { malaysiaToday } from "@/lib/malaysia-date";
+import { getTeamLeaderboard } from "./leaderboard-data";
+
+// Kamal: "leaderboard for agents ... visible only for GM, UM, AUM." SuperAdmin
+// is deliberately left off that list even though they can see this page too,
+// so the query below is skipped for them rather than fetched and discarded.
+const LEADERBOARD_ROLES = ["group_manager", "unit_manager", "aspirant_unit_manager"] as const;
 
 /**
  * The team-wide half of what the Dashboard used to be.
@@ -27,7 +33,12 @@ export default async function TeamPerformancePage() {
   // on an empty page.
   if (profile.role === "agent") redirect("/dashboard");
 
-  const stats = await getDashboardStats(profile, { teamWide: true });
+  const showLeaderboard = (LEADERBOARD_ROLES as readonly string[]).includes(profile.role);
+
+  const [stats, leaderboard] = await Promise.all([
+    getDashboardStats(profile, { teamWide: true }),
+    showLeaderboard ? getTeamLeaderboard() : Promise.resolve(null),
+  ]);
 
   return (
     <div>
@@ -44,6 +55,7 @@ export default async function TeamPerformancePage() {
         mobileTitle="Team Performance"
         notifications={await getNotifications()}
         today={malaysiaToday()}
+        leaderboard={leaderboard}
       />
     </div>
   );

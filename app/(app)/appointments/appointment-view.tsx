@@ -172,7 +172,7 @@ export function AppointmentView({
   }
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-4 lg:px-[30px] lg:py-5">
+    <div className="flex flex-col gap-2.5 px-3 py-3 lg:gap-3 lg:px-[30px] lg:py-5">
       {draft && (
         <AppointmentDialog
           draft={draft}
@@ -194,7 +194,7 @@ export function AppointmentView({
       )}
 
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 rounded-[16px] border border-sand bg-white px-5 py-4 dark:border-white/10 dark:bg-[#12283f]">
+      <div className="flex flex-wrap items-start justify-between gap-2.5 rounded-[14px] border border-sand bg-white px-4 py-3.5 lg:gap-3 lg:rounded-[16px] lg:px-5 lg:py-4 dark:border-white/10 dark:bg-[#12283f]">
         <div>
           <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-taupe-2 dark:text-[#7f93aa]">
             Sales
@@ -215,15 +215,15 @@ export function AppointmentView({
       </div>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-3 lg:gap-3">
         <StatCard label="Lead base" value={leadBase} />
         <StatCard label="Appointments" value={live.length} />
         <StatCard label="Upcoming" value={upcoming.length} />
       </div>
 
       {/* Schedule */}
-      <div className="rounded-[16px] border border-sand bg-white px-4 py-4 dark:border-white/10 dark:bg-[#12283f] lg:px-5">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-sand pb-3.5 dark:border-white/10">
+      <div className="rounded-[14px] border border-sand bg-white px-3.5 py-3.5 dark:border-white/10 dark:bg-[#12283f] lg:rounded-[16px] lg:px-5 lg:py-4">
+        <div className="flex flex-wrap items-start justify-between gap-2.5 border-b border-sand pb-3 dark:border-white/10 lg:gap-3 lg:pb-3.5">
           <div>
             <div className="text-[13.5px] font-bold text-navy dark:text-[#eef3f8]">Schedule</div>
             <div className="mt-[2px] text-[11.5px] font-medium text-muted dark:text-[#7f93aa]">
@@ -248,7 +248,7 @@ export function AppointmentView({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 py-3">
+        <div className="flex flex-wrap items-center gap-2.5 py-2.5 lg:gap-3 lg:py-3">
           <button
             type="button"
             onClick={() => shift(-1)}
@@ -277,16 +277,16 @@ export function AppointmentView({
           </button>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-4">
           {view === "month" ? (
             <MonthGrid days={days} byDay={byDay} birthdayByDay={birthdayByDay} todayKey={todayKey} onOpen={setDetail} onSlot={(d) => openSlot(d, 9)} />
           ) : (
             <TimeGrid days={days} byDay={byDay} birthdayByDay={birthdayByDay} todayKey={todayKey} onOpen={setDetail} onSlot={openSlot} />
           )}
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 lg:gap-4">
           <BirthdayCard birthdays={birthdaysSoon} limit={4} />
-          <div className="rounded-[14px] border border-sand-2 p-3.5 dark:border-white/10">
+          <div className="rounded-[12px] border border-sand-2 p-3 dark:border-white/10 lg:rounded-[14px] lg:p-3.5">
             <div className="flex items-center justify-between">
               <div className="text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">Upcoming Appointments</div>
               <span className="text-[11px] font-bold text-taupe dark:text-[#7f93aa]">{upcoming.length}</span>
@@ -334,11 +334,11 @@ export function AppointmentView({
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-[14px] border border-sand bg-cream px-4 py-3.5 dark:border-white/10 dark:bg-[#12283f]">
+    <div className="rounded-[12px] border border-sand bg-cream px-3 py-3 dark:border-white/10 dark:bg-[#12283f] lg:rounded-[14px] lg:px-4 lg:py-3.5">
       <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-taupe-2 dark:text-[#7f93aa]">
         {label}
       </div>
-      <div className="mt-1 text-[24px] font-extrabold tracking-[-0.02em] text-navy dark:text-[#eef3f8]">{value}</div>
+      <div className="mt-1 text-[20px] font-extrabold tracking-[-0.02em] text-navy dark:text-[#eef3f8] lg:text-[24px]">{value}</div>
     </div>
   );
 }
@@ -566,7 +566,7 @@ function DetailDialog({
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-navy/55 p-4" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-elevated dark:bg-[#12283f]"
+        className="w-full max-w-sm rounded-xl bg-white p-4 shadow-lg lg:rounded-2xl lg:p-5 lg:shadow-elevated dark:bg-[#12283f]"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -617,7 +617,7 @@ function DetailDialog({
             </button>
           )}
           {confirmDelete ? (
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex flex-wrap items-center gap-2">
               <span className="text-[11.5px] font-semibold text-alert-red">Delete this appointment?</span>
               <button
                 type="button"

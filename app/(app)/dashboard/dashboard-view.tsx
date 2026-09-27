@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CurrentProfile } from "@/lib/supabase/profile";
 import type { DashboardStats } from "./data";
 import { SunIcon, MoonIcon, AlertIcon, ClockIcon, QuotationIcon, ChevronRightIcon } from "@/components/icons";
@@ -17,6 +17,14 @@ import { anchorFor, dateFromKey, periodStats, type Granularity } from "./calenda
 import { RebalanceButton } from "./rebalance-button";
 import { AncGoalPanel, ApproachScoreboard } from "./anc-goal-panel";
 import { ManageWidgets, DashboardClock, useWidgetPrefs } from "./widgets";
+import { LeaderboardCard } from "@/app/(app)/team/performance/leaderboard-card";
+import type { LeaderboardEntry } from "@/app/(app)/team/performance/leaderboard-data";
+
+// Kamal: "leaderboard ... visible only for GM, UM, AUM." Checked here too,
+// not just by the caller -- Team Performance is the only page that ever
+// passes a `leaderboard` prop, but an agent's or SuperAdmin's own profile
+// should never render one even if it did.
+const LEADERBOARD_ROLES: CurrentProfile["role"][] = ["group_manager", "unit_manager", "aspirant_unit_manager"];
 
 const STATUS_META = [
   { key: "cold" as const, label: "Cold", light: "#0f4c35", dark: "#2e8f68" },
@@ -88,6 +96,7 @@ export function DashboardView({
   mobileTitle = "Dashboard",
   notifications,
   today,
+  leaderboard,
 }: {
   profile: CurrentProfile;
   stats: DashboardStats;
@@ -108,6 +117,11 @@ export function DashboardView({
   notifications: NotificationRow[];
   /** Today in Malaysia, computed on the server. See dateFromKey for why. */
   today: string;
+  /** This calendar year's agent leaderboard -- only Team Performance passes
+   *  this, and only for GM/UM/AUM roles (see LEADERBOARD_ROLES above, which
+   *  this component re-checks against `profile.role` regardless of what the
+   *  caller sends). Absent everywhere else. */
+  leaderboard?: LeaderboardEntry[] | null;
 }) {
   // Theme is system-wide now: the class lives on <html> and is shared with
   // every other screen, so this only reads it (for the donut's colours) and
@@ -148,6 +162,51 @@ export function DashboardView({
   // its own (its `stats` already is the team-wide figures) -- this is that
   // card's eyebrow, built from the same memberCount the goal itself carries.
   const primaryTeamLabel = `Team · ${stats.goal.memberCount} member${stats.goal.memberCount === 1 ? "" : "s"}`;
+
+  const showLeaderboard = leaderboard != null && LEADERBOARD_ROLES.includes(profile.role);
+  const leaderboardYear = today.slice(0, 4);
+
+  // The mobile Sales/Calendar stack becomes a swipeable carousel -- Personal
+  // Sales, then Team/Downline Sales if this scope has one, then the
+  // Leaderboard if this role gets one, then the Activity Calendar. Built
+  // here rather than inline in the JSX below so the same panel list can
+  // report its own length (a single surviving panel renders flat, no
+  // carousel chrome, if a widget toggle leaves only one of these on).
+  const personalSalesPanel = (
+    <section>
+      <SectionLabel
+        title={primaryVariant === "team" ? "Team Sales" : "Personal Sales"}
+        hint={primaryVariant === "team" ? "Everyone in scope, combined" : "Your own cases and targets"}
+      />
+      <AncGoalPanel
+        goal={stats.goal}
+        variant={primaryVariant}
+        teamLabel={primaryVariant === "team" ? primaryTeamLabel : undefined}
+      />
+    </section>
+  );
+  const teamSalesPanel = teamSales && teamMeta ? (
+    <section>
+      <SectionLabel title={teamMeta.title} hint={teamMeta.hint} />
+      <AncGoalPanel goal={teamSales.goal} variant="team" teamLabel={teamMeta.teamLabel} />
+    </section>
+  ) : null;
+  const leaderboardPanel = showLeaderboard && leaderboard ? (
+    <section>
+      <SectionLabel title="Agent Leaderboard" hint={`${leaderboardYear} inforced ANC, ranked`} />
+      <LeaderboardCard entries={leaderboard} year={leaderboardYear} />
+    </section>
+  ) : null;
+
+  const mobileCarouselPanels: { key: string; node: React.ReactNode }[] = [];
+  if (widgets.on("goal")) {
+    mobileCarouselPanels.push({ key: "personal-sales", node: personalSalesPanel });
+    if (teamSalesPanel) mobileCarouselPanels.push({ key: "team-sales", node: teamSalesPanel });
+    if (leaderboardPanel) mobileCarouselPanels.push({ key: "leaderboard", node: leaderboardPanel });
+  }
+  if (widgets.on("calendar")) {
+    mobileCarouselPanels.push({ key: "calendar", node: <ActivityCalendar {...calendarProps} compact /> });
+  }
 
   return (
     <div>
@@ -192,6 +251,9 @@ export function DashboardView({
                   <AncGoalPanel goal={teamSales.goal} variant="team" teamLabel={teamMeta.teamLabel} />
                 </div>
               )}
+              {/* Desktop gets a plain block, not a swiped one -- Kamal only
+                  asked for the leaderboard to swipe on mobile. */}
+              {leaderboardPanel && <div className="mt-3">{leaderboardPanel}</div>}
             </section>
           )}
 
@@ -530,27 +592,11 @@ export function DashboardView({
         </div>
 
         <div className="flex flex-col gap-[11px] px-5 pt-4">
-          {widgets.on("goal") && (
-            <section>
-              <SectionLabel
-                title={primaryVariant === "team" ? "Team Sales" : "Personal Sales"}
-                hint={primaryVariant === "team" ? "Everyone in scope, combined" : "Your own cases and targets"}
-              />
-              <AncGoalPanel
-                goal={stats.goal}
-                variant={primaryVariant}
-                teamLabel={primaryVariant === "team" ? primaryTeamLabel : undefined}
-              />
-              {teamSales && teamMeta && (
-                <div className="mt-3">
-                  <SectionLabel title={teamMeta.title} hint={teamMeta.hint} />
-                  <AncGoalPanel goal={teamSales.goal} variant="team" teamLabel={teamMeta.teamLabel} />
-                </div>
-              )}
-            </section>
-          )}
-
-          {widgets.on("calendar") && <ActivityCalendar {...calendarProps} compact />}
+          {/* Personal Sales, Team/Downline Sales, Leaderboard and the
+              Activity Calendar -- whichever of these are switched on -- swipe
+              as one horizontal carousel instead of stacking. See
+              mobileCarouselPanels above for the order and gating. */}
+          <MobileCardCarousel panels={mobileCarouselPanels} />
 
           {widgets.on("leads") && (
             <section className="flex flex-col gap-2.5">
@@ -611,6 +657,78 @@ export function DashboardView({
           </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// A horizontal, one-card-per-swipe carousel for the mobile Sales/Calendar
+// stack -- same snap-scroll technique app/(app)/pipeline/mobile-board.tsx
+// already uses for its stage columns (snap-x snap-mandatory scroller, a
+// rAF-throttled onScroll to track the active panel, dots to jump between
+// them). A single surviving panel (e.g. an agent with no team and the
+// calendar switched off) renders flat with no carousel chrome at all, since
+// there is nothing to swipe between.
+function MobileCardCarousel({ panels }: { panels: { key: string; node: React.ReactNode }[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const el = scrollerRef.current;
+      if (!el || el.clientWidth === 0) return;
+      const idx = Math.round(el.scrollLeft / el.clientWidth);
+      const clamped = Math.min(Math.max(idx, 0), panels.length - 1);
+      setActive(clamped);
+    });
+  }, [panels.length]);
+
+  function goTo(idx: number) {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
+    setActive(idx);
+  }
+
+  if (panels.length === 0) return null;
+  if (panels.length === 1) return <>{panels[0].node}</>;
+
+  const clampedActive = Math.min(active, panels.length - 1);
+
+  return (
+    <div>
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {panels.map((p) => (
+          <div key={p.key} className="w-full flex-none snap-start snap-always">
+            {p.node}
+          </div>
+        ))}
+      </div>
+      <div className="mt-2.5 flex items-center justify-center gap-1.5">
+        {panels.map((p, i) => (
+          <button
+            key={p.key}
+            type="button"
+            aria-label={`Show ${p.key.replace(/-/g, " ")}`}
+            onClick={() => goTo(i)}
+            className={`h-[6px] w-[6px] rounded-full transition-colors ${
+              i === clampedActive ? "bg-navy dark:bg-gold" : "bg-sand-2 dark:bg-white/20"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );

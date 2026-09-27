@@ -8,7 +8,8 @@ import { LeadNo } from "@/components/lead-no";
 import { LeadFormFields } from "@/app/(app)/leads/lead-form-fields";
 import { createLeadForCase } from "../actions";
 import { CaseForm, type CaseFormLead } from "../case-form";
-import { CertificatePanel, fmtRM } from "../certificate-panel";
+import { fmtRM } from "../certificate-panel";
+import { CaseDetailModal } from "./case-detail-modal";
 import { PLAN_CATEGORIES, PLAN_CATEGORY_LABEL, type PlanCategoryKey } from "@/lib/plan-catalogue";
 import {
   CASE_STATUS_LABEL,
@@ -42,6 +43,7 @@ export function SubmitCaseView({
   const [leadQuery, setLeadQuery] = useState("");
   const [onlyReady, setOnlyReady] = useState(true);
   const [filingFor, setFilingFor] = useState<CaseFormLead | null>(null);
+  // Which case's details are open in the modal -- null when none is.
   const [openCaseId, setOpenCaseId] = useState<string | null>(null);
 
   // NRIC -> every already-filed case sharing it, regardless of which lead
@@ -141,6 +143,14 @@ export function SubmitCaseView({
       );
     });
   }, [cases, statusFilter, planFilter, caseQuery]);
+
+  // The case whose details modal is open, plus the matching lead record (for
+  // fields the case snapshot doesn't carry, e.g. a since-updated gender).
+  const openCase = useMemo(() => cases.find((c) => c.id === openCaseId) ?? null, [cases, openCaseId]);
+  const openCaseLead = useMemo(
+    () => (openCase ? leads.find((l) => l.id === openCase.leadId) : undefined),
+    [leads, openCase],
+  );
 
   const visibleLeads = useMemo(() => {
     const q = leadQuery.trim().toLowerCase();
@@ -386,62 +396,42 @@ export function SubmitCaseView({
                 No cases here yet.
               </p>
             ) : (
-              visibleCases.map((c) => {
-                const open = openCaseId === c.id;
-                const lead = leads.find((l) => l.id === c.leadId);
-                return (
-                  <div key={c.id} className="rounded-[14px] border border-sand bg-white">
-                    <button
-                      type="button"
-                      onClick={() => setOpenCaseId(open ? null : c.id)}
-                      aria-expanded={open}
-                      className="flex w-full flex-wrap items-center gap-2.5 px-4 py-3 text-left sm:flex-nowrap"
+              visibleCases.map((c) => (
+                <div key={c.id} className="rounded-[14px] border border-sand bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setOpenCaseId(c.id)}
+                    className="flex w-full flex-wrap items-center gap-2.5 px-4 py-3 text-left sm:flex-nowrap"
+                  >
+                    {/* Client, its own column -- name and status only, so a
+                        long plan name never pushes the status pill or
+                        crowds the case details beside it. */}
+                    <div className="min-w-0 flex-1 sm:basis-[46%]">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-[13px] font-bold text-navy">{c.leadName}</span>
+                        <span className={`rounded-[6px] px-2 py-[2px] text-[9.5px] font-bold uppercase tracking-[0.06em] ${CASE_STATUS_TONE[c.status]}`}>
+                          {CASE_STATUS_LABEL[c.status]}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Case details, its own column. */}
+                    <div className="min-w-0 flex-1 truncate text-[11px] font-medium text-taupe sm:text-right">
+                      {c.planName}
+                      {c.certificateNo ? ` · ${c.certificateNo}` : ""}
+                      {c.installmentContribution != null ? ` · RM${fmtRM(c.installmentContribution)}` : ""}
+                    </div>
+                    {/* Opens the case's details in a modal -- not an inline
+                        expand, so this reads the same on desktop and mobile. */}
+                    <svg
+                      width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      strokeWidth={2.4} strokeLinecap="round"
+                      className="flex-none text-taupe"
                     >
-                      {/* Client, its own column -- name and status only, so a
-                          long plan name never pushes the status pill or
-                          crowds the case details beside it. */}
-                      <div className="min-w-0 flex-1 sm:basis-[46%]">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="truncate text-[13px] font-bold text-navy">{c.leadName}</span>
-                          <span className={`rounded-[6px] px-2 py-[2px] text-[9.5px] font-bold uppercase tracking-[0.06em] ${CASE_STATUS_TONE[c.status]}`}>
-                            {CASE_STATUS_LABEL[c.status]}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Case details, its own column. */}
-                      <div className="min-w-0 flex-1 truncate text-[11px] font-medium text-taupe sm:text-right">
-                        {c.planName}
-                        {c.certificateNo ? ` · ${c.certificateNo}` : ""}
-                        {c.installmentContribution != null ? ` · RM${fmtRM(c.installmentContribution)}` : ""}
-                      </div>
-                      <svg
-                        width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        strokeWidth={2.4} strokeLinecap="round"
-                        className={`flex-none text-taupe transition-transform ${open ? "rotate-180" : ""}`}
-                      >
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </button>
-                    {open && (
-                      <div className="border-t border-sand-3 p-3">
-                        <CertificatePanel
-                          submission={c}
-                          lead={{
-                            id: c.leadId,
-                            fullName: c.leadName,
-                            email: c.leadEmail,
-                            dateOfBirth: lead?.dateOfBirth ?? c.dateOfBirth,
-                            gender: lead?.gender ?? c.gender,
-                            isSmoker: lead?.isSmoker ?? c.isSmoker,
-                            occupation: lead?.occupation ?? c.occupation,
-                          }}
-                          benefitOptions={benefitOptions}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                      <path d="m9 6 6 6-6 6" />
+                    </svg>
+                  </button>
+                </div>
+              ))
             )}
           </div>
         </section>
@@ -609,6 +599,24 @@ export function SubmitCaseView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ---- Case details, flush on mobile and centred on desktop ---- */}
+      {openCase && (
+        <CaseDetailModal
+          submission={openCase}
+          lead={{
+            id: openCase.leadId,
+            fullName: openCase.leadName,
+            email: openCase.leadEmail,
+            dateOfBirth: openCaseLead?.dateOfBirth ?? openCase.dateOfBirth,
+            gender: openCaseLead?.gender ?? openCase.gender,
+            isSmoker: openCaseLead?.isSmoker ?? openCase.isSmoker,
+            occupation: openCaseLead?.occupation ?? openCase.occupation,
+          }}
+          benefitOptions={benefitOptions}
+          onClose={() => setOpenCaseId(null)}
+        />
       )}
     </div>
   );

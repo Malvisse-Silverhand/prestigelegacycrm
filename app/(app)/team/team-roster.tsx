@@ -1,11 +1,12 @@
 import Link from "next/link";
-import type { TeamMember, UnitTargetRow } from "./data";
+import type { LeagueNode, TeamMember, UnitTargetRow } from "./data";
 import type { AgentMetrics } from "./metrics";
 import { emptyMetrics } from "./metrics";
 import { EmptyState } from "@/components/empty-state";
 import { TeamIcon } from "@/components/icons";
 import { ActiveToggle } from "./active-toggle";
 import { SetTargetPanel } from "./set-target-panel";
+import { OrgChartToggle } from "./org-chart";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "no activity yet";
@@ -44,20 +45,23 @@ export function TeamRoster({
   const activeCount = members.filter((m) => m.is_active).length;
   const totalLeads = members.reduce((sum, m) => sum + (metrics.get(m.id)?.leadCount ?? 0), 0);
 
-  return (
-    <div>
-      <div className="sticky top-0 z-20 lg:static flex items-start justify-between gap-4 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
-        <div>
-          <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">
-            Team Management
-          </div>
-          <div className="mt-[3px] text-[13px] font-medium text-muted">
-            Manage team members{unitName ? ` for ${unitName}` : ""}
-          </div>
-        </div>
-      </div>
+  // A trivial one-level tree built from what this component already has --
+  // this manager as an unnamed root (their own TeamMember row isn't passed
+  // in here) with their agents underneath. No second query: same `members`
+  // the table below uses.
+  const chartRoot: LeagueNode = {
+    key: "your-unit",
+    manager: null,
+    title: unitName ?? "Your team",
+    subtitle: unitName ? "Your unit" : "No unit assigned",
+    unitId: null,
+    agents: members,
+    children: [],
+    memberIds: members.map((m) => m.id),
+  };
 
-      <div className="flex flex-col gap-5 px-5 lg:px-[30px] py-[22px] pb-[30px]">
+  const table = (
+    <div className="flex flex-col gap-5 px-5 lg:px-[30px] py-[22px] pb-[30px]">
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
           <StatCard label="Total Members" value={members.length} />
           <StatCard label="Active Agents" value={activeCount} />
@@ -157,6 +161,22 @@ export function TeamRoster({
           </div>
         )}
       </div>
+  );
+
+  return (
+    <div>
+      <div className="sticky top-0 z-20 lg:static flex items-start justify-between gap-4 border-b border-sand bg-white/85 backdrop-blur-md px-5 py-5 lg:bg-white lg:backdrop-blur-none lg:px-[30px]">
+        <div>
+          <div className="text-[22px] font-extrabold tracking-[-0.02em] text-navy">
+            Team Management
+          </div>
+          <div className="mt-[3px] text-[13px] font-medium text-muted">
+            Manage team members{unitName ? ` for ${unitName}` : ""}
+          </div>
+        </div>
+      </div>
+
+      <OrgChartToggle roots={[chartRoot]} table={table} />
     </div>
   );
 }

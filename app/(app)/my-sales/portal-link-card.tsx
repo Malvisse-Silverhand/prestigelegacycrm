@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PORTAL_STATUSES, PORTAL_STATUS_COPY, statusFromCase } from "@/lib/portal-copy";
 import { waLink } from "@/lib/whatsapp";
@@ -38,6 +38,19 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkMenuOpen, setLinkMenuOpen] = useState(false);
+
+  // Escape closes the "View link" popover the same way clicking outside it
+  // does (the fixed overlay below handles the click case). Only listens
+  // while the popover is actually open.
+  useEffect(() => {
+    if (!linkMenuOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLinkMenuOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [linkMenuOpen]);
 
   const link = submission.portalLink;
 
@@ -143,34 +156,64 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
         </>
       ) : (
         <>
-          <div className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-sand-2 bg-white px-3 py-2.5">
-            {/* min-w-0 on the flex item and truncate on a block child of its
-                own -- not both on the same span -- is what actually clips a
-                long URL here instead of pushing the row past the card edge
-                (the same split the sidebar's name/role text uses). */}
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-mono text-[11px] text-ink">{url}</div>
-            </div>
+          {/* The raw URL used to sit inline here (truncated with min-w-0 +
+              truncate) but even truncated it kept overflowing once this
+              card moved into the narrower ServicingClientModal. Nothing
+              needs to show the URL text itself -- Copy and Share both work
+              off it invisibly -- so it's now a single trigger button that
+              opens a small popover with those two actions. */}
+          <div className="relative mt-2.5">
             <button
               type="button"
-              onClick={copy}
-              className="press flex-none rounded-[8px] bg-sand-3 px-2.5 py-1.5 text-[11px] font-bold text-navy"
+              aria-haspopup="menu"
+              aria-expanded={linkMenuOpen}
+              onClick={() => setLinkMenuOpen((v) => !v)}
+              className="press inline-flex min-h-10 items-center gap-1.5 rounded-[10px] border border-sand-2 bg-white px-3.5 text-[12.5px] font-bold text-navy"
             >
-              {copied ? "Copied" : "Copy"}
+              View link
+              <svg
+                width={11}
+                height={11}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${linkMenuOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </button>
+
+            {linkMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setLinkMenuOpen(false)} />
+                <div className="absolute left-0 top-full z-30 mt-1.5 w-[220px] rounded-[12px] border border-sand-2 bg-white p-1.5 shadow-elevated">
+                  <button
+                    type="button"
+                    onClick={copy}
+                    className="press flex w-full items-center rounded-[8px] px-3 py-2 text-left text-[12px] font-semibold text-navy hover:bg-sand-3"
+                  >
+                    {copied ? "Copied" : "Copy link"}
+                  </button>
+                  {submission.leadPhone && (
+                    <a
+                      href={waLink(submission.leadPhone, waMessage)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setLinkMenuOpen(false)}
+                      className="press flex w-full items-center rounded-[8px] px-3 py-2 text-left text-[12px] font-semibold text-green hover:bg-sand-3"
+                    >
+                      Share via WhatsApp
+                    </a>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            {submission.leadPhone && (
-              <a
-                href={waLink(submission.leadPhone, waMessage)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="press inline-flex min-h-9 items-center gap-1.5 rounded-[10px] bg-green px-3 text-[11.5px] font-bold text-white"
-              >
-                Send on WhatsApp
-              </a>
-            )}
             <a
               href={url}
               target="_blank"

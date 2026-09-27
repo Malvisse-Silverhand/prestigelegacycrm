@@ -108,7 +108,13 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
   const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
 
   return (
-    <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+    // z-50, not z-40: a page's own sticky header now uses backdrop-blur
+    // (see the mobile "app feel" pass), and position:sticky + backdrop-filter
+    // pushes an element onto its own compositing layer in some mobile
+    // browsers -- which can then paint above a lower-z-index fixed sibling
+    // regardless of the z-index math, leaving a sliver of the header visible
+    // over this drawer. Clearing it by a wide margin is the standard fix.
+    <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
       <button
         type="button"
         aria-label="Close menu"

@@ -254,7 +254,7 @@ export function MobileBoard({
                 </span>
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {cards.length === 0 && (
                   <p className="py-6 text-center text-[13px] text-muted">No leads in this stage.</p>
                 )}
@@ -343,7 +343,7 @@ function MobileCard({
       {...bindProps}
       data-label={`${lead.full_name} · ${lead.phone}`}
       className={
-        "select-none rounded-2xl border border-sand bg-white p-3.5 transition-transform [-webkit-touch-callout:none] " +
+        "select-none rounded-[16px] border border-sand-3 bg-white p-2.5 transition-transform [-webkit-touch-callout:none] " +
         (isDragging ? "scale-[.98] opacity-40" : "")
       }
     >
@@ -364,17 +364,17 @@ function MobileCard({
         )}
       </div>
       {(tag || potential) && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {tag && <span className={`rounded-[6px] px-[7px] py-[2px] text-[9.5px] font-bold ${tag.cls}`}>{tag.label}</span>}
           <AncBadge potential={potential} />
         </div>
       )}
       {isToday(lead.follow_up_date) && (
-        <div className="mt-2.5 rounded-[10px] border border-[#f7e9c2] bg-warn-gold-bg px-2.5 py-2 text-[11.5px] font-semibold text-warn-gold-text">
+        <div className="mt-2 rounded-[10px] border border-[#f7e9c2] bg-warn-gold-bg px-2.5 py-1.5 text-[11.5px] font-semibold text-warn-gold-text">
           Callback today
         </div>
       )}
-      <div className="mt-3 grid grid-cols-4 gap-1.5">
+      <div className="mt-2 grid grid-cols-4 gap-1.5">
         <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-navy" aria-label="Call">
           <PhoneIcon width={15} height={15} className="text-gold" />
         </a>

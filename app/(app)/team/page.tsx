@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getUnitManagerTeam, getOrgLeague, getUnitManagerTargets, currentMonthDate, getStaleAfterDays } from "./data";
 import { TeamRoster } from "./team-roster";
 import { TeamLeague } from "./team-league";
+import { OrgChartToggle } from "./org-chart";
 
 export default async function TeamPage() {
   const profile = await getCurrentProfile();
@@ -27,14 +28,24 @@ export default async function TeamPage() {
     getStaleAfterDays(),
   ]);
   const isSuperadmin = profile.role === "superadmin";
+  const groupLabel = isSuperadmin ? "Whole organisation" : `Group ${profile.full_name}`;
+  const heading = isSuperadmin ? "Everyone, by who they report to" : "Your units and direct reports";
   return (
-    <TeamLeague
-      groupLabel={isSuperadmin ? "Whole organisation" : `Group ${profile.full_name}`}
-      heading={isSuperadmin ? "Everyone, by who they report to" : "Your units and direct reports"}
+    <OrgChartToggle
       roots={roots}
-      leads={leads}
-      activities={activities}
-      staleAfterDays={staleAfterDays}
+      currentUserId={profile.id}
+      groupLabel={groupLabel}
+      heading={heading}
+      table={
+        <TeamLeague
+          groupLabel={groupLabel}
+          heading={heading}
+          roots={roots}
+          leads={leads}
+          activities={activities}
+          staleAfterDays={staleAfterDays}
+        />
+      }
     />
   );
 }

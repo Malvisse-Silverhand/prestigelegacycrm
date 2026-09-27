@@ -112,7 +112,7 @@ export function LeadGenerationView({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-3.5">
           <Stat label="Live landing pages" value={String(stats.published)} />
           <Stat label="Views" value={stats.views.toLocaleString("en-MY")} />
           <Stat label="Leads captured" value={String(stats.leads)} tone="text-green" />
@@ -126,16 +126,16 @@ export function LeadGenerationView({
             description="Create one, share the link, and every lead it captures is assigned straight to you."
           />
         ) : (
-          <div className="rounded-[18px] border border-sand bg-white px-[22px] py-5">
+          <div className="rounded-[14px] border border-sand bg-white px-3.5 py-4 lg:rounded-[18px] lg:px-[22px] lg:py-5">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex-1 text-[15.5px] font-bold text-navy">Your landing pages</div>
+              <div className="flex-1 text-[14px] font-bold text-navy lg:text-[15.5px]">Your landing pages</div>
               <div className="flex rounded-[10px] border border-sand-2 bg-cream p-[3px]">
                 {(["all", "published", "draft"] as const).map((f) => (
                   <button
                     key={f}
                     type="button"
                     onClick={() => setFilter(f)}
-                    className={`rounded-[7px] px-3.5 py-1.5 text-[12px] font-bold ${
+                    className={`rounded-[7px] px-3 py-1.5 text-[11.5px] font-bold lg:px-3.5 lg:text-[12px] ${
                       filter === f ? "bg-navy text-white" : "font-medium text-taupe"
                     }`}
                   >
@@ -152,44 +152,48 @@ export function LeadGenerationView({
                 </p>
               )}
               {shown.map((p) => (
-                <div key={p.id} className="rounded-[14px] border border-sand-2 bg-cream px-4 py-4">
+                <div key={p.id} className="rounded-[12px] border border-sand-2 bg-cream px-3.5 py-3.5 lg:rounded-[14px] lg:px-4 lg:py-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[14.5px] font-bold text-navy">{p.name}</span>
-                        <span className={`rounded-[6px] px-2 py-[3px] text-[9.5px] font-bold ${PRODUCT_TONE[p.product]}`}>
+                      <div className="flex flex-wrap items-center gap-1.5 lg:gap-2">
+                        <span className="truncate text-[13.5px] font-bold text-navy lg:text-[14.5px]">{p.name}</span>
+                        <span
+                          className={`shrink-0 rounded-[6px] px-1.5 py-[2px] text-[9px] font-bold lg:px-2 lg:py-[3px] lg:text-[9.5px] ${PRODUCT_TONE[p.product]}`}
+                        >
                           {PRODUCT_LABEL[p.product].toUpperCase()}
                         </span>
                         <span
-                          className={`rounded-[6px] px-2 py-[3px] text-[9.5px] font-bold ${
+                          className={`shrink-0 rounded-[6px] px-1.5 py-[2px] text-[9px] font-bold lg:px-2 lg:py-[3px] lg:text-[9.5px] ${
                             p.isPublished ? "bg-success-bg text-green" : "bg-sand-3 text-taupe-2"
                           }`}
                         >
                           {p.isPublished ? "LIVE" : "DRAFT"}
                         </span>
                       </div>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11.5px] font-medium text-muted">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 lg:gap-2">
+                        <span className="min-w-0 break-all font-mono text-[10.5px] font-medium text-muted lg:text-[11.5px]">
                           {landingPath(p.agentSlug, p.slug)}
                         </span>
                         <button
                           type="button"
                           onClick={() => copy(p.agentSlug, p.slug)}
-                          className="rounded-[7px] border border-sand-2 bg-white px-2 py-[3px] text-[10.5px] font-semibold text-navy"
+                          className="shrink-0 rounded-[7px] border border-sand-2 bg-white px-2 py-[3px] text-[10px] font-semibold text-navy lg:text-[10.5px]"
                         >
                           {copied === p.slug ? "Copied" : "Copy"}
                         </button>
-                        <span className="text-[11px] font-medium text-taupe">· {p.agentName}</span>
+                        <span className="text-[10.5px] font-medium text-taupe lg:text-[11px]">· {p.agentName}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-none flex-wrap items-center gap-5">
-                      <Metric label="Views" value={p.viewCount} />
-                      <Metric label="Leads" value={p.leadCount} tone="text-green" />
-                      <div className="flex gap-1.5">
+                    <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-sand-2 pt-3 lg:w-auto lg:flex-none lg:justify-end lg:gap-5 lg:border-t-0 lg:pt-0">
+                      <div className="flex items-center gap-4 lg:gap-5">
+                        <Metric label="Views" value={p.viewCount} />
+                        <Metric label="Leads" value={p.leadCount} tone="text-green" />
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
                         <Link
                           href={`/lead-generation/${p.id}`}
-                          className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy"
+                          className="rounded-[9px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy lg:px-3 lg:py-2 lg:text-[12px]"
                         >
                           Edit
                         </Link>
@@ -198,7 +202,7 @@ export function LeadGenerationView({
                             href={landingPath(p.agentSlug, p.slug)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy"
+                            className="rounded-[9px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy lg:px-3 lg:py-2 lg:text-[12px]"
                           >
                             Open
                           </a>
@@ -207,7 +211,7 @@ export function LeadGenerationView({
                           type="button"
                           disabled={pending}
                           onClick={() => run(() => setLandingPublished(p.id, !p.isPublished))}
-                          className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy disabled:opacity-60"
+                          className="rounded-[9px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy disabled:opacity-60 lg:px-3 lg:py-2 lg:text-[12px]"
                         >
                           {p.isPublished ? "Unpublish" : "Publish"}
                         </button>
@@ -215,7 +219,7 @@ export function LeadGenerationView({
                           type="button"
                           disabled={pending}
                           onClick={() => setConfirmDelete(p)}
-                          className="rounded-[9px] border border-[#f6d5cf] bg-white px-3 py-2 text-[12px] font-semibold text-alert-red disabled:opacity-60"
+                          className="rounded-[9px] border border-[#f6d5cf] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-alert-red disabled:opacity-60 lg:px-3 lg:py-2 lg:text-[12px]"
                         >
                           Delete
                         </button>
@@ -363,9 +367,11 @@ export function LeadGenerationView({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-[18px] border border-sand bg-white px-[19px] py-[17px]">
-      <div className="text-[11.5px] font-semibold text-muted">{label}</div>
-      <div className={`mt-[7px] text-[28px] font-extrabold tracking-[-0.03em] ${tone ?? "text-navy"}`}>{value}</div>
+    <div className="rounded-[14px] border border-sand bg-white px-3 py-2.5 lg:rounded-[18px] lg:px-[19px] lg:py-[17px]">
+      <div className="text-[10px] font-semibold text-muted lg:text-[11.5px]">{label}</div>
+      <div className={`mt-1 text-[19px] font-extrabold tracking-[-0.03em] lg:mt-[7px] lg:text-[28px] ${tone ?? "text-navy"}`}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -373,8 +379,8 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 function Metric({ label, value, tone }: { label: string; value: number; tone?: string }) {
   return (
     <div className="text-right">
-      <div className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-taupe">{label}</div>
-      <div className={`mt-0.5 text-[17px] font-bold ${tone ?? "text-navy"}`}>{value}</div>
+      <div className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-taupe lg:text-[10.5px]">{label}</div>
+      <div className={`mt-0.5 text-[15px] font-bold lg:text-[17px] ${tone ?? "text-navy"}`}>{value}</div>
     </div>
   );
 }

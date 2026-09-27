@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BellIcon } from "@/components/icons";
+import { BellIcon, AlertIcon, ClockIcon } from "@/components/icons";
 import {
   getNotifications,
   markNotificationsRead,
@@ -15,6 +15,47 @@ import {
 // polling is all that stands between a due row and the agent seeing it.
 const POLL_MS = 60_000;
 const PUSH_PREF_KEY = "plc.push-notifications";
+
+// Small, local to this file, same reasoning components/birthday-card.tsx
+// gives for keeping its own copy: one icon doesn't earn an edit to the
+// shared components/icons.tsx.
+function CakeIcon({ className }: { className?: string }) {
+  return (
+    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 20h16v-6a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3z" />
+      <path d="M4 15c1.6 1.4 3.1 1.4 4.6 0s3-1.4 4.6 0 3.1 1.4 4.6 0" />
+      <path d="M12 8V5M8.5 8V6M15.5 8V6" />
+    </svg>
+  );
+}
+
+// A small badge for the kinds computed live (birthday, contribution due /
+// overdue) -- the original appointment_reminder kind, and anything else not
+// listed here, keeps the plain dot-only look it always had.
+function kindBadge(kind: string) {
+  switch (kind) {
+    case "birthday":
+      return (
+        <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-warn-gold-bg text-warn-gold-text dark:bg-gold/[.16]">
+          <CakeIcon />
+        </span>
+      );
+    case "contribution_due":
+      return (
+        <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-info-blue-bg text-info-blue-text dark:bg-white/10">
+          <ClockIcon width={11} height={11} />
+        </span>
+      );
+    case "contribution_overdue":
+      return (
+        <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-alert-red-bg text-alert-red dark:bg-alert-red/20">
+          <AlertIcon width={11} height={11} />
+        </span>
+      );
+    default:
+      return null;
+  }
+}
 
 function timeAgo(iso: string) {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -64,7 +105,12 @@ export function NotificationBell({
   const pushed = useRef<Set<string>>(new Set(initial.map((n) => n.id)));
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const unread = items.filter((n) => !n.readAt);
+  // Synthetic rows (birthdays, contribution due/overdue) have no stored row
+  // to ever mark read, so they'd stay "unread" forever and inflate this
+  // count without bound -- they're informational and clear themselves once
+  // the condition that produced them goes away, so they're left out of the
+  // badge rather than counted.
+  const unread = items.filter((n) => !n.readAt && !n.synthetic);
 
   const refresh = useCallback(async () => {
     try {
@@ -161,7 +207,9 @@ export function NotificationBell({
 
   async function handleItemClick(n: NotificationRow) {
     setOpen(false);
-    if (!n.readAt) {
+    // Synthetic rows have no row in `notifications` to update -- skip the
+    // mark-read call entirely rather than send an id the table doesn't have.
+    if (!n.readAt && !n.synthetic) {
       setItems((prev) => prev.map((r) => (r.id === n.id ? { ...r, readAt: new Date().toISOString() } : r)));
       await markNotificationsRead([n.id]);
     }
@@ -170,7 +218,7 @@ export function NotificationBell({
 
   async function handleMarkAll() {
     const now = new Date().toISOString();
-    setItems((prev) => prev.map((r) => (r.readAt ? r : { ...r, readAt: now })));
+    setItems((prev) => prev.map((r) => (r.synthetic || r.readAt ? r : { ...r, readAt: now })));
     await markAllNotificationsRead();
   }
 
@@ -231,11 +279,13 @@ export function NotificationBell({
                     n.readAt ? "" : "bg-warn-gold-bg/40 dark:bg-gold/[.07]"
                   }`}
                 >
-                  <span
-                    className={`mt-[5px] h-[7px] w-[7px] flex-none rounded-full ${
-                      n.readAt ? "bg-sand-2 dark:bg-white/15" : "bg-gold"
-                    }`}
-                  />
+                  {kindBadge(n.kind) ?? (
+                    <span
+                      className={`mt-[5px] h-[7px] w-[7px] flex-none rounded-full ${
+                        n.readAt ? "bg-sand-2 dark:bg-white/15" : "bg-gold"
+                      }`}
+                    />
+                  )}
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">{n.title}</span>
                     {n.body && (
@@ -243,9 +293,16 @@ export function NotificationBell({
                         {n.body}
                       </span>
                     )}
-                    <span className="mt-1 block text-[10.5px] font-medium text-taupe dark:text-[#7f93aa]">
-                      {timeAgo(n.fireAt)}
-                    </span>
+                    {/* A synthetic birthday/due-soon row's fireAt is "now" --
+                        there's no elapsed time worth reporting for those,
+                        the countdown already lives in the body above. An
+                        overdue row's fireAt is its due date, so "Xd ago"
+                        still reads as "overdue by". */}
+                    {n.kind !== "birthday" && n.kind !== "contribution_due" && (
+                      <span className="mt-1 block text-[10.5px] font-medium text-taupe dark:text-[#7f93aa]">
+                        {timeAgo(n.fireAt)}
+                      </span>
+                    )}
                   </span>
                 </button>
               ))
