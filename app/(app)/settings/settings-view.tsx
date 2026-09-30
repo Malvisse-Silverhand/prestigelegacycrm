@@ -71,7 +71,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   Benefits: "The benefits agents can pick when submitting a case",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
   "Tracking Code": "Meta and TikTok pixels on your landing pages",
-  Branding: "The insurer logo and header cover shown on every Agent Landing Page",
+  Branding: "System colour, plus the insurer logo and header cover on Agent Landing Pages",
   "Audit Log": "Every sensitive action, and who took it",
 };
 
@@ -92,6 +92,7 @@ export function SettingsView({
   trackablePages,
   brandLogoUrl,
   brandCoverUrl,
+  brandPrimary,
   benefits,
   currentUserId,
   myProfile,
@@ -112,6 +113,7 @@ export function SettingsView({
   trackablePages: TrackablePage[];
   brandLogoUrl: string | null;
   brandCoverUrl: string | null;
+  brandPrimary: string | null;
   benefits: BenefitOption[];
   currentUserId: string;
   myProfile: MyProfileDetails;
@@ -202,7 +204,7 @@ export function SettingsView({
                       aria-current={active ? "page" : undefined}
                       className={`flex flex-none items-center gap-2 whitespace-nowrap rounded-[10px] px-[11px] py-2 text-left text-[13px] transition-colors lg:w-full ${
                         active
-                          ? "bg-navy font-bold text-white"
+                          ? "bg-brand font-bold text-white"
                           : "font-semibold text-muted hover:bg-cream hover:text-navy"
                       }`}
                     >
@@ -256,7 +258,7 @@ export function SettingsView({
             <TrackingCodeTab initial={trackingCode} pages={trackablePages} />
           )}
           {tab === "Branding" && role === "superadmin" && (
-            <BrandingTab initial={brandLogoUrl} initialCover={brandCoverUrl} />
+            <BrandingTab initial={brandLogoUrl} initialCover={brandCoverUrl} initialBrand={brandPrimary} />
           )}
           {tab === "Audit Log" && role === "superadmin" && <AuditLogTab entries={auditLog ?? []} />}
         </div>

@@ -149,7 +149,7 @@ export function PortalLinkCard({ submission }: { submission: CaseSubmission }) {
             type="button"
             disabled={pending}
             onClick={() => run(() => issuePortalLink(submission.id))}
-            className="press mt-3 inline-flex min-h-10 items-center gap-2 rounded-[10px] bg-navy px-4 text-[12.5px] font-bold text-white disabled:opacity-60"
+            className="press mt-3 inline-flex min-h-10 items-center gap-2 rounded-[10px] bg-brand px-4 text-[12.5px] font-bold text-white disabled:opacity-60"
           >
             {pending ? "Creating…" : "Create portal link"}
           </button>

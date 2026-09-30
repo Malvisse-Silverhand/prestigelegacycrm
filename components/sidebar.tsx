@@ -21,7 +21,15 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
   const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
 
   return (
-    <div className="hidden w-[226px] flex-none flex-col bg-navy py-[22px] lg:flex">
+    // Pinned to the viewport on desktop (sticky + one screen tall + self-start)
+    // instead of stretching to the full height of whatever page is beside it.
+    // Before this, the sidebar was as tall as the longest page, so the
+    // Training link, profile card and Sign Out sat hundreds of pixels below
+    // the fold on a long page like the Dashboard. Now the whole column --
+    // logo, nav, Training, profile, Sign Out -- stays on screen while the
+    // page scrolls, and only the nav list itself scrolls if the window is
+    // too short to fit it.
+    <div className="hidden w-[226px] flex-none flex-col bg-brand py-[22px] lg:sticky lg:top-0 lg:flex lg:h-dvh lg:self-start">
       <div className="flex items-center gap-[10px] px-[18px] pb-5">
         <Image
           src="/logo.jpeg"
@@ -33,7 +41,7 @@ export function Sidebar({ profile }: { profile: CurrentProfile }) {
         <div className="text-[14px] font-bold text-white">Prestige Legacy</div>
       </div>
 
-      <nav className="flex flex-col gap-0.5 px-3 text-[13px]">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 text-[13px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((item) => {
           const inSection = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;

@@ -72,7 +72,7 @@ export default async function DashboardPage({
           <span className="flex-1 text-[13px] font-bold text-warn-gold-text">
             Monitor mode — you are viewing {monitorTarget.full_name}&apos;s dashboard ({ROLE_LABEL[monitorTarget.role]}, read only)
           </span>
-          <Link href="/dashboard" className="rounded-[9px] bg-navy px-3.5 py-2 text-xs font-semibold text-white">
+          <Link href="/dashboard" className="rounded-[9px] bg-brand px-3.5 py-2 text-xs font-semibold text-white">
             Exit monitor mode
           </Link>
         </div>

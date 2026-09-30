@@ -87,7 +87,7 @@ export function InterestDropdown({ lead }: { lead: LeadDetail }) {
                       onClick={() => handleSelect(option)}
                       className={
                         selected
-                          ? "flex items-center gap-2 rounded-lg bg-navy px-[9px] py-2 text-left text-[12.5px] font-semibold text-white"
+                          ? "flex items-center gap-2 rounded-lg bg-brand px-[9px] py-2 text-left text-[12.5px] font-semibold text-white"
                           : "flex items-center gap-2 rounded-lg py-2 pr-[9px] pl-[30px] text-left text-[12.5px] font-medium text-ink"
                       }
                     >

@@ -157,7 +157,7 @@ export function AppointmentDialog({
           <button
             type="submit"
             disabled={pending || noLeads}
-            className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-bold text-white disabled:opacity-50 dark:bg-gold dark:text-navy"
+            className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white disabled:opacity-50 dark:bg-gold dark:text-navy"
           >
             {pending ? "Saving…" : "Save Appointment"}
           </button>

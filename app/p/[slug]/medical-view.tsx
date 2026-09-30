@@ -39,7 +39,7 @@ export function MedicalLandingView({ page }: { page: PublicLandingPage }) {
   return (
     <div className="min-h-dvh bg-cream text-navy">
       {/* NAV */}
-      <div className="sticky top-0 z-20 flex items-center gap-3 bg-navy px-5 py-3 lg:px-20">
+      <div className="sticky top-0 z-20 flex items-center gap-3 bg-brand px-5 py-3 lg:px-20">
         <div className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-gold">
           <Image src="/logo.jpeg" alt="" width={32} height={32} className="h-8 w-8 rounded-[10px] object-cover" />
         </div>
@@ -56,7 +56,7 @@ export function MedicalLandingView({ page }: { page: PublicLandingPage }) {
       </div>
 
       {/* HERO */}
-      <div className="bg-navy px-5 pb-12 pt-8 lg:px-20 lg:pb-16 lg:pt-14">
+      <div className="bg-brand px-5 pb-12 pt-8 lg:px-20 lg:pb-16 lg:pt-14">
         <div className="mx-auto max-w-[1100px] text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-gold/[.14] px-3 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -175,7 +175,7 @@ export function MedicalLandingView({ page }: { page: PublicLandingPage }) {
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {content.whyPoints.map((p, i) => (
             <div key={i} className="rounded-card border border-sand bg-white p-5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-navy text-[13px] font-bold text-gold">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-brand text-[13px] font-bold text-gold">
                 {String(i + 1).padStart(2, "0")}
               </div>
               <div className="mt-3.5 text-[14.5px] font-bold tracking-[-0.01em] text-navy">{p.title}</div>
@@ -290,7 +290,7 @@ export function MedicalLandingView({ page }: { page: PublicLandingPage }) {
                     type="button"
                     onClick={() => setActive(t.key)}
                     className={`rounded-[10px] px-5 py-3 text-[13.5px] font-bold transition-colors ${
-                      active === t.key ? "bg-navy text-white" : "text-taupe hover:text-navy"
+                      active === t.key ? "bg-brand text-white" : "text-taupe hover:text-navy"
                     }`}
                   >
                     {t.label}
@@ -330,7 +330,7 @@ export function MedicalLandingView({ page }: { page: PublicLandingPage }) {
       </div>
 
       {/* FOOTER */}
-      <div className="bg-navy px-5 py-8 text-center lg:px-20">
+      <div className="bg-brand px-5 py-8 text-center lg:px-20">
         <div className="text-[13px] font-bold text-white">{advisorName}</div>
         <div className="mt-1 text-[11.5px] font-medium text-white/45">
           {content.advisorTitle} · Prestige Legacy
@@ -352,7 +352,7 @@ function Band({
   children: React.ReactNode;
   tone?: "cream" | "white" | "navy";
 }) {
-  const bg = tone === "white" ? "bg-white" : tone === "navy" ? "bg-navy" : "bg-cream";
+  const bg = tone === "white" ? "bg-white" : tone === "navy" ? "bg-brand" : "bg-cream";
   return (
     <div className={`${bg} px-5 py-12 lg:px-20 lg:py-16`}>
       <div className="mx-auto max-w-[1100px]">{children}</div>

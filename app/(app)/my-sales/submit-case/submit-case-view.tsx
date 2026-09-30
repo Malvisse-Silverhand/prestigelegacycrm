@@ -193,7 +193,7 @@ export function SubmitCaseView({
             onClick={() => setMenuOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
-            className="press flex items-center gap-2 rounded-[11px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white"
+            className="press flex items-center gap-2 rounded-[11px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white"
           >
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth={2.4} strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
@@ -247,7 +247,7 @@ export function SubmitCaseView({
                 type="checkbox"
                 checked={onlyReady}
                 onChange={(e) => setOnlyReady(e.target.checked)}
-                className="h-[15px] w-[15px] accent-[#0f2540]"
+                className="h-[15px] w-[15px] accent-brand"
               />
               Only leads I can file
             </label>
@@ -299,7 +299,7 @@ export function SubmitCaseView({
                       <button
                         type="button"
                         onClick={() => openCaseFor(l)}
-                        className="flex-none rounded-[9px] bg-navy px-3 py-2 text-[11.5px] font-semibold text-white"
+                        className="flex-none rounded-[9px] bg-brand px-3 py-2 text-[11.5px] font-semibold text-white"
                       >
                         Submit case
                       </button>
@@ -350,7 +350,7 @@ export function SubmitCaseView({
                 type="button"
                 onClick={() => setStatusFilter(f.value)}
                 className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
-                  statusFilter === f.value ? "bg-navy text-white" : "border border-sand-2 bg-white text-navy"
+                  statusFilter === f.value ? "bg-brand text-white" : "border border-sand-2 bg-white text-navy"
                 }`}
               >
                 {f.label}
@@ -480,7 +480,7 @@ export function SubmitCaseView({
                           key={l.id}
                           type="button"
                           onClick={() => { setPicking(false); openCaseFor(l); }}
-                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
+                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-brand"
                         >
                           <LeadNo no={l.leadNo} />
                           <span className="min-w-0 flex-1">
@@ -504,7 +504,7 @@ export function SubmitCaseView({
                           key={l.id}
                           type="button"
                           onClick={() => { setPicking(false); openCaseFor(l); }}
-                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy"
+                          className="flex items-center gap-2.5 rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-brand"
                         >
                           <LeadNo no={l.leadNo} />
                           <span className="min-w-0 flex-1">
@@ -553,7 +553,7 @@ export function SubmitCaseView({
                 <button
                   type="submit"
                   disabled={freshPending}
-                  className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                  className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
                 >
                   {freshPending ? "Saving…" : "Save and continue"}
                 </button>

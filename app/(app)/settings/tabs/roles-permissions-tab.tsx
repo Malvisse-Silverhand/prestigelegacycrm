@@ -2,7 +2,7 @@ const ROLES = [
   {
     tier: 1,
     name: "SuperAdmin",
-    bg: "bg-navy",
+    bg: "bg-brand",
     text: "text-white",
     sub: "text-white/60",
     description:

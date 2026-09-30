@@ -127,7 +127,7 @@ export function ImageUploadField({
             {pending ? (
               <span className="inline-flex items-center gap-1.5">
                 <span
-                  className="h-3 w-3 animate-spin rounded-full border-2 border-navy/40 border-t-navy"
+                  className="h-3 w-3 animate-spin rounded-full border-2 border-brand/40 border-t-navy"
                   aria-hidden="true"
                 />
                 Uploading…

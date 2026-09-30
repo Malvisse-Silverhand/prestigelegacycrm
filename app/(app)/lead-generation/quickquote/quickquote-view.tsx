@@ -259,7 +259,7 @@ export function QuickQuoteView({
                     router.refresh();
                   })
                 }
-                className="press rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="press rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {pending ? "Creating…" : "Create"}
               </button>

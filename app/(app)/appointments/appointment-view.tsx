@@ -55,7 +55,7 @@ function stillToCome(list: AppointmentRow[]) {
 }
 
 const STATUS_TONE: Record<string, string> = {
-  scheduled: "bg-navy text-white",
+  scheduled: "bg-brand text-white",
   completed: "bg-success-bg text-green",
   cancelled: "bg-sand-2 text-taupe-2 line-through",
 };
@@ -208,7 +208,7 @@ export function AppointmentView({
         </div>
         <Link
           href="/pipeline"
-          className="flex-none rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-bold text-navy hover:border-navy dark:border-white/10 dark:bg-[#0b1a2b] dark:text-[#eef3f8]"
+          className="flex-none rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-bold text-navy hover:border-brand dark:border-white/10 dark:bg-[#0b1a2b] dark:text-[#eef3f8]"
         >
           Open Tracker
         </Link>
@@ -238,7 +238,7 @@ export function AppointmentView({
                 onClick={() => setView(v)}
                 className={`rounded-[6px] px-3 py-1.5 text-[11.5px] font-bold capitalize ${
                   view === v
-                    ? "bg-navy text-white dark:bg-gold dark:text-navy"
+                    ? "bg-brand text-white dark:bg-gold dark:text-navy"
                     : "text-taupe dark:text-[#7f93aa]"
                 }`}
               >
@@ -263,7 +263,7 @@ export function AppointmentView({
             <button
               type="button"
               onClick={() => setAnchor(new Date())}
-              className="rounded-full border border-sand-2 px-2 py-[2px] text-[9.5px] font-bold text-taupe hover:border-navy hover:text-navy dark:border-white/10 dark:text-[#7f93aa]"
+              className="rounded-full border border-sand-2 px-2 py-[2px] text-[9.5px] font-bold text-taupe hover:border-brand hover:text-navy dark:border-white/10 dark:text-[#7f93aa]"
             >
               TODAY
             </button>
@@ -305,7 +305,7 @@ export function AppointmentView({
                     key={a.id}
                     type="button"
                     onClick={() => setDetail(a)}
-                    className="rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-navy dark:border-white/10 dark:bg-[#0b1a2b]"
+                    className="rounded-[11px] border border-sand-2 bg-cream px-3 py-2.5 text-left hover:border-brand dark:border-white/10 dark:bg-[#0b1a2b]"
                   >
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-[12.5px] font-bold text-navy dark:text-[#eef3f8]">
@@ -611,7 +611,7 @@ function DetailDialog({
               type="button"
               disabled={busy}
               onClick={() => run(() => setAppointmentStatus(appointment.id, "completed"))}
-              className="rounded-[9px] bg-navy px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-60 dark:bg-gold dark:text-navy"
+              className="rounded-[9px] bg-brand px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-60 dark:bg-gold dark:text-navy"
             >
               Mark done
             </button>

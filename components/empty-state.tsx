@@ -48,7 +48,7 @@ export function EmptyState({
               className={
                 a.variant === "outline"
                   ? "rounded-[11px] border border-sand-2 bg-white px-5 py-3 text-[13px] font-semibold text-navy"
-                  : "rounded-[11px] bg-navy px-5 py-3 text-[13px] font-semibold text-white"
+                  : "rounded-[11px] bg-brand px-5 py-3 text-[13px] font-semibold text-white"
               }
             >
               {a.label}

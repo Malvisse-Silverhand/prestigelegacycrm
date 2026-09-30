@@ -221,7 +221,7 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
                 type="button"
                 onClick={handleFetchPreview}
                 disabled={pending || !url.trim()}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
               >
                 {pending ? "Fetching…" : "Fetch preview"}
               </button>
@@ -236,14 +236,14 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
                 type="button"
                 onClick={handleConfirm}
                 disabled={pending || !mapping.full_name || !mapping.phone}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
               >
                 {pending ? "Importing…" : "Import leads"}
               </button>
             </>
           )}
           {step === "summary" && (
-            <button type="button" onClick={handleClose} className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white">
+            <button type="button" onClick={handleClose} className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white">
               Done
             </button>
           )}

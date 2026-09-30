@@ -125,7 +125,7 @@ export function WelcomeFlourish({ firstName }: { firstName: string }) {
       />
 
       <div
-        className={`relative w-full max-w-[300px] overflow-hidden rounded-[20px] bg-navy p-5 text-center shadow-[0_24px_60px_-16px_rgba(15,37,64,.65)] transition-all ease-[cubic-bezier(.22,1,.36,1)] ${
+        className={`relative w-full max-w-[300px] overflow-hidden rounded-[20px] bg-brand p-5 text-center shadow-[0_24px_60px_-16px_rgba(15,37,64,.65)] transition-all ease-[cubic-bezier(.22,1,.36,1)] ${
           shown ? "translate-y-0 scale-100 opacity-100" : "-translate-y-4 scale-[.92] opacity-0"
         }`}
         style={{ transitionDuration: `${shown ? ENTER_MS : EXIT_MS}ms` }}

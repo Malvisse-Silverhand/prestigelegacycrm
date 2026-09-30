@@ -155,7 +155,7 @@ export function TrackingCodeTab({
             type="button"
             onClick={save}
             disabled={pending || !dirty}
-            className="rounded-[11px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+            className="rounded-[11px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
           >
             {pending ? "Saving…" : "Save tracking code"}
           </button>
@@ -188,7 +188,7 @@ export function TrackingCodeTab({
             type="button"
             onClick={runTest}
             disabled={testing || pages.length === 0}
-            className="flex-none rounded-[11px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+            className="flex-none rounded-[11px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
           >
             {testing ? "Testing…" : "Run test"}
           </button>

@@ -136,7 +136,7 @@ export function LeadGenerationView({
                     type="button"
                     onClick={() => setFilter(f)}
                     className={`rounded-[7px] px-3 py-1.5 text-[11.5px] font-bold lg:px-3.5 lg:text-[12px] ${
-                      filter === f ? "bg-navy text-white" : "font-medium text-taupe"
+                      filter === f ? "bg-brand text-white" : "font-medium text-taupe"
                     }`}
                   >
                     {f === "all" ? "All" : f === "published" ? "Live" : "Draft"}
@@ -328,7 +328,7 @@ export function LeadGenerationView({
                     if (result.id) router.push(`/lead-generation/${result.id}`);
                   })
                 }
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {pending ? "Creating…" : "Create & Edit"}
               </button>

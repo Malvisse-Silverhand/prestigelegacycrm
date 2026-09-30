@@ -87,7 +87,7 @@ export function SetTargetPanel({ monthDate, initialTargets }: { monthDate: strin
         type="button"
         onClick={handleSave}
         disabled={pending}
-        className="mt-4 flex h-10 w-full items-center justify-center rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
+        className="mt-4 flex h-10 w-full items-center justify-center rounded-[11px] bg-brand text-[13px] font-semibold text-white disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save targets"}
       </button>

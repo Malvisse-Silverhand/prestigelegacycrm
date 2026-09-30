@@ -62,7 +62,7 @@ export function LeadCaseTab({
         <div className="flex gap-2">
           <Link
             href="/my-sales/submit-case"
-            className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy hover:border-navy"
+            className="rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[12px] font-semibold text-navy hover:border-brand"
           >
             Manage Cases
           </Link>
@@ -138,7 +138,7 @@ export function LockedCaseTab() {
       </div>
       <Link
         href="/pipeline"
-        className="mt-3.5 inline-flex rounded-[9px] border border-sand-2 bg-cream px-3.5 py-2 text-[12px] font-semibold text-navy hover:border-navy"
+        className="mt-3.5 inline-flex rounded-[9px] border border-sand-2 bg-cream px-3.5 py-2 text-[12px] font-semibold text-navy hover:border-brand"
       >
         Open Sales Pipeline
       </Link>

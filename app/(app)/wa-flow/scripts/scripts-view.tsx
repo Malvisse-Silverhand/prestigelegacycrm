@@ -23,7 +23,7 @@ function CopyButton({ text }: { text: string }) {
           setCopied(false);
         }
       }}
-      className="press rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+      className="press rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
     >
       {copied ? "Copied" : "Copy script"}
     </button>
@@ -266,7 +266,7 @@ export function ScriptsView({
                           <button
                             type="button"
                             onClick={() => setEditing(s)}
-                            className="press rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+                            className="press rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
                           >
                             Edit
                           </button>
@@ -325,7 +325,7 @@ function ChapterRow({
   onToggleExpand?: () => void;
 }) {
   return (
-    <div className={`flex items-stretch gap-0.5 rounded-[10px] ${active ? "bg-navy" : "hover:bg-cream"}`}>
+    <div className={`flex items-stretch gap-0.5 rounded-[10px] ${active ? "bg-brand" : "hover:bg-cream"}`}>
       <button
         type="button"
         onClick={onClick}
@@ -380,7 +380,7 @@ function MobileChapterOption({
       type="button"
       onClick={onClick}
       className={`press flex w-full items-start gap-2 rounded-[9px] px-3 py-2.5 text-left text-[13px] ${
-        active ? "bg-navy font-bold text-white" : "font-semibold text-navy"
+        active ? "bg-brand font-bold text-white" : "font-semibold text-navy"
       }`}
     >
       {no && (
@@ -532,7 +532,7 @@ function EditScriptModal({
               type="button"
               onClick={save}
               disabled={pending}
-              className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+              className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
             >
               {pending ? "Saving…" : "Save script"}
             </button>

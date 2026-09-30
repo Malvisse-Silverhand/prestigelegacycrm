@@ -52,7 +52,7 @@ function NodeCard({
     >
       <div
         className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-bold ${
-          placeholder ? "bg-cream text-taupe" : "bg-navy text-gold"
+          placeholder ? "bg-cream text-taupe" : "bg-brand text-gold"
         }`}
       >
         {placeholder ? "—" : initialsOf(name, initials)}
@@ -170,7 +170,7 @@ export function OrgChartToggle({
           type="button"
           onClick={() => setView("table")}
           className={`rounded-[9px] px-3.5 py-2 text-[12.5px] font-semibold ${
-            view === "table" ? "bg-navy text-white" : "border border-sand-2 bg-cream text-navy"
+            view === "table" ? "bg-brand text-white" : "border border-sand-2 bg-cream text-navy"
           }`}
         >
           Table
@@ -179,7 +179,7 @@ export function OrgChartToggle({
           type="button"
           onClick={() => setView("chart")}
           className={`rounded-[9px] px-3.5 py-2 text-[12.5px] font-semibold ${
-            view === "chart" ? "bg-navy text-white" : "border border-sand-2 bg-cream text-navy"
+            view === "chart" ? "bg-brand text-white" : "border border-sand-2 bg-cream text-navy"
           }`}
         >
           Org Chart

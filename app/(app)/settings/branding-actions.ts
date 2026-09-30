@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { DEFAULT_BRAND, isHexColor, normalizeHex, readableWithWhite } from "@/lib/brand-theme";
 
 // --- My Profile: landing page images --------------------------------------
 //
@@ -180,5 +181,62 @@ export async function saveBrandCover(url: string) {
   if (auditError) console.error("saveBrandCover: audit_log insert failed", auditError);
 
   revalidatePath("/settings");
+  return { error: null };
+}
+
+// --- Site Branding: the system-wide colour ----------------------------------
+//
+// SuperAdmin only, checked here as well as in RLS, same as the logo and cover.
+// The value ends up inside a CSS custom property that app/layout.tsx writes
+// into a <style> tag on every page, so it is validated as strictly as
+// anything in this file: exactly "#" plus six hex digits (isHexColor), then
+// stored lower-cased. Nothing else is accepted, which is what keeps the CSS
+// it lands in from ever being anything but a colour. The database has the
+// same check as a second wall (site_settings_brand_primary_hex).
+//
+// A colour too light for the white text that sits on it (the sidebar, the
+// dark cards, the primary buttons) is refused too, rather than saved and left
+// for every agent to squint at.
+export async function saveBrandPrimary(hex: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "superadmin") return { error: "Not allowed." };
+
+  if (typeof hex !== "string") return { error: "Choose a colour in the form #rrggbb." };
+  const value = hex.trim();
+  if (!isHexColor(value)) return { error: "Choose a colour in the form #rrggbb." };
+  const normalized = normalizeHex(value);
+  if (!readableWithWhite(normalized)) {
+    return { error: "That colour is too light -- white text on it would be hard to read. Pick a darker one." };
+  }
+
+  // Prestige Blue is the built-in default, so choosing it clears the setting
+  // rather than storing a value that matches what the stylesheet already says.
+  const stored = normalized === DEFAULT_BRAND ? null : normalized;
+
+  const admin = createAdminClient();
+  // .select("id") so a missing settings row (zero rows updated, which is not
+  // an error to Postgres) is reported instead of showing "Saved".
+  const { data: updated, error } = await admin
+    .from("site_settings")
+    .update({ brand_primary: stored, updated_at: new Date().toISOString(), updated_by: profile.id })
+    .eq("id", true)
+    .select("id");
+
+  if (error) {
+    if (error.code === "42703") return { error: "Run the latest database migration first." };
+    Sentry.captureException(error, { tags: { action: "saveBrandPrimary" } });
+    return { error: "Couldn't save the colour. Please try again." };
+  }
+  if (!updated || updated.length === 0) return { error: "Couldn't save the colour -- the site settings row is missing." };
+
+  const { error: auditError } = await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "site_brand_primary",
+    metadata: { color: stored ?? DEFAULT_BRAND },
+  });
+  if (auditError) console.error("saveBrandPrimary: audit_log insert failed", auditError);
+
+  // Every page renders the colour from the root layout, so refresh them all.
+  revalidatePath("/", "layout");
   return { error: null };
 }

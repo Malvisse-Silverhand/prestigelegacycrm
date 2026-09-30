@@ -161,6 +161,15 @@ export function LeadDetailContent({
     });
   }
 
+  // The Simple (Medical Card only) customizer; same reopen contract.
+  function openSimpleCustomizer(quotationId?: string) {
+    const base = quoteLauncherUrl("quotation-customizer-simple.html", lead);
+    setQuoteTool({
+      url: quotationId ? `${base}&quotation_id=${quotationId}` : base,
+      title: `Quotation Customizer (Simple) — ${lead.full_name}`,
+    });
+  }
+
   // A saved quotation reopens in whichever tool produced it. Calculator
   // quotations go back to their own calculator, which re-renders the full
   // benefits breakdown from the lead's details -- the customizer could only
@@ -168,6 +177,12 @@ export function LeadDetailContent({
   // preview=1 makes that calculator auto-run, so this lands on the finished
   // quotation rather than on a form the agent has to submit again.
   function openQuotation(q: QuotationRow) {
+    // The simple customizer also sets __customizer (so it counts as an
+    // editable customizer quotation everywhere), so test its own flag first.
+    if ((q.raw_payload as { __simple_customizer?: boolean } | null)?.__simple_customizer) {
+      openSimpleCustomizer(q.id);
+      return;
+    }
     if (q.raw_payload?.__customizer) {
       openCustomizer(q.id);
       return;
@@ -279,7 +294,7 @@ export function LeadDetailContent({
 
   return (
     <div className="overflow-hidden rounded-[20px] bg-cream shadow-elevated">
-      <div className="flex items-start gap-4 bg-navy p-4 sm:p-[26px] text-white">
+      <div className="flex items-start gap-4 bg-brand p-4 sm:p-[26px] text-white">
         <div className="flex h-[50px] w-[50px] flex-none items-center justify-center rounded-[15px] bg-gold text-[17px] font-extrabold text-navy">
           {initials}
         </div>
@@ -315,7 +330,7 @@ export function LeadDetailContent({
       <div className="flex gap-2 border-b border-sand bg-white p-3 sm:p-4">
         <a
           href={`tel:${lead.phone}`}
-          className="flex h-11 flex-1 items-center justify-center gap-[7px] rounded-[11px] bg-navy text-[13px] font-semibold text-white"
+          className="flex h-11 flex-1 items-center justify-center gap-[7px] rounded-[11px] bg-brand text-[13px] font-semibold text-white"
         >
           <PhoneIcon width={15} height={15} className="text-gold" />
           Call
@@ -347,7 +362,7 @@ export function LeadDetailContent({
               type="button"
               onClick={() => setTab("details")}
               className={`flex-1 rounded-[9px] px-3 py-2 text-[12.5px] font-semibold ${
-                tab === "details" ? "bg-navy text-white" : "text-navy hover:bg-cream"
+                tab === "details" ? "bg-brand text-white" : "text-navy hover:bg-cream"
               }`}
             >
               Lead details
@@ -360,7 +375,7 @@ export function LeadDetailContent({
               title={caseTabUnlocked ? undefined : "Unlocks once this lead reaches the Submission stage"}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-[9px] px-3 py-2 text-[12.5px] font-semibold ${
                 tab === "case"
-                  ? "bg-navy text-white"
+                  ? "bg-brand text-white"
                   : caseTabUnlocked
                     ? "text-navy hover:bg-cream"
                     : "cursor-not-allowed text-taupe-2"
@@ -452,8 +467,16 @@ export function LeadDetailContent({
                 <QuotationIcon width={14} height={14} />
                 Open Quotation Customizer
               </button>
+              <button
+                type="button"
+                onClick={() => openSimpleCustomizer()}
+                className="mt-2 flex items-center gap-2 rounded-[10px] border border-[#f0dfb4] bg-warn-gold-bg px-3.5 py-2.5 text-[12.5px] font-semibold text-warn-gold-text"
+              >
+                <QuotationIcon width={14} height={14} />
+                Quotation Customizer (Simple)
+              </button>
               <p className="mt-1.5 text-[11px] font-medium text-taupe">
-                Build a side-by-side plan comparison. Saving stores it on this lead.
+                Build a side-by-side plan comparison. Saving stores it on this lead. The Simple version is a Medical Card comparison sheet.
               </p>
             </div>
           </div>
@@ -562,7 +585,7 @@ export function LeadDetailContent({
                 type="button"
                 onClick={handleAddNote}
                 disabled={pending || !note.trim()}
-                className="rounded-[9px] bg-navy px-4 py-2 text-[12.5px] font-semibold text-white disabled:opacity-50"
+                className="rounded-[9px] bg-brand px-4 py-2 text-[12.5px] font-semibold text-white disabled:opacity-50"
               >
                 Save
               </button>
@@ -607,7 +630,7 @@ export function LeadDetailContent({
               Lead Assigned
             </div>
             <div className="mt-2 flex items-center gap-[9px]">
-              <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+              <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[10px] bg-brand text-[11px] font-bold text-gold">
                 {lead.profiles?.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase() ?? "—"}
               </div>
               <div className="min-w-0 flex-1">
@@ -649,7 +672,7 @@ export function LeadDetailContent({
                 type="button"
                 onClick={() => handleReassign(profile.id)}
                 disabled={pending}
-                className="mt-1.5 text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy disabled:opacity-60"
+                className="mt-1.5 text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-brand disabled:opacity-60"
               >
                 Assign to me
               </button>

@@ -124,7 +124,7 @@ export function WebhooksTab({ webhooks }: { webhooks: WebhookRow[] }) {
       )}
 
       {draft && (
-        <div className="mt-4 rounded-[12px] border-2 border-navy bg-white px-3.5 py-3.5">
+        <div className="mt-4 rounded-[12px] border-2 border-brand bg-white px-3.5 py-3.5">
           <div className="text-[13px] font-bold text-navy">{draft.id ? "Edit webhook" : "New webhook"}</div>
           <div className="mt-3 flex flex-col gap-3">
             <label className="block">
@@ -173,7 +173,7 @@ export function WebhooksTab({ webhooks }: { webhooks: WebhookRow[] }) {
                 type="button"
                 disabled={pending || !draft.name.trim() || !draft.url.trim()}
                 onClick={() => run(() => saveWebhook(draft), () => setDraft(null))}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {pending ? "Saving…" : "Save webhook"}
               </button>

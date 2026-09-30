@@ -128,7 +128,7 @@ export function ExportCsvButton({
                 type="button"
                 disabled={pending}
                 onClick={handleExport}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
               >
                 {pending ? "Exporting…" : "Export"}
               </button>

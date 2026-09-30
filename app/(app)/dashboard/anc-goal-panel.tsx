@@ -67,7 +67,7 @@ function ProgressBar({
    *  one tone swaps to navy there. Everything else still reads by color. */
   onGold?: boolean;
 }) {
-  const bar = onGold && tone === "close" ? "bg-navy" : PACE_STYLE[tone].bar;
+  const bar = onGold && tone === "close" ? "bg-brand" : PACE_STYLE[tone].bar;
   return (
     <div className={`h-[10px] w-full overflow-hidden rounded-full ${onGold ? "bg-navy/15" : "bg-white/12"}`}>
       <div
@@ -274,7 +274,7 @@ export function ApproachScoreboard({ days, target }: { days: ApproachDay[]; targ
               key={d.key}
               className={`rounded-[9px] border px-1 py-1.5 text-center ${
                 d.isToday
-                  ? "border-navy bg-navy dark:border-gold"
+                  ? "border-brand bg-brand dark:border-gold"
                   : hit
                     ? "border-transparent bg-success-bg dark:bg-green/25"
                     : d.isFuture
@@ -348,7 +348,7 @@ export function AncGoalPanel({
         : "Deadline reached";
 
     return (
-      <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
+      <div className="rounded-2xl bg-brand p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">
@@ -411,7 +411,7 @@ export function AncGoalPanel({
   const hasTarget = goal.monthAncTarget > 0;
 
   return (
-    <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
+    <div className="rounded-2xl bg-brand p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">

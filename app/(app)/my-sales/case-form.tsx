@@ -408,7 +408,7 @@ export function CaseForm({
                   aria-pressed={on}
                   onClick={() => toggleCategory(key)}
                   className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
-                    on ? "bg-navy text-white" : "border border-sand-2 bg-white text-navy hover:border-navy"
+                    on ? "bg-brand text-white" : "border border-sand-2 bg-white text-navy hover:border-brand"
                   }`}
                 >
                   {PLAN_CATEGORY_LABEL[key]}
@@ -614,7 +614,7 @@ export function CaseForm({
         <button
           type="button"
           onClick={() => setNominees((prev) => [...prev, { ...EMPTY_NOMINEE }])}
-          className="mt-2 rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+          className="mt-2 rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
         >
           + Add nominee
         </button>
@@ -697,7 +697,7 @@ export function CaseForm({
         <button
           type="button"
           onClick={addBenefit}
-          className="mt-2 rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+          className="mt-2 rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
         >
           + Add benefit
         </button>
@@ -733,7 +733,7 @@ export function CaseForm({
           type="button"
           onClick={handleSave}
           disabled={pending || !planName.trim() || !idNo.trim() || !(clientEmail.trim() || lead.email)}
-          className="h-[42px] flex-1 rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
+          className="h-[42px] flex-1 rounded-[11px] bg-brand text-[13px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : existing ? "Save changes" : "File this case"}
         </button>

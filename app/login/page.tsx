@@ -64,7 +64,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-1 items-center justify-center bg-cream px-4 py-10">
       <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card bg-cream shadow-elevated">
-        <div className="bg-navy px-10 pt-11 pb-13 text-white">
+        <div className="bg-brand px-10 pt-11 pb-13 text-white">
           <div className="flex items-center gap-3">
             <Image
               src="/logo.jpeg"
@@ -154,7 +154,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 flex h-[52px] items-center justify-center rounded-[13px] bg-navy text-[15px] font-semibold text-white disabled:opacity-60"
+            className="mt-6 flex h-[52px] items-center justify-center rounded-[13px] bg-brand text-[15px] font-semibold text-white disabled:opacity-60"
           >
             {loading ? "Logging in…" : "Log in"}
           </button>

@@ -159,7 +159,7 @@ export function CampaignGoalCard({ campaign }: { campaign: CampaignRow | null })
             type="button"
             onClick={handleSave}
             disabled={pending}
-            className="flex h-10 flex-1 items-center justify-center rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
+            className="flex h-10 flex-1 items-center justify-center rounded-[11px] bg-brand text-[13px] font-semibold text-white disabled:opacity-50"
           >
             {pending ? "Saving…" : campaign ? "Update goal" : "Set goal"}
           </button>

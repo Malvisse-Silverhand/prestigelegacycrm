@@ -177,7 +177,7 @@ export function ServicingView({
                     type="button"
                     onClick={() => setSelectedId(c.id)}
                     className={`rounded-[11px] border px-3 py-2.5 text-left ${
-                      active ? "border-navy bg-navy" : "border-sand-2 bg-cream hover:border-navy"
+                      active ? "border-brand bg-brand" : "border-sand-2 bg-cream hover:border-brand"
                     }`}
                   >
                     <div className={`truncate text-[12.5px] font-bold ${active ? "text-white" : "text-navy"}`}>

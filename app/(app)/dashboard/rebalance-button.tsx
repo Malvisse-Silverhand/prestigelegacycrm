@@ -96,7 +96,7 @@ export function RebalanceButton() {
                 <button
                   type="button"
                   onClick={() => setPlan(null)}
-                  className="mt-5 rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white dark:bg-gold dark:text-navy"
+                  className="mt-5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white dark:bg-gold dark:text-navy"
                 >
                   Done
                 </button>
@@ -112,7 +112,7 @@ export function RebalanceButton() {
                 <div className="mt-3 flex flex-col gap-1.5">
                   {plan.members.map((m) => (
                     <div key={m.id} className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-navy text-[10px] font-bold text-gold dark:bg-[#0b1a2b]">
+                      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-brand text-[10px] font-bold text-gold dark:bg-[#0b1a2b]">
                         {m.initials}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-navy dark:text-[#eef3f8]">
@@ -154,7 +154,7 @@ export function RebalanceButton() {
                     type="button"
                     disabled={pending || plan.moves === 0}
                     onClick={commit}
-                    className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50 dark:bg-gold dark:text-navy"
+                    className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50 dark:bg-gold dark:text-navy"
                   >
                     {pending ? "Rebalancing…" : plan.moves === 0 ? "Already balanced" : `Move ${plan.moves}`}
                   </button>

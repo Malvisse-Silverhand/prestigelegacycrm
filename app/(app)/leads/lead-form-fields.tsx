@@ -105,7 +105,7 @@ export function LeadFormFields({ defaults }: { defaults: LeadFormDefaults }) {
             href={OCCUPATION_DIRECTORY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 inline-block text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-navy"
+            className="mt-1 inline-block text-[11px] font-semibold text-navy underline decoration-sand-2 underline-offset-2 hover:decoration-brand"
           >
             Link to occupation directory
           </a>

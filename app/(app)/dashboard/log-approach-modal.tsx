@@ -168,7 +168,7 @@ export function LogApproachModal({ open, onClose }: { open: boolean; onClose: ()
             type="button"
             onClick={() => submit(false)}
             disabled={pending}
-            className="h-[42px] flex-1 rounded-[11px] bg-navy text-[13px] font-semibold text-white disabled:opacity-50"
+            className="h-[42px] flex-1 rounded-[11px] bg-brand text-[13px] font-semibold text-white disabled:opacity-50"
           >
             {pending ? "Saving…" : "Save"}
           </button>

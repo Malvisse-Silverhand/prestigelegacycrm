@@ -35,7 +35,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
   return (
     <div className="min-h-dvh bg-cream text-navy">
       {/* NAV */}
-      <div className="flex items-center gap-3 bg-navy px-5 py-3.5 lg:px-20">
+      <div className="flex items-center gap-3 bg-brand px-5 py-3.5 lg:px-20">
         <div className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-gold">
           <Image src="/logo.jpeg" alt="" width={32} height={32} className="h-8 w-8 rounded-[10px] object-cover" />
         </div>
@@ -54,7 +54,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
       </div>
 
       {/* HERO */}
-      <div className="bg-navy px-5 pb-12 pt-7 lg:px-20 lg:pb-[76px] lg:pt-[60px]">
+      <div className="bg-brand px-5 pb-12 pt-7 lg:px-20 lg:pb-[76px] lg:pt-[60px]">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-10 lg:flex-row lg:gap-16">
           {isQuickQuote ? (
             <div className="flex-1">
@@ -193,7 +193,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
                     type="button"
                     onClick={() => setActive(t.key)}
                     className={`rounded-[10px] px-5 py-3 text-[13.5px] font-bold transition-colors ${
-                      active === t.key ? "bg-navy text-white" : "text-taupe hover:text-navy"
+                      active === t.key ? "bg-brand text-white" : "text-taupe hover:text-navy"
                     }`}
                   >
                     {t.label}
@@ -294,7 +294,7 @@ export function LandingPageView({ page }: { page: PublicLandingPage }) {
 
       {/* CLOSING */}
       <div className="px-5 pt-14 lg:px-20 lg:pt-16">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-8 rounded-[24px] bg-navy px-7 py-10 lg:flex-row lg:items-center lg:px-[60px] lg:py-[52px]">
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-8 rounded-[24px] bg-brand px-7 py-10 lg:flex-row lg:items-center lg:px-[60px] lg:py-[52px]">
           <div className="flex-1">
             <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.025em] text-white text-pretty lg:text-[34px]">
               {content.closingTitle}

@@ -200,7 +200,7 @@ export function ActivityCalendar({
         <button
           type="button"
           onClick={() => setLoggingApproach(true)}
-          className="press ml-auto flex items-center gap-1.5 rounded-[9px] border border-sand-2 bg-cream px-2.5 py-[5px] text-[11px] font-semibold text-navy hover:border-navy dark:border-white/10 dark:bg-[#0b1a2b] dark:text-[#eef3f8]"
+          className="press ml-auto flex items-center gap-1.5 rounded-[9px] border border-sand-2 bg-cream px-2.5 py-[5px] text-[11px] font-semibold text-navy hover:border-brand dark:border-white/10 dark:bg-[#0b1a2b] dark:text-[#eef3f8]"
         >
           <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="text-gold">
             <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z" />
@@ -218,7 +218,7 @@ export function ActivityCalendar({
               }}
               className={`rounded-[6px] px-2 py-[3px] text-[10.5px] font-semibold ${
                 granularity === g.value
-                  ? "bg-navy text-white dark:bg-gold dark:text-navy"
+                  ? "bg-brand text-white dark:bg-gold dark:text-navy"
                   : "text-taupe dark:text-[#7f93aa]"
               }`}
             >

@@ -21,6 +21,7 @@ const TOOLS: Tool[] = [
   { file: "imedi-evolusi-quote.html", label: "Medical Card estimate", hint: "i-Medi Evolusi calculator" },
   { file: "quickquote-hibah-life-takaful.html", label: "Hibah estimate", hint: "i-Great Nova / Chinta calculator" },
   { file: "quotation-customizer.html", label: "Quotation Customizer", hint: "Build a plan comparison by hand" },
+  { file: "quotation-customizer-simple.html", label: "Quotation Customizer (Simple)", hint: "Medical Card comparison sheet" },
 ];
 
 // A quotation always belongs to a lead -- capture-quotation only writes rows

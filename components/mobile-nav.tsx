@@ -121,7 +121,7 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
         onClick={onClose}
         className="absolute inset-0 h-full w-full bg-navy/55"
       />
-      <div className="absolute inset-y-0 left-0 flex w-[82vw] max-w-[300px] flex-col bg-navy py-5 shadow-elevated">
+      <div className="absolute inset-y-0 left-0 flex w-[82vw] max-w-[300px] flex-col bg-brand py-5 shadow-elevated">
         <div className="flex items-center gap-[10px] px-[18px] pb-4">
           <Image
             src="/logo.jpeg"

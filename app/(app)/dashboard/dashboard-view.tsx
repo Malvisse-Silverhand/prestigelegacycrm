@@ -299,7 +299,7 @@ export function DashboardView({
                 />
                 {/* Potential, not banked -- so it belongs with the leads it
                     is sitting in, not with the closings. */}
-                <div className="rounded-2xl bg-navy px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
+                <div className="rounded-2xl bg-brand px-3.5 py-3 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold text-white/60">Pipeline value</span>
                     <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[8px] bg-gold/[.18]">
@@ -455,7 +455,7 @@ export function DashboardView({
                     </div>
                     <div className="flex h-2 overflow-hidden rounded-lg bg-sand dark:bg-white/10">
                       <div
-                        className="bg-navy dark:bg-[#eef3f8]"
+                        className="bg-brand dark:bg-[#eef3f8]"
                         style={{ width: `${s.volumePct}%` }}
                       />
                     </div>
@@ -478,7 +478,7 @@ export function DashboardView({
                 </div>
                 <div className="flex gap-3.5 text-[11px] font-semibold text-muted dark:text-[#7f93aa]">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-[9px] w-[9px] rounded-[3px] bg-navy dark:bg-[#eef3f8]" />
+                    <span className="h-[9px] w-[9px] rounded-[3px] bg-brand dark:bg-[#eef3f8]" />
                     New
                   </span>
                   <span className="flex items-center gap-1.5">
@@ -532,14 +532,14 @@ export function DashboardView({
                   )}
                   {stats.assignment.map((a) => (
                     <div key={a.name} className="flex items-center gap-[11px]">
-                      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-navy text-[10px] font-bold text-gold dark:bg-[#0b1a2b]">
+                      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-brand text-[10px] font-bold text-gold dark:bg-[#0b1a2b]">
                         {a.initials}
                       </span>
                       <span className="flex-1 truncate text-[12.5px] font-semibold text-navy dark:text-[#eef3f8]">
                         {a.name}
                       </span>
                       <div className="h-[7px] w-24 overflow-hidden rounded-lg bg-sand dark:bg-white/10">
-                        <div className="h-full bg-navy dark:bg-[#eef3f8]" style={{ width: `${a.barPct}%` }} />
+                        <div className="h-full bg-brand dark:bg-[#eef3f8]" style={{ width: `${a.barPct}%` }} />
                       </div>
                       <span className="w-[22px] text-right text-[12.5px] font-extrabold text-navy dark:text-[#eef3f8]">
                         {a.count}
@@ -569,7 +569,7 @@ export function DashboardView({
 
       {/* Mobile */}
       <div className="bg-cream dark:bg-[#0b1a2b] lg:hidden">
-        <div className="sticky top-0 z-20 lg:static bg-navy/85 backdrop-blur-md px-5 pt-3.5 pb-5 text-white lg:bg-navy lg:backdrop-blur-none dark:bg-[#12283f]/85 lg:dark:bg-[#12283f] dark:border-b dark:border-white/[.07]">
+        <div className="sticky top-0 z-20 lg:static bg-brand/85 backdrop-blur-md px-5 pt-3.5 pb-5 text-white lg:bg-brand lg:backdrop-blur-none dark:bg-[#12283f]/85 lg:dark:bg-[#12283f] dark:border-b dark:border-white/[.07]">
           <div className="flex items-center gap-[11px]">
             <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gold text-sm font-bold text-navy">
               {profile.avatar_initials}
@@ -609,7 +609,7 @@ export function DashboardView({
             <section className="flex flex-col gap-2.5">
               <SectionLabel title="Leads" hint="Coming in, and what it could be worth" />
               <ApproachScoreboard days={period.approachDays} target={stats.goal.approachTargetPerDay} />
-              <div className="rounded-2xl bg-navy p-3.5 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
+              <div className="rounded-2xl bg-brand p-3.5 dark:bg-[#12283f] dark:ring-1 dark:ring-white/10">
                 <div className="grid grid-cols-3 gap-2">
                   <MobileStat value={period.dayCount} label="Day" />
                   <MobileStat value={period.weekCount} label="Week" />
@@ -732,7 +732,7 @@ function MobileCardCarousel({ panels }: { panels: { key: string; node: React.Rea
             aria-label={`Show ${p.key.replace(/-/g, " ")}`}
             onClick={() => goTo(i)}
             className={`h-[6px] w-[6px] rounded-full transition-colors ${
-              i === clampedActive ? "bg-navy dark:bg-gold" : "bg-sand-2 dark:bg-white/20"
+              i === clampedActive ? "bg-brand dark:bg-gold" : "bg-sand-2 dark:bg-white/20"
             }`}
           />
         ))}
@@ -749,7 +749,7 @@ function ThemeToggle({ dark, onChange, compact }: { dark: boolean; onChange: (v:
   // Compact (mobile) sits on a navy header, so the active pill uses gold for
   // both states (navy would vanish against the navy background); the
   // full-size desktop toggle keeps navy for light-active / gold for dark-active.
-  const lightActiveBg = compact ? "bg-gold" : "bg-navy";
+  const lightActiveBg = compact ? "bg-gold" : "bg-brand";
   const lightActiveIcon = compact ? "text-navy" : "text-gold";
   const inactiveIcon = compact ? "text-white/55" : "text-taupe dark:text-[#7f93aa]";
   return (
@@ -838,7 +838,7 @@ const ALERT_TONES = {
     title: "text-warn-gold-text dark:text-[#f3e0b4]",
     value: "text-warn-gold-text dark:text-gold",
     detail: "text-[#98793a] dark:text-[#b0a077]",
-    cta: "bg-navy text-white border-transparent dark:bg-white/10 dark:text-[#f3e0b4]",
+    cta: "bg-brand text-white border-transparent dark:bg-white/10 dark:text-[#f3e0b4]",
   },
 } as const;
 

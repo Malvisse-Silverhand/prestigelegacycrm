@@ -190,7 +190,7 @@ export function JoinRequestsTab({
         </div>
 
         {creating && (
-          <div className="mt-4 rounded-[12px] border-2 border-navy bg-white px-3.5 py-3.5">
+          <div className="mt-4 rounded-[12px] border-2 border-brand bg-white px-3.5 py-3.5">
             <div className="text-[13px] font-bold text-navy">New recruitment link</div>
             <div className="mt-3 flex flex-col gap-3">
               <label className="block">
@@ -248,7 +248,7 @@ export function JoinRequestsTab({
                       },
                     )
                   }
-                  className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                  className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
                 >
                   {pending ? "Creating…" : "Create link"}
                 </button>
@@ -267,7 +267,7 @@ export function JoinRequestsTab({
               <button
                 type="button"
                 onClick={() => copy(freshToken)}
-                className="flex-none rounded-[9px] bg-navy px-3 py-2 text-[11.5px] font-semibold text-white"
+                className="flex-none rounded-[9px] bg-brand px-3 py-2 text-[11.5px] font-semibold text-white"
               >
                 {copied === freshToken ? "Copied" : "Copy"}
               </button>
@@ -455,7 +455,7 @@ export function JoinRequestsTab({
               <button
                 type="button"
                 onClick={() => setApproved(null)}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white"
               >
                 Done
               </button>

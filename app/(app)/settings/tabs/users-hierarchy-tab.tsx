@@ -231,7 +231,7 @@ export function UsersHierarchyTab({
               <button
                 type="button"
                 onClick={() => setAddMode("any")}
-                className="flex items-center gap-1.5 rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy hover:border-navy"
+                className="flex items-center gap-1.5 rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy hover:border-brand"
               >
                 + Add user
               </button>
@@ -242,7 +242,7 @@ export function UsersHierarchyTab({
         <div className="mt-5 flex flex-col gap-2.5">
           {role === "superadmin" &&
             superadmins.map((sa) => (
-              <div key={sa.id} className="flex items-center gap-3 rounded-[14px] bg-navy px-4 py-3.5">
+              <div key={sa.id} className="flex items-center gap-3 rounded-[14px] bg-brand px-4 py-3.5">
                 <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-gold text-[11.5px] font-bold text-navy">
                   {initialsOf(sa.full_name)}
                 </div>
@@ -408,7 +408,7 @@ export function UsersHierarchyTab({
                 {gm.units.map((unit) => (
                   <div key={unit.id}>
                     <div className="flex items-center gap-3 rounded-xl border border-sand-2 bg-cream px-3.5 py-[11px]">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-navy text-[10px] font-bold text-gold">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-[10px] font-bold text-gold">
                         {unit.unitManager ? initialsOf(unit.unitManager.full_name) : "?"}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -744,7 +744,7 @@ function EditUserPanel({
                   setAssignedUnderId("");
                 }}
                 className={`rounded-[9px] border px-[9px] py-2.5 text-center text-xs font-semibold transition-colors ${
-                  newRole === r ? "border-navy bg-navy text-white" : "border-sand-2 bg-cream text-muted"
+                  newRole === r ? "border-brand bg-brand text-white" : "border-sand-2 bg-cream text-muted"
                 }`}
               >
                 {ROLE_LABEL[r]}
@@ -851,7 +851,7 @@ function EditUserPanel({
           type="button"
           onClick={handleSave}
           disabled={pending || !fullName.trim() || !email.trim() || !phone.trim() || (requiresAssignment && !assignedUnderId)}
-          className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
+          className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-brand text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : "Save changes"}
         </button>
@@ -1043,7 +1043,7 @@ function AddUserForm({
         <button
           type="button"
           onClick={() => setSuccess(null)}
-          className="mt-4 flex h-[42px] w-full items-center justify-center rounded-xl bg-navy text-[13px] font-semibold text-white"
+          className="mt-4 flex h-[42px] w-full items-center justify-center rounded-xl bg-brand text-[13px] font-semibold text-white"
         >
           Add another user
         </button>
@@ -1102,7 +1102,7 @@ function AddUserForm({
                   type="button"
                   onClick={() => handleRoleChange(r)}
                   className={`rounded-[9px] border px-[9px] py-2.5 text-center text-xs font-semibold transition-colors ${
-                    newRole === r ? "border-navy bg-navy text-white" : "border-sand-2 bg-cream text-muted"
+                    newRole === r ? "border-brand bg-brand text-white" : "border-sand-2 bg-cream text-muted"
                   }`}
                 >
                   {ROLE_LABEL[r]}
@@ -1141,7 +1141,7 @@ function AddUserForm({
           type="button"
           onClick={handleSubmit}
           disabled={pending || !fullName || !email || !phone || (requiresAssignment && !assignedUnderId)}
-          className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-navy text-[13.5px] font-semibold text-white disabled:opacity-50"
+          className="mt-0.5 flex h-[46px] items-center justify-center rounded-xl bg-brand text-[13.5px] font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Creating…" : "Send Invitation"}
         </button>

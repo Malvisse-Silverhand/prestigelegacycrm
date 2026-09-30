@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quotation Customizer (Simple) — Prestige Legacy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   QUOTATION CUSTOMIZER (SIMPLE) -- Kad Medikal i-Medi Evolusi sahaja.
+   Standalone page opened in the CRM QuotationModal iframe with
+   ?lead_id&name&phone&email&dob&gender&smoker. Rates + calculation are the
+   same i-Medi Evolusi table used by imedi-evolusi-quote.html (monthly
+   contribution per Age Next Birthday / gender / smoker / option).
+   Saves through the same capture-quotation endpoint as the full customizer.
+   ===================================================================== */
+:root{
+  --navy:#0f2540; --gold:#fac748; --cream:#fbf4e4;
+  --ink:#0f2540; --muted:#5f6f81; --surface:#ffffff;
+  --border:#e7dcc1; --line:#eee6d2; --ok:#1f7a4d; --warn:#b8860b; --danger:#c0392b;
+  --radius:14px; --radius-sm:9px; --shadow:0 10px 30px rgba(15,37,64,.10);
+  --font:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--ink);background:var(--cream);line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 60px}
+button,input{font-family:inherit}
+
+/* ---------- controls ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 16px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.grid .full{grid-column:1/-1}
+.field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.field input[type=text],.field input[type=date]{
+  width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:14px;font-weight:600;color:var(--navy);background:#fff;min-height:42px}
+.field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(250,199,72,.35)}
+.field input[readonly]{background:var(--cream);font-weight:800}
+.seg{display:flex;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:0;background:transparent;padding:10px 6px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;min-height:42px}
+.seg button+button{border-left:1.5px solid var(--border)}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+.riders{display:flex;flex-direction:column;gap:8px}
+.rider{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;background:#fff;font-size:13px;font-weight:600;color:var(--navy);text-align:left;width:100%}
+.rider .box{flex:0 0 22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;line-height:1}
+.rider[aria-pressed=true]{border-color:var(--gold);background:#fffaf0}
+.rider[aria-pressed=true] .box{background:var(--navy);border-color:var(--navy)}
+.rider .txt{flex:1;min-width:0}
+.rider small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.rider .price{font-weight:700;color:var(--warn);white-space:nowrap;font-size:12.5px}
+.note{font-size:12px;color:var(--danger);font-weight:600;margin-top:8px;display:none}
+.note.on{display:block}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
+.btn{cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--navy);font-weight:600;font-size:13.5px;padding:11px 16px;border-radius:var(--radius-sm);min-height:44px;flex:1 1 140px}
+.btn-primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow);z-index:50;max-width:90vw;display:none}
+.toast.on{display:block}
+.toast.ok{background:var(--ok)} .toast.err{background:var(--danger)} .toast.warn{background:var(--warn)}
+
+/* ---------- the sheet (screenshot target) ---------- */
+#sheet{background:#fff;border:1px solid #cfcfcf;padding:0;font-size:clamp(10.5px,2.9vw,14px);color:#111}
+#sheet .band{text-align:center;font-weight:600;padding:6px 8px;margin:0}
+#sheet .band-title{background:#e02bbd;color:#111;letter-spacing:.5px;margin:8px 8px 0;border:1px solid #333}
+#sheet .band-name{background:#6fa8dc;color:#111;margin:6px 8px 8px;border:1px solid #333;text-transform:uppercase}
+table.q{border-collapse:collapse;width:calc(100% - 16px);margin:0 8px 8px;table-layout:fixed}
+table.q td,table.q th{border:1px solid #555;padding:4px 6px;vertical-align:middle;word-wrap:break-word;overflow-wrap:anywhere}
+table.q col.c0{width:44%} table.q col.c1,table.q col.c2{width:28%}
+table.q th{background:#999;color:#111;font-weight:800}
+table.q th:first-child{text-align:left}
+table.q td.v,table.q th.v{text-align:center}
+table.q tr.sec td{font-weight:800;font-family:Georgia,'Times New Roman',serif;text-transform:none}
+table.q tr.green td{background:#34a853;color:#111}
+table.q tr.amber td{background:#ffd966}
+table.q tr.mauve td{background:#c27ba0;font-weight:800}
+table.q tr.rose td{background:#d5a6bd}
+table.q tr.blue td{background:#6d9eeb}
+table.q tr.lgreen td{background:#b6d7a8}
+table.q td.c-o1{background:#9fc5e8} table.q td.c-o2{background:#b4a7d6}
+table.q td.sm{font-size:.82em;line-height:1.35;color:#222}
+table.q tr.total td{background:#e06666;font-weight:800;font-size:1.35em;padding:8px 6px;letter-spacing:.3px}
+table.q tr.total td.v{white-space:nowrap}
+.totnote{font-size:.72em;font-weight:600;display:block;letter-spacing:0;color:#3a0d0d}
+table.r{border-collapse:collapse;width:calc(100% - 16px);margin:0 8px 10px;table-layout:fixed;background:#fff}
+table.r col.c0{width:56%} table.r col.c1,table.r col.c2{width:22%}
+table.r th{background:#f6eedb;text-align:left;font-weight:800;padding:9px 8px;font-size:.95em;border-bottom:1px solid #e3d8bd;letter-spacing:.3px}
+table.r td{padding:9px 8px;border-bottom:1px solid #e9e1cd;vertical-align:middle}
+table.r td.v{text-align:center;font-weight:500}
+table.r td .tick{font-size:1.25em}
+table.r td .add{display:block;color:#b8860b;font-weight:700;font-size:.85em;margin-top:3px}
+table.r td .off{color:#aaa}
+.foot{font-size:.72em;color:#666;text-align:center;padding:2px 10px 12px;line-height:1.4}
+.na{margin:8px;padding:14px;background:#fff4e5;border:1px solid #f0d28f;border-radius:10px;font-weight:600;text-align:center;font-size:13px}
+
+@media print{
+  body{background:#fff}
+  .noprint,.toast{display:none!important}
+  .wrap{padding:0;max-width:none}
+  #sheet{border:0;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card noprint">
+    <h2>Butiran pelanggan &middot; Customer</h2>
+    <div class="grid">
+      <div class="field full"><label for="pfName">Nama / Name</label><input type="text" id="pfName" autocomplete="off" placeholder="Nama pelanggan"></div>
+      <div class="field"><label for="pfDob">Tarikh lahir / DOB</label><input type="date" id="pfDob"></div>
+      <div class="field"><label for="pfAge">Age next birthday</label><input type="text" id="pfAge" readonly value="-"></div>
+      <div class="field"><label>Jantina / Gender</label>
+        <div class="seg" id="segGender"><button type="button" data-v="male" aria-pressed="true">Lelaki</button><button type="button" data-v="female" aria-pressed="false">Perempuan</button></div></div>
+      <div class="field"><label>Merokok / Smoker</label>
+        <div class="seg" id="segSmoke"><button type="button" data-v="non" aria-pressed="true">Tidak</button><button type="button" data-v="smoke" aria-pressed="false">Ya</button></div></div>
+    </div>
+    <div class="note" id="naNote"></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>Rider &amp; Add-on</h2>
+    <div class="riders" id="riders">
+      <button type="button" class="rider" data-r="prov" aria-pressed="true"><span class="box">&#10003;</span><span class="txt">i-Provider Plus (Pelepasan Caruman)<small>Termasuk dalam pelan &middot; Included</small></span></button>
+      <button type="button" class="rider" data-r="ward" aria-pressed="false"><span class="box">&#10003;</span><span class="txt">Elaun Wad + ICU<small>RM100/hari</small></span><span class="price">+RM14/bln</span></button>
+      <button type="button" class="rider" data-r="waiver" aria-pressed="false"><span class="box">&#10003;</span><span class="txt">Pelepasan Bayaran Takaful (Payment Waiver)</span><span class="price">+RM20/bln</span></button>
+    </div>
+  </div>
+
+  <div class="bar noprint">
+    <button type="button" class="btn btn-primary" id="btnSave">Save quotation</button>
+    <button type="button" class="btn" id="btnPrint">Print / PDF</button>
+  </div>
+
+  <div id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- CONFIG ---------- */
+  var CAPTURE_QUOTATION_URL = 'https://icvxnjtqppieghcumpdw.supabase.co/functions/v1/capture-quotation';
+  var ADDON_WARD = 14, ADDON_WAIVER = 20;   // RM per month, same as imedi-evolusi-quote.html
+  var OPTIONS = [
+    { key:'opt1', label:'OPTION 1', limit:'1.5 juta', limitNum:1500000, rb:150, rbMax:300 },
+    { key:'opt2', label:'OPTION 2', limit:'2 juta',   limitNum:2000000, rb:200, rbMax:400 }
+  ];
+
+  /* i-Medi Evolusi monthly contribution per Age Next Birthday.
+     Format "anb:option1:option2|..." -- copied verbatim from imedi-evolusi-quote.html */
+  var RAW = {"male_non":"1:220.2:261.2|2:220.2:261.2|3:220.2:261.2|4:220.2:261.2|5:220.2:261.2|6:124.2:147.2|7:124.4:147.4|8:124.55:147.55|9:124.75:147.75|10:124.95:147.95|11:122.1:143.1|12:122.25:143.25|13:122.35:143.35|14:122.45:143.45|15:122.6:143.6|16:129.7:150.7|17:129.8:150.8|18:129.85:150.85|19:129.9:150.9|20:129.95:150.95|21:134.0:155.0|22:134.2:155.2|23:134.35:155.35|24:134.55:155.55|25:134.75:155.75|26:148.9:171.9|27:149.1:172.1|28:149.25:172.25|29:149.45:172.45|30:149.65:172.65|31:159.8:183.8|32:160.0:184.0|33:160.15:184.15|34:160.35:184.35|35:160.51:184.55|36:187.7:215.7|37:188.1:216.1|38:188.45:216.45|39:188.85:216.85|40:189.25:217.25|41:224.65:259.65|42:225.4:260.4|43:226.15:261.15|44:226.9:261.9|45:227.65:262.65|46:277.55:319.55|47:278.45:320.45|48:279.35:321.35|49:280.4:322.4|50:281.45:323.45|51:341.65:395.65|52:342.85:396.85|53:344.2:398.2|54:345.55:399.55|55:347.05:401.05|56:439.3:507.3|57:442.45:510.45|58:445.45:513.45|59:451.3:519.3|60:456.7:524.7","male_smoke":"18:130.9:151.9|19:131.2:152.2|20:131.5:152.5|21:135.8:156.8|22:136.25:157.25|23:136.7:157.7|24:137.15:158.15|25:137.6:158.6|26:152.05:175.05|27:152.65:175.65|28:153.25:176.25|29:153.85:176.85|30:154.45:177.45|31:165.2:189.2|32:165.95:189.95|33:166.7:190.7|34:167.45:191.45|35:168.35:192.35|36:196.25:224.25|37:197.15:225.15|38:198.2:226.2|39:199.25:227.25|40:200.45:228.45|41:236.65:271.65|42:237.85:272.85|43:239.2:274.2|44:240.7:275.7|45:242.2:277.2|46:292.85:334.85|47:294.5:336.5|48:296.3:338.3|49:298.25:340.25|50:300.2:342.2|51:361.45:415.45|52:363.7:417.7|53:366.1:420.1|54:368.65:422.65|55:372.1:426.1|56:467.2:535.2|57:472.9:540.9|58:478.9:546.9|59:489.85:557.85|60:499.75:567.75","female_non":"1:220.2:261.2|2:220.2:261.2|3:220.2:261.2|4:220.2:261.2|5:220.2:261.2|6:115.2:136.2|7:115.25:136.25|8:115.24:136.24|9:115.3:136.3|10:115.3:136.3|11:112.3:131.3|12:112.35:131.35|13:112.35:131.35|14:112.4:131.4|15:112.4:131.4|16:119.4:138.4|17:119.45:138.45|18:119.5:138.5|19:119.55:138.55|20:119.6:138.6|21:122.65:142.65|22:122.8:142.8|23:122.95:142.95|24:123.1:143.1|25:123.3:143.3|26:137.45:158.45|27:137.6:158.6|28:137.75:158.75|29:137.9:158.9|30:138.05:159.05|31:158.2:182.2|32:158.35:182.35|33:158.5:182.5|34:158.65:182.65|35:158.8:182.8|36:185.95:213.95|37:186.3:214.3|38:186.6:214.6|39:186.95:214.95|40:187.3:215.3|41:227.65:260.65|42:228.25:261.25|43:228.85:261.85|44:229.5:262.5|45:230.2:263.2|46:281.95:323.95|47:282.75:324.75|48:283.55:325.55|49:284.4:326.4|50:285.35:327.35|51:325.3:372.3|52:326.45:373.45|53:327.65:374.65|54:328.95:375.95|55:330.35:377.35|56:404.8:469.8|57:407.35:472.35|58:410.2:475.2|59:413.3:478.3|60:416.7:481.7","female_smoke":"18:120.45:139.45|19:120.7:139.7|20:120.95:139.95|21:124.2:144.2|22:124.55:144.55|23:124.95:144.95|24:125.3:145.3|25:125.7:145.7|26:140.1:161.1|27:140.6:161.6|28:141.1:162.1|29:141.65:162.65|30:142.2:163.2|31:162.8:186.8|32:163.4:187.4|33:164.1:188.1|34:164.75:188.75|35:165.5:189.5|36:193.25:221.25|37:194.1:222.1|38:194.95:222.95|39:195.85:223.85|40:196.85:224.85|41:237.85:270.85|42:238.95:271.95|43:240.1:273.1|44:241.3:274.3|45:242.6:275.6|46:294.95:336.95|47:296.4:338.4|48:297.95:339.95|49:299.6:341.6|50:301.3:343.3|51:342.1:389.1|52:344.45:391.45|53:346.95:393.95|54:349.65:396.65|55:352.45:399.45|56:428.5:493.5|57:433.4:498.4|58:438.8:503.8|59:444.7:509.7|60:451.2:516.2"};
+  var T = {};
+  Object.keys(RAW).forEach(function(k){
+    T[k] = {};
+    RAW[k].split('|').forEach(function(s){ var p = s.split(':'); T[k][+p[0]] = [parseFloat(p[1]), parseFloat(p[2])]; });
+  });
+
+  function anbOf(dob, now){
+    var t2 = now || new Date(), b = new Date(dob);
+    var a = t2.getFullYear() - b.getFullYear();
+    var m = t2.getMonth() - b.getMonth();
+    if(m < 0 || (m === 0 && t2.getDate() < b.getDate())) a--;
+    return a + 1;
+  }
+
+  // Pure calculation. Returns { anb, base:[o1,o2], addons, totals:[o1,o2], na:null|msg }.
+  function calc(o){
+    var anb = anbOf(o.dob, o.now);
+    var row = (o.dob && !isNaN(new Date(o.dob).getTime())) ? (T[o.gender + '_' + o.smoke] || {})[anb] : null;
+    var addons = (o.ward ? ADDON_WARD : 0) + (o.waiver ? ADDON_WAIVER : 0);
+    if(!row){
+      var na = null;
+      if(o.dob){
+        na = anb > 60 ? 'Age next birthday ' + anb + ' is above the rate table (max 60). Rates need underwriting.'
+           : (o.smoke === 'smoke' && anb < 18) ? 'Smoker rates start from age next birthday 18.'
+           : 'No rate available for age next birthday ' + anb + '.';
+      }
+      return { anb:anb, base:null, addons:addons, totals:null, na:na };
+    }
+    var r2 = function(n){ return Math.round(n * 100) / 100; };
+    return { anb:anb, base:row.slice(), addons:addons, totals:[r2(row[0] + addons), r2(row[1] + addons)], na:null };
+  }
+  window.__t4uSimpleCalc = calc; // exposed for verification
+
+  /* ---------- state / DOM ---------- */
+  var $ = function(id){ return document.getElementById(id); };
+  var q = new URLSearchParams(location.search);
+  var leadId = q.get('lead_id') || '';
+  var quotationId = q.get('quotation_id') || '';
+  var state = { name:'', dob:'', gender:'male', smoke:'non', prov:true, ward:false, waiver:false };
+  var agentName = '';
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmt(n){ return n.toLocaleString('en-MY', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function post(msg){ try{ if(window.parent !== window) window.parent.postMessage(msg, '*'); }catch(e){} }
+  function postDirty(v){ if(leadId) post({ type:'t4u-quote-dirty', dirty:!!v }); }
+  var toastTimer = null;
+  function toast(msg, kind){
+    var el = $('toast'); el.textContent = msg; el.className = 'toast on ' + (kind || '');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.className = 'toast'; }, 3200);
+  }
+
+  function setSeg(id, v){
+    $(id).querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false'); });
+  }
+
+  /* ---------- render the sheet ---------- */
+  function render(){
+    var c = calc(state);
+    $('pfAge').value = state.dob ? String(c.anb) : '-';
+    var naEl = $('naNote');
+    naEl.textContent = c.na || ''; naEl.className = 'note' + (c.na ? ' on' : '');
+
+    document.querySelectorAll('#riders .rider').forEach(function(b){ b.setAttribute('aria-pressed', state[b.getAttribute('data-r')] ? 'true' : 'false'); });
+
+    var nm = (state.name || '').trim();
+    var head = (nm ? nm + ' - ' : '') + 'AGE NEXT BIRTHDAY ' + (state.dob ? c.anb + 'y' : '-') + ' - ' + (state.smoke === 'smoke' ? 'SMOKING' : 'NOT SMOKING');
+    var h = '<div class="band band-title">PLAN EVOLUSI</div><div class="band band-name">' + esc(head) + '</div>';
+
+    if(!c.totals){
+      h += '<div class="na">' + esc(c.na || 'Isi tarikh lahir untuk lihat caruman. Enter a date of birth to see the contribution.') + '</div>';
+      $('sheet').innerHTML = h; return;
+    }
+
+    var both = function(fn){ return OPTIONS.map(fn).join(''); };
+    h += '<table class="q"><colgroup><col class="c0"><col class="c1"><col class="c2"></colgroup>';
+    h += '<tr><th>Description</th><th class="v">OPTION 1</th><th class="v">OPTION 2</th></tr>';
+    h += '<tr class="sec green"><td colspan="3">DEATH BENEFIT</td></tr>';
+    h += '<tr><td>Death Benefit &amp; TPD</td><td class="v">15,000</td><td class="v">15,000</td></tr>';
+    h += '<tr><td>Compassionate Benefit</td><td class="v">2,000</td><td class="v">2,000</td></tr>';
+    h += '<tr class="sec amber"><td colspan="3">MEDICAL CARD IN PATIENT BENEFIT</td></tr>';
+    h += '<tr><td>Overall Medical Limit</td><td class="v c-o1">' + OPTIONS[0].limit + '</td><td class="v c-o2">' + OPTIONS[1].limit + '</td></tr>';
+    h += '<tr><td>Lifetime limit</td><td class="v">No lifetime limit</td><td class="v">No lifetime limit</td></tr>';
+    h += '<tr><td>Room &amp; Board for Hospital Admission</td><td class="v c-o1">RM ' + OPTIONS[0].rb + '</td><td class="v c-o2">RM ' + OPTIONS[1].rb + '</td></tr>';
+    h += '<tr><td class="sm">(unlimited number of days)</td>' + both(function(o){ return '<td class="v sm">(Increase 20% every 5 years subject to no claim, max RM' + o.rbMax + ')</td>'; }) + '</tr>';
+    h += '<tr class="mauve"><td>Deductible (Dalam setahun bayar sekali sahaja)</td><td class="v">RM 500</td><td class="v">RM 500</td></tr>';
+    h += '<tr class="sec amber"><td colspan="3">Daily Hospital Allowance</td></tr>';
+    h += '<tr><td>- Government Hospital</td>' + both(function(o){ return '<td class="v">RM ' + o.rb + '</td>'; }) + '</tr>';
+    h += '<tr class="sec amber"><td colspan="3">OUTPATIENT BENEFIT (PAY &amp; CLAIM)</td></tr>';
+    h += '<tr><td>Emergency Accidental Treatment (within 30 days)</td><td class="v">RM 5,000</td><td class="v">RM 5,000</td></tr>';
+    h += '<tr><td>Outpatient Dialysis Treatment</td><td class="v" rowspan="4">based on annual limit</td><td class="v" rowspan="4">based on annual limit</td></tr>';
+    h += '<tr><td>Outpatient Cancer Treatment</td></tr>';
+    h += '<tr><td>Pre Hospitalisation Benefit (120 days before)</td></tr>';
+    h += '<tr><td>Post Hospitalisation (180 days after)</td></tr>';
+    h += '<tr class="sec amber"><td colspan="3">Outpatient Treatment - At Clinic (PAY &amp; CLAIM)</td></tr>';
+    var clinic = '&bull; Only pay 5% from total bill (up to RM500 per certificate year) for treatment at Clinics listed under The Great Journey';
+    var dis = ['Dengue Fever','Zika Virus','Chikungunya Fever','Influenza A','Influenza B','HFMD','Bronchitis','Pneumonia'];
+    dis.forEach(function(d, i){
+      h += '<tr><td>- ' + d + '</td>' + (i === 0 ? '<td class="v" rowspan="8">' + clinic + '</td><td class="v" rowspan="8">' + clinic + '</td>' : '') + '</tr>';
+    });
+    h += '<tr class="rose"><td>Cash Value</td><td class="v">&#9989;</td><td class="v">&#9989;</td></tr>';
+    h += '<tr class="blue"><td>Kenaikan Harga</td><td class="v">Setiap 5 tahun</td><td class="v">Setiap 5 tahun</td></tr>';
+    h += '<tr class="lgreen"><td>Cover Sehingga Umur</td><td class="v">70 tahun</td><td class="v">70 tahun</td></tr>';
+    var addNote = c.addons > 0 ? '<span class="totnote">termasuk add-on / incl. add-on +RM ' + fmt(c.addons) + '</span>' : '';
+    h += '<tr class="total"><td>TOTAL CONTRIBUTION' + (c.addons > 0 ? '<span class="totnote">per bulan / per month</span>' : '') + '</td>' +
+         both(function(o, i){ return '<td class="v">RM ' + fmt(c.totals[i]) + addNote + '</td>'; }) + '</tr>';
+    h += '</table>';
+
+    var tick = '<span class="tick">&#10003;</span>';
+    var off = '<span class="off">&mdash;</span>';
+    h += '<table class="r"><colgroup><col class="c0"><col class="c1"><col class="c2"></colgroup>';
+    h += '<tr><th colspan="3">RIDER &amp; ADD-ON</th></tr>';
+    h += '<tr><td>i-Provider Plus (Pelepasan Caruman)</td>' + both(function(){ return '<td class="v">' + (state.prov ? tick : off) + '</td>'; }) + '</tr>';
+    h += '<tr><td>Elaun Wad + ICU</td>' + both(function(){ return '<td class="v">' + (state.ward ? 'RM100/hari<span class="add">+RM' + ADDON_WARD + '/bln</span>' : off) + '</td>'; }) + '</tr>';
+    h += '<tr><td>Pelepasan Bayaran Takaful (Payment Waiver)</td>' + both(function(){ return '<td class="v">' + (state.waiver ? tick + '<span class="add">+RM' + ADDON_WAIVER + '/bln</span>' : off) + '</td>'; }) + '</tr>';
+    h += '</table>';
+    h += '<div class="foot">Caruman bulanan dianggarkan &amp; tertakluk kepada underwriting. Estimated monthly contribution, subject to underwriting.' +
+         (agentName ? '<br>Quotation disediakan oleh ' + esc(agentName) + ', Great Eastern Takaful Berhad' : '') + '</div>';
+    $('sheet').innerHTML = h;
+  }
+
+  /* ---------- inputs ---------- */
+  function changed(){ render(); postDirty(true); }
+  $('pfName').addEventListener('input', function(){ state.name = this.value; changed(); });
+  $('pfDob').addEventListener('input', function(){ state.dob = this.value; changed(); });
+  $('segGender').addEventListener('click', function(e){ var b = e.target.closest('button'); if(!b) return; state.gender = b.getAttribute('data-v'); setSeg('segGender', state.gender); changed(); });
+  $('segSmoke').addEventListener('click', function(e){ var b = e.target.closest('button'); if(!b) return; state.smoke = b.getAttribute('data-v'); setSeg('segSmoke', state.smoke); changed(); });
+  $('riders').addEventListener('click', function(e){ var b = e.target.closest('.rider'); if(!b) return; var k = b.getAttribute('data-r'); state[k] = !state[k]; changed(); });
+  $('btnPrint').addEventListener('click', function(){ window.print(); });
+
+  /* ---------- CRM integration ---------- */
+  function applyState(){
+    $('pfName').value = state.name; $('pfDob').value = state.dob;
+    setSeg('segGender', state.gender); setSeg('segSmoke', state.smoke);
+  }
+
+  function prefill(){
+    if(q.get('name')) state.name = q.get('name');
+    if(q.get('dob')) state.dob = q.get('dob');
+    var g = q.get('gender'); if(g === 'male' || g === 'female') state.gender = g;
+    var s = q.get('smoker'); if(s === 'true') state.smoke = 'smoke'; else if(s === 'false') state.smoke = 'non';
+    applyState(); render();
+  }
+
+  // Reopening a saved quotation restores the exact inputs it was saved with.
+  async function restore(){
+    if(!quotationId) return;
+    try{
+      var res = await fetch('/api/quotations/' + quotationId, { headers:{ 'Accept':'application/json' } });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var body = await res.json(); var p = body.raw_payload;
+      if(!p || !p.__simple_customizer || !p.inputs) return;
+      var i = p.inputs;
+      state.name = i.name || ''; state.dob = i.dob || '';
+      state.gender = i.gender === 'female' ? 'female' : 'male';
+      state.smoke = i.smoke === 'smoke' ? 'smoke' : 'non';
+      state.prov = i.prov !== false; state.ward = !!i.ward; state.waiver = !!i.waiver;
+      applyState(); render(); toast('Quotation loaded for editing.', 'ok');
+    }catch(err){ toast('Could not load the saved quotation.', 'err'); }
+  }
+
+  async function loadSignoff(){
+    try{
+      var res = await fetch('/api/me', { headers:{ 'Accept':'application/json' } });
+      if(!res.ok) return;
+      var j = await res.json();
+      if(j && j.fullName){ agentName = j.fullName; render(); }
+    }catch(err){ /* standalone: no sign-off line */ }
+  }
+
+  function reportError(context, err){
+    post({ type:'t4u-tool-error', context:context, message:(err && err.message) || String(err), stack: err && err.stack });
+  }
+
+  var saving = false;
+  async function save(){
+    if(saving) return;
+    if(!leadId){ toast('Open this from a lead to save the quotation.', 'warn'); return; }
+    var c = calc(state);
+    if(!c.totals){ toast(c.na || 'Enter a date of birth first.', 'warn'); return; }
+    var smokeTxt = state.smoke === 'smoke' ? 'Smoking' : 'Not smoking';
+    var plans = OPTIONS.map(function(o, i){
+      var monthly = c.totals[i];
+      return {
+        sort_order: i,
+        plan_label: o.label + ' (' + o.limit + ' / RM' + o.rb + ' R&B)',
+        monthly_contribution: monthly,
+        annual_contribution: Math.round(monthly * 12 * 100) / 100,
+        coverage_detail: {
+          name: o.label, room_and_board: 'RM' + o.rb, annual_limit: 'RM' + o.limitNum.toLocaleString('en-US'),
+          overall_medical_limit: o.limitNum, coverage_age: '70 tahun',
+          base_monthly_contribution: c.base[i], addons_monthly: c.addons,
+          i_provider_plus: state.prov, ward_icu_allowance: state.ward, payment_waiver: state.waiver
+        }
+      };
+    });
+    var payload = {
+      type: 'Kad Medikal (i-Medi Evolusi) - Simple', tab: 'medical', lang: 'bm', created_at: new Date().toISOString(),
+      customer: { name: state.name || '', dob: state.dob || '', anb: c.anb, gender: state.gender, smoker: state.smoke === 'smoke', smoking: smokeTxt, phone: q.get('phone') || '' },
+      columns: plans.map(function(p){ return Object.assign({ name: p.plan_label, yearly_contribution: p.annual_contribution, monthly_contribution: p.monthly_contribution }, p.coverage_detail); }),
+      // __customizer keeps this counted/editable as a customizer quotation across the CRM;
+      // __simple_customizer routes a reopen back to this page; inputs rebuild the form.
+      __customizer: true, __simple_customizer: true,
+      inputs: { name: state.name, dob: state.dob, gender: state.gender, smoke: state.smoke, prov: state.prov, ward: state.ward, waiver: state.waiver }
+    };
+    saving = true; $('btnSave').disabled = true; toast('Saving to lead...');
+    try{
+      var res = await fetch(CAPTURE_QUOTATION_URL, {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ lead_id: leadId, product: 'imedi_evolusi', language: 'bm', raw_payload: payload, plans: plans })
+      });
+      var json = await res.json().catch(function(){ return null; });
+      if(!res.ok || !json || !json.quotation_id) throw new Error((json && json.error) || ('HTTP ' + res.status));
+      toast('Saved to lead.', 'ok');
+      postDirty(false);
+      post({ type:'t4u-quotation-saved', quotation_id: json.quotation_id });
+    }catch(err){
+      toast('Save failed: ' + (err && err.message ? err.message : ''), 'err');
+      reportError('save-simple', err);
+    }finally{
+      saving = false; $('btnSave').disabled = false;
+    }
+  }
+  $('btnSave').addEventListener('click', save);
+
+  /* ---------- init ---------- */
+  prefill();
+  restore();
+  loadSignoff();
+})();
+</script>
+</body>
+</html>

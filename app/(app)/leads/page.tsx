@@ -161,7 +161,7 @@ export default async function LeadsPage({
             {/* Desktop table -- the 10-column grid has no room to breathe below
                lg, so narrow viewports get their own card list instead. */}
             <div className="hidden overflow-hidden rounded-2xl border border-sand bg-white shadow-card lg:block">
-              <div className="grid grid-cols-[1.5fr_1fr_.9fr_.9fr_1fr_1fr_.8fr_1fr_.8fr_.7fr] bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
+              <div className="grid grid-cols-[1.5fr_1fr_.9fr_.9fr_1fr_1fr_.8fr_1fr_.8fr_.7fr] bg-brand px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
                 <div>Name</div>
                 <div>Phone</div>
                 <div>Date of Birth</div>
@@ -305,7 +305,7 @@ export default async function LeadsPage({
                       href={{ query: { ...params, page: String(p) } }}
                       className={
                         p === page
-                          ? "flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-navy font-bold text-white"
+                          ? "flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-brand font-bold text-white"
                           : "flex h-[30px] w-[30px] items-center justify-center rounded-[9px] border border-sand-2 bg-white font-semibold text-navy"
                       }
                     >

@@ -175,7 +175,7 @@ export function CertificatePanel({
             <button
               type="button"
               onClick={() => setMode("edit")}
-              className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-navy"
+              className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-brand"
             >
               Edit
             </button>

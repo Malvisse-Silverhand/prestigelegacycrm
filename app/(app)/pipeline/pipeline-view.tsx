@@ -121,6 +121,13 @@ export function PipelineView({
     });
   }
 
+  function openSimpleCustomizer(lead: PipelineLead) {
+    setQuoteModal({
+      url: quoteLauncherUrl("quotation-customizer-simple.html", lead),
+      leadName: lead.full_name,
+    });
+  }
+
   const columns = useMemo(() => {
     const map: Record<string, PipelineLead[]> = {};
     for (const s of STAGES) map[s.value] = [];
@@ -197,7 +204,7 @@ export function PipelineView({
           </div>
           {/* Same color language as the dashboard: navy for what is still in
               play, gold for what has actually closed. */}
-          <div className="rounded-[13px] bg-navy px-4 py-2.5">
+          <div className="rounded-[13px] bg-brand px-4 py-2.5">
             <div className="text-[10px] font-semibold text-white/60">Potential ANC</div>
             <div className="mt-0.5 text-[18px] font-extrabold tracking-[-0.02em] text-white">
               {fmtRM(toAnc(potentialValue))}
@@ -323,6 +330,7 @@ export function PipelineView({
                     staleAfterDays={staleAfterDays}
                     onOpenQuotation={() => openQuotation(lead)}
                     onOpenCustomizer={() => openCustomizer(lead)}
+                    onOpenSimpleCustomizer={() => openSimpleCustomizer(lead)}
                   />
                 ))}
               </div>
@@ -365,7 +373,7 @@ function ViewToggle({ view, onChange }: { view: "board" | "table"; onChange: (v:
         onClick={() => onChange("board")}
         className={
           view === "board"
-            ? "flex items-center gap-1.5 rounded-[7px] bg-navy px-3 py-[7px] text-[12px] font-semibold text-white"
+            ? "flex items-center gap-1.5 rounded-[7px] bg-brand px-3 py-[7px] text-[12px] font-semibold text-white"
             : "flex items-center gap-1.5 rounded-[7px] px-3 py-[7px] text-[12px] font-semibold text-muted"
         }
       >
@@ -377,7 +385,7 @@ function ViewToggle({ view, onChange }: { view: "board" | "table"; onChange: (v:
         onClick={() => onChange("table")}
         className={
           view === "table"
-            ? "flex items-center gap-1.5 rounded-[7px] bg-navy px-3 py-[7px] text-[12px] font-semibold text-white"
+            ? "flex items-center gap-1.5 rounded-[7px] bg-brand px-3 py-[7px] text-[12px] font-semibold text-white"
             : "flex items-center gap-1.5 rounded-[7px] px-3 py-[7px] text-[12px] font-semibold text-muted"
         }
       >
@@ -438,7 +446,7 @@ function PipelineTable({
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
         <div className="overflow-x-auto">
           <div className="min-w-[820px]">
-            <div className="grid grid-cols-[1.5fr_1fr_1fr_1.1fr_1fr_1fr] bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
+            <div className="grid grid-cols-[1.5fr_1fr_1fr_1.1fr_1fr_1fr] bg-brand px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase">
               <div>Lead</div>
               <div>Phone</div>
               <div>Stage</div>
@@ -487,7 +495,7 @@ function PipelineTable({
                         {value > 0 ? `${fmtRM(value)}/mo budget` : "—"}
                       </span>
                     )}
-                    <a href={`tel:${lead.phone}`} className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-navy" aria-label="Call">
+                    <a href={`tel:${lead.phone}`} className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-brand" aria-label="Call">
                       <PhoneIcon width={12} height={12} className="text-gold" />
                     </a>
                     <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-green" aria-label="WhatsApp">
@@ -505,7 +513,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, ownerName, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, ownerName, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer, onOpenSimpleCustomizer,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -522,6 +530,7 @@ function PipelineCard({
   staleAfterDays: number;
   onOpenQuotation: () => void;
   onOpenCustomizer: () => void;
+  onOpenSimpleCustomizer: () => void;
 }) {
   const tag = productTag(lead.interest);
   const potential = leadPotentialAnc(lead.quotations);
@@ -555,7 +564,7 @@ function PipelineCard({
 
       {ownerName && (
         <div className="mt-2 flex items-center gap-1.5 rounded-[8px] bg-info-blue-bg-2 px-2 py-1.5">
-          <span className="flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[6px] bg-navy text-[8px] font-bold text-gold">
+          <span className="flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[6px] bg-brand text-[8px] font-bold text-gold">
             {initialsOf(ownerName)}
           </span>
           <span className="min-w-0 flex-1 truncate text-[10.5px] font-semibold text-info-blue-text">{ownerName}</span>
@@ -591,7 +600,7 @@ function PipelineCard({
       )}
 
       <div className="mt-2.5 grid grid-cols-3 gap-1.5 border-t border-sand-3 pt-2.5">
-        <a href={`tel:${lead.phone}`} draggable={false} className="flex h-8 items-center justify-center rounded-[8px] bg-navy" aria-label="Call">
+        <a href={`tel:${lead.phone}`} draggable={false} className="flex h-8 items-center justify-center rounded-[8px] bg-brand" aria-label="Call">
           <PhoneIcon width={13} height={13} className="text-gold" />
         </a>
         <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" draggable={false} className="flex h-8 items-center justify-center rounded-[8px] bg-green" aria-label="WhatsApp">
@@ -630,6 +639,14 @@ function PipelineCard({
           >
             <QuotationIcon width={14} height={14} />
             Open customizer
+          </button>
+          <button
+            type="button"
+            onClick={() => { onToggle(); onOpenSimpleCustomizer(); }}
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[12px] font-semibold text-navy hover:bg-cream"
+          >
+            <QuotationIcon width={14} height={14} />
+            Customizer (Simple)
           </button>
           {canManageStage && (
             <>

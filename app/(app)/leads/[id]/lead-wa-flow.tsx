@@ -101,7 +101,7 @@ export function LeadWaFlow({
                 type="button"
                 onClick={() => { setCategory(c.value); setOpenId(null); }}
                 className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
-                  active === c.value ? "bg-navy text-white" : c.cls
+                  active === c.value ? "bg-brand text-white" : c.cls
                 }`}
               >
                 {c.label}
@@ -235,7 +235,7 @@ function ClosingScriptsSection({
             type="button"
             onClick={() => selectSet(s)}
             className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
-              activeSet === s ? "bg-navy text-white" : "border border-sand-2 bg-white text-navy"
+              activeSet === s ? "bg-brand text-white" : "border border-sand-2 bg-white text-navy"
             }`}
           >
             {SCRIPT_SET_LABEL[s]}

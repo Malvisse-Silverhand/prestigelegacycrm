@@ -89,7 +89,7 @@ function AgentCard({
     >
       <Link href={`/dashboard?monitor=${agent.id}`} className="block">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-navy text-[9.5px] font-bold text-gold">
+          <span className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-brand text-[9.5px] font-bold text-gold">
             {initialsOf(agent.full_name, agent.avatar_initials)}
           </span>
           <span className="truncate text-xs font-bold text-navy">{agent.full_name}</span>
@@ -142,7 +142,7 @@ function NodeRow({
         <div className="flex items-center gap-[11px]">
           <div
             className={`flex h-9 w-9 flex-none items-center justify-center rounded-[11px] text-xs font-bold ${
-              node.manager ? "bg-navy text-gold" : "border border-dashed border-sand-2 bg-cream text-taupe"
+              node.manager ? "bg-brand text-gold" : "border border-dashed border-sand-2 bg-cream text-taupe"
             }`}
           >
             {node.manager ? initialsOf(node.manager.full_name, node.manager.avatar_initials) : "—"}
@@ -293,7 +293,7 @@ export function TeamLeague({
           </div>
         )}
 
-        <div className="flex items-center gap-3.5 rounded-2xl bg-navy px-[22px] py-3.5">
+        <div className="flex items-center gap-3.5 rounded-2xl bg-brand px-[22px] py-3.5">
           <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[10px] bg-gold/[.18]">
             <ShieldIcon width={17} height={17} className="text-gold" />
           </span>

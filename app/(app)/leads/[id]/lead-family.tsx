@@ -87,7 +87,7 @@ export function LeadFamily({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="press rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+            className="press rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
           >
             + Add family/relative
           </button>
@@ -227,7 +227,7 @@ export function LeadFamily({
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                  className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
                 >
                   {pending ? "Saving…" : "Save family member"}
                 </button>

@@ -104,7 +104,7 @@ export function TemplateModal({
             <button type="button" onClick={onClose} className="rounded-[10px] border border-sand-2 px-4 py-2.5 text-[13px] font-semibold text-navy">
               Cancel
             </button>
-            <button type="submit" disabled={pending} className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60">
+            <button type="submit" disabled={pending} className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60">
               {pending ? "Saving…" : "Save template"}
             </button>
             </div>

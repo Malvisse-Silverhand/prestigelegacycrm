@@ -105,7 +105,7 @@ export default async function StatisticsPage({
                 href={`/statistics?scope=${tab.key}`}
                 className={
                   scope === tab.key
-                    ? "rounded-[8px] bg-navy px-3.5 py-[7px] text-xs font-semibold text-white"
+                    ? "rounded-[8px] bg-brand px-3.5 py-[7px] text-xs font-semibold text-white"
                     : "px-3.5 py-[7px] text-xs font-semibold text-muted"
                 }
               >

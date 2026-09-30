@@ -634,7 +634,7 @@ export function PageBuilder({ page }: { page: LandingPageDetail }) {
                       type="button"
                       disabled={slugPending || !agentSlugInput.trim()}
                       onClick={saveAgentLink}
-                      className="flex-none rounded-[9px] bg-navy px-3.5 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
+                      className="flex-none rounded-[9px] bg-brand px-3.5 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
                     >
                       {slugPending ? "Saving…" : agentSlugSaved ? "Saved" : "Save agent link"}
                     </button>

@@ -130,7 +130,7 @@ export function ServicingClientModal({
                   key={s.id}
                   type="button"
                   onClick={() => onSelectSibling(s.id)}
-                  className="press rounded-[7px] border border-[#f0dfb4] bg-white px-2 py-1 text-[10.5px] font-semibold text-navy hover:border-navy"
+                  className="press rounded-[7px] border border-[#f0dfb4] bg-white px-2 py-1 text-[10.5px] font-semibold text-navy hover:border-brand"
                 >
                   {s.certificateNo ?? s.planName}
                 </button>

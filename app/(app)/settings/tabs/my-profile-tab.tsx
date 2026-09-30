@@ -119,7 +119,7 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
             type="button"
             disabled={pending || !dirty}
             onClick={save}
-            className="press mt-1 inline-flex h-10 items-center justify-center rounded-[10px] bg-navy px-5 text-[12.5px] font-bold text-white disabled:opacity-50"
+            className="press mt-1 inline-flex h-10 items-center justify-center rounded-[10px] bg-brand px-5 text-[12.5px] font-bold text-white disabled:opacity-50"
           >
             {pending ? "Saving…" : "Save changes"}
           </button>
@@ -182,7 +182,7 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
             type="button"
             disabled={imagesPending || !imagesDirty}
             onClick={saveImages}
-            className="press mt-1 inline-flex h-10 items-center justify-center rounded-[10px] bg-navy px-5 text-[12.5px] font-bold text-white disabled:opacity-50"
+            className="press mt-1 inline-flex h-10 items-center justify-center rounded-[10px] bg-brand px-5 text-[12.5px] font-bold text-white disabled:opacity-50"
           >
             {imagesPending ? "Saving…" : "Save images"}
           </button>

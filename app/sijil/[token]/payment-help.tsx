@@ -258,7 +258,7 @@ function PaymentHelpModal({
                 <ol className="mt-3.5 flex flex-col border-l-2 border-sand-2 pl-4">
                   {EASIPAY_GUIDE.steps.map((step, i) => (
                     <li key={step.title} className="relative pb-3.5">
-                      <span className="absolute -left-[27px] top-0 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-navy text-[10.5px] font-extrabold text-white">
+                      <span className="absolute -left-[27px] top-0 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-brand text-[10.5px] font-extrabold text-white">
                         {i + 1}
                       </span>
                       <span className="block text-[12.5px] font-bold leading-snug text-navy">{step.title}</span>

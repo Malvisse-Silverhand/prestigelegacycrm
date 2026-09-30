@@ -92,7 +92,7 @@ function WaitingPeriods({ commencementDate, today }: { commencementDate: string;
             href={GREAT_JOURNEY_GUIDE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+            className="rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
           >
             The Great Journey guide ↗
           </a>
@@ -100,7 +100,7 @@ function WaitingPeriods({ commencementDate, today }: { commencementDate: string;
             href={CLIENT_PORTAL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+            className="rounded-[9px] border border-sand-2 bg-cream px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
           >
             Panel clinic &amp; hospital locator ↗
           </a>

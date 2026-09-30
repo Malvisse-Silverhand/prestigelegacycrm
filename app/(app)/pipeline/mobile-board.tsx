@@ -193,7 +193,7 @@ export function MobileBoard({
 
   return (
     <div className="lg:hidden">
-      <div className="bg-navy px-5 pt-3.5 pb-4 text-white">
+      <div className="bg-brand px-5 pt-3.5 pb-4 text-white">
         <div className="text-base font-bold">Sales Pipeline</div>
         <div className="mt-3.5 flex gap-1.5 overflow-x-auto">
           {visibleStages.map((s) => (
@@ -221,7 +221,7 @@ export function MobileBoard({
         {visibleStages.map((s) => (
           <span
             key={s.value}
-            className={`h-[6px] w-[6px] rounded-full ${s.value === mobileStage ? "bg-navy" : "bg-sand-2"}`}
+            className={`h-[6px] w-[6px] rounded-full ${s.value === mobileStage ? "bg-brand" : "bg-sand-2"}`}
           />
         ))}
         <span className="ml-1 text-[10.5px] font-semibold text-taupe">
@@ -278,7 +278,7 @@ export function MobileBoard({
 
       {drag && (
         <>
-          <div className="pointer-events-none fixed inset-x-4 top-3 z-30 rounded-[12px] bg-navy px-4 py-2.5 text-center text-[12.5px] font-bold text-white shadow-elevated">
+          <div className="pointer-events-none fixed inset-x-4 top-3 z-30 rounded-[12px] bg-brand px-4 py-2.5 text-center text-[12.5px] font-bold text-white shadow-elevated">
             Drop to move to <span className="text-gold">{labelFor(mobileStage)}</span>
           </div>
           <div
@@ -294,7 +294,7 @@ export function MobileBoard({
       {/* A rejected move already bounced the card back and says why in the
           error toast -- offering to "undo" it as well would contradict that. */}
       {undo && !moveError && (
-        <div className="fixed inset-x-4 bottom-[76px] z-20 flex items-center justify-between gap-3 rounded-[12px] bg-navy px-4 py-3 text-[12.5px] font-semibold text-white shadow-elevated">
+        <div className="fixed inset-x-4 bottom-[76px] z-20 flex items-center justify-between gap-3 rounded-[12px] bg-brand px-4 py-3 text-[12.5px] font-semibold text-white shadow-elevated">
           <span className="truncate">Moved to {labelFor(undo.to)}</span>
           <button type="button" onClick={handleUndo} className="flex-none font-bold text-gold">
             Undo
@@ -375,7 +375,7 @@ function MobileCard({
         </div>
       )}
       <div className="mt-2 grid grid-cols-4 gap-1.5">
-        <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-navy" aria-label="Call">
+        <a href={`tel:${lead.phone}`} className="flex h-11 items-center justify-center rounded-[11px] bg-brand" aria-label="Call">
           <PhoneIcon width={15} height={15} className="text-gold" />
         </a>
         <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center rounded-[11px] bg-green" aria-label="WhatsApp">

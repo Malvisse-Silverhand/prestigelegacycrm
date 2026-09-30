@@ -116,7 +116,7 @@ export function LeadQuotations({
                   <button
                     type="button"
                     onClick={() => onOpen(q)}
-                    className="rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-navy"
+                    className="rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[11.5px] font-semibold text-navy hover:border-brand"
                   >
                     {editable ? "Preview / Edit" : "Preview quotation"}
                   </button>

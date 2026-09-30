@@ -192,7 +192,7 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+                className="rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
               >
                 {pending ? "Saving…" : "Save changes"}
               </button>

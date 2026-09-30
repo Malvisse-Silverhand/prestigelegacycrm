@@ -10,7 +10,7 @@ import { formatTime, isoToLocalParts, relativeToNow, APPOINTMENT_STATUS_LABEL } 
 import { CalendarIcon } from "@/components/icons";
 
 const STATUS_TONE: Record<string, string> = {
-  scheduled: "bg-navy text-white",
+  scheduled: "bg-brand text-white",
   completed: "bg-success-bg text-green",
   cancelled: "bg-sand-2 text-taupe-2",
 };

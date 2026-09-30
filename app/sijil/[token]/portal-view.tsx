@@ -379,7 +379,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
   return (
     <div className="relative flex min-h-screen flex-col bg-cream">
       {/* Top bar */}
-      <header className="flex items-center gap-2.5 bg-navy px-4 py-3">
+      <header className="flex items-center gap-2.5 bg-brand px-4 py-3">
         <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-gold">
           <IconShield className="h-[17px] w-[17px] text-navy" />
         </div>
@@ -445,7 +445,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
 
         {tab === "cert" && (
           <>
-            <section className="rounded-[20px] bg-navy p-[18px] shadow-[0_8px_20px_-12px_rgba(15,37,64,.4)]">
+            <section className="rounded-[20px] bg-brand p-[18px] shadow-[0_8px_20px_-12px_rgba(15,37,64,.4)]">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-gold">{t.certEyebrow}</div>
                 {payload.planCategory !== "other" && (
@@ -568,7 +568,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
               rel="noopener noreferrer"
               className="press flex min-h-11 items-center gap-3 rounded-[16px] bg-gold p-4 shadow-[0_10px_22px_-14px_rgba(15,37,64,.55)]"
             >
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-navy">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-brand">
                 <IconCert className="h-[19px] w-[19px] text-gold" />
               </span>
               <span className="min-w-0 flex-1">
@@ -598,7 +598,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
                     </div>
                     <span
                       className={`flex-none rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.05em] ${
-                        b.isBase ? "bg-navy text-gold" : "bg-sand-3 text-muted"
+                        b.isBase ? "bg-brand text-gold" : "bg-sand-3 text-muted"
                       }`}
                     >
                       {b.isBase ? t.base : t.rider}
@@ -787,7 +787,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
               rel="noopener noreferrer"
               className="press flex min-h-11 items-center gap-3 rounded-[16px] bg-gold p-4 shadow-[0_10px_22px_-14px_rgba(15,37,64,.55)]"
             >
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-navy">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-brand">
                 <IconCert className="h-[19px] w-[19px] text-gold" />
               </span>
               <span className="min-w-0 flex-1">
@@ -814,7 +814,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
                     onClick={() => setGuideTab(key)}
                     aria-pressed={on}
                     className={`press flex min-h-[54px] flex-1 flex-col items-center justify-center gap-0.5 rounded-[16px] border px-2 ${
-                      on ? "border-navy bg-navy text-white" : "border-sand bg-white text-navy"
+                      on ? "border-brand bg-brand text-white" : "border-sand bg-white text-navy"
                     }`}
                   >
                     <span className="text-[13px] font-bold tracking-[-0.01em]">
@@ -1021,7 +1021,7 @@ export function PortalView({ payloads }: { payloads: PortalPayload[] }) {
             <button
               type="button"
               onClick={() => dismissOnboard(false)}
-              className="press mt-4 flex min-h-12 w-full items-center justify-center rounded-[12px] bg-navy p-3.5 text-[13px] font-bold text-white"
+              className="press mt-4 flex min-h-12 w-full items-center justify-center rounded-[12px] bg-brand p-3.5 text-[13px] font-bold text-white"
             >
               {t.onboardCta}
             </button>
@@ -1084,7 +1084,7 @@ function CertificateCards({
 
   return (
     <div className="flex min-h-screen flex-col bg-cream">
-      <header className="flex items-center gap-2.5 bg-navy px-4 py-3">
+      <header className="flex items-center gap-2.5 bg-brand px-4 py-3">
         <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-gold">
           <IconShield className="h-[17px] w-[17px] text-navy" />
         </div>
@@ -1201,7 +1201,7 @@ function AgentCard({ payload, t, lang }: { payload: PortalPayload; t: Copy; lang
     <section className="rounded-[16px] border border-sand bg-white p-4 shadow-card">
       <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-taupe-2">{t.agentTitle}</div>
       <div className="mt-2.5 flex items-start gap-3">
-        <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-navy text-[14px] font-bold text-gold">
+        <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-brand text-[14px] font-bold text-gold">
           {payload.agent.initials}
         </span>
         <span className="min-w-0 flex-1">

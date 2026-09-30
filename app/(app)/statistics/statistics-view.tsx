@@ -4,7 +4,7 @@ export function StatCard({
   label, value, delta, dark,
 }: { label: string; value: string | number; delta?: string | null; dark?: boolean }) {
   return (
-    <div className={dark ? "rounded-2xl bg-navy p-4" : "rounded-2xl border border-sand bg-white p-4"}>
+    <div className={dark ? "rounded-2xl bg-brand p-4" : "rounded-2xl border border-sand bg-white p-4"}>
       <div className={`text-[11px] font-bold tracking-[0.08em] uppercase ${dark ? "text-gold" : "text-taupe"}`}>
         {label}
       </div>
@@ -57,7 +57,7 @@ export function LeagueTable({
             <div key={row.id} className="grid grid-cols-[40px_2fr_.7fr_.8fr_.8fr_.8fr_.9fr_.9fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
               <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-brand text-[11px] font-bold text-gold">
                   {row.avatarInitials || row.name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
                 </span>
                 <div>
@@ -113,7 +113,7 @@ export function AgentTable({
             <div key={row.id} className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr] items-center border-b border-sand-3 px-[22px] py-3.5 last:border-b-0">
               <div className={`text-[13px] font-extrabold ${i === 0 ? "text-warn-gold-text" : "text-taupe"}`}>{i + 1}</div>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-navy text-[11px] font-bold text-gold">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-brand text-[11px] font-bold text-gold">
                   {row.avatar_initials || row.full_name.split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase()}
                 </span>
                 <span className="text-[13px] font-bold text-navy">{row.full_name}</span>

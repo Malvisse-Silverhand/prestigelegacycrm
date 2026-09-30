@@ -8,7 +8,7 @@
 export function PortalClosed() {
   return (
     <div className="flex min-h-screen flex-col bg-cream">
-      <header className="flex items-center gap-2.5 bg-navy px-4 py-3">
+      <header className="flex items-center gap-2.5 bg-brand px-4 py-3">
         <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-gold">
           <svg viewBox="0 0 24 24" className="h-[17px] w-[17px] text-navy" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z" />

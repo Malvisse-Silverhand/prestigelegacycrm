@@ -57,7 +57,7 @@ function QuotationModalPanel({ url, title, onClose }: { url: string; title: stri
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-navy/55 p-4">
       <div className="flex h-[92vh] w-full max-w-[980px] flex-col overflow-hidden rounded-[20px] bg-cream shadow-elevated">
-        <div className="flex items-center justify-between border-b border-sand bg-navy px-5 py-3">
+        <div className="flex items-center justify-between border-b border-sand bg-brand px-5 py-3">
           <span className="text-[13px] font-semibold text-white">{title}</span>
           <button
             type="button"

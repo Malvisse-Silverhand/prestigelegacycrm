@@ -15,7 +15,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   return (
     <div className="flex flex-1 items-center justify-center bg-cream px-4 py-10">
       <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card bg-cream shadow-elevated">
-        <div className="bg-navy px-8 pt-10 pb-11 text-white sm:px-10">
+        <div className="bg-brand px-8 pt-10 pb-11 text-white sm:px-10">
           <div className="flex items-center gap-3">
             <Image
               src="/logo.jpeg"

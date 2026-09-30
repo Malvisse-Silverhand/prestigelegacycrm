@@ -29,7 +29,7 @@ export function LeaderboardCard({
   title?: string;
 }) {
   return (
-    <div className="rounded-2xl bg-navy p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
+    <div className="rounded-2xl bg-brand p-3.5 dark:ring-1 dark:ring-white/10 lg:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold">

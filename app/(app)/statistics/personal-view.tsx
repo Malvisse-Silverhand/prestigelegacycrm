@@ -55,7 +55,7 @@ export function PersonalPanel({
   return (
     <div className="rounded-2xl border border-sand bg-cream p-4 lg:p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[14px] bg-navy text-[15px] font-bold text-gold">
+        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[14px] bg-brand text-[15px] font-bold text-gold">
           {initialsOf(member)}
         </div>
         <div className="min-w-0 flex-1">
@@ -64,7 +64,7 @@ export function PersonalPanel({
               {member.fullName}
             </span>
             {isSelf && (
-              <span className="flex-none rounded-[6px] bg-navy px-2 py-[2px] text-[9.5px] font-bold tracking-[0.06em] text-white">
+              <span className="flex-none rounded-[6px] bg-brand px-2 py-[2px] text-[9.5px] font-bold tracking-[0.06em] text-white">
                 YOU
               </span>
             )}
@@ -75,7 +75,7 @@ export function PersonalPanel({
         </div>
         <Link
           href={`/leads?agent=${member.id}`}
-          className="flex-none rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[11.5px] font-semibold text-navy hover:border-navy"
+          className="flex-none rounded-[9px] border border-sand-2 bg-white px-3 py-2 text-[11.5px] font-semibold text-navy hover:border-brand"
         >
           Open their leads
         </Link>
@@ -163,14 +163,14 @@ export function MemberCards({
               href={`/statistics?member=${m.id}`}
               className={`press rounded-[13px] border px-3.5 py-3 transition-colors ${
                 active
-                  ? "border-navy bg-navy"
-                  : "border-sand bg-cream hover:border-navy"
+                  ? "border-brand bg-brand"
+                  : "border-sand bg-cream hover:border-brand"
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <div
                   className={`flex h-8 w-8 flex-none items-center justify-center rounded-[10px] text-[11px] font-bold ${
-                    active ? "bg-gold text-navy" : "bg-navy text-gold"
+                    active ? "bg-gold text-navy" : "bg-brand text-gold"
                   }`}
                 >
                   {initialsOf(m)}

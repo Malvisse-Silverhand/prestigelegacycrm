@@ -63,7 +63,7 @@ export function PortalLogin({ token }: { token: string }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-cream">
-      <header className="flex items-center gap-2.5 bg-navy px-4 py-3">
+      <header className="flex items-center gap-2.5 bg-brand px-4 py-3">
         <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-gold">
           <svg viewBox="0 0 24 24" className="h-[17px] w-[17px] text-navy" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 3 4 6.2v5.4c0 4.4 3.3 8.5 8 9.4 4.7-.9 8-5 8-9.4V6.2z" />
@@ -91,7 +91,7 @@ export function PortalLogin({ token }: { token: string }) {
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="rounded-[20px] border border-sand bg-white p-6 shadow-card">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-navy">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-brand">
             <svg viewBox="0 0 24 24" className="h-6 w-6 text-gold" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <rect x="4.5" y="10.5" width="15" height="10" rx="3" />
               <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
@@ -140,7 +140,7 @@ export function PortalLogin({ token }: { token: string }) {
             <button
               type="submit"
               disabled={pending || identifier.trim().length === 0 || nric.length !== 4}
-              className="press mt-1 flex min-h-12 items-center justify-center rounded-[12px] bg-navy text-[13.5px] font-bold text-white disabled:opacity-50"
+              className="press mt-1 flex min-h-12 items-center justify-center rounded-[12px] bg-brand text-[13.5px] font-bold text-white disabled:opacity-50"
             >
               {pending ? t.submitting : t.submit}
             </button>

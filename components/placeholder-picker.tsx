@@ -50,7 +50,7 @@ export function PlaceholderPicker({
                 type="button"
                 onClick={() => onInsert(p.token)}
                 title={p.hint}
-                className="press rounded-[7px] border border-sand-2 bg-white px-2 py-1 font-mono text-[10.5px] font-bold text-navy hover:border-navy"
+                className="press rounded-[7px] border border-sand-2 bg-white px-2 py-1 font-mono text-[10.5px] font-bold text-navy hover:border-brand"
               >
                 {p.token}
               </button>

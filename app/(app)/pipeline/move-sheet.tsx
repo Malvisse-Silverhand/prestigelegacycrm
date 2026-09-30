@@ -66,7 +66,7 @@ export function MoveSheet({
           <button
             type="button"
             onClick={() => pick(next.value)}
-            className="mb-3 flex w-full items-center justify-center rounded-[12px] bg-navy px-4 py-3 text-[13px] font-bold text-white"
+            className="mb-3 flex w-full items-center justify-center rounded-[12px] bg-brand px-4 py-3 text-[13px] font-bold text-white"
           >
             Next: {next.label}
           </button>

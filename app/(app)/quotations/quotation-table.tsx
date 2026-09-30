@@ -124,7 +124,7 @@ export function QuotationTable({
               type="button"
               disabled={pending}
               onClick={() => applyStatus([...selected], s)}
-              className="rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[12px] font-semibold text-navy capitalize hover:border-navy disabled:opacity-60"
+              className="rounded-[9px] border border-sand-2 bg-white px-3 py-1.5 text-[12px] font-semibold text-navy capitalize hover:border-brand disabled:opacity-60"
             >
               {s}
             </button>
@@ -153,7 +153,7 @@ export function QuotationTable({
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-card">
         <div className="overflow-x-auto">
           <div className="min-w-[820px]">
-            <div className={`${GRID} bg-navy px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase`}>
+            <div className={`${GRID} bg-brand px-5 py-[13px] text-[10.5px] font-bold tracking-[0.07em] text-white/72 uppercase`}>
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -184,7 +184,7 @@ export function QuotationTable({
                     checked={selected.has(q.id)}
                     onChange={() => toggle(q.id)}
                     aria-label={`Select quotation for ${q.clientName}`}
-                    className="h-[15px] w-[15px] cursor-pointer accent-navy"
+                    className="h-[15px] w-[15px] cursor-pointer accent-brand"
                   />
                 </div>
                 <div className="truncate font-bold text-navy">
@@ -260,7 +260,7 @@ export function QuotationTable({
                   disabled={pending}
                   onClick={() => applyStatus([editing.id], s)}
                   className={`rounded-[10px] border px-3 py-2.5 text-[12.5px] font-semibold capitalize disabled:opacity-60 ${
-                    editing.status === s ? "border-navy bg-navy text-white" : "border-sand-2 bg-cream text-navy"
+                    editing.status === s ? "border-brand bg-brand text-white" : "border-sand-2 bg-cream text-navy"
                   }`}
                 >
                   {s}

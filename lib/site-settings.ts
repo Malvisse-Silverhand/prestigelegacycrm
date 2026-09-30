@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isHexColor } from "@/lib/brand-theme";
 
 export type TrackingSettings = {
   head: string;
@@ -53,4 +54,32 @@ export const getBrandCoverUrl = cache(async (): Promise<string | null> => {
 
   if (error || !data) return null;
   return (data.brand_cover_url as string | null) ?? null;
+});
+
+// The system-wide brand colour, or null for the default Prestige Blue. Read on
+// every render by app/layout.tsx, so it is tolerant in the same way as the
+// logo/cover getters (no column yet, no row, a bad value -> the default) and it
+// re-validates whatever it reads: the value is written into a <style> tag, so
+// nothing but a plain #rrggbb is ever allowed through.
+export const getBrandPrimary = cache(async (): Promise<string | null> => {
+  // This runs in the root layout, so it sits in front of EVERY page -- login
+  // included. It must therefore never be able to break or stall one: any
+  // failure (missing service key in a preview environment, network error,
+  // Supabase slow to answer) quietly falls back to the default colour, and a
+  // short timeout keeps a slow answer from holding back the first byte.
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("site_settings")
+      .select("brand_primary")
+      .eq("id", true)
+      .abortSignal(AbortSignal.timeout(1500))
+      .maybeSingle();
+
+    if (error || !data) return null;
+    const value = data.brand_primary as string | null;
+    return isHexColor(value) ? value.toLowerCase() : null;
+  } catch {
+    return null;
+  }
 });

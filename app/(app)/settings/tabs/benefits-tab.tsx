@@ -127,7 +127,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
           <button
             type="button"
             onClick={startNew}
-            className="flex-none rounded-[10px] bg-navy px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
+            className="flex-none rounded-[10px] bg-brand px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
           >
             + Add benefit
           </button>
@@ -192,7 +192,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
               type="button"
               onClick={handleSave}
               disabled={pending || !draft.name.trim()}
-              className="rounded-[10px] bg-navy px-4 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
+              className="rounded-[10px] bg-brand px-4 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
             >
               {pending ? "Saving…" : "Save benefit"}
             </button>
@@ -241,7 +241,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                       disabled={pending || i === 0}
                       aria-label={`Move ${b.name} up`}
                       title="Move up"
-                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-navy disabled:opacity-35"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-brand disabled:opacity-35"
                     >
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                         <path d="m6 14 6-6 6 6" />
@@ -253,7 +253,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                       disabled={pending || i === benefits.length - 1}
                       aria-label={`Move ${b.name} down`}
                       title="Move down"
-                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-navy disabled:opacity-35"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2 py-1.5 text-navy hover:border-brand disabled:opacity-35"
                     >
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                         <path d="m6 10 6 6 6-6" />
@@ -265,7 +265,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                         setError(null);
                         setDraft(draftFrom(b));
                       }}
-                      className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-navy"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-brand"
                     >
                       Edit
                     </button>
@@ -273,7 +273,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                       type="button"
                       onClick={() => toggleActive(b)}
                       disabled={pending}
-                      className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-navy disabled:opacity-50"
+                      className="rounded-[8px] border border-sand-2 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-navy hover:border-brand disabled:opacity-50"
                     >
                       {b.isActive ? "Retire" : "Bring back"}
                     </button>

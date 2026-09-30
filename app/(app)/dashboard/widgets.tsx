@@ -110,14 +110,14 @@ export function ManageWidgets({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`press flex items-center gap-1.5 rounded-[10px] border border-sand-2 bg-cream font-semibold text-navy hover:border-navy dark:border-white/10 dark:bg-[#12283f] dark:text-[#eef3f8] ${
+        className={`press flex items-center gap-1.5 rounded-[10px] border border-sand-2 bg-cream font-semibold text-navy hover:border-brand dark:border-white/10 dark:bg-[#12283f] dark:text-[#eef3f8] ${
           compact ? "h-9 px-2.5 text-[12px]" : "px-[13px] py-[10px] text-[12.5px]"
         }`}
       >
         <SlidersIcon />
         {compact ? "Widgets" : "Manage Widgets"}
         {hiddenCount > 0 && (
-          <span className="rounded-[5px] bg-navy px-1.5 py-[1px] text-[9.5px] font-bold text-white dark:bg-gold dark:text-navy">
+          <span className="rounded-[5px] bg-brand px-1.5 py-[1px] text-[9.5px] font-bold text-white dark:bg-gold dark:text-navy">
             {hiddenCount} off
           </span>
         )}

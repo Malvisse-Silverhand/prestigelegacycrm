@@ -131,7 +131,7 @@ export function WaFlowView({
             <button
               type="button"
               onClick={() => { setEditing(null); setModalOpen(true); }}
-              className="flex items-center gap-2 rounded-[11px] bg-navy px-[17px] py-3 text-[13px] font-semibold text-white"
+              className="flex items-center gap-2 rounded-[11px] bg-brand px-[17px] py-3 text-[13px] font-semibold text-white"
             >
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth={2.4} strokeLinecap="round">
                 <path d="M12 5v14M5 12h14" />
@@ -146,7 +146,7 @@ export function WaFlowView({
         <button
           type="button"
           onClick={() => setCategory("all")}
-          className={category === "all" ? "rounded-full bg-navy px-4 py-2 text-[12.5px] font-semibold text-white" : "rounded-full bg-info-blue-bg px-4 py-2 text-[12.5px] font-semibold text-info-blue-text"}
+          className={category === "all" ? "rounded-full bg-brand px-4 py-2 text-[12.5px] font-semibold text-white" : "rounded-full bg-info-blue-bg px-4 py-2 text-[12.5px] font-semibold text-info-blue-text"}
         >
           All
         </button>
@@ -155,7 +155,7 @@ export function WaFlowView({
             key={c.value}
             type="button"
             onClick={() => setCategory(c.value)}
-            className={`rounded-full px-4 py-2 text-[12.5px] font-semibold ${category === c.value ? "bg-navy text-white" : c.cls}`}
+            className={`rounded-full px-4 py-2 text-[12.5px] font-semibold ${category === c.value ? "bg-brand text-white" : c.cls}`}
           >
             {c.label}
           </button>
@@ -353,7 +353,7 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
           type="button"
           onClick={() => onChange(value)}
           className={`flex items-center gap-1.5 rounded-[7px] px-3 py-2 text-[12px] font-bold ${
-            view === value ? "bg-navy text-white" : "text-taupe"
+            view === value ? "bg-brand text-white" : "text-taupe"
           }`}
         >
           <Icon width={14} height={14} />

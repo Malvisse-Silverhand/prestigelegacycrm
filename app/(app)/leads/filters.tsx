@@ -56,7 +56,7 @@ export function LeadFiltersBar({
         {isLeadView(view) && (
           <>
             <input type="hidden" name="view" value={view} />
-            <span className="flex items-center gap-1.5 rounded-[10px] border border-navy bg-navy px-2.5 py-2 text-[12px] font-semibold text-white lg:rounded-[11px] lg:px-3 lg:py-[9px] lg:text-[12.5px]">
+            <span className="flex items-center gap-1.5 rounded-[10px] border border-brand bg-brand px-2.5 py-2 text-[12px] font-semibold text-white lg:rounded-[11px] lg:px-3 lg:py-[9px] lg:text-[12.5px]">
               {LEAD_VIEWS[view]}
               <Link
                 href={`/leads${withoutView.size > 0 ? `?${withoutView}` : ""}`}
@@ -89,7 +89,7 @@ export function LeadFiltersBar({
         >
           Filters
           {activeCount > 0 && (
-            <span className="rounded-full bg-navy px-1.5 py-[1px] text-[10px] font-bold text-white">{activeCount}</span>
+            <span className="rounded-full bg-brand px-1.5 py-[1px] text-[10px] font-bold text-white">{activeCount}</span>
           )}
           <ChevronDownIcon
             width={13}
@@ -103,7 +103,7 @@ export function LeadFiltersBar({
             the extra filters are applied together when the panel closes. */}
         <button
           type="submit"
-          className="press flex-none rounded-[10px] bg-navy px-3.5 py-2 text-[12.5px] font-semibold text-white lg:hidden"
+          className="press flex-none rounded-[10px] bg-brand px-3.5 py-2 text-[12.5px] font-semibold text-white lg:hidden"
         >
           Search
         </button>

@@ -93,7 +93,7 @@ export function TeamRoster({
                   }
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[13px] bg-navy text-sm font-bold text-gold">
+                    <div className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[13px] bg-brand text-sm font-bold text-gold">
                       {initialsOf(m.full_name, m.avatar_initials)}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -138,7 +138,7 @@ export function TeamRoster({
                       href={`/dashboard?monitor=${m.id}`}
                       className={
                         needsAttention
-                          ? "flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[11px] bg-navy text-[12.5px] font-semibold text-white"
+                          ? "flex h-10 flex-1 items-center justify-center gap-[7px] rounded-[11px] bg-brand text-[12.5px] font-semibold text-white"
                           : "flex h-10 flex-1 items-center justify-center rounded-[11px] border border-sand-2 bg-cream text-[12.5px] font-semibold text-navy"
                       }
                     >
@@ -183,7 +183,7 @@ export function TeamRoster({
 
 function StatCard({ label, value, dark }: { label: string; value: string | number; dark?: boolean }) {
   return (
-    <div className={dark ? "rounded-2xl bg-navy p-4" : "rounded-2xl border border-sand bg-white p-4"}>
+    <div className={dark ? "rounded-2xl bg-brand p-4" : "rounded-2xl border border-sand bg-white p-4"}>
       <div className={`text-[11.5px] font-semibold ${dark ? "text-white/60" : "text-muted"}`}>{label}</div>
       <div className={`text-2xl font-extrabold tracking-[-0.02em] ${dark ? "text-white" : "text-navy"}`}>{value}</div>
     </div>

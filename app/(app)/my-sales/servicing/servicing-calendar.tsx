@@ -232,7 +232,7 @@ export function ServicingCalendar({
               }`}
               className={`relative min-h-[54px] rounded-[9px] border px-1 py-1.5 text-left transition-colors disabled:cursor-default ${
                 sel
-                  ? "border-navy bg-navy"
+                  ? "border-brand bg-brand"
                   : entries.length === 0
                     ? "border-sand-3 bg-white"
                     : allPaid
