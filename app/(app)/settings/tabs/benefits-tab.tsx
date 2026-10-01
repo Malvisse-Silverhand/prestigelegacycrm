@@ -156,7 +156,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
             </label>
             <label className="block">
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">
-                Standard sum covered (RM)
+                Basic Sum Covered BSC (RM)
               </span>
               <input
                 type="number"
@@ -164,7 +164,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                 value={draft.defaultSumCovered}
                 onChange={(e) => setDraft({ ...draft, defaultSumCovered: e.target.value })}
                 placeholder="Leave blank if it varies"
-                aria-label="Standard sum covered"
+                aria-label="Basic Sum Covered BSC"
                 className={`mt-[5px] ${input}`}
               />
             </label>
@@ -226,7 +226,7 @@ export function BenefitsTab({ benefits, canManage }: { benefits: BenefitOption[]
                     )}
                   </div>
                   <div className="mt-0.5 text-[11.5px] font-medium text-taupe">
-                    Standard sum covered {fmtRM(b.defaultSumCovered)}
+                    Basic Sum Covered BSC {fmtRM(b.defaultSumCovered)}
                   </div>
                   {b.description && (
                     <p className="mt-1 text-[11.5px] font-medium text-muted">{b.description}</p>
