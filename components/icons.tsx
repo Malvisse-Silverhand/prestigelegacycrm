@@ -246,3 +246,14 @@ export const TrainingIcon = (p: IconProps) =>
       <path d="M22 10v6" />
     </>,
   );
+
+// Lifebuoy: the Support entry pinned above Training in the shell.
+export const SupportIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9" />
+    </>,
+  );

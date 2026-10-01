@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { MOBILE_NAV_LEFT, MOBILE_NAV_RIGHT, visibleNav, TRAINING_URL } from "@/lib/nav";
+import { MOBILE_NAV_LEFT, MOBILE_NAV_RIGHT, visibleNav, TRAINING_URL, SUPPORT_NAV } from "@/lib/nav";
 import { SignOutIcon, ChevronDownIcon, TrainingIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme";
 import { useSignOut } from "@/lib/use-sign-out";
@@ -106,6 +106,11 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
   // section, or when toggled open by hand so a submenu is reachable from
   // anywhere in the drawer, not only after already being on its parent page.
   const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
+  const support = SUPPORT_NAV;
+  const SupportGlyph = support.icon;
+  const supportIn = isActive(pathname, support.href);
+  const supportOpen = openOverride[support.href] ?? supportIn;
+  const supportActive = supportIn && !support.children?.some((c) => c.href === pathname);
 
   return (
     // z-50, not z-40: a page's own sticky header now uses backdrop-blur
@@ -206,7 +211,52 @@ function MenuDrawer({ profile, onClose }: { profile: CurrentProfile; onClose: ()
 
         {/* Same fixture the desktop sidebar pins above its profile card --
             leaves the CRM entirely, so it sits outside the scrolling list. */}
-        <div className="mt-auto px-3">
+        <div className="mt-auto flex flex-col gap-0.5 px-3">
+          <div>
+            <div
+              className={
+                supportActive
+                  ? "flex items-center rounded-[10px] bg-gold/[.14] py-[2px] pr-[6px] pl-[13px] font-semibold text-gold"
+                  : "flex items-center rounded-[10px] py-[2px] pr-[6px] pl-[13px] font-medium text-white/65"
+              }
+            >
+              <Link href={support.href} onClick={onClose} className="flex flex-1 items-center gap-[11px] py-[9px] text-[13.5px]">
+                <SupportGlyph width={17} height={17} />
+                {support.label}
+              </Link>
+              <button
+                type="button"
+                onClick={() => setOpenOverride((o) => ({ ...o, [support.href]: !supportOpen }))}
+                aria-expanded={supportOpen}
+                aria-label={`${supportOpen ? "Collapse" : "Expand"} ${support.label}`}
+                className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] hover:bg-white/10"
+              >
+                <ChevronDownIcon
+                  width={14}
+                  height={14}
+                  className={`transition-transform ${supportOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+            {supportOpen && (
+              <div className="animate-rise mt-0.5 mb-1 flex flex-col gap-0.5 pl-[30px]">
+                {support.children?.map((child) => (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    onClick={onClose}
+                    className={
+                      pathname === child.href
+                        ? "rounded-[9px] bg-gold px-[11px] py-[6px] text-[13px] font-bold text-navy"
+                        : "rounded-[9px] px-[11px] py-[6px] text-[13px] font-medium text-white/55"
+                    }
+                  >
+                    {child.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
           <a
             href={TRAINING_URL}
             target="_blank"

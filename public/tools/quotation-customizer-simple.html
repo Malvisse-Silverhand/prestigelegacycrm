@@ -147,6 +147,10 @@
   }
   #t4u-qc .qc-table tbody tr:nth-child(odd) td:not(.lbl):not(.desc){background:#fffdf6}
   #t4u-qc .col-cell{min-width:160px; text-align:center}
+  /* Plan-column content is centred (beats the generic left-aligned td rule),
+     and the value next to a checkbox no longer stretches to push it left. */
+  #t4u-qc .qc-table td.col-cell{text-align:center}
+  #t4u-qc .qc-table td.col-cell .opt-wrap .val{flex:0 1 auto; min-width:0}
   #t4u-qc .lbl .b-name{font-weight:700}
   #t4u-qc .badge-rider{
     display:inline-block; margin-top:5px; font-size:9px; font-weight:800; letter-spacing:.4px;
@@ -323,8 +327,7 @@
   <div class="qc-brand" id="qc-brand">
     <div class="qc-logo qc-logo-left" id="logoLeft"></div>
     <div class="qc-head-mid">
-      <div class="eyebrow" id="qcEyebrow">Kad Medikal</div>
-      <h1 id="qcTitle">Quotation Kad Medikal — i-Medi Evolusi (Simple)</h1>
+            <h1 id="qcTitle">Quotation Kad Medikal</h1>
     </div>
     <div class="qc-logo qc-logo-right" id="logoRight"></div>
   </div>
@@ -493,7 +496,7 @@
   function naText(code, anb){
     if(!code) return '';
     if(code==='GENDER') return L('Pilih jantina untuk lihat caruman.','Select a gender to see the contribution.');
-    if(code==='ABOVE') return L(`Umur ANB ${anb} melebihi jadual kadar (maks 60). Perlu underwriting.`,`Age next birthday ${anb} is above the rate table (max 60). Rates need underwriting.`);
+    if(code==='ABOVE') return ''; // no wording above the rate table, per Kamal
     if(code==='SMOKER18') return L('Kadar perokok bermula dari ANB 18.','Smoker rates start from age next birthday 18.');
     return L(`Tiada kadar untuk ANB ${anb}.`,`No rate available for age next birthday ${anb}.`);
   }
@@ -505,7 +508,7 @@
   const UI = {
     bm:{
       eyebrowMedical:'Kad Medikal',
-      titleMedical:'Quotation Kad Medikal — i-Medi Evolusi (Simple)',
+      titleMedical:'Quotation Kad Medikal',
       profName:'Nama', profDob:'Tarikh Lahir', profAge:'Umur (ANB)', profPhone:'Nombor Telefon', profGender:'Jantina', profSmoke:'Merokok',
       genderNone:'Pilih', male:'Lelaki', female:'Perempuan', no:'Tidak', yes:'Ya',
       thBenefit:'Manfaat / Benefit', thDesc:'Keterangan',
@@ -515,7 +518,7 @@
     },
     en:{
       eyebrowMedical:'Medical Card',
-      titleMedical:'Medical Card Quotation — i-Medi Evolusi (Simple)',
+      titleMedical:'Medical Card Quotation',
       profName:'Name', profDob:'Date of Birth', profAge:'Age (ANB)', profPhone:'Phone Number', profGender:'Gender', profSmoke:'Smoker',
       genderNone:'Select', male:'Male', female:'Female', no:'No', yes:'Yes',
       thBenefit:'Manfaat / Benefit', thDesc:'Description',
@@ -641,7 +644,7 @@
   function updateHeaderChrome(){
     root.className = 'tab-medical' + (state.descOpen ? '' : ' desc-collapsed');
     const t = UI[state.lang];
-    setT('qcEyebrow', t.eyebrowMedical);
+    
     setT('qcTitle', t.titleMedical);
     setT('lblName', t.profName); setT('lblDob', t.profDob); setT('lblAge', t.profAge); setT('lblPhone', t.profPhone);
     setT('lblGender', t.profGender); setT('lblSmoke', t.profSmoke);

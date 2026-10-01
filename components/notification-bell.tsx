@@ -29,6 +29,15 @@ function CakeIcon({ className }: { className?: string }) {
   );
 }
 
+function TicketIcon({ className }: { className?: string }) {
+  return (
+    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z" />
+      <path d="M13 5v14" strokeDasharray="2 3" />
+    </svg>
+  );
+}
+
 // A small badge for the kinds computed live (birthday, contribution due /
 // overdue) -- the original appointment_reminder kind, and anything else not
 // listed here, keeps the plain dot-only look it always had.
@@ -50,6 +59,12 @@ function kindBadge(kind: string) {
       return (
         <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-alert-red-bg text-alert-red dark:bg-alert-red/20">
           <AlertIcon width={11} height={11} />
+        </span>
+      );
+    case "support_ticket":
+      return (
+        <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-info-blue-bg text-info-blue-text dark:bg-white/10">
+          <TicketIcon />
         </span>
       );
     default:

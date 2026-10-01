@@ -12,6 +12,7 @@ import {
   WaFlowIcon,
   StatisticsIcon,
   SettingsIcon,
+  SupportIcon,
 } from "@/components/icons";
 
 export type NavItem = {
@@ -105,6 +106,20 @@ export const MOBILE_NAV_RIGHT = [
 export function visibleNav(role: Role) {
   return SIDEBAR_NAV.filter((item) => !item.roles || item.roles.includes(role));
 }
+
+// Pinned just above Training in the sidebar and the mobile drawer, outside the
+// role-filtered list: every role gets it. Shared here so both shells render
+// the same group.
+export const SUPPORT_NAV: NavItem = {
+  href: "/support",
+  label: "Support",
+  icon: SupportIcon,
+  children: [
+    { href: "/support/tickets", label: "Tickets" },
+    { href: "/support/changelog", label: "Changelog" },
+    { href: "/support/roadmap", label: "Roadmap" },
+  ],
+};
 
 // External, so it isn't a NavItem -- it opens a different site entirely
 // rather than routing inside the CRM, and always opens in a new tab so the
