@@ -109,6 +109,7 @@
   #t4u-qc .btn-primary{background:var(--navy); color:#fff; border-color:var(--navy)}
   #t4u-qc .btn-add{background:var(--gold); color:var(--navy); border-color:var(--gold)}
   #t4u-qc .btn-wa{background:#25D366; color:#073b21; border-color:#25D366}
+  #t4u-qc .btn-send{background:#fff; color:#0b6b36; border-color:#25D366}
   #t4u-qc .btn .sp{flex:1}
 
   /* language toggle */
@@ -210,7 +211,7 @@
 
   /* PDF mode — buka penuh description, no sticky/scroll */
   #t4u-qc.pdf .qc-scroll{overflow:visible}
-  #t4u-qc.pdf .qc-table{min-width:0; font-size:11px}
+  #t4u-qc.pdf .qc-table{min-width:0; font-size:15.5px}
   #t4u-qc.pdf .qc-table td.lbl,#t4u-qc.pdf .qc-table th.lbl,
   #t4u-qc.pdf .qc-table td.desc,#t4u-qc.pdf .qc-table th.desc{position:static; box-shadow:none}
   #t4u-qc.pdf .col-del{display:none!important}
@@ -218,12 +219,39 @@
      sebahagian quotation — sembunyi semasa tangkapan supaya eksport bersih. */
   #t4u-qc.pdf .qc-toolbar{display:none!important}
   #t4u-qc.pdf .qc-toast{display:none!important}
-  #t4u-qc.pdf{padding-bottom:14px}
+  #t4u-qc.pdf{padding-bottom:18px}
+  /* Kad butiran pelanggan (input) bukan sebahagian quotation: sembunyi dalam eksport.
+     Bar emas NAMA - AGE NEXT BIRTHDAY kekal sebagai pengenalan pelanggan. */
+  #t4u-qc.pdf .qc-profile{display:none!important}
+  #t4u-qc.pdf .opt-wrap input[type="checkbox"]{display:none!important}
+  /* Skala fon besar untuk eksport (mudah dibaca seperti quotation bercetak) */
+  #t4u-qc.pdf .qc-brand{padding:20px 28px}
+  #t4u-qc.pdf .qc-logo img{max-height:64px}
+  #t4u-qc.pdf .qc-logo-right{width:100px; height:67px; flex:0 0 100px}
+  #t4u-qc.pdf .qc-head-mid h1{font-size:28px}
+  #t4u-qc.pdf .qc-sheet-title{font-size:18.5px; padding:16px 18px; letter-spacing:.5px}
+  #t4u-qc.pdf .qc-table th,#t4u-qc.pdf .qc-table td{padding:11px 16px}
+  #t4u-qc.pdf .qc-table thead th{font-size:16px}
+  #t4u-qc.pdf .qc-table td.lbl,#t4u-qc.pdf .qc-table th.lbl{width:280px; min-width:280px; max-width:280px}
+  #t4u-qc.pdf .qc-table td.lbl .b-name{font-size:15.5px; font-weight:700; line-height:1.35}
+  #t4u-qc.pdf .qc-table td.sec{font-size:15px; padding:11px 16px; letter-spacing:1px}
+  #t4u-qc.pdf .col-cell{min-width:210px}
+  #t4u-qc.pdf .fixed-val{font-size:16px}
+  #t4u-qc.pdf .pill-val{font-size:16px; padding:4px 12px}
+  #t4u-qc.pdf .derived{font-size:18px}
+  #t4u-qc.pdf .hint{font-size:12.5px; margin-top:4px}
+  #t4u-qc.pdf .badge-rider{font-size:11px; padding:3px 9px; margin-top:6px}
+  #t4u-qc.pdf .prefix .rm{font-size:16px; color:var(--ink)}
+  #t4u-qc.pdf .plain-val{font-size:16px; font-weight:600; color:var(--ink)}
+  #t4u-qc.pdf .plain-val.big{font-size:22px; font-weight:800}
+  #t4u-qc.pdf .plain-val.sel{font-size:16px; font-weight:700}
+  #t4u-qc.pdf .plain-name{font-size:17px; font-weight:800; color:#fff}
+  #t4u-qc.pdf [id^="der-monthly-"]{font-size:22px; font-weight:800}
   /* Tandatangan ejen: hanya muncul dalam eksport, di hujung quotation. */
   #t4u-qc .qc-signoff{display:none}
   #t4u-qc.pdf .qc-signoff{
-    display:block; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);
-    text-align:center; font-size:12px; font-weight:600; color:var(--muted);
+    display:block; margin-top:18px; padding-top:14px; border-top:1px solid var(--border);
+    text-align:center; font-size:15px; font-weight:600; color:var(--muted);
   }
 
   @media (max-width:560px){
@@ -394,6 +422,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 18.5l5-5.2 3.2 3.2 2.3-2.6 4.5 4.6"/></svg>
       <span id="btnJpegTxt">Muat Turun JPEG</span>
     </button>
+    <button class="btn btn-send" id="btnSend">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+      <span id="btnSendTxt">Hantar JPEG ke Klien</span>
+    </button>
     <button class="btn btn-wa" id="btnWa">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.04c-.24.68-1.4 1.3-1.93 1.34-.5.04-.97.22-3.28-.68-2.76-1.09-4.5-3.92-4.64-4.1-.13-.18-1.1-1.47-1.1-2.8 0-1.33.7-1.98.94-2.25.24-.27.53-.34.7-.34.18 0 .35 0 .5.01.16.01.38-.06.59.45.24.58.8 2 .87 2.14.07.14.12.31.02.49-.09.18-.14.29-.27.45-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.27.14.43.12.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.6-.13.24.09 1.55.73 1.82.86.27.14.45.2.51.31.07.11.07.63-.17 1.31z"/></svg>
       <span id="btnWaTxt">Hantar WhatsApp</span>
@@ -446,7 +478,7 @@
 
   /* =================== i-MEDI EVOLUSI RATES + CALC =================== */
   /*@@CALC-START@@*/
-  const ADDON_WARD = 14, ADDON_WAIVER = 20;   // RM per bulan
+  const ADDON_WARD = 14;   // RM per bulan
   const OPTIONS = {
     '150': { idx:0, label:'OPTION 1', limit:'1.5 juta', limitNum:1500000, rb:150, rbMax:300 },
     '200': { idx:1, label:'OPTION 2', limit:'2 juta',   limitNum:2000000, rb:200, rbMax:400 }
@@ -469,10 +501,10 @@
     return a + 1;
   }
   // Pengiraan tulen satu lajur. yearly = (asas bulanan + add-on) x 12; monthly = yearly / 12.
-  // o: { dob, gender, smoke, rb:'150'|'200', ward, waiver, now }
+  // o: { dob, gender, smoke, rb:'150'|'200', ward, now }  (i-Provider Plus termasuk, tiada kos tambahan)
   function calcCol(o){
     const anb = anbOf(o.dob, o.now);
-    const addons = (o.ward ? ADDON_WARD : 0) + (o.waiver ? ADDON_WAIVER : 0);
+    const addons = (o.ward ? ADDON_WARD : 0);
     const none = na => ({ anb, base:null, addons, monthly:0, yearly:0, na });
     if(!o.dob || !anb) return none(null);
     if(!o.gender) return none('GENDER');
@@ -500,7 +532,7 @@
     if(code==='SMOKER18') return L('Kadar perokok bermula dari ANB 18.','Smoker rates start from age next birthday 18.');
     return L(`Tiada kadar untuk ANB ${anb}.`,`No rate available for age next birthday ${anb}.`);
   }
-  const colInput = c => ({ dob:state.profile.dob, gender:state.profile.gender, smoke:state.profile.smoke, rb:c.rnb, ward:c.ward, waiver:c.waiver });
+  const colInput = c => ({ dob:state.profile.dob, gender:state.profile.gender, smoke:state.profile.smoke, rb:c.rnb, ward:c.ward });
   // yearly yang diguna: nilai ditaip ejen jika ada, kalau tidak nilai kiraan jadual kadar.
   function effYearly(c, k){ const typed = String(c.yearly==null?'':c.yearly).trim(); return typed!=='' ? num(typed) : k.yearly; }
 
@@ -512,7 +544,7 @@
       profName:'Nama', profDob:'Tarikh Lahir', profAge:'Umur (ANB)', profPhone:'Nombor Telefon', profGender:'Jantina', profSmoke:'Merokok',
       genderNone:'Pilih', male:'Lelaki', female:'Perempuan', no:'Tidak', yes:'Ya',
       thBenefit:'Manfaat / Benefit', thDesc:'Keterangan',
-      colPh:'Nama / Pelan', btnAdd:'Tambah Column', btnPdf:'Muat Turun PDF', btnJpeg:'Muat Turun JPEG', btnWa:'Hantar WhatsApp', btnSave:'Simpan',
+      colPh:'Nama / Pelan', btnAdd:'Tambah Column', btnPdf:'Muat Turun PDF', btnJpeg:'Muat Turun JPEG', btnSend:'Hantar JPEG ke Klien', btnWa:'Hantar WhatsApp', btnSave:'Simpan',
       badgeRider:'Rider benefit',
       toastPdfPrep:'Menyediakan PDF…', toastPdfOk:'PDF berjaya dimuat turun ✅', toastPdfErr:'Ralat PDF: '
     },
@@ -522,7 +554,7 @@
       profName:'Name', profDob:'Date of Birth', profAge:'Age (ANB)', profPhone:'Phone Number', profGender:'Gender', profSmoke:'Smoker',
       genderNone:'Select', male:'Male', female:'Female', no:'No', yes:'Yes',
       thBenefit:'Manfaat / Benefit', thDesc:'Description',
-      colPh:'Name / Plan', btnAdd:'Add Column', btnPdf:'Download PDF', btnJpeg:'Download JPEG', btnWa:'Send WhatsApp', btnSave:'Save',
+      colPh:'Name / Plan', btnAdd:'Add Column', btnPdf:'Download PDF', btnJpeg:'Download JPEG', btnSend:'Send JPEG to Client', btnWa:'Send WhatsApp', btnSave:'Save',
       badgeRider:'Rider benefit',
       toastPdfPrep:'Preparing PDF…', toastPdfOk:'PDF downloaded successfully ✅', toastPdfErr:'PDF error: '
     }
@@ -538,7 +570,6 @@
     deduct:{bm:"Jumlah yang peserta tanggung dahulu sebelum Takaful cover bil. Hanya bayar sekali setahun (per policy year).", en:"Amount the participant pays first before Takaful covers the bill. Paid once per policy year."},
     waiverM:{bm:"i-Provider Plus — jika pemilik polisi sakit kritikal/lumpuh, caruman ditanggung GET (polisi jadi percuma).", en:"i-Provider Plus — if the policy owner suffers critical illness/disability, GET pays the contribution (policy becomes free)."},
     ward:{bm:"Elaun tunai harian semasa dimasukkan ke wad termasuk ICU. Tambah RM14 sebulan.", en:"Daily cash allowance while warded including ICU. Adds RM14 per month."},
-    waiver:{bm:"Caruman ditanggung jika berlaku sakit kritikal/lumpuh. Tambah RM20 sebulan.", en:"Contribution is waived on critical illness/disability. Adds RM20 per month."},
     allow:{bm:"Elaun tunai harian semasa dimasukkan ke Hospital Kerajaan, mengikut pilihan Room & Board.", en:"Daily cash allowance while warded in a Government Hospital, following the Room & Board choice."},
     outpatient:{bm:"Rawatan outpatient di klinik panel — hanya bayar 5% dari jumlah bil (sehingga RM500 setahun sijil) untuk klinik di bawah The Great Journey.", en:"Outpatient treatment at panel clinics — pay only 5% of the total bill (up to RM500 per certificate year) at clinics under The Great Journey."},
     cashM:{bm:"Nilai simpanan dalam polisi yang boleh dikeluarkan jika perlu.", en:"Savings value in the policy that can be withdrawn if needed."},
@@ -553,7 +584,7 @@
   }
   function checkCell(c,key,onTxt,hint){
     const on = !!c[key];
-    return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="${key}" ${on?'checked':''} title="${L('Sertakan','Include')}"><span class="${on?'fixed-val':'muted'}">${on?onTxt:'—'}</span></div><div class="hint">${hint}</div>`;
+    return `<div class="opt-wrap"><input type="checkbox" data-col="${c.id}" data-field="${key}" ${on?'checked':''} title="${L('Sertakan','Include')}"><span class="${on?'fixed-val':'muted'}">${on?onTxt:(key==='prov'?'❌':'—')}</span></div>${hint?`<div class="hint">${hint}</div>`:''}`;
   }
   const rbCell = c => `<select class="sel" data-col="${c.id}" data-field="rnb"><option value="150" ${c.rnb==='150'?'selected':''}>RM150 / ${L('hari','day')}</option><option value="200" ${c.rnb==='200'?'selected':''}>RM200 / ${L('hari','day')}</option></select>`
     + `<div class="hint" id="der-rbnote-${c.id}">${L('(Increase 20% every 5 years subject to no claim, max RM','(Increase 20% every 5 years subject to no claim, max RM')}${OPTIONS[c.rnb].rbMax})</div>`;
@@ -572,9 +603,8 @@
       {key:'lifetime', label:'Lifetime limit', def:D.lifetime, cell:staticCell('No lifetime limit')},
       {key:'rnb', label:'Room & Board for Hospital Admission', def:D.rnb, cell:rbCell},
       {key:'deduct', label:{bm:'Deductible (Dalam setahun bayar sekali sahaja)',en:'Deductible (Paid once per year)'}, def:D.deduct, cell:()=>`<span class="pill-val">RM500</span>`},
-      {key:'prov', label:'i-Provider Plus (Pelepasan Caruman)', def:D.waiverM, cell:tickCell, badge:true},
+      {key:'prov', label:'i-Provider Plus (Pelepasan Caruman)', def:D.waiverM, cell:c=>checkCell(c,'prov','✅',''), badge:true},
       {key:'ward', label:'Elaun Wad + ICU', def:D.ward, cell:c=>checkCell(c,'ward','RM100/'+L('hari','day'),'+RM'+ADDON_WARD+'/'+L('bln','mo')), badge:true},
-      {key:'waiver', label:'Pelepasan Bayaran Takaful (Payment Waiver)', def:D.waiver, cell:c=>checkCell(c,'waiver',L('Ya','Yes'),'+RM'+ADDON_WAIVER+'/'+L('bln','mo')), badge:true},
       {key:'allow', label:'Daily Hospital Allowance — Government Hospital', def:D.allow, cell:c=>`<span class="derived" id="der-allow-${c.id}">RM${OPTIONS[c.rnb].rb}</span><div class="hint">${L('auto ikut R&B','auto based on R&B')}</div>`, badge:true},
       {sec:'OUTPATIENT BENEFIT (PAY & CLAIM)'},
       {key:'emerg', label:'Emergency Accidental Treatment (within 30 days)', cell:staticCell('RM5,000')},
@@ -604,7 +634,7 @@
 
   /* ---------- STATE ---------- */
   // yearly '' = auto (daripada jadual kadar); nilai taipan menggantikannya.
-  function newCol(){ return { id:++uid, name:'', rnb:'150', death:15000, compass:2000, ward:false, waiver:false, yearly:'' }; }
+  function newCol(){ return { id:++uid, name:'', rnb:'150', death:15000, compass:2000, ward:false, prov:true, yearly:'' }; }
   state.columns = [ newCol() ];
 
   /* ---------- RENDER ---------- */
@@ -649,7 +679,7 @@
     setT('lblName', t.profName); setT('lblDob', t.profDob); setT('lblAge', t.profAge); setT('lblPhone', t.profPhone);
     setT('lblGender', t.profGender); setT('lblSmoke', t.profSmoke);
     setT('optGenderNone', t.genderNone); setT('optMale', t.male); setT('optFemale', t.female); setT('optNon', t.no); setT('optSmoke', t.yes);
-    setT('btnAddTxt', t.btnAdd); setT('btnPdfTxt', t.btnPdf); setT('btnJpegTxt', t.btnJpeg); setT('btnWaTxt', t.btnWa); setT('btnSaveTxt', t.btnSave);
+    setT('btnAddTxt', t.btnAdd); setT('btnPdfTxt', t.btnPdf); setT('btnJpegTxt', t.btnJpeg); setT('btnSendTxt', t.btnSend); setT('btnWaTxt', t.btnWa); setT('btnSaveTxt', t.btnSave);
     // logos
     document.getElementById('logoRight').innerHTML = CONFIG.LOGO_GREAT_EASTERN
       ? `<img src="${CONFIG.LOGO_GREAT_EASTERN}" alt="Great Eastern Takaful" crossorigin="anonymous">`
@@ -757,7 +787,7 @@
           name: c.name || '', yearly_contribution:y, monthly_contribution:r2(y/12),
           coverage_age:'70 tahun', room_board:'RM'+o.rb, overall_medical_limit:o.limitNum,
           death_benefit_tpd:num(c.death), compassionate_benefit:num(c.compass),
-          i_provider_plus:true, ward_icu_allowance:!!c.ward, payment_waiver:!!c.waiver,
+          i_provider_plus:c.prov!==false, ward_icu_allowance:!!c.ward,
           base_monthly_contribution:k.base, addons_monthly:k.addons, yearly_overridden:String(c.yearly==null?'':c.yearly).trim()!==''
         };
       })
@@ -775,7 +805,7 @@
       lines.push(`• Medical Limit: ${fmtI(c.overall_medical_limit)}/${L('thn','yr')}`);
       lines.push(`• Death Benefit & TPD: ${fmtI(c.death_benefit_tpd)}`);
       if(c.ward_icu_allowance) lines.push(`• ${L('Elaun Wad + ICU','Ward + ICU Allowance')}: RM100/${L('hari','day')}`);
-      if(c.payment_waiver) lines.push(`• Payment Waiver: ${L('Ya','Yes')}`);
+      if(c.i_provider_plus) lines.push(`• i-Provider Plus: ${L('Ya','Yes')}`);
       lines.push(`• ${L('Caruman Bulanan','Monthly Contribution')}: ${fmt(c.monthly_contribution)}/${L('bln','mo')}`);
       lines.push(`• ${L('Caruman Tahunan','Yearly Contribution')}: ${fmt(c.yearly_contribution)}/${L('thn','yr')}`);
       lines.push('');
@@ -851,7 +881,7 @@
   // jadual kekal dalam bekas overflow-x, dan lajur kanan terpotong. Dengan
   // lebar tetap + windowWidth yang sama, html2canvas menyusun klon dokumen
   // pada lebar itu, jadi telefon dan desktop hasilkan fail yang serupa.
-  const EXPORT_WIDTH = 1100;
+  const EXPORT_WIDTH = 1200;
 
   // Semua <a href> dalam elemen yang diberi, dengan kedudukan relatif kepada
   // sudut kiri-atasnya.
@@ -881,6 +911,29 @@
     return { links: out, width: rootRect.width, height: rootRect.height };
   }
 
+  // Dalam KLON eksport sahaja: tukar input/select kepada teks biasa supaya
+  // tiada kotak/anak panah input dalam imej (skrin hidup tidak disentuh).
+  function plainifyForExport(doc, el){
+    const mk = (cls, txt)=>{ const sp=doc.createElement('span'); sp.className=cls; sp.textContent=txt; return sp; };
+    el.querySelectorAll('.col-head input').forEach(inp=>{
+      // An unnamed column prints as "Pelan N" / "Plan N", not its input placeholder.
+      inp.replaceWith(mk('plain-name', inp.value.trim() || (inp.getAttribute('placeholder') || '').replace(/^(Nama|Name)\s*\/\s*/, '')));
+    });
+    el.querySelectorAll('input.num').forEach(inp=>{
+      const f = inp.dataset.field, v = inp.value;
+      let txt = v;
+      if(v!=='' && !isNaN(parseFloat(v))){
+        const n = parseFloat(v);
+        txt = (f==='yearly') ? n.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}) : n.toLocaleString('en-MY');
+      }
+      inp.replaceWith(mk('plain-val'+(f==='yearly'?' big':''), txt));
+    });
+    el.querySelectorAll('select.sel').forEach(sel=>{
+      const o = sel.options[sel.selectedIndex];
+      sel.replaceWith(mk('plain-val sel', o ? o.textContent : ''));
+    });
+  }
+
   // Tangkap quotation seperti yang dipapar: header, profil pelanggan & jadual
   // penuh. Kelas .pdf membuka sticky/scroll jadual DAN menyembunyikan toolbar
   // (butang bawah) + butang padam lajur, supaya eksport bersih tanpa butang.
@@ -900,7 +953,7 @@
       // Baru selepas susun atur lebar-desktop itu, ukur jadual: hanya lebarkan
       // lagi jika jadual (banyak lajur pelan) memang perlukan lebih.
       const tbl=root.querySelector('table.qc-table');
-      const needW=Math.max(EXPORT_WIDTH, (tbl?tbl.scrollWidth:0)+40);
+      const needW=Math.max(EXPORT_WIDTH, (tbl?tbl.scrollWidth:0)+60);
       if(needW>EXPORT_WIDTH) root.style.width=needW+'px';
       // beri masa font/img/layout settle dulu
       if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
@@ -917,7 +970,7 @@
         width:needW,
         scrollX:0, scrollY:0,
         ignoreElements: el => el.classList && (el.classList.contains('qc-toast') || el.classList.contains('qc-toolbar')),
-        onclone: (doc, el) => { measured = collectLinks(el); },
+        onclone: (doc, el) => { plainifyForExport(doc, el); measured = collectLinks(el); },
       });
       // html2canvas hasilkan imej sahaja, jadi "Buka Portal"/"Panel Locator"
       // jadi piksel mati dalam PDF -- canvasToPdf() guna senarai ini untuk
@@ -1048,7 +1101,7 @@
   }
 
   // ---- DOWNLOAD PDF ----
-  document.getElementById('btnPdf').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
+  document.getElementById('btnPdf').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnSend','btnWa'], async ()=>{
     const t=UI[state.lang];
     showToast(t.toastPdfPrep);
     try{
@@ -1059,7 +1112,7 @@
   }));
 
   // ---- DOWNLOAD JPEG ----
-  document.getElementById('btnJpeg').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
+  document.getElementById('btnJpeg').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnSend','btnWa'], async ()=>{
     showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
     try{
       // JPEG ialah imej tulen -- pautan tidak boleh dibawa masuk, jadi
@@ -1086,8 +1139,46 @@
     return d;
   }
 
+  // ---- HANTAR JPEG KE KLIEN ----
+  // Jana JPEG sama seperti Muat Turun JPEG. Telefon: share sheet (ejen pilih WhatsApp -> klien).
+  // Desktop: muat turun JPEG + buka chat wa.me ke nombor klien supaya ejen lampirkan fail itu.
+  document.getElementById('btnSend').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnSend','btnWa'], async ()=>{
+    const textMsg=waText();
+    const numDigits=waNumber();
+    showToast(L('Menyediakan JPEG…','Preparing JPEG…'));
+    try{
+      const { canvas }=await captureCanvas();
+      const blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('JPEG generation failed')),'image/jpeg',0.95));
+      const filename=`${fileBase()}.jpg`;
+      const file=new File([blob],filename,{type:'image/jpeg'});
+
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({ files:[file], title:'Quotation '+productName(), text:textMsg });
+        showToast(L('Kongsi berjaya ✅','Shared successfully ✅'),'ok');
+        return;
+      }
+
+      const dlUrl=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=dlUrl; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(dlUrl),5000);
+      const waUrl = numDigits
+        ? 'https://wa.me/'+numDigits+'?text='+encodeURIComponent(textMsg)
+        : 'https://wa.me/?text='+encodeURIComponent(textMsg);
+      window.open(waUrl,'_blank');
+      showToast(
+        numDigits
+          ? L('JPEG dimuat turun & chat WhatsApp dibuka ke nombor klien — lampirkan JPEG tersebut.','JPEG downloaded & WhatsApp chat opened to the client number — attach the JPEG.')
+          : L('JPEG dimuat turun — sila lampirkan secara manual di WhatsApp.','JPEG downloaded — attach it manually in WhatsApp.'),
+        'ok'
+      );
+    }catch(err){
+      if(err && err.name==='AbortError'){ /* user batal share sheet */ }
+      else{ showToast(L('Ralat kongsi: ','Share error: ')+(err&&err.message?err.message:''),'err'); CRM.reportError('send-jpeg', err); }
+    }
+  }));
+
   // ---- HANTAR WHATSAPP (hantar fail PDF) ----
-  document.getElementById('btnWa').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnWa'], async ()=>{
+  document.getElementById('btnWa').addEventListener('click', withExportGuard(['btnPdf','btnJpeg','btnSend','btnWa'], async ()=>{
     const textMsg=waText();
     const numDigits=waNumber();
     showToast(L('Menyediakan PDF untuk WhatsApp…','Preparing PDF for WhatsApp…'));
@@ -1182,12 +1273,12 @@
         state.profile.smoke = (cu.smoker === true || i.smoke === 'smoke') ? 'smoke' : 'non';
         const clean = c => ({ id:++uid, name:String(c.name||''), rnb:(c.rnb==='200'?'200':'150'),
           death:(c.death!=null?c.death:15000), compass:(c.compass!=null?c.compass:2000),
-          ward:!!c.ward, waiver:!!c.waiver, yearly:(c.yearly==null?'':String(c.yearly)) });
+          ward:!!c.ward, prov:(c.prov!==false), yearly:(c.yearly==null?'':String(c.yearly)) });
         if(Array.isArray(p.__columns) && p.__columns.length){
           state.columns = p.__columns.map(clean);
         } else {
           // older simple quotation (Option 1 / Option 2 sheet): rebuild as two columns
-          state.columns = [ clean({rnb:'150', ward:i.ward, waiver:i.waiver}), clean({rnb:'200', ward:i.ward, waiver:i.waiver}) ];
+          state.columns = [ clean({rnb:'150', ward:i.ward}), clean({rnb:'200', ward:i.ward}) ];
         }
         applyProfile();
         render();

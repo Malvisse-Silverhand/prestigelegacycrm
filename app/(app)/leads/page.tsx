@@ -191,10 +191,7 @@ export default async function LeadsPage({
                     <div className="truncate font-medium">{lead.state ?? "—"}</div>
                     <div className="truncate font-medium">{lead.occupation ?? "—"}</div>
                     <div className="font-medium">{fmtCreated(lead.created_at)}</div>
-                    <div className="flex flex-col items-start gap-1">
-                      <StatusBadge status={lead.status} />
-                      {isSuperAdmin && !viewingDeleted && <DeleteLeadIcon lead={lead} />}
-                    </div>
+                    <div><StatusBadge status={lead.status} /></div>
                     <div className="truncate font-semibold text-green">
                       {viewingDeleted
                         ? (lead.deleted_by_profile?.full_name ?? "—")
@@ -217,6 +214,7 @@ export default async function LeadsPage({
                           <WhatsAppIcon width={13} height={13} fill="#fff" />
                         </a>
                         <LeadRowActions lead={lead} canManage={canManage} />
+                        {isSuperAdmin && <DeleteLeadIcon lead={lead} />}
                       </div>
                     )}
                   </div>

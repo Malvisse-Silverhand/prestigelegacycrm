@@ -118,6 +118,7 @@ export const SUPPORT_NAV: NavItem = {
     { href: "/support/tickets", label: "Tickets" },
     { href: "/support/changelog", label: "Changelog" },
     { href: "/support/roadmap", label: "Roadmap" },
+    { href: "/support/feedback", label: "Feedback" },
   ],
 };
 
