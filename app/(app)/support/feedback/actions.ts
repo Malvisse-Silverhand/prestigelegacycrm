@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import {
@@ -30,7 +31,7 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 const GENERIC_MSG = "Couldn't save the form. Please try again.";
 
 function failure(error: { code?: string }, action: string, friendly = GENERIC_MSG): Result {
-  if (error.code === "42P01" || error.code === "42703") return { error: MIGRATION_MESSAGE };
+  if (isMissingSchema(error)) return { error: MIGRATION_MESSAGE };
   if (error.code === "23505") return { error: "That link name is already used." };
   Sentry.captureException(error, { tags: { action } });
   return { error: friendly };

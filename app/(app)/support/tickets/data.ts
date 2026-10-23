@@ -1,6 +1,7 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLE_LABEL, type Role } from "@/lib/profile-types";
 import type {
@@ -13,10 +14,6 @@ import type {
   TicketStatus,
 } from "./constants";
 
-// 42P01 = table missing, 42703 = column missing: the migration hasn't been run.
-function isMissingSchema(error: { code?: string } | null) {
-  return error?.code === "42P01" || error?.code === "42703";
-}
 
 type ProfileBits = { name: string; initials: string; roleLabel: string };
 

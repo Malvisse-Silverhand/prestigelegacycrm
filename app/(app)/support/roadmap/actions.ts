@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { LIMITS, ROADMAP_STATUSES, type RoadmapInput, type RoadmapStatus } from "./constants";
 
@@ -15,8 +16,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function failure(error: { code?: string }, action: string): Result {
-  // 42P01 = table missing, 42703 = column missing.
-  if (error.code === "42P01" || error.code === "42703") return { error: MIGRATION_MSG };
+  if (isMissingSchema(error)) return { error: MIGRATION_MSG };
   Sentry.captureException(error, { tags: { action } });
   return { error: GENERIC_MSG };
 }

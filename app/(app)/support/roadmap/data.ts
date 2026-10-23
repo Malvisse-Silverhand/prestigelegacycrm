@@ -1,11 +1,11 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { ROADMAP_STATUSES, type RoadmapItem, type RoadmapStatus } from "./constants";
 
 export type RoadmapResult = { setup: false } | { setup: true; items: RoadmapItem[] };
 
-// 42P01 = table missing, 42703 = column missing: the migration hasn't been run.
 export async function getRoadmapItems(): Promise<RoadmapResult> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -15,7 +15,7 @@ export async function getRoadmapItems(): Promise<RoadmapResult> {
     .order("created_at", { ascending: true });
 
   if (error) {
-    if (error.code === "42P01" || error.code === "42703") return { setup: false };
+    if (isMissingSchema(error)) return { setup: false };
     Sentry.captureException(error, { tags: { page: "roadmap" } });
     return { setup: true, items: [] };
   }
