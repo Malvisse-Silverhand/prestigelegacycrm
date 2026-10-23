@@ -39,8 +39,15 @@ const PAGE = 1000;
 const MAX_LEAD_PAGES = 300; // phones read when de-duplicating: 300k leads
 const STALE_DAYS = 7;
 
+// Postgres says 42P01 / 42703 for a missing table / column; PostgREST (what the
+// Supabase client talks to) says PGRST205 / PGRST204 instead -- all four mean the
+// lead-batches migration has not been run yet.
+const MIGRATION_CODES = new Set(["42P01", "42703", "PGRST205", "PGRST204"]);
+
 function fail(error: { code?: string; message?: string } | null, step: string, fallback: string): string {
-  if (error && (error.code === "42P01" || error.code === "42703")) return "Run the latest database migration first.";
+  if (error?.code && MIGRATION_CODES.has(error.code)) {
+    return "Lead uploads need a one-time database update first. Ask your administrator to run the latest database migration.";
+  }
   Sentry.captureException(error ?? new Error(`lead upload: ${step}`), { tags: { area: "lead-upload", step } });
   return fallback;
 }
