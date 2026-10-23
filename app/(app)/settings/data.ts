@@ -601,6 +601,8 @@ export type MyProfileDetails = {
   landingLogoUrl: string | null;
   landingHeaderUrl: string | null;
   landingPhotoUrl: string | null;
+  // New-lead emails; true until the agent switches them off.
+  leadEmailsEnabled: boolean;
 };
 
 export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyProfileDetails> {
@@ -616,7 +618,15 @@ export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyPr
     .eq("id", profile.id)
     .maybeSingle();
 
+  // Same tolerance for the email switch: absent column means "on".
+  const { data: prefs, error: prefsError } = await supabase
+    .from("profiles")
+    .select("lead_emails_enabled")
+    .eq("id", profile.id)
+    .maybeSingle();
+
   return {
+    leadEmailsEnabled: prefsError ? true : prefs?.lead_emails_enabled !== false,
     fullName: data?.full_name ?? profile.full_name,
     email: data?.email ?? profile.email,
     phone: data?.phone ?? null,

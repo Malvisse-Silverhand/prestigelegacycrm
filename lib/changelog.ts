@@ -19,6 +19,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "New-lead emails and a smarter Rebalance",
     items: [
       { kind: "new", text: "You now get an email whenever a new lead is assigned to you: when one comes in through your landing page, when a manager assigns you a lead, or when leads are moved to you in a rebalance. A rebalance sends one email listing your new leads, not one per lead." },
+      { kind: "new", text: "You can switch the new-lead emails off (or back on) in Settings > My Profile > \"Email me about new leads\". Your leads still appear in the CRM either way." },
       { kind: "new", text: "Managers can now choose how a Rebalance is split: evenly, by a percentage per agent, or by an exact number of leads per agent. Set an agent to 0 to give them none. The dialog shows who gains and who loses as you type, and only lets you go ahead when the numbers add up." },
     ],
   },

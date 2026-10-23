@@ -1325,6 +1325,22 @@ export async function reorderBenefit(id: string, direction: "up" | "down") {
 // `profiles` covers only `is_active` (see the RLS hardening migrations) --
 // name, phone and email all need the service role, the same way
 // resetUserPasswordNow does for auth.users.
+// Turns the "you have a new lead" emails on or off for the signed-in person
+// only -- the id comes from the session, never from the request.
+export async function setLeadEmailsEnabled(enabled: boolean) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+  if (typeof enabled !== "boolean") return { error: "Invalid request." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("profiles").update({ lead_emails_enabled: enabled }).eq("id", profile.id);
+  if (error) {
+    if (error.code === "42703") return { error: "Run the latest database migration first." };
+    return { error: "Couldn't save that. Please try again." };
+  }
+  return { error: null };
+}
+
 export async function updateMyProfile(input: { fullName: string; phone: string; email: string }) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };

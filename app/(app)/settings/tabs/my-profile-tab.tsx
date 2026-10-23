@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateMyProfile } from "../actions";
+import { updateMyProfile, setLeadEmailsEnabled } from "../actions";
 import { saveMyLandingImages } from "../branding-actions";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { MyProfileDetails } from "../data";
@@ -35,6 +35,25 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
       const result = await updateMyProfile({ fullName, phone, email });
       if (result.error) setError(result.error);
       else setSaved(true);
+    });
+  }
+
+  // Saves the moment it is ticked -- a single switch has nothing to "submit",
+  // and a Save button here would just be one more thing to forget.
+  const [leadEmails, setLeadEmails] = useState(details.leadEmailsEnabled);
+  const [emailPending, startEmail] = useTransition();
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  function toggleLeadEmails(next: boolean) {
+    const previous = leadEmails;
+    setLeadEmails(next);
+    setEmailError(null);
+    startEmail(async () => {
+      const result = await setLeadEmailsEnabled(next);
+      if (result.error) {
+        setLeadEmails(previous);
+        setEmailError(result.error);
+      }
     });
   }
 
@@ -124,6 +143,26 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
             {pending ? "Saving…" : "Save changes"}
           </button>
         </div>
+      </div>
+
+      <div className="mt-5 rounded-[14px] border border-sand bg-white p-4">
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={leadEmails}
+            disabled={emailPending}
+            onChange={(e) => toggleLeadEmails(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-none accent-[var(--brand-primary)]"
+          />
+          <span>
+            <span className="block text-[13px] font-bold text-navy">Email me about new leads</span>
+            <span className="mt-1 block text-[10.5px] font-medium text-taupe">
+              Get an email when a lead comes in through your landing page, or a manager assigns or rebalances leads to
+              you. You&rsquo;ll still see them in the CRM either way.
+            </span>
+          </span>
+        </label>
+        {emailError && <p className="mt-2 text-[11.5px] font-semibold text-alert-red">{emailError}</p>}
       </div>
 
       <div className="mt-5 rounded-[14px] border border-sand bg-white p-4">

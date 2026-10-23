@@ -8,7 +8,19 @@ import { Resend } from "resend";
 // the account owner's own address and 403s for anyone else -- so keeping the
 // sender in an env var means switching to a real domain is a config change,
 // not a code change.
-const FROM = process.env.RESEND_FROM ?? "Prestige Legacy <onboarding@resend.dev>";
+const FROM_NAME = "Prestige Legacy";
+
+// The display name is fixed here, whatever RESEND_FROM holds: the env var
+// supplies the address (which has to be on a verified domain), and the name
+// recipients see is always the brand, never a person's or a longer label.
+// Accepts either `Name <a@b.com>` or a bare `a@b.com`.
+function senderAddress() {
+  const raw = process.env.RESEND_FROM?.trim() ?? "";
+  const inBrackets = raw.match(/<([^<>\s]+@[^<>\s]+)>/);
+  const bare = /^[^\s<>@]+@[^\s<>@]+$/.test(raw) ? raw : null;
+  return inBrackets?.[1] ?? bare ?? "onboarding@resend.dev";
+}
+const FROM = `${FROM_NAME} <${senderAddress()}>`;
 
 export type SendResult = { sent: boolean; error: string | null };
 
@@ -39,13 +51,13 @@ export async function sendEmail(input: {
 
 function layout(heading: string, bodyHtml: string) {
   return `<!doctype html>
-<html><body style="margin:0;padding:24px;background:#fdf9f3;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0f2540">
+<html><body style="margin:0;padding:24px;background:#fdf9f3;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#2b2b2b">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto">
-    <tr><td style="background:#0f2540;border-radius:16px 16px 0 0;padding:22px 26px">
+    <tr><td style="background:#d12822;border-radius:16px 16px 0 0;padding:22px 26px">
       <div style="font-size:17px;font-weight:700;color:#ffffff">Prestige Legacy</div>
     </td></tr>
     <tr><td style="background:#ffffff;border:1px solid #efe7da;border-top:0;border-radius:0 0 16px 16px;padding:26px">
-      <h1 style="margin:0 0 14px;font-size:19px;line-height:1.3;color:#0f2540">${heading}</h1>
+      <h1 style="margin:0 0 14px;font-size:19px;line-height:1.3;color:#d12822">${heading}</h1>
       ${bodyHtml}
       <p style="margin:26px 0 0;font-size:11.5px;color:#8b8271">
         Prestige Legacy CRM · agent portal. If you weren't expecting this email you can ignore it.
@@ -57,7 +69,7 @@ function layout(heading: string, bodyHtml: string) {
 
 function button(href: string, label: string) {
   return `<p style="margin:22px 0">
-    <a href="${href}" style="display:inline-block;background:#0f2540;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:13px 22px;border-radius:12px">${label}</a>
+    <a href="${href}" style="display:inline-block;background:#d12822;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:13px 22px;border-radius:12px">${label}</a>
   </p>
   <p style="margin:0;font-size:11.5px;color:#8b8271;word-break:break-all">Or paste this into your browser:<br>${href}</p>`;
 }
@@ -76,7 +88,7 @@ export function inviteEmail(input: {
   // couldn't be generated, so a working credential always reaches them.
   const body = input.actionLink
     ? greeting + button(input.actionLink, "Set your password") +
-      `<p style="margin:22px 0 0;font-size:12.5px;color:#5c5648">This link expires in 1 hour. If it does, use <a href="${input.loginUrl}" style="color:#0f4c35">the login page</a> and choose &ldquo;Forgot password&rdquo;.</p>`
+      `<p style="margin:22px 0 0;font-size:12.5px;color:#5c5648">This link expires in 1 hour. If it does, use <a href="${input.loginUrl}" style="color:#d12822">the login page</a> and choose &ldquo;Forgot password&rdquo;.</p>`
     : greeting +
       `<p style="margin:0 0 8px;font-size:14px">Sign in with this temporary password and change it when prompted:</p>
        <p style="margin:0 0 6px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:17px;font-weight:700;letter-spacing:.5px;background:#fdf9f3;border:1px solid #e7ded0;border-radius:10px;padding:12px 14px">${input.tempPassword}</p>` +
@@ -133,7 +145,7 @@ export function leadsAssignedEmail(input: {
     .map((l) => {
       const detail = [l.interest, l.source].filter(Boolean).map((v) => esc(oneLine(v as string, 40))).join(" &middot; ");
       return `<tr><td style="padding:10px 0;border-top:1px solid #efe7da">
-        <a href="${origin}/leads/${encodeURIComponent(l.id)}" style="color:#0f2540;font-weight:600;font-size:14px;text-decoration:none">${esc(oneLine(l.name, 80))}</a>
+        <a href="${origin}/leads/${encodeURIComponent(l.id)}" style="color:#d12822;font-weight:600;font-size:14px;text-decoration:none">${esc(oneLine(l.name, 80))}</a>
         ${detail ? `<div style="font-size:12.5px;color:#5c5648;margin-top:2px">${detail}</div>` : ""}
       </td></tr>`;
     })
