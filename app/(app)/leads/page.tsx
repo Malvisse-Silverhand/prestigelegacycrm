@@ -132,7 +132,12 @@ export default async function LeadsPage({
             )}
           </Link>
         )}
-        <Link
+        {/* A plain <a>, not <Link>: a soft navigation to /leads/<anything> is
+            caught by the lead-popup route (@modal/(.)leads/[id]), which would
+            read "upload" as a lead id and show a 404. A full page load goes
+            straight to the upload page. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a
           href="/leads/upload"
           className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-white px-3 py-2 text-[12.5px] font-semibold text-navy lg:px-[17px] lg:py-3 lg:text-[13px]"
         >
@@ -141,7 +146,7 @@ export default async function LeadsPage({
           </svg>
           <span className="lg:hidden">Upload</span>
           <span className="hidden lg:inline">Upload leads</span>
-        </Link>
+        </a>
         <AddLeadButton />
       </div>
 
