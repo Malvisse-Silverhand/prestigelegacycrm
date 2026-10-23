@@ -19,6 +19,10 @@ export type LeadFilters = {
   status?: string;
   agent?: string;
   view?: string;
+  // "leader" = only leads a manager assigned from an uploaded list.
+  origin?: string;
+  // One uploaded batch (the link in the "leads assigned to you" bell/email).
+  batch?: string;
   page?: number;
 };
 
@@ -59,7 +63,17 @@ export type LeadRow = {
   // Enough to work out a potential ANC without dragging the whole calculator
   // payload along -- see lib/lead-anc.
   quotations: AncQuotation[];
+  // "Leader Assigned": set when a manager uploaded and assigned the lead.
+  // Absent (undefined) until the lead-batches migration has run.
+  assigned_by?: string | null;
+  assigned_at?: string | null;
+  import_batch_id?: string | null;
+  assigned_by_profile?: { full_name: string } | null;
 };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TAG_COLUMNS =
+  ", assigned_by, assigned_at, import_batch_id, assigned_by_profile:profiles!leads_assigned_by_fkey(full_name)";
 
 // Lead ids that already have a quotation. Fetched by the callers rather than
 // inside filteredLeadsQuery: that has to stay synchronous, because a
@@ -74,11 +88,15 @@ function filteredLeadsQuery(
   supabase: Awaited<ReturnType<typeof createClient>>,
   filters: LeadFilters,
   alreadyQuotedIds?: string[],
+  // The Leader Assigned columns only exist once the lead-batches migration has
+  // run; callers retry without them so the Leads page never breaks before it.
+  withTag = true,
 ) {
   let query = supabase
     .from("leads")
     .select(
-      "id, lead_no, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, deleted_at, deleted_by, profiles!leads_agent_id_fkey(full_name), deleted_by_profile:profiles!leads_deleted_by_fkey(full_name), quotations(updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution))",
+      "id, lead_no, full_name, phone, email, date_of_birth, state, occupation, occupation_class, address, postcode, agent_remark, lead_source, interest, gender, is_smoker, budget_indicated, best_time_to_reach, created_at, status, follow_up_date, pipeline_stage, agent_id, deleted_at, deleted_by, profiles!leads_agent_id_fkey(full_name), deleted_by_profile:profiles!leads_deleted_by_fkey(full_name), quotations(updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution))" +
+        (withTag ? TAG_COLUMNS : ""),
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
@@ -132,6 +150,10 @@ function filteredLeadsQuery(
   if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59`);
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.agent) query = query.eq("agent_id", filters.agent);
+  if (withTag) {
+    if (filters.origin === "leader") query = query.not("assigned_by", "is", null);
+    if (filters.batch && UUID_RE.test(filters.batch)) query = query.eq("import_batch_id", filters.batch);
+  }
 
   return query;
 }
@@ -143,11 +165,12 @@ export async function getLeads(filters: LeadFilters) {
   const to = from + PAGE_SIZE - 1;
 
   const excludeIds = filters.view === "no_quotation" ? await quotedLeadIds(supabase) : undefined;
-  const { data, count } = await filteredLeadsQuery(supabase, filters, excludeIds)
-    .range(from, to)
-    .returns<LeadRow[]>();
-
-  return { leads: data ?? [], total: count ?? 0, page };
+  const first = await filteredLeadsQuery(supabase, filters, excludeIds).range(from, to).returns<LeadRow[]>();
+  if (first.error) {
+    const plain = await filteredLeadsQuery(supabase, filters, excludeIds, false).range(from, to).returns<LeadRow[]>();
+    return { leads: plain.data ?? [], total: plain.count ?? 0, page };
+  }
+  return { leads: first.data ?? [], total: first.count ?? 0, page };
 }
 
 // Same filters as getLeads but every matching row instead of one page --
@@ -159,11 +182,14 @@ const EXPORT_ROW_CAP = 20000;
 export async function getAllLeadsForExport(filters: LeadFilters) {
   const supabase = await createClient();
   const excludeIds = filters.view === "no_quotation" ? await quotedLeadIds(supabase) : undefined;
-  const { data } = await filteredLeadsQuery(supabase, filters, excludeIds)
-    .range(0, EXPORT_ROW_CAP - 1)
-    .returns<LeadRow[]>();
-
-  return data ?? [];
+  const first = await filteredLeadsQuery(supabase, filters, excludeIds).range(0, EXPORT_ROW_CAP - 1).returns<LeadRow[]>();
+  if (first.error) {
+    const plain = await filteredLeadsQuery(supabase, filters, excludeIds, false)
+      .range(0, EXPORT_ROW_CAP - 1)
+      .returns<LeadRow[]>();
+    return plain.data ?? [];
+  }
+  return first.data ?? [];
 }
 
 export async function getFilterOptions() {

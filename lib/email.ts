@@ -114,7 +114,7 @@ function oneLine(value: string, max = 80) {
 }
 
 export type AssignedLeadSummary = { id: string; name: string; interest: string | null; source: string | null };
-export type AssignmentReason = "landing_page" | "manager" | "rebalance";
+export type AssignmentReason = "landing_page" | "manager" | "rebalance" | "upload";
 
 const MAX_LISTED = 10;
 
@@ -127,6 +127,9 @@ export function leadsAssignedEmail(input: {
   // How many were assigned in total, which can exceed what is listed.
   total: number;
   origin: string;
+  // Where the button goes when more than one lead is involved (e.g. the list
+  // filtered to one upload). Defaults to the plain leads list.
+  listHref?: string;
 }) {
   const { leads, total, origin } = input;
   const first = leads[0];
@@ -138,7 +141,9 @@ export function leadsAssignedEmail(input: {
       ? "A new lead just came in through your landing page."
       : input.reason === "manager"
         ? `${by} assigned ${single ? "a lead" : `${total} leads`} to you.`
-        : `${by} rebalanced the team's leads &mdash; ${total} ${total === 1 ? "lead is" : "leads are"} now yours.`;
+        : input.reason === "upload"
+          ? `${by} uploaded a lead list and assigned <strong>${total} ${total === 1 ? "lead" : "leads"}</strong> to you.`
+          : `${by} rebalanced the team's leads &mdash; ${total} ${total === 1 ? "lead is" : "leads are"} now yours.`;
 
   const rows = leads
     .slice(0, MAX_LISTED)
@@ -159,7 +164,7 @@ export function leadsAssignedEmail(input: {
     `<p style="margin:0 0 14px;font-size:14px;line-height:1.6">Hi ${esc(oneLine(input.agentName, 60))}, ${intro}</p>` +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px">${rows}</table>` +
     more +
-    button(single ? `${origin}/leads/${encodeURIComponent(first.id)}` : `${origin}/leads`, single ? "Open the lead" : "Open my leads") +
+    button(single ? `${origin}/leads/${encodeURIComponent(first.id)}` : (input.listHref ?? `${origin}/leads`), single ? "Open the lead" : "Open my leads") +
     `<p style="margin:18px 0 0;font-size:12.5px;color:#5c5648">Reaching out quickly is the best thing you can do for a new lead.</p>`;
 
   const subject = single

@@ -35,13 +35,20 @@ export function LeadFiltersBar({
   // a single lead was visible. They collapse behind a Filters button instead,
   // which also states how many are in play so a narrowed list is never a
   // mystery. Desktop has the width, so it keeps everything inline.
-  const activeCount = (["from", "to", "status", "agent"] as const).filter((k) => searchParams.get(k)).length;
+  const activeCount = (["from", "to", "status", "agent", "origin"] as const).filter((k) => searchParams.get(k)).length;
   const [open, setOpen] = useState(activeCount > 0);
 
   // Everything except `view`, so the chip's × clears just that.
   const withoutView = new URLSearchParams(searchParams.toString());
   withoutView.delete("view");
   withoutView.delete("page");
+
+  // Arrived from a "leads assigned to you" bell/email: one uploaded batch.
+  // Carried like `view` so other filters narrow it rather than drop it.
+  const batch = searchParams.get("batch") ?? undefined;
+  const withoutBatch = new URLSearchParams(searchParams.toString());
+  withoutBatch.delete("batch");
+  withoutBatch.delete("page");
 
   return (
     <form
@@ -61,6 +68,24 @@ export function LeadFiltersBar({
               <Link
                 href={`/leads${withoutView.size > 0 ? `?${withoutView}` : ""}`}
                 aria-label={`Clear ${LEAD_VIEWS[view]} filter`}
+                className="text-white/70 hover:text-white"
+              >
+                <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </Link>
+            </span>
+          </>
+        )}
+
+        {batch && (
+          <>
+            <input type="hidden" name="batch" value={batch} />
+            <span className="flex items-center gap-1.5 rounded-[10px] border border-brand bg-brand px-2.5 py-2 text-[12px] font-semibold text-white lg:rounded-[11px] lg:px-3 lg:py-[9px] lg:text-[12.5px]">
+              Assigned in one upload
+              <Link
+                href={`/leads${withoutBatch.size > 0 ? `?${withoutBatch}` : ""}`}
+                aria-label="Clear upload filter"
                 className="text-white/70 hover:text-white"
               >
                 <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
@@ -153,6 +178,20 @@ export function LeadFiltersBar({
                 {o.label}
               </option>
             ))}
+          </select>
+          <ChevronDownIcon width={13} height={13} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-navy" />
+        </div>
+
+        <div className="relative">
+          <select
+            name="origin"
+            aria-label="Origin"
+            defaultValue={searchParams.get("origin") ?? ""}
+            onChange={() => formRef.current?.requestSubmit()}
+            className={selectClass}
+          >
+            <option value="">All origins</option>
+            <option value="leader">Leader assigned</option>
           </select>
           <ChevronDownIcon width={13} height={13} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-navy" />
         </div>

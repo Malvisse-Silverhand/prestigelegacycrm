@@ -15,6 +15,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-10-24",
+    title: "Upload lead lists and assign them to your team",
+    items: [
+      { kind: "new", text: "Leads > Upload leads: upload a CSV file or a Google Sheet link. The columns are matched to the CRM fields for you (names, phone, date of birth, smoker, job, city and more), you can adjust anything, and duplicates are skipped." },
+      { kind: "new", text: "Managers and SuperAdmin can then assign the list to their team: evenly, by percentage, by an exact number per agent, or by picking the agent for specific leads. Each agent gets one notification and one email saying how many leads they received." },
+      { kind: "new", text: "Leads a manager assigned carry a \"Leader Assigned\" tag on the lead and in the list, and you can filter the list to show only those. Tap the notification or email to see just that batch." },
+      { kind: "new", text: "Agents can upload their own leads the same way. They go straight to you with no emails or tag." },
+      { kind: "improved", text: "Phone numbers from lists (such as \"p:+60125771988\") are tidied automatically, and day-first dates like 16/5/1959 are read correctly." },
+    ],
+  },
+  {
     date: "2026-10-23",
     title: "New-lead emails and a smarter Rebalance",
     items: [

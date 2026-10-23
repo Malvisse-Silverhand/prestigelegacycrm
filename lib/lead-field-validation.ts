@@ -3,7 +3,7 @@ import { INTEREST_OPTIONS } from "@/lib/product-interest";
 
 // Shared field validation/normalization for anything that writes to `leads`
 // against a fixed list -- manual create/edit (leads/actions.ts) and the
-// Google Sheets import (leads/import/actions.ts) both go through the same
+// lead upload (leads/upload) both go through the same
 // rules, so a value that isn't valid there isn't valid here either.
 export const STATUS_VALUES = ["hot", "warm", "cold"];
 

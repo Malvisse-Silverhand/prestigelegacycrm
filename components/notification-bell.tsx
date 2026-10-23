@@ -29,6 +29,16 @@ function CakeIcon({ className }: { className?: string }) {
   );
 }
 
+function UserPlusIcon({ className }: { className?: string }) {
+  return (
+    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 20v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V20" />
+      <circle cx="8.5" cy="7" r="3.5" />
+      <path d="M19 8v6M16 11h6" />
+    </svg>
+  );
+}
+
 function TicketIcon({ className }: { className?: string }) {
   return (
     <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -59,6 +69,13 @@ function kindBadge(kind: string) {
       return (
         <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-alert-red-bg text-alert-red dark:bg-alert-red/20">
           <AlertIcon width={11} height={11} />
+        </span>
+      );
+    case "leads_assigned":
+    case "leads_rebalanced":
+      return (
+        <span className="mt-[1px] flex h-5 w-5 flex-none items-center justify-center rounded-full bg-success-bg text-green dark:bg-white/10">
+          <UserPlusIcon />
         </span>
       );
     case "support_ticket":

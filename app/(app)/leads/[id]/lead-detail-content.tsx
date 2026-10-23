@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { malaysiaDateTime } from "@/lib/malaysia-date";
+import { LeaderAssignedChip } from "@/components/leader-assigned-chip";
 import { useRouter } from "next/navigation";
 import type { CurrentProfile } from "@/lib/profile-types";
 import type { LeadDetail, ActivityRow, ReassignOption, RelativeRow } from "./data";
@@ -313,6 +314,7 @@ export function LeadDetailContent({
             {isNewLead && (
               <span className="rounded-[6px] bg-gold px-2 py-[3px] text-[10px] font-bold text-navy">NEW</span>
             )}
+            <LeaderAssignedChip lead={lead} />
           </div>
           <div className="mt-1 text-[12.5px] font-medium text-white/60">
             {[lead.phone, lead.email, lead.address].filter(Boolean).join(" · ")}
@@ -449,6 +451,9 @@ export function LeadDetailContent({
               <InterestDropdown lead={lead} />
               <Detail label="Source" value={lead.lead_source} />
               <Detail label="Assigned agent" value={lead.profiles?.full_name ?? "Unassigned"} />
+              {lead.assigned_by && (
+                <Detail label="Assigned by" value={lead.assigned_by_profile?.full_name ?? "Your leader"} />
+              )}
               <Detail label="Monthly budget" value={lead.budget_indicated ? `RM ${lead.budget_indicated}` : null} />
               <Detail
                 label="Created"

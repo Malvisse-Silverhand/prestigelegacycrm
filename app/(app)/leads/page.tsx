@@ -4,7 +4,7 @@ import { getLeads, getFilterOptions, PAGE_SIZE, isLeadView, type LeadFilters } f
 import { LeadFiltersBar } from "./filters";
 import { StatusBadge } from "./status-badge";
 import { AddLeadButton } from "./add-lead-button";
-import { ImportButton } from "./import/import-button";
+import { LeaderAssignedChip } from "@/components/leader-assigned-chip";
 import { ExportCsvButton } from "./export-csv-button";
 import { LeadRowActions } from "./lead-row-actions";
 import { DeletedRowActions } from "./deleted-row-actions";
@@ -132,7 +132,16 @@ export default async function LeadsPage({
             )}
           </Link>
         )}
-        <ImportButton />
+        <Link
+          href="/leads/upload"
+          className="press flex items-center gap-2 rounded-[11px] border border-sand-2 bg-white px-3 py-2 text-[12.5px] font-semibold text-navy lg:px-[17px] lg:py-3 lg:text-[13px]"
+        >
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          </svg>
+          <span className="lg:hidden">Upload</span>
+          <span className="hidden lg:inline">Upload leads</span>
+        </Link>
         <AddLeadButton />
       </div>
 
@@ -185,6 +194,7 @@ export default async function LeadsPage({
                       <Link href={`/leads/${lead.id}`} className="truncate font-bold text-navy hover:underline">
                         {lead.full_name}
                       </Link>
+                      <LeaderAssignedChip lead={lead} />
                     </div>
                     <div className="font-medium">{lead.phone}</div>
                     <div className="font-medium">{fmtDate(lead.date_of_birth)}</div>
@@ -243,8 +253,9 @@ export default async function LeadsPage({
                       <StatusBadge status={lead.status} />
                     </div>
 
-                    {(tag || potential) && (
+                    {(tag || potential || lead.assigned_by) && (
                       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <LeaderAssignedChip lead={lead} />
                         {tag && (
                           <span className={`rounded-[6px] px-[7px] py-[2px] text-[9.5px] font-bold tracking-[0.05em] ${tag.cls}`}>
                             {tag.label}

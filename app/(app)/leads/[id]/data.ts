@@ -30,6 +30,10 @@ export type LeadDetail = {
   parent_lead_id: string | null;
   relationship: string | null;
   profiles: { full_name: string; units: { name: string } | null } | null;
+  // "Leader Assigned" -- absent until the lead-batches migration has run.
+  assigned_by?: string | null;
+  assigned_at?: string | null;
+  assigned_by_profile?: { full_name: string } | null;
 };
 
 // One line of the family box: enough to recognise the person and open them.
@@ -95,7 +99,26 @@ export async function getLeadDetail(id: string) {
       .returns<ActivityRow[]>(),
   ]);
 
-  return { lead, activity: activity ?? [] };
+  // Separate, tolerant query: these columns only exist once the lead-batches
+  // migration has run, so a profile opened before then must still render.
+  let withTag = lead;
+  if (lead) {
+    const { data: tag, error: tagError } = await supabase
+      .from("leads")
+      .select("assigned_by, assigned_at, assigned_by_profile:profiles!leads_assigned_by_fkey(full_name)")
+      .eq("id", id)
+      .maybeSingle();
+    if (!tagError && tag) {
+      withTag = {
+        ...lead,
+        assigned_by: (tag.assigned_by as string | null) ?? null,
+        assigned_at: (tag.assigned_at as string | null) ?? null,
+        assigned_by_profile: (tag.assigned_by_profile as unknown as { full_name: string } | null) ?? null,
+      };
+    }
+  }
+
+  return { lead: withTag, activity: activity ?? [] };
 }
 
 // The family around a lead: who they were added from, and who was added from
