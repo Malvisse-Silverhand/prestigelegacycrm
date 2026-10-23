@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { dispatchWebhook } from "@/lib/dispatch-webhook";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getReassignableUsers } from "./data";
+import { queueLeadAssignedEmail } from "@/lib/lead-assignment-email";
 import { LEAD_SOURCES } from "@/lib/lead-constants";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { WON_STAGES } from "@/lib/pipeline-stages";
@@ -40,13 +41,37 @@ export async function reassignLead(leadId: string, newAgentId: string, newAgentN
   }
 
   const supabase = await createClient();
+  // Read before writing, so the email only goes out when ownership really
+  // changes hands -- re-picking the current owner must not mail them.
+  const { data: before } = await supabase
+    .from("leads")
+    .select("agent_id")
+    .eq("id", leadId)
+    .maybeSingle();
+
   const { data, error } = await supabase
     .from("leads")
     .update({ agent_id: newAgentId })
     .eq("id", leadId)
-    .select("id")
+    .select("id, full_name, interest, lead_source")
     .maybeSingle();
   if (error || !data) return { error: "Couldn't reassign this lead." };
+
+  if (before && before.agent_id !== newAgentId && newAgentId !== profile.id) {
+    await queueLeadAssignedEmail({
+      agentId: newAgentId,
+      reason: "manager",
+      byName: profile.full_name,
+      leads: [
+        {
+          id: data.id as string,
+          name: data.full_name as string,
+          interest: (data.interest as string | null) ?? null,
+          source: (data.lead_source as string | null) ?? null,
+        },
+      ],
+    });
+  }
 
   const { error: activityError } = await supabase.from("lead_activity").insert({
     lead_id: leadId,

@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { dispatchWebhook } from "@/lib/dispatch-webhook";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { queueLeadAssignedEmail } from "@/lib/lead-assignment-email";
 
 // Submitted by a visitor with no account and no session -- the slug in the URL
 // is the only thing identifying which agent's funnel this is, so it is
@@ -104,6 +105,11 @@ export async function captureLandingLead(input: {
       content: `Lead masuk dari landing page /p/${input.slug}`,
     });
     await dispatchWebhook("lead_created", { ...lead, source: "landing_page", slug: input.slug });
+    await queueLeadAssignedEmail({
+      agentId: page.agent_id as string,
+      reason: "landing_page",
+      leads: [{ id: lead.id as string, name: lead.full_name as string, interest: lead.interest as string | null, source: "Landing Page" }],
+    });
   }
 
   return { error: null };
@@ -230,6 +236,11 @@ export async function captureAgentFormLead(input: {
       content: `Lead masuk dari borang Agent Landing Page (${input.slug})`,
     });
     await dispatchWebhook("lead_created", { ...lead, source: "agent_landing_page", slug: input.slug });
+    await queueLeadAssignedEmail({
+      agentId: page.agent_id as string,
+      reason: "landing_page",
+      leads: [{ id: lead.id as string, name: lead.full_name as string, interest: lead.interest as string | null, source: "Landing Page" }],
+    });
   }
 
   return { error: null };

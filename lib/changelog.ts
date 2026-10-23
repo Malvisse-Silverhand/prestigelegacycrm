@@ -15,9 +15,21 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-10-23",
+    title: "New-lead emails and a smarter Rebalance",
+    items: [
+      { kind: "new", text: "You now get an email whenever a new lead is assigned to you: when one comes in through your landing page, when a manager assigns you a lead, or when leads are moved to you in a rebalance. A rebalance sends one email listing your new leads, not one per lead." },
+      { kind: "new", text: "Managers can now choose how a Rebalance is split: evenly, by a percentage per agent, or by an exact number of leads per agent. Set an agent to 0 to give them none. The dialog shows who gains and who loses as you type, and only lets you go ahead when the numbers add up." },
+    ],
+  },
+  {
     date: "2026-10-01",
     title: "Support menu, a simpler Medical Card quotation and a system colour",
     items: [
+      { kind: "new", text: "A Feedback page under Support: SuperAdmin creates forms and shares the link, everyone can send feedback, ideas or complaints, and SuperAdmin, Group Managers and Unit Managers can read the replies." },
+      { kind: "improved", text: "The simple Medical Card quotation now exports a cleaner PDF/JPEG without the client details block and with larger text, and has a new \"Send JPEG to Client\" button. i-Provider Plus can be switched on or off per plan." },
+      { kind: "improved", text: "In Lead Management the delete icon now sits inside the Action column." },
+      { kind: "improved", text: "The Hibah quotation now offers the RM500,000 Chinta amount in Step 2." },
       { kind: "new", text: "A Support menu now sits above Training in the sidebar, with Tickets, Changelog (this page) and Roadmap." },
       { kind: "new", text: "A simpler Medical Card quotation sheet: compare Option 1 and Option 2 side by side with riders, in the same look as the quotation you already know. Find it in the Quotation launcher, on a lead and in the pipeline card menu." },
       { kind: "new", text: "SuperAdmin can now choose the system colour, Prestige Blue or Great Eastern Red, or a custom colour, with a live preview." },

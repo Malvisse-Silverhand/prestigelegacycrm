@@ -85,6 +85,78 @@ export function inviteEmail(input: {
   return { subject: "Your Prestige Legacy CRM account", html: layout("Welcome aboard", body) };
 }
 
+// Lead names reach this from public landing-page forms, so anything a visitor
+// typed is escaped before it goes into HTML, and flattened to one line before
+// it goes into a subject.
+function esc(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function oneLine(value: string, max = 80) {
+  const flat = value.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+  return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat;
+}
+
+export type AssignedLeadSummary = { id: string; name: string; interest: string | null; source: string | null };
+export type AssignmentReason = "landing_page" | "manager" | "rebalance";
+
+const MAX_LISTED = 10;
+
+export function leadsAssignedEmail(input: {
+  agentName: string;
+  reason: AssignmentReason;
+  // Who did it -- shown for manager / rebalance, meaningless for a landing page.
+  byName: string | null;
+  leads: AssignedLeadSummary[];
+  // How many were assigned in total, which can exceed what is listed.
+  total: number;
+  origin: string;
+}) {
+  const { leads, total, origin } = input;
+  const first = leads[0];
+  const single = total === 1 && first;
+  const by = input.byName ? esc(oneLine(input.byName, 60)) : "A manager";
+
+  const intro =
+    input.reason === "landing_page"
+      ? "A new lead just came in through your landing page."
+      : input.reason === "manager"
+        ? `${by} assigned ${single ? "a lead" : `${total} leads`} to you.`
+        : `${by} rebalanced the team's leads &mdash; ${total} ${total === 1 ? "lead is" : "leads are"} now yours.`;
+
+  const rows = leads
+    .slice(0, MAX_LISTED)
+    .map((l) => {
+      const detail = [l.interest, l.source].filter(Boolean).map((v) => esc(oneLine(v as string, 40))).join(" &middot; ");
+      return `<tr><td style="padding:10px 0;border-top:1px solid #efe7da">
+        <a href="${origin}/leads/${encodeURIComponent(l.id)}" style="color:#0f2540;font-weight:600;font-size:14px;text-decoration:none">${esc(oneLine(l.name, 80))}</a>
+        ${detail ? `<div style="font-size:12.5px;color:#5c5648;margin-top:2px">${detail}</div>` : ""}
+      </td></tr>`;
+    })
+    .join("");
+  const more =
+    total > leads.slice(0, MAX_LISTED).length
+      ? `<p style="margin:6px 0 0;font-size:12.5px;color:#5c5648">&hellip;and ${total - Math.min(leads.length, MAX_LISTED)} more.</p>`
+      : "";
+
+  const body =
+    `<p style="margin:0 0 14px;font-size:14px;line-height:1.6">Hi ${esc(oneLine(input.agentName, 60))}, ${intro}</p>` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px">${rows}</table>` +
+    more +
+    button(single ? `${origin}/leads/${encodeURIComponent(first.id)}` : `${origin}/leads`, single ? "Open the lead" : "Open my leads") +
+    `<p style="margin:18px 0 0;font-size:12.5px;color:#5c5648">Reaching out quickly is the best thing you can do for a new lead.</p>`;
+
+  const subject = single
+    ? `New lead: ${oneLine(first.name, 60)}`
+    : `${total} new leads assigned to you`;
+
+  return { subject, html: layout(single ? "New lead for you" : "New leads for you", body) };
+}
+
 export function resetPasswordEmail(input: { actionLink: string }) {
   const body =
     `<p style="margin:0 0 14px;font-size:14px;line-height:1.6">We received a request to reset your Prestige Legacy CRM password. Choose a new one using the button below.</p>` +

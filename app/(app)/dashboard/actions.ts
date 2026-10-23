@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getReassignableUsers } from "@/app/(app)/leads/[id]/data";
 import { notify } from "@/lib/appointment-reminders";
+import { computeTargets, sanitizeAllocation } from "@/lib/rebalance-targets";
+import { queueLeadAssignedEmail } from "@/lib/lead-assignment-email";
 
 export type RebalanceMember = {
   id: string;
@@ -38,16 +40,26 @@ function initialsOf(name: string) {
 }
 
 type Candidate = { id: string; name: string; initials: string };
-type LeadLite = { id: string; agent_id: string | null; created_at: string };
+type LeadLite = {
+  id: string;
+  agent_id: string | null;
+  created_at: string;
+  full_name: string;
+  interest: string | null;
+  lead_source: string | null;
+};
 
 // The plan is always computed here, never sent up from the browser: an
 // approved preview and the write that follows must be derived from the same
-// server-side rules, or a hand-crafted request could reassign anything.
+// server-side rules, or a hand-crafted request could reassign anything. What
+// the browser does send is only the manager's *request* (even / percent /
+// count per person), which is re-validated against the real team and the real
+// lead count before it is turned into targets.
 type BuiltPlan =
   | { plan: RebalancePlan; leads: LeadLite[]; byOwner: Map<string, LeadLite[]>; pool: LeadLite[] }
   | { plan: RebalancePlan; leads: null; byOwner?: undefined; pool?: undefined };
 
-async function buildPlan(): Promise<BuiltPlan> {
+async function buildPlan(rawAllocation?: unknown): Promise<BuiltPlan> {
   const empty = (error: string | null): RebalancePlan => ({
     members: [], moves: 0, unassigned: 0, total: 0, error,
   });
@@ -56,6 +68,9 @@ async function buildPlan(): Promise<BuiltPlan> {
   if (!profile || profile.role === "agent") {
     return { plan: empty("You don't have permission to rebalance leads."), leads: null };
   }
+
+  const allocation = sanitizeAllocation(rawAllocation);
+  if (!allocation) return { plan: empty("That rebalance request wasn't valid. Please try again."), leads: null };
 
   // Already scoped to the caller's team and filtered to is_active = true, so
   // deactivated members can never be handed work -- the same list the Lead
@@ -72,7 +87,7 @@ async function buildPlan(): Promise<BuiltPlan> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leads")
-    .select("id, agent_id, created_at")
+    .select("id, agent_id, created_at, full_name, interest, lead_source")
     .in("pipeline_stage", REBALANCEABLE_STAGES)
     .order("created_at", { ascending: false });
 
@@ -101,19 +116,24 @@ async function buildPlan(): Promise<BuiltPlan> {
   }
 
   const total = leads.length;
-  const n = candidates.length;
-  const base = Math.floor(total / n);
-  const remainder = total % n;
 
-  // Whoever already carries the most keeps the spare lead, which makes the
-  // plan the smallest number of moves that still evens the book out.
+  const result = computeTargets(
+    allocation.mode,
+    candidates.map((c) => ({ id: c.id, name: c.name, current: byOwner.get(c.id)?.length ?? 0 })),
+    allocation.values,
+    total,
+  );
+  if (result.error !== undefined) return { plan: empty(result.error), leads: null };
+  const targets = result.targets;
+
+  // Heaviest holders first, so the dialog reads the same way in every mode.
   const ranked = [...candidates].sort(
     (a, b) => (byOwner.get(b.id)?.length ?? 0) - (byOwner.get(a.id)?.length ?? 0) || a.name.localeCompare(b.name),
   );
 
-  const members: RebalanceMember[] = ranked.map((c, i) => {
+  const members: RebalanceMember[] = ranked.map((c) => {
     const current = byOwner.get(c.id)?.length ?? 0;
-    const target = base + (i < remainder ? 1 : 0);
+    const target = targets.get(c.id) ?? 0;
     return {
       id: c.id,
       name: c.name,
@@ -136,18 +156,18 @@ async function buildPlan(): Promise<BuiltPlan> {
   };
 }
 
-export async function previewRebalance(): Promise<RebalancePlan> {
-  const { plan } = await buildPlan();
+export async function previewRebalance(allocation?: unknown): Promise<RebalancePlan> {
+  const { plan } = await buildPlan(allocation);
   return plan;
 }
 
-export async function applyRebalance(): Promise<{ error: string | null; moved: number }> {
+export async function applyRebalance(allocation?: unknown): Promise<{ error: string | null; moved: number }> {
   const profile = await getCurrentProfile();
   if (!profile || profile.role === "agent") {
     return { error: "You don't have permission to rebalance leads.", moved: 0 };
   }
 
-  const built = await buildPlan();
+  const built = await buildPlan(allocation);
   if (built.plan.error || built.leads === null) return { error: built.plan.error, moved: 0 };
   const { plan, byOwner, pool } = built;
 
@@ -174,6 +194,7 @@ export async function applyRebalance(): Promise<{ error: string | null; moved: n
 
   const supabase = await createClient();
   const nameById = new Map(plan.members.map((m) => [m.id, m.name]));
+  const leadById = new Map(built.leads.map((l) => [l.id, l]));
   let moved = 0;
 
   // One statement per target owner rather than per lead: the same set of ids
@@ -215,6 +236,23 @@ export async function applyRebalance(): Promise<{ error: string | null; moved: n
         title: `${done.length} lead${done.length === 1 ? "" : "s"} assigned to you`,
         body: `${profile.full_name} rebalanced the team's leads.`,
         href: "/leads",
+      });
+
+      // One email per person too, listing a sample of what they received.
+      await queueLeadAssignedEmail({
+        agentId: m.id,
+        reason: "rebalance",
+        byName: profile.full_name,
+        total: done.length,
+        leads: done.slice(0, 10).map((l) => {
+          const lead = leadById.get(l.id as string);
+          return {
+            id: l.id as string,
+            name: lead?.full_name ?? "New lead",
+            interest: lead?.interest ?? null,
+            source: lead?.lead_source ?? null,
+          };
+        }),
       });
     }
   }
