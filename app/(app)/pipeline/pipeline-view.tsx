@@ -232,7 +232,12 @@ export function PipelineView({
           <ViewToggle view={view} onChange={setView} />
           <div className="flex-1" />
           <ProductFilter currentAgent={currentAgent} currentInterest={currentInterest} />
-          <AgentFilter agents={agents} currentAgent={currentAgent} currentInterest={currentInterest} />
+          <AgentFilter
+            agents={agents}
+            me={profile.role === "agent" ? null : { id: profile.id, full_name: profile.full_name }}
+            currentAgent={currentAgent}
+            currentInterest={currentInterest}
+          />
           {canAddLead && <AddLeadButton />}
         </div>
 
@@ -402,10 +407,16 @@ function ViewToggle({ view, onChange }: { view: "board" | "table"; onChange: (v:
 }
 
 function AgentFilter({
-  agents, currentAgent, currentInterest,
-}: { agents: { id: string; full_name: string }[]; currentAgent: string; currentInterest: string }) {
+  agents, me, currentAgent, currentInterest,
+}: {
+  agents: { id: string; full_name: string }[];
+  // Offered first so a manager can jump to their own leads in one tap.
+  me: { id: string; full_name: string } | null;
+  currentAgent: string;
+  currentInterest: string;
+}) {
   const router = useRouter();
-  if (agents.length === 0) return null;
+  if (agents.length === 0 && !me) return null;
   return (
     <select
       onChange={(e) => router.push(buildQuery(e.target.value, currentInterest))}
@@ -413,7 +424,8 @@ function AgentFilter({
       className="rounded-[10px] border border-sand-2 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-navy"
     >
       <option value="">All agents</option>
-      {agents.map((a) => (
+      {me && <option value={me.id}>MySelf ({me.full_name})</option>}
+      {agents.filter((a) => a.id !== me?.id).map((a) => (
         <option key={a.id} value={a.id}>{a.full_name}</option>
       ))}
     </select>

@@ -115,6 +115,7 @@ export default async function LeadsPage({
         key={`${filters.q ?? ""}|${filters.from ?? ""}|${filters.to ?? ""}|${filters.status ?? ""}|${filters.agent ?? ""}|${filters.view ?? ""}`}
         agents={agents}
         showAgentFilter={canManage}
+        me={canManage ? { id: profile.id, full_name: profile.full_name } : null}
       />
       <div className="flex flex-wrap justify-end gap-2 px-5 lg:gap-2.5 lg:px-[30px] pb-3 lg:pb-4">
         {isSuperAdmin && (

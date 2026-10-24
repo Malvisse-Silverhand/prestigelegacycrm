@@ -23,9 +23,13 @@ const dateClass =
 export function LeadFiltersBar({
   agents,
   showAgentFilter,
+  me,
 }: {
   agents: { id: string; full_name: string }[];
   showAgentFilter: boolean;
+  // The signed-in person, offered first in the agent list so a manager can jump
+  // to their own leads in one tap (they are not in `agents`, which is agents only).
+  me?: { id: string; full_name: string } | null;
 }) {
   const searchParams = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
@@ -206,7 +210,8 @@ export function LeadFiltersBar({
               className={selectClass}
             >
               <option value="">All Agents</option>
-              {agents.map((a) => (
+              {me && <option value={me.id}>MySelf ({me.full_name})</option>}
+              {agents.filter((a) => a.id !== me?.id).map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.full_name}
                 </option>
