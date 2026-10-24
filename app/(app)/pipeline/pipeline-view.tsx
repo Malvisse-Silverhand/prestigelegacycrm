@@ -17,7 +17,8 @@ import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import { updateStage } from "@/app/(app)/leads/[id]/actions";
 import { AddLeadButton } from "@/app/(app)/leads/add-lead-button";
 import { QuotationModal } from "@/components/quotation-modal";
-import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, PipelineIcon, TableIcon } from "@/components/icons";
+import { PhoneIcon, WhatsAppIcon, LeadsIcon, QuotationIcon, PipelineIcon, TableIcon, TrashIcon } from "@/components/icons";
+import { useDeleteLead, DeleteLeadDialog } from "@/app/(app)/leads/delete-lead";
 import { EmptyState } from "@/components/empty-state";
 import { MobileBoard } from "./mobile-board";
 
@@ -105,6 +106,9 @@ export function PipelineView({
   const agentNameById = useMemo(() => new Map(agents.map((a) => [a.id, a.full_name])), [agents]);
   const showsOwner = agents.length > 0;
   const canAddLead = profile.role !== "agent";
+  // Same rule deleteLead enforces on the server (managers and above, within
+  // what RLS lets them reach) -- agents never see the option.
+  const canDelete = profile.role !== "agent";
 
   function openQuotation(lead: PipelineLead) {
     const tool = quoteToolFor(lead);
@@ -325,6 +329,7 @@ export function PipelineView({
                     onDragEnd={() => setDragLeadId(null)}
                     onMove={(s) => moveStage(lead.id, s)}
                     canManageStage={canManageStage}
+                    canDelete={canDelete}
                     ownerName={showsOwner ? (agentNameById.get(lead.agent_id ?? "") ?? null) : null}
                     movePending={movePending}
                     staleAfterDays={staleAfterDays}
@@ -513,7 +518,7 @@ function PipelineTable({
 }
 
 function PipelineCard({
-  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, ownerName, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer, onOpenSimpleCustomizer,
+  lead, stage, open, onToggle, isDragging, onDragStart, onDragEnd, onMove, canManageStage, canDelete, ownerName, movePending, staleAfterDays, onOpenQuotation, onOpenCustomizer, onOpenSimpleCustomizer,
 }: {
   lead: PipelineLead;
   stage: PipelineStage;
@@ -524,6 +529,7 @@ function PipelineCard({
   onDragEnd: () => void;
   onMove: (s: PipelineStage) => void;
   canManageStage: boolean;
+  canDelete: boolean;
   // Null for an agent's own board -- they already know every lead is theirs.
   ownerName: string | null;
   movePending: boolean;
@@ -532,6 +538,7 @@ function PipelineCard({
   onOpenCustomizer: () => void;
   onOpenSimpleCustomizer: () => void;
 }) {
+  const del = useDeleteLead(lead.id);
   const tag = productTag(lead.interest);
   const potential = leadPotentialAnc(lead.quotations);
   const staleDays = daysSinceLastActivity(lead);
@@ -669,7 +676,29 @@ function PipelineCard({
               </div>
             </>
           )}
+          {canDelete && (
+            <div className="mt-1 border-t border-sand-3 pt-1">
+              <button
+                type="button"
+                onClick={() => { onToggle(); del.requestDelete(); }}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[12px] font-semibold text-alert-red hover:bg-alert-red-bg"
+              >
+                <TrashIcon width={14} height={14} />
+                Delete lead
+              </button>
+            </div>
+          )}
         </div>
+      )}
+
+      {del.confirming && (
+        <DeleteLeadDialog
+          fullName={lead.full_name}
+          pending={del.pending}
+          error={del.error}
+          onCancel={del.cancel}
+          onConfirm={del.confirmDelete}
+        />
       )}
     </div>
   );
