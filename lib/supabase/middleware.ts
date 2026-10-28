@@ -70,6 +70,11 @@ export async function updateSession(request: NextRequest) {
   // resolves it server-side, and a revoked token renders the same dead end as
   // one that was never real.
   //
+  // /f/<token> is a lead's own form link (additional details / application &
+  // signature). The prospect has no account; the token is the only credential,
+  // Stage 2 adds a name + phone check, and a revoked or expired token renders
+  // a dead end. Server-action POSTs target the same path.
+  //
   // /<agent-slug>/<page-slug> is the same public landing page as /p/<slug>,
   // just namespaced under the agent. Exactly two path segments, first one not
   // a reserved app route -- server-action POSTs from that page target the
@@ -79,6 +84,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/join/") ||
     request.nextUrl.pathname.startsWith("/p/") ||
     request.nextUrl.pathname.startsWith("/sijil/") ||
+    request.nextUrl.pathname.startsWith("/f/") ||
     request.nextUrl.pathname.startsWith("/tools/") ||
     isAgentLandingPath(request.nextUrl.pathname);
 

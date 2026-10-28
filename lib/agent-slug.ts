@@ -34,6 +34,7 @@ export const RESERVED_AGENT_SLUGS: ReadonlySet<string> = new Set([
   "tools",
   "wa-flow",
   "support",
+  "f",
   // Future-proofing: not routes today, but words that would be confusing or
   // are likely to become routes later.
   "logout",

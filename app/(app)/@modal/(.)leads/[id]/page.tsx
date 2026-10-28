@@ -5,6 +5,7 @@ import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { getAllClosingScripts } from "@/app/(app)/wa-flow/scripts/data";
 import { getCasesForLead, getBenefitOptions } from "@/app/(app)/my-sales/data";
+import { listFormLinks, getLeadNominees, getLeadSignature } from "@/app/(app)/leads/[id]/form-link-actions";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { LeadModalClient } from "./lead-modal-client";
 
@@ -30,6 +31,9 @@ export default async function LeadDetailModalRoute({
     closingScripts,
     cases,
     benefitOptions,
+    formLinks,
+    nominees,
+    signature,
   ] =
     await Promise.all([
       getReassignableUsers(profile),
@@ -41,6 +45,9 @@ export default async function LeadDetailModalRoute({
       getAllClosingScripts(),
       getCasesForLead(id),
       getBenefitOptions(),
+      listFormLinks(id),
+      getLeadNominees(id),
+      getLeadSignature(id),
     ]);
 
   return (
@@ -57,6 +64,9 @@ export default async function LeadDetailModalRoute({
       closingScripts={closingScripts}
       cases={cases}
       benefitOptions={benefitOptions}
+      formLinks={formLinks}
+      nominees={nominees}
+      signature={signature}
       today={malaysiaToday()}
     />
   );

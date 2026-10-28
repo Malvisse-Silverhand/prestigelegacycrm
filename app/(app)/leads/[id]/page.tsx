@@ -5,6 +5,7 @@ import { getLeadAppointments } from "@/app/(app)/appointments/data";
 import { getTemplates, getLeadForFill } from "@/app/(app)/wa-flow/data";
 import { getAllClosingScripts } from "@/app/(app)/wa-flow/scripts/data";
 import { getCasesForLead, getBenefitOptions } from "@/app/(app)/my-sales/data";
+import { listFormLinks, getLeadNominees, getLeadSignature } from "./form-link-actions";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { LeadDetailContent } from "./lead-detail-content";
 
@@ -30,6 +31,9 @@ export default async function LeadDetailPage({
     closingScripts,
     cases,
     benefitOptions,
+    formLinks,
+    nominees,
+    signature,
   ] =
     await Promise.all([
       getReassignableUsers(profile),
@@ -41,6 +45,9 @@ export default async function LeadDetailPage({
       getAllClosingScripts(),
       getCasesForLead(id),
       getBenefitOptions(),
+      listFormLinks(id),
+      getLeadNominees(id),
+      getLeadSignature(id),
     ]);
 
   return (
@@ -58,6 +65,9 @@ export default async function LeadDetailPage({
         closingScripts={closingScripts}
         cases={cases}
         benefitOptions={benefitOptions}
+        formLinks={formLinks}
+        nominees={nominees}
+        signature={signature}
         today={malaysiaToday()}
       />
     </div>
