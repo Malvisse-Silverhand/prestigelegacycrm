@@ -397,7 +397,7 @@ export function AgentLandingView({ page }: { page: PublicLandingPage }) {
                 {tabs.map((t) => (
                   <div key={t.key} hidden={activeTab !== t.key}>
                     <iframe
-                      src={`/tools/${t.tool}?wa=${encodeURIComponent(agent.waNumber)}&lp=${encodeURIComponent(page.slug)}`}
+                      src={`/tools/${t.tool}?wa=${encodeURIComponent(agent.waNumber)}&lp=${encodeURIComponent(page.slug)}&an=${encodeURIComponent(agent.fullName)}&mta=${encodeURIComponent(agent.mtaNumber ?? "")}`}
                       title={t.label}
                       className="h-[1500px] w-full border-0 bg-white"
                     />

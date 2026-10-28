@@ -22,17 +22,18 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
   const [fullName, setFullName] = useState(details.fullName);
   const [phone, setPhone] = useState(details.phone ?? "");
   const [email, setEmail] = useState(details.email);
+  const [mtaNumber, setMtaNumber] = useState(details.mtaNumber ?? "");
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const dirty = fullName !== details.fullName || phone !== (details.phone ?? "") || email !== details.email;
+  const dirty = fullName !== details.fullName || phone !== (details.phone ?? "") || email !== details.email || mtaNumber !== (details.mtaNumber ?? "");
 
   function save() {
     setError(null);
     setSaved(false);
     start(async () => {
-      const result = await updateMyProfile({ fullName, phone, email });
+      const result = await updateMyProfile({ fullName, phone, email, mtaNumber });
       if (result.error) setError(result.error);
       else setSaved(true);
     });
@@ -128,6 +129,23 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
             />
             <p className="mt-1 text-[10.5px] font-medium text-taupe">
               This is also what you sign in with. Changing it takes effect immediately, with no confirmation email.
+            </p>
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-taupe-2">MTA number (optional)</span>
+            <input
+              value={mtaNumber}
+              onChange={(e) => {
+                setMtaNumber(e.target.value);
+                setSaved(false);
+              }}
+              placeholder="MTA1234567"
+              maxLength={20}
+              className={`mt-[5px] ${input}`}
+            />
+            <p className="mt-1 text-[10.5px] font-medium text-taupe">
+              Printed with your name on the quotation calculators and reports from your landing pages.
             </p>
           </label>
 

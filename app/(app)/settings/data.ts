@@ -597,6 +597,7 @@ export type MyProfileDetails = {
   fullName: string;
   email: string;
   phone: string | null;
+  mtaNumber: string | null;
   agentSlug: string | null;
   landingLogoUrl: string | null;
   landingHeaderUrl: string | null;
@@ -625,11 +626,15 @@ export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyPr
     .eq("id", profile.id)
     .maybeSingle();
 
+  // Its own tolerant read: the column exists only after the mta_number migration.
+  const { data: mta, error: mtaError } = await supabase.from("profiles").select("mta_number").eq("id", profile.id).maybeSingle();
+
   return {
     leadEmailsEnabled: prefsError ? true : prefs?.lead_emails_enabled !== false,
     fullName: data?.full_name ?? profile.full_name,
     email: data?.email ?? profile.email,
     phone: data?.phone ?? null,
+    mtaNumber: mtaError ? null : (mta?.mta_number ?? null),
     agentSlug: brandingError ? null : (branding?.agent_slug ?? null),
     landingLogoUrl: brandingError ? null : (branding?.landing_logo_url ?? null),
     landingHeaderUrl: brandingError ? null : (branding?.landing_header_url ?? null),
