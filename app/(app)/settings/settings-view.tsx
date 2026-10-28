@@ -29,6 +29,8 @@ import { TrackingCodeTab } from "./tabs/tracking-code-tab";
 import { BrandingTab } from "./tabs/branding-tab";
 import { BenefitsTab } from "./tabs/benefits-tab";
 import { MyProfileTab } from "./tabs/my-profile-tab";
+import { EmailNotificationsCard } from "./tabs/email-notifications-card";
+import type { NotificationPrefs } from "./notification-actions";
 import type { BenefitOption } from "@/app/(app)/my-sales/types";
 import type { MyProfileDetails } from "./data";
 
@@ -96,6 +98,7 @@ export function SettingsView({
   benefits,
   currentUserId,
   myProfile,
+  notificationPrefs,
 }: {
   role: Role;
   orgTree: OrgTree;
@@ -117,6 +120,7 @@ export function SettingsView({
   benefits: BenefitOption[];
   currentUserId: string;
   myProfile: MyProfileDetails;
+  notificationPrefs: NotificationPrefs;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log, Tracking Code and
@@ -224,7 +228,12 @@ export function SettingsView({
             <div className="mt-[2px] text-[12.5px] font-medium text-muted">{DESCRIPTIONS[tab]}</div>
           </div>
 
-          {tab === "My Profile" && <MyProfileTab details={myProfile} />}
+          {tab === "My Profile" && (
+            <>
+              <MyProfileTab details={myProfile} />
+              <EmailNotificationsCard prefs={notificationPrefs} />
+            </>
+          )}
           {tab === "Users & Hierarchy" && (
             <UsersHierarchyTab
               role={role}

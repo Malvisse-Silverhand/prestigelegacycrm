@@ -18,6 +18,7 @@ import {
 import { getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { getBrandLogoUrl, getBrandCoverUrl, getBrandPrimary } from "@/lib/site-settings";
 import { SettingsView } from "./settings-view";
+import { getMyNotificationPrefs } from "./notification-actions";
 import { malaysiaDayKey } from "@/lib/malaysia-date";
 
 const EMPTY_ORG_TREE = {
@@ -75,6 +76,7 @@ export default async function SettingsPage() {
     brandPrimary,
     benefits,
     myProfile,
+    notificationPrefs,
   ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
@@ -100,6 +102,7 @@ export default async function SettingsPage() {
       // brought back rather than retyped.
       canManageBenefitCatalogue ? getBenefitOptions(false) : Promise.resolve([]),
       getMyProfileDetails(profile),
+      getMyNotificationPrefs(),
     ]);
 
   return (
@@ -124,6 +127,7 @@ export default async function SettingsPage() {
       benefits={benefits}
       currentUserId={profile.id}
       myProfile={myProfile}
+      notificationPrefs={notificationPrefs}
     />
   );
 }
