@@ -5,6 +5,7 @@ import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { useRouter } from "next/navigation";
 import { updateLead, deleteLead } from "./actions";
 import { LeadFormFields } from "./lead-form-fields";
+import { EXTRA_FIELD_KEYS, LeadExtraFields, type LeadExtraDefaults } from "./lead-extra-fields";
 
 // Structural type (not imported from a specific screen's data.ts) so this
 // modal can be reused from both the Leads Manager row list (LeadRow) and
@@ -30,7 +31,17 @@ type EditableLead = {
   budget_indicated: string | null;
   best_time_to_reach: string | null;
   created_at: string;
-};
+  // Present only where the screen loads the application columns (Lead Detail).
+  // Without them the extra-details section is not shown, and not saved.
+  id_no?: string | null;
+} & LeadExtraDefaults;
+
+function extraDefaults(lead: EditableLead): LeadExtraDefaults | null {
+  if (lead.id_no === undefined) return null;
+  const out: LeadExtraDefaults = {};
+  for (const k of EXTRA_FIELD_KEYS) out[k] = lead[k] ?? null;
+  return out;
+}
 
 export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead; canDelete: boolean; onClose: () => void }) {
   const router = useRouter();
@@ -38,6 +49,7 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
   const [pending, startTransition] = useTransition();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, startDeleteTransition] = useTransition();
+  const extras = extraDefaults(lead);
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -129,6 +141,8 @@ export function EditLeadModal({ lead, canDelete, onClose }: { lead: EditableLead
               />
             </label>
           </div>
+
+          {extras && <LeadExtraFields defaults={extras} />}
 
           {error && (
             <div className="rounded-[10px] bg-alert-red-bg px-3.5 py-2.5 text-[12.5px] font-medium text-alert-red">

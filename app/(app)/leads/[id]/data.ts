@@ -29,6 +29,29 @@ export type LeadDetail = {
   closed_on: string | null;
   parent_lead_id: string | null;
   relationship: string | null;
+  // Collected through the lead form links (or entered by the agent).
+  marital_status: string | null;
+  id_no: string | null;
+  nationality: string | null;
+  race: string | null;
+  religion: string | null;
+  city: string | null;
+  employer_name: string | null;
+  employer_address: string | null;
+  income_range: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  has_medical_condition: boolean | null;
+  medical_condition_details: string | null;
+  correspondence_same: boolean | null;
+  correspondence_address: string | null;
+  correspondence_city: string | null;
+  correspondence_postcode: string | null;
+  correspondence_state: string | null;
+  bank_name: string | null;
+  bank_account_no: string | null;
+  payment_frequency: string | null;
+  payment_method: string | null;
   profiles: { full_name: string; units: { name: string } | null } | null;
   // "Leader Assigned" -- absent until the lead-batches migration has run.
   assigned_by?: string | null;
@@ -87,7 +110,7 @@ export async function getLeadDetail(id: string) {
     supabase
       .from("leads")
       .select(
-        "id, lead_no, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, closed_on, parent_lead_id, relationship, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
+        "id, lead_no, full_name, phone, email, address, state, postcode, agent_remark, date_of_birth, occupation, occupation_class, gender, is_smoker, lead_source, interest, budget_indicated, best_time_to_reach, status, pipeline_stage, agent_id, created_at, closed_on, parent_lead_id, relationship, marital_status, id_no, nationality, race, religion, city, employer_name, employer_address, income_range, height_cm, weight_kg, has_medical_condition, medical_condition_details, correspondence_same, correspondence_address, correspondence_city, correspondence_postcode, correspondence_state, bank_name, bank_account_no, payment_frequency, payment_method, profiles!leads_agent_id_fkey(full_name, units!profiles_unit_id_fkey(name))",
       )
       .eq("id", id)
       .single<LeadDetail>(),

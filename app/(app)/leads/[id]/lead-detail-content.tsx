@@ -24,6 +24,10 @@ import type { ClosingScript, ScriptSet } from "@/app/(app)/wa-flow/scripts/data"
 import type { AppointmentRow } from "@/app/(app)/appointments/data";
 import { EditLeadModal } from "../edit-lead-modal";
 import { LeadFamily } from "./lead-family";
+import { CollectDetailsButton, LeadFormLinks } from "./lead-form-links";
+import { LeadNominees, LeadSignature } from "./lead-nominees";
+import { LeadExtraDetails } from "./lead-extra-details";
+import type { FormLinkSummary, LeadNominee, LeadSignatureView } from "@/lib/lead-form-fields";
 import { QuotationModal } from "@/components/quotation-modal";
 import { LeadCaseTab, LockedCaseTab } from "@/app/(app)/my-sales/lead-case-tab";
 import type { CaseSubmission, BenefitOption } from "@/app/(app)/my-sales/types";
@@ -58,6 +62,15 @@ function occupationClassLabel(value: string | null) {
   return OCCUPATION_CLASSES.find((o) => o.value === value)?.label ?? null;
 }
 
+function FormLinkGlyph({ className }: { className?: string }) {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.43" />
+      <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.33-1.33" />
+    </svg>
+  );
+}
+
 function activityIcon(type: string) {
   switch (type) {
     case "wa_sent":
@@ -70,6 +83,10 @@ function activityIcon(type: string) {
       return { bg: "bg-sand-3", node: <span className="text-[14px] leading-none text-muted-2">+</span> };
     case "quotation_created":
       return { bg: "bg-info-blue-bg", node: <QuotationIcon width={14} height={14} className="text-info-blue-text" /> };
+    case "form_link":
+      return { bg: "bg-info-blue-bg", node: <FormLinkGlyph className="text-info-blue-text" /> };
+    case "form_submitted":
+      return { bg: "bg-success-bg", node: <CheckIcon width={14} height={14} className="text-green" /> };
     default:
       return { bg: "bg-warn-gold-bg", node: <AlertIcon width={14} height={14} className="text-warn-gold-text" /> };
   }
@@ -115,6 +132,9 @@ export function LeadDetailContent({
   closingScripts,
   cases,
   benefitOptions,
+  formLinks,
+  nominees,
+  signature,
   today,
   onClose,
   isModal,
@@ -135,6 +155,10 @@ export function LeadDetailContent({
   cases: CaseSubmission[];
   /** The benefit catalogue maintained in Settings, for the case form. */
   benefitOptions: BenefitOption[];
+  /** Lead form links (Stage 1 / 2), newest first. */
+  formLinks: FormLinkSummary[];
+  nominees: LeadNominee[];
+  signature: LeadSignatureView | null;
   /** Malaysia's today, settled server-side: the servicing maths depends on it. */
   today: string;
   onClose?: () => void;
@@ -429,14 +453,17 @@ export function LeadDetailContent({
           <div className="rounded-[16px] border border-sand bg-white p-3 sm:p-[18px]">
             <div className="flex items-center justify-between">
               <div className="text-[14.5px] font-bold text-navy">Lead details</div>
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 rounded-[9px] bg-gold px-3.5 py-2 text-[12px] font-bold text-navy shadow-sm hover:brightness-95"
-              >
-                {editPencil}
-                Edit
-              </button>
+              <div className="flex items-center gap-2">
+                {(profile.role !== "agent" || lead.agent_id === profile.id) && <CollectDetailsButton leadId={lead.id} />}
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-1.5 rounded-[9px] bg-gold px-3.5 py-2 text-[12px] font-bold text-navy shadow-sm hover:brightness-95"
+                >
+                  {editPencil}
+                  Edit
+                </button>
+              </div>
             </div>
 
             <div className="mt-[16px] grid grid-cols-1 gap-x-5 gap-y-[14px] sm:grid-cols-2">
@@ -460,6 +487,8 @@ export function LeadDetailContent({
                 value={malaysiaDateTime(lead.created_at)}
               />
             </div>
+
+            <LeadExtraDetails lead={lead} />
 
             {/* Quotation Customizer sits directly under Product Interest, which
                 is what decides the plan family it opens on. */}
@@ -498,6 +527,22 @@ export function LeadDetailContent({
               canEdit={profile.role !== "agent" || lead.agent_id === profile.id}
             />
           </div>
+
+          <LeadFormLinks
+            leadId={lead.id}
+            leadName={lead.full_name}
+            leadPhone={lead.phone}
+            links={formLinks}
+            canEdit={profile.role !== "agent" || lead.agent_id === profile.id}
+          />
+
+          <LeadNominees
+            leadId={lead.id}
+            nominees={nominees}
+            canEdit={profile.role !== "agent" || lead.agent_id === profile.id}
+          />
+
+          {signature && <LeadSignature signature={signature} leadName={lead.full_name} />}
 
           <LeadAppointments leadId={lead.id} leadName={lead.full_name} appointments={appointments} />
 
@@ -553,12 +598,12 @@ export function LeadDetailContent({
                       </span>
                     </div>
                     {a.activity_type === "note" && a.content && (
-                      <div className="mt-2 rounded-xl border border-sand bg-white p-3.5 text-[13px] leading-relaxed text-ink">
+                      <div className="mt-2 rounded-xl border border-sand bg-white p-3.5 text-[13px] leading-relaxed whitespace-pre-line text-ink">
                         {a.content}
                       </div>
                     )}
                     {a.activity_type !== "note" && a.content && (
-                      <div className="mt-1 text-[12.5px] font-medium text-muted-2">{a.content}</div>
+                      <div className="mt-1 text-[12.5px] font-medium whitespace-pre-line text-muted-2">{a.content}</div>
                     )}
                     {a.activity_type === "quotation_created" && quotationForActivity(a, quotations) && (
                       <button
@@ -737,6 +782,8 @@ function activityLabel(a: ActivityRow) {
     case "stage_change": return a.content ?? "Stage changed";
     case "created": return "Lead created";
     case "quotation_created": return a.content ?? "Quotation created";
+    case "form_link": return "Form link";
+    case "form_submitted": return "Form submitted";
     default: return "Note added";
   }
 }

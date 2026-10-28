@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker, pickOccupationClass } from "@/lib/lead-field-validation";
+import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker, pickOccupationClass, parseLeadExtras } from "@/lib/lead-field-validation";
 import { RELATIONSHIPS, type Relationship } from "@/lib/lead-constants";
 import { getAllLeadsForExport, type LeadFilters } from "./data";
 import { dispatchWebhook } from "@/lib/dispatch-webhook";
@@ -87,6 +87,16 @@ export async function updateLead(leadId: string, formData: FormData) {
     return { error: "Postcode must be exactly 5 digits." };
   }
 
+  // The application columns are only written when the edit form actually
+  // showed them -- Add Lead and the Leads Manager row edit don't, and must not
+  // blank what the prospect filled in through a form link.
+  let extras: Record<string, string | number | boolean | null> = {};
+  if (formData.get("extra_present") === "1") {
+    const parsed = parseLeadExtras(formData);
+    if ("error" in parsed) return { error: parsed.error };
+    extras = parsed.values;
+  }
+
   const supabase = await createClient();
 
   // Status needs the row's current value as a fallback (so an existing
@@ -117,6 +127,7 @@ export async function updateLead(leadId: string, formData: FormData) {
       is_smoker: pickSmoker(String(formData.get("is_smoker") ?? "").trim()),
       budget_indicated: String(formData.get("budget_indicated") ?? "").trim() || null,
       best_time_to_reach: String(formData.get("best_time_to_reach") ?? "").trim() || null,
+      ...extras,
     })
     .eq("id", leadId)
     .select("id")

@@ -182,3 +182,31 @@ export function resetPasswordEmail(input: { actionLink: string }) {
 
   return { subject: "Reset your Prestige Legacy CRM password", html: layout("Password reset", body) };
 }
+
+// Lead names, phones and sources can come straight from a public form, so
+// anything interpolated into the email body is escaped first.
+function esc(text: string) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+export function leadFormSubmittedEmail(input: {
+  agentName: string;
+  leadId: string;
+  leadNo: number | null;
+  leadName: string;
+  // "Additional Details" / "Application & Signature".
+  stageLabel: string;
+  origin: string;
+}) {
+  const href = `${input.origin}/leads/${input.leadId}`;
+  const who = `${input.leadNo != null ? `#${input.leadNo} ` : ""}${input.leadName}`;
+  const body =
+    `<p style="margin:0 0 14px;font-size:14px;line-height:1.6">Hi ${esc(input.agentName)}, <strong>${esc(who)}</strong> has submitted their <strong>${esc(input.stageLabel)}</strong> form.</p>` +
+    `<p style="margin:0;font-size:13px;line-height:1.6;color:#5c5648">Their answers are now on the lead, and every change is logged in the activity timeline.</p>` +
+    button(href, "Open lead");
+
+  return {
+    subject: `${input.leadName} has submitted their ${input.stageLabel} form`,
+    html: layout("Form submitted", body),
+  };
+}
