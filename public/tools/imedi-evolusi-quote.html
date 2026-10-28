@@ -340,7 +340,7 @@
   // Default agent for a standalone/WordPress embed; a landing page
   // overrides it per agent with ?wa= (digits only -- it lands in a wa.me URL).
   var AGENT_WA=(new URLSearchParams(location.search).get('wa')||'').replace(/\D/g,'');
-  // No agent number: the WhatsApp button says so rather than using someone else's.
+  // No agent number: the WhatsApp button is left out rather than using someone else's.
   /* ============ LANDING PAGE MODE ============
      When this tool runs inside an agent's public landing page (/p/<slug>),
      that page passes ?wa=<agent number>&lp=<slug>. The WhatsApp button then
@@ -431,7 +431,7 @@
     benSub:['Tap ikon <b>i<\/b> untuk definisi setiap manfaat','Tap the <b>i<\/b> icon for each benefit definition'],
     viewSimple:['Ringkas','Simplified'], viewFull:['Penuh','Full'],
     colBenefit:['Manfaat','Benefit'],
-    btnWa:[AGENT_WA?'Hantar kepada Ejen':'Ejen Tidak Dapat Dihubungi',AGENT_WA?'Send to Agent':'Ejen Tidak Dapat Dihubungi'], btnPdf:['Download PDF','Download PDF'],
+    btnWa:['Hantar kepada Ejen','Send to Agent'], btnPdf:['Download PDF','Download PDF'],
     btnSave:['Simpan ke Lead','Save to Lead'], btnSaving:['Menyimpan…','Saving…'],
     savedTo:['Disimpan ke %s','Saved to %s'], saveFail:['Gagal simpan — cuba lagi.','Save failed — try again.'],
     flagCash:['Nilai Tunai (Simpanan)','Cash Value (Savings)'],
@@ -711,7 +711,7 @@
       ?'<button type="button" class="mq-act mq-act-save" data-save="1" id="mq-save'+idSuffix+'">'+svgSave+t('btnSave')+'<\/button>'
       :'';
     return '<div class="mq-actions'+(leadId?' has-save':'')+'">'
-      +'<a class="mq-act mq-act-wa" data-wa-send="1" href="'+waLink()+'" target="_blank" rel="noopener"'+(AGENT_WA?'':' style="pointer-events:none;opacity:.6"')+'>'+svgWa+t('btnWa')+'<\/a>'
+      +(AGENT_WA?'<a class="mq-act mq-act-wa" data-wa-send="1" href="'+waLink()+'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a>':'')
       +'<button type="button" class="mq-act mq-act-pdf" data-pdf="1" id="mq-pdf'+idSuffix+'">'+svgPdf+t('btnPdf')+'<\/button>'
       +saveBtn
       +'<\/div>';
@@ -842,8 +842,8 @@
         + (leadId ? ''
             : unlocked ? '<div class="mq-gate"><div class="mq-gate-h">'+tick+'<span>'+t('sentT')+'<\/span><\/div>'
               +'<p class="mq-gate-sub">'+t('sentD')+'<\/p>'
-              +'<div class="mq-actions" style="grid-template-columns:1fr"><a class="mq-act mq-act-wa" href="'+waLink()
-              +'" target="_blank" rel="noopener"'+(AGENT_WA?'':' style="pointer-events:none;opacity:.6"')+'>'+svgWa+t('btnWa')+'<\/a><\/div><\/div>'
+              +(AGENT_WA?'<div class="mq-actions" style="grid-template-columns:1fr"><a class="mq-act mq-act-wa" href="'+waLink()
+              +'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a><\/div>':'')+'<\/div>'
             : gateHTML(true))
         + regenHTML();
       bindResult();return;

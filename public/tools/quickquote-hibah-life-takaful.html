@@ -440,7 +440,7 @@
   // overrides it per agent with ?wa= (digits only -- it lands in a wa.me URL).
   var WA = (new URLSearchParams(location.search).get('wa')||'').replace(/\D/g,'');
   // No agent number (landing-page agent has no phone on their profile): the
-  // WhatsApp button says so instead of falling back to someone else's number.
+  // WhatsApp button is removed instead of falling back to someone else's number.
   /* ============ LANDING PAGE MODE ============
      When this tool runs inside an agent's public landing page (/p/<slug>),
      that page passes ?wa=<agent number>&lp=<slug>. The WhatsApp button then
@@ -518,7 +518,7 @@
               "ℹ️ Nova is the affordable hibah plan (RM250k–RM650k). Chinta is the high-coverage plan (from RM500,000). The product name is shown on each card."],
     cta1:["Dapatkan Anggaran →","Get Estimate →"],
     cta2:["Unlock Manfaat Penuh 🔓","Unlock Full Benefits 🔓"],
-    ctaWa:[WA?"Hantar kepada Ejen":"Ejen Tidak Dapat Dihubungi",WA?"Send to Agent":"Ejen Tidak Dapat Dihubungi"],
+    ctaWa:["Hantar kepada Ejen","Send to Agent"],
     ctaPdf:["Download PDF","Download PDF"],
     ctaSave:["Simpan ke Lead","Save to Lead"], ctaSaving:["Menyimpan…","Saving…"],
     savedTo:["Disimpan ke {n}","Saved to {n}"], saveFail:["Gagal simpan — cuba lagi.","Save failed — try again."],
@@ -876,7 +876,7 @@
       }).join("\n")+
       "\n\n(QuickQuote Hibah"+(agentName?" — "+agentName:"")+")";
     if(WA) $('qqhWa').href="https://wa.me/"+WA+"?text="+encodeURIComponent(txt);
-    else { $('qqhWa').removeAttribute('href'); $('qqhWa').style.pointerEvents='none'; $('qqhWa').style.opacity='.6'; }
+    else { $('qqhWa').removeAttribute('href'); $('qqhWa').style.display='none'; } // no agent number: no WhatsApp button
   }
 
   function renderAll(){
