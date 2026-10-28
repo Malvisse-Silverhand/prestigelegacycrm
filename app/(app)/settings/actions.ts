@@ -1341,6 +1341,21 @@ export async function setLeadEmailsEnabled(enabled: boolean) {
   return { error: null };
 }
 
+// Same, for the "a lead submitted a form" email (lead form links).
+export async function setFormEmailsEnabled(enabled: boolean) {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in." };
+  if (typeof enabled !== "boolean") return { error: "Invalid request." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("profiles").update({ notify_lead_form_email: enabled }).eq("id", profile.id);
+  if (error) {
+    if (error.code === "42703" || error.code === "PGRST204") return { error: "Run the latest database migration first." };
+    return { error: "Couldn't save that. Please try again." };
+  }
+  return { error: null };
+}
+
 export async function updateMyProfile(input: { fullName: string; phone: string; email: string; mtaNumber: string }) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };

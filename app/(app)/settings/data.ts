@@ -604,6 +604,8 @@ export type MyProfileDetails = {
   landingPhotoUrl: string | null;
   // New-lead emails; true until the agent switches them off.
   leadEmailsEnabled: boolean;
+  // "A lead submitted a form" emails; true until the agent switches them off.
+  formEmailsEnabled: boolean;
 };
 
 export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyProfileDetails> {
@@ -626,11 +628,19 @@ export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyPr
     .eq("id", profile.id)
     .maybeSingle();
 
+  // And for the lead-form switch (20261029100000).
+  const { data: formPrefs, error: formPrefsError } = await supabase
+    .from("profiles")
+    .select("notify_lead_form_email")
+    .eq("id", profile.id)
+    .maybeSingle();
+
   // Its own tolerant read: the column exists only after the mta_number migration.
   const { data: mta, error: mtaError } = await supabase.from("profiles").select("mta_number").eq("id", profile.id).maybeSingle();
 
   return {
     leadEmailsEnabled: prefsError ? true : prefs?.lead_emails_enabled !== false,
+    formEmailsEnabled: formPrefsError ? true : formPrefs?.notify_lead_form_email !== false,
     fullName: data?.full_name ?? profile.full_name,
     email: data?.email ?? profile.email,
     phone: data?.phone ?? null,

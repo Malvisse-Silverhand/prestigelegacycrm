@@ -511,6 +511,14 @@ async function emailAgentFormSubmitted(input: {
   try {
     const agent = await agentLoad(input.agentId);
     if (!agent?.email || agent.is_active === false) return;
+    // The agent's own opt-out (Settings > My Profile). Read on its own so a
+    // database without that column yet still sends, as before.
+    const { data: prefs } = await createAdminClient()
+      .from("profiles")
+      .select("notify_lead_form_email")
+      .eq("id", input.agentId!)
+      .maybeSingle();
+    if (prefs?.notify_lead_form_email === false) return;
 
     const mail = leadFormSubmittedEmail({
       agentName: agent.full_name,

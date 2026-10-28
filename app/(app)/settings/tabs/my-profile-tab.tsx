@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateMyProfile, setLeadEmailsEnabled } from "../actions";
+import { updateMyProfile, setLeadEmailsEnabled, setFormEmailsEnabled } from "../actions";
 import { saveMyLandingImages } from "../branding-actions";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { MyProfileDetails } from "../data";
@@ -53,6 +53,21 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
       const result = await setLeadEmailsEnabled(next);
       if (result.error) {
         setLeadEmails(previous);
+        setEmailError(result.error);
+      }
+    });
+  }
+
+  const [formEmails, setFormEmails] = useState(details.formEmailsEnabled);
+
+  function toggleFormEmails(next: boolean) {
+    const previous = formEmails;
+    setFormEmails(next);
+    setEmailError(null);
+    startEmail(async () => {
+      const result = await setFormEmailsEnabled(next);
+      if (result.error) {
+        setFormEmails(previous);
         setEmailError(result.error);
       }
     });
@@ -177,6 +192,22 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
             <span className="mt-1 block text-[10.5px] font-medium text-taupe">
               Get an email when a lead comes in through your landing page, or a manager assigns or rebalances leads to
               you. You&rsquo;ll still see them in the CRM either way.
+            </span>
+          </span>
+        </label>
+        <label className="mt-3.5 flex cursor-pointer items-start gap-3 border-t border-sand pt-3.5">
+          <input
+            type="checkbox"
+            checked={formEmails}
+            disabled={emailPending}
+            onChange={(e) => toggleFormEmails(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-none accent-[var(--brand-primary)]"
+          />
+          <span>
+            <span className="block text-[13px] font-bold text-navy">Email me when a lead submits a form</span>
+            <span className="mt-1 block text-[10.5px] font-medium text-taupe">
+              Get an email when a lead completes a Stage 1 or Stage 2 link you sent with &ldquo;Collect details&rdquo;.
+              Their answers land on the lead either way.
             </span>
           </span>
         </label>

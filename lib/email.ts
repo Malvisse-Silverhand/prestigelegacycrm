@@ -183,12 +183,6 @@ export function resetPasswordEmail(input: { actionLink: string }) {
   return { subject: "Reset your Prestige Legacy CRM password", html: layout("Password reset", body) };
 }
 
-// Lead names, phones and sources can come straight from a public form, so
-// anything interpolated into the email body is escaped first.
-function esc(text: string) {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
 export function leadFormSubmittedEmail(input: {
   agentName: string;
   leadId: string;
