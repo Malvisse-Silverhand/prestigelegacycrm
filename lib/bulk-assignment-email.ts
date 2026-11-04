@@ -37,12 +37,17 @@ export type BulkRecipient = {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function queueBulkAssignmentEmails(input: {
-  batchId: string;
+  // Absent for the daily distribution, which has no upload batch to count on.
+  batchId?: string;
   byName: string;
   recipients: BulkRecipient[];
   // False when the uploader has already finalised too many batches this hour:
   // everyone is skipped (and counted) but the bell still goes out.
   allowed: boolean;
+  // Where the email button goes (a path on this site). Defaults to the batch's list, else the leader-assigned list.
+  listHref?: string;
+  // Called with the final tally once every send has been attempted.
+  onDone?: (sent: number, skipped: number) => Promise<void>;
 }) {
   if (input.recipients.length === 0) return { queued: 0 };
 
@@ -52,6 +57,9 @@ export async function queueBulkAssignmentEmails(input: {
   } catch {
     return { queued: 0 };
   }
+  const listPath =
+    input.listHref ?? (input.batchId ? `/leads?batch=${encodeURIComponent(input.batchId)}` : "/leads?origin=leader");
+  const listHref = /^https?:\/\//.test(listPath) ? listPath : `${origin}${listPath}`;
 
   after(async () => {
     let sent = 0;
@@ -101,7 +109,7 @@ export async function queueBulkAssignmentEmails(input: {
             leads: t.sample,
             total: t.total,
             origin,
-            listHref: `${origin}/leads?batch=${encodeURIComponent(input.batchId)}`,
+            listHref,
           });
 
           if (!first) await sleep(SPACING_MS);
@@ -126,10 +134,13 @@ export async function queueBulkAssignmentEmails(input: {
         }
       }
 
-      await admin
-        .from("lead_import_batches")
-        .update({ emails_sent: sent, emails_skipped: skipped })
-        .eq("id", input.batchId);
+      if (input.batchId) {
+        await admin
+          .from("lead_import_batches")
+          .update({ emails_sent: sent, emails_skipped: skipped })
+          .eq("id", input.batchId);
+      }
+      if (input.onDone) await input.onDone(sent, skipped);
     } catch (err) {
       Sentry.captureException(err, { tags: { area: "bulk-assignment-email" } });
     }

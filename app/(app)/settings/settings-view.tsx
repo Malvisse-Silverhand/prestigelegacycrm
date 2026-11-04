@@ -31,6 +31,9 @@ import { BenefitsTab } from "./tabs/benefits-tab";
 import { MyProfileTab } from "./tabs/my-profile-tab";
 import type { BenefitOption } from "@/app/(app)/my-sales/types";
 import type { MyProfileDetails } from "./data";
+import { DailyDistributionTab, type WeeklyReportSettings } from "./tabs/daily-distribution-tab";
+import type { DailyDistributionData } from "./daily-distribution-data";
+import { isDistributorRole } from "@/lib/daily-distribution-shared";
 
 const TABS = [
   "My Profile",
@@ -39,6 +42,7 @@ const TABS = [
   "Roles & Permissions",
   "Set Target",
   "Lead Distribution",
+  "Daily Distribution",
   "Lead Sources",
   "Benefits",
   "Webhooks",
@@ -54,7 +58,7 @@ type Tab = (typeof TABS)[number];
 const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
   { heading: "Account", tabs: ["My Profile"] },
   { heading: "People", tabs: ["Users & Hierarchy", "Join Requests", "Roles & Permissions"] },
-  { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Lead Sources"] },
+  { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Daily Distribution", "Lead Sources"] },
   { heading: "Sales", tabs: ["Benefits"] },
   { heading: "Integrations", tabs: ["Webhooks", "Tracking Code", "Branding"] },
   { heading: "Security", tabs: ["Audit Log"] },
@@ -67,6 +71,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   "Roles & Permissions": "What each role can see and do",
   "Set Target": "Monthly ANC and NOC targets",
   "Lead Distribution": "How new leads are shared out",
+  "Daily Distribution": "Hand out leads from your pool every day",
   "Lead Sources": "Where your leads are coming from",
   Benefits: "The benefits agents can pick when submitting a case",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
@@ -96,6 +101,9 @@ export function SettingsView({
   benefits,
   currentUserId,
   myProfile,
+  dailyDistribution,
+  weeklyReport,
+  initialTab,
 }: {
   role: Role;
   orgTree: OrgTree;
@@ -117,6 +125,10 @@ export function SettingsView({
   benefits: BenefitOption[];
   currentUserId: string;
   myProfile: MyProfileDetails;
+  dailyDistribution: DailyDistributionData | null;
+  weeklyReport: WeeklyReportSettings | null;
+  // From ?tab=<Tab name>; ignored unless that tab is visible to this role.
+  initialTab: string | null;
 }) {
   // Set Target is the one tab open to every role (own + downline targets);
   // everything else is hierarchy administration. Audit Log, Tracking Code and
@@ -127,7 +139,7 @@ export function SettingsView({
   // integration config, so it matches its RLS audience: superadmin + group
   // managers.
   const isManager = role === "superadmin" || role === "group_manager" || role === "unit_manager";
-  const visibleTabs = !isManager
+  const baseTabs: readonly Tab[] = !isManager
     ? (["My Profile", "Set Target"] as const as readonly Tab[])
     : role === "superadmin"
       ? TABS
@@ -141,7 +153,12 @@ export function SettingsView({
             t !== "Webhooks" &&
             t !== "Benefits",
         );
-  const [tab, setTab] = useState<Tab>(visibleTabs[0]);
+  // Daily Distribution is for the roles that can run it (not aspirant UMs).
+  const visibleTabs = baseTabs.filter((t) => t !== "Daily Distribution" || isDistributorRole(role));
+  const [tab, setTab] = useState<Tab>(() => {
+    const wanted = visibleTabs.find((t) => t === initialTab);
+    return wanted ?? visibleTabs[0];
+  });
 
   const groups = GROUPS.map((g) => ({ ...g, tabs: g.tabs.filter((t) => visibleTabs.includes(t)) })).filter(
     (g) => g.tabs.length > 0,
@@ -246,6 +263,9 @@ export function SettingsView({
             <SetTargetTab monthDate={monthDate} initialTargets={targets} campaign={campaign} />
           )}
           {tab === "Lead Distribution" && <LeadDistributionTab initial={distribution} />}
+          {tab === "Daily Distribution" && dailyDistribution && isDistributorRole(role) && (
+            <DailyDistributionTab data={dailyDistribution} weekly={weeklyReport} myEmail={myProfile.email} />
+          )}
           {tab === "Lead Sources" && <LeadSourcesTab stats={leadSources} />}
           {tab === "Benefits" && (
             <BenefitsTab

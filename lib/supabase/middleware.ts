@@ -79,8 +79,12 @@ export async function updateSession(request: NextRequest) {
   // just namespaced under the agent. Exactly two path segments, first one not
   // a reserved app route -- server-action POSTs from that page target the
   // same path, so they're covered by the same check.
+  //
+  // /api/cron/* is called by the scheduler (Supabase pg_cron / Vercel cron),
+  // which has no session. Each cron route checks CRON_SECRET itself.
   const isPublicRoute =
     PUBLIC_ROUTES.includes(request.nextUrl.pathname) ||
+    request.nextUrl.pathname.startsWith("/api/cron/") ||
     request.nextUrl.pathname.startsWith("/join/") ||
     request.nextUrl.pathname.startsWith("/p/") ||
     request.nextUrl.pathname.startsWith("/sijil/") ||

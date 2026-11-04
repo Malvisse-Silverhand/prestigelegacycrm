@@ -134,7 +134,11 @@ export function autoMap(headers: string[]): ImportMapping {
     fields[c.field] = headers[c.col];
     usedCols.add(c.col);
   }
-  const notes = headers.filter((h, i) => !usedCols.has(i) && NOTE_HINTS.some((n) => norm[i].includes(n)));
+  // Ids ("campaign_id", "form_id") are noise in a remark, even when the name
+  // around them would otherwise qualify.
+  const notes = headers.filter(
+    (h, i) => !usedCols.has(i) && !norm[i].split(" ").includes("id") && NOTE_HINTS.some((n) => norm[i].includes(n)),
+  );
   return { fields, notes };
 }
 
@@ -196,15 +200,37 @@ export function normalizeDob(v: string, now: Date = new Date()): string | null {
       if (idx >= 0) iso = `${monByName[3]}-${String(idx + 1).padStart(2, "0")}-${monByName[1].padStart(2, "0")}`;
     }
   }
+  // A two-digit year is this century when that is not in the future, otherwise
+  // last century: "85" -> 1985, "05" -> 2005 (until 2005 is in the future).
+  const fullYear = (yy: string) => {
+    if (yy.length === 4) return yy;
+    const n = Number(yy);
+    const thisYY = now.getUTCFullYear() % 100;
+    return String(n <= thisYY ? 2000 + n : 1900 + n);
+  };
+  const fromParts = (dd: string, mm: string, yy: string) => {
+    const day = Number(dd);
+    const month = Number(mm);
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    return `${fullYear(yy)}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  };
   if (!iso) {
-    // DD/MM/YYYY -- Malaysian convention, day first.
-    const dmy = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
-    if (dmy) {
-      const day = Number(dmy[1]);
-      const month = Number(dmy[2]);
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        iso = `${dmy[3]}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      }
+    // DD/MM/YYYY or DD/MM/YY (also - and . separators) -- Malaysian convention,
+    // day first.
+    const dmy = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4}|\d{2})$/);
+    if (dmy) iso = fromParts(dmy[1], dmy[2], dmy[3]);
+  }
+  if (!iso) {
+    // Digits only, as typed into a Meta lead form: DDMMYYYY ("16051985") or
+    // DDMMYY ("160585"). A 7-digit "1651985" is ambiguous (1/65? 16/5?) so it
+    // is only accepted when exactly one reading is a real date.
+    if (/^\d{8}$/.test(s)) iso = fromParts(s.slice(0, 2), s.slice(2, 4), s.slice(4));
+    else if (/^\d{6}$/.test(s)) iso = fromParts(s.slice(0, 2), s.slice(2, 4), s.slice(4));
+    else if (/^\d{7}$/.test(s)) {
+      const a = fromParts(s.slice(0, 1), s.slice(1, 3), s.slice(3)); // D MM YYYY
+      const b = fromParts(s.slice(0, 2), s.slice(2, 3), s.slice(3)); // DD M YYYY
+      const valid = [a, b].filter((x) => x && !Number.isNaN(new Date(`${x}T00:00:00Z`).getTime()) && new Date(`${x}T00:00:00Z`).toISOString().slice(0, 10) === x);
+      iso = valid.length === 1 ? valid[0] : null;
     }
   }
   if (!iso) return null;

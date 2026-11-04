@@ -47,7 +47,7 @@ const MAX_FIELD_PREVIEW = 200;
 type Step = "source" | "map" | "review" | "assign" | "run" | "done";
 type InvalidRow = { row: number; reason: string };
 type Stats = { valid: number; duplicates: number; invalid: number };
-type AssignMode = RebalanceMode | "self";
+type AssignMode = RebalanceMode | "self" | "pool";
 
 const BTN_PRIMARY =
   "press rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50 dark:bg-gold dark:text-navy";
@@ -78,10 +78,13 @@ function csvCell(v: string | number): string {
 
 export function UploadWizard({
   isManager,
+  canPool,
   team,
   batches,
 }: {
   isManager: boolean;
+  // Distributor roles may park a list in their daily pool instead of assigning it.
+  canPool: boolean;
   team: TeamMember[];
   batches: BatchSummary[];
 }) {
@@ -124,6 +127,8 @@ export function UploadWizard({
   const [fallbacks, setFallbacks] = useState(0);
   const [runError, setRunError] = useState<string | null>(null);
   const [final, setFinal] = useState<FinalizeResult | null>(null);
+  // Set when the list went to the daily pool instead of being assigned.
+  const [pooled, setPooled] = useState<number | null>(null);
   const runLock = useRef(false);
 
   // Shared
@@ -169,6 +174,7 @@ export function UploadWizard({
     setFallbacks(0);
     setRunError(null);
     setFinal(null);
+    setPooled(null);
     setError(null);
   }
 
@@ -337,6 +343,13 @@ export function UploadWizard({
         setError(res.error);
         return;
       }
+      if (request.mode === "pool") {
+        // Nothing is created now: the daily distribution hands the leads out.
+        setPooled(res.pooled ?? validCount);
+        setStep("done");
+        router.refresh();
+        return;
+      }
       setBusy(false);
       await startRun(batchId, validCount, 0);
     } catch {
@@ -432,6 +445,7 @@ export function UploadWizard({
 
       {step === "assign" && batchId && (
         <AssignStep
+          canPool={canPool}
           team={team}
           valid={validCount}
           batchId={batchId}
@@ -452,7 +466,11 @@ export function UploadWizard({
         />
       )}
 
-      {step === "done" && final && batchId && (
+      {step === "done" && pooled !== null && (
+        <PooledDoneStep count={pooled} onAgain={resetAll} />
+      )}
+
+      {step === "done" && pooled === null && final && batchId && (
         <DoneStep isManager={isManager} batchId={batchId} result={final} fallbacks={fallbacks} onAgain={resetAll} />
       )}
 
@@ -639,6 +657,7 @@ const STATUS_LABEL: Record<BatchSummary["status"], string> = {
   assigning: "In progress",
   done: "Done",
   cancelled: "Cancelled",
+  pooled: "In daily pool",
 };
 
 function RecentUploads({
@@ -691,7 +710,7 @@ function RecentUploads({
       {open && (
         <ul className="mt-3 flex flex-col divide-y divide-sand dark:divide-white/10">
           {batches.map((b) => {
-            const unfinished = b.status === "staged" || b.status === "assigning";
+            const unfinished = b.status === "staged" || b.status === "assigning" || b.status === "pooled";
             return (
               <li key={b.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
@@ -717,7 +736,7 @@ function RecentUploads({
                 </div>
                 {unfinished && (
                   <div className="flex gap-2">
-                    {(b.status === "assigning" || b.validRows > 0) && (
+                    {b.status !== "pooled" && (b.status === "assigning" || b.validRows > 0) && (
                       <button type="button" disabled={disabled} onClick={() => onResume(b)} className={BTN_PRIMARY}>
                         Resume
                       </button>
@@ -741,14 +760,21 @@ function RecentUploads({
         </ul>
       )}
       {target && (
-        <Dialog title="Cancel this upload?" onClose={() => !pending && setTarget(null)}>
-          <p className={MUTED}>Cancel this upload? Leads already created from it stay where they are.</p>
+        <Dialog
+          title={target.status === "pooled" ? "Remove this list?" : "Cancel this upload?"}
+          onClose={() => !pending && setTarget(null)}
+        >
+          <p className={MUTED}>
+            {target.status === "pooled"
+              ? "Remove this list from your daily pool? Leads already handed out stay with their agents."
+              : "Cancel this upload? Leads already created from it stay where they are."}
+          </p>
           {error && <p className={`mt-3 ${ERROR_TEXT}`}>{error}</p>}
           <DialogButtons
             onCancel={() => setTarget(null)}
             onConfirm={() => void doCancel()}
             cancelLabel="Keep it"
-            confirmLabel={pending ? "Cancelling…" : "Cancel upload"}
+            confirmLabel={pending ? "Cancelling…" : target.status === "pooled" ? "Remove list" : "Cancel upload"}
             busy={pending}
             danger
           />
@@ -1168,6 +1194,7 @@ const ASSIGN_MODES: { id: AssignMode; label: string }[] = [
   { id: "count", label: "By number" },
   { id: "self", label: "Keep all for me" },
 ];
+const POOL_MODE: { id: AssignMode; label: string } = { id: "pool", label: "Add to daily pool" };
 
 const ROLE_LABEL: Record<string, string> = {
   superadmin: "Super admin",
@@ -1180,6 +1207,7 @@ const ROLE_LABEL: Record<string, string> = {
 type StagedLead = { idx: number; name: string; phone: string };
 
 function AssignStep({
+  canPool,
   team,
   valid,
   batchId,
@@ -1187,6 +1215,7 @@ function AssignStep({
   error,
   onSubmit,
 }: {
+  canPool: boolean;
   team: TeamMember[];
   valid: number;
   batchId: string;
@@ -1215,7 +1244,7 @@ function AssignStep({
   const rest = valid - pinnedCount;
 
   function seed(next: AssignMode, ids: string[], restCount: number): Record<string, string> {
-    if (next === "even" || next === "self" || ids.length === 0) return {};
+    if (next === "even" || next === "self" || next === "pool" || ids.length === 0) return {};
     const even = computeTargets(
       "even",
       ids.map((id) => ({ id, name: team.find((t) => t.id === id)?.name ?? id, current: -(team.find((t) => t.id === id)?.load ?? 0) })),
@@ -1266,7 +1295,7 @@ function AssignStep({
 
   const preview = useMemo<{ error: string | null; counts: Map<string, number> }>(() => {
     const counts = new Map<string, number>();
-    if (mode === "self") return { error: null, counts };
+    if (mode === "self" || mode === "pool") return { error: null, counts };
     if (members.length === 0) return { error: "Tick at least one person to receive the leads.", counts };
     for (const id of Object.values(overrides)) counts.set(id, (counts.get(id) ?? 0) + 1);
     const remaining = valid - Object.keys(overrides).length;
@@ -1313,6 +1342,10 @@ function AssignStep({
       onSubmit({ mode: "self" });
       return;
     }
+    if (mode === "pool") {
+      onSubmit({ mode: "pool" });
+      return;
+    }
     const ov: Record<string, string> = {};
     for (const [k, v] of Object.entries(overrides)) ov[String(k)] = v;
     onSubmit({
@@ -1324,7 +1357,8 @@ function AssignStep({
   }
 
   const pages = Math.max(1, Math.ceil(pageTotal / 100));
-  const confirmLabel = mode === "self" ? "Import to my leads" : `Assign ${fmtN(valid)} leads`;
+  const confirmLabel =
+    mode === "self" ? "Import to my leads" : mode === "pool" ? "Add to daily pool" : `Assign ${fmtN(valid)} leads`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -1334,10 +1368,14 @@ function AssignStep({
           <p className={`${MUTED} mt-0.5`}>Tick the people who should receive leads, then choose how to split them.</p>
         </div>
 
-        <Segmented label="How to split the leads" value={mode} onChange={pickMode} options={ASSIGN_MODES} />
+        <Segmented label="How to split the leads" value={mode} onChange={pickMode} options={canPool ? [...ASSIGN_MODES, POOL_MODE] : ASSIGN_MODES} />
 
         {mode === "self" ? (
           <p className={MUTED}>All {fmtN(valid)} leads will be added to your own list. Nobody is emailed.</p>
+        ) : mode === "pool" ? (
+          <p className={MUTED}>
+            These {fmtN(valid)} leads wait in your pool. Settings → Daily Distribution hands out a set number each day.
+          </p>
         ) : (
           <>
             <div className="flex items-center justify-between gap-3 text-[11.5px] font-semibold">
@@ -1451,7 +1489,7 @@ function AssignStep({
         )}
       </div>
 
-      {mode !== "self" && recipients.length > 0 && (
+      {mode !== "self" && mode !== "pool" && recipients.length > 0 && (
         <div className={CARD}>
           <button
             type="button"
@@ -1543,7 +1581,7 @@ function AssignStep({
         <button
           type="button"
           disabled={busy || Boolean(problem)}
-          onClick={() => (mode === "self" ? submit() : setConfirm(true))}
+          onClick={() => (mode === "self" || mode === "pool" ? submit() : setConfirm(true))}
           className={BTN_PRIMARY}
         >
           {busy ? "Saving…" : confirmLabel}
@@ -1608,6 +1646,26 @@ function RunStep({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function PooledDoneStep({ count, onAgain }: { count: number; onAgain: () => void }) {
+  return (
+    <div className={`${CARD} flex flex-col items-center gap-3 text-center`}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold text-[22px] font-bold text-navy">✓</div>
+      <div className="text-[16px] font-bold text-navy dark:text-[#eef3f8]">
+        {fmtN(count)} lead{count === 1 ? "" : "s"} added to your daily pool
+      </div>
+      <p className={MUTED}>They are handed out a set number at a time. Set the daily amount in Settings.</p>
+      <div className="mt-2 flex flex-wrap justify-center gap-2.5">
+        <Link href="/settings?tab=Daily%20Distribution" className={BTN_PRIMARY}>
+          Open Daily Distribution
+        </Link>
+        <button type="button" onClick={onAgain} className={BTN_SECONDARY}>
+          Upload another
+        </button>
+      </div>
     </div>
   );
 }

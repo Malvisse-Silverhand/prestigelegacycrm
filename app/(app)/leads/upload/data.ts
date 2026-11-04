@@ -71,9 +71,71 @@ export async function getAssignableTeam(
   return list.map((m) => ({ ...m, load: loads.get(m.id) ?? 0, isSelf: m.id === profile.id }));
 }
 
+// The admin-client twin of getAssignableTeam, for the daily distribution job,
+// which runs with no signed-in session. Same role scoping as the Lead Detail
+// reassign picker (plus a Group Manager's direct reports); active people only;
+// the owner is always included. Load is not computed (0).
+export async function getAssignableTeamForOwner(owner: {
+  id: string;
+  full_name: string;
+  role: string;
+  unit_id: string | null;
+}): Promise<TeamMember[]> {
+  const admin = createAdminClient();
+  const people = new Map<string, { id: string; name: string; role: string }>();
+  people.set(owner.id, { id: owner.id, name: owner.full_name, role: owner.role });
+  const add = (rows: { id: unknown; full_name: unknown; role: unknown }[] | null) => {
+    for (const u of rows ?? []) {
+      people.set(u.id as string, { id: u.id as string, name: u.full_name as string, role: u.role as string });
+    }
+  };
+  const TEAM_ROLES = ["unit_manager", "aspirant_unit_manager", "agent"];
+
+  if (owner.role === "unit_manager" && owner.unit_id) {
+    const { data, error } = await admin
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("unit_id", owner.unit_id)
+      .in("role", TEAM_ROLES)
+      .eq("is_active", true);
+    if (error) throw error;
+    add(data);
+  } else if (owner.role === "group_manager") {
+    const { data: units, error: unitError } = await admin.from("units").select("id").eq("group_manager_id", owner.id);
+    if (unitError) throw unitError;
+    const unitIds = (units ?? []).map((u) => u.id as string);
+    if (unitIds.length > 0) {
+      const { data, error } = await admin
+        .from("profiles")
+        .select("id, full_name, role")
+        .in("unit_id", unitIds)
+        .in("role", TEAM_ROLES)
+        .eq("is_active", true);
+      if (error) throw error;
+      add(data);
+    }
+    const { data: direct, error: directError } = await admin
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("parent_id", owner.id)
+      .in("role", TEAM_ROLES)
+      .eq("is_active", true);
+    if (directError) throw directError;
+    add(direct);
+  } else if (owner.role === "superadmin") {
+    const { data, error } = await admin.from("profiles").select("id, full_name, role").eq("is_active", true);
+    if (error) throw error;
+    add(data);
+  }
+
+  return [...people.values()]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((m) => ({ ...m, load: 0, isSelf: m.id === owner.id }));
+}
+
 export type BatchSummary = {
   id: string;
-  status: "staged" | "assigning" | "done" | "cancelled";
+  status: "staged" | "assigning" | "done" | "cancelled" | "pooled";
   filename: string | null;
   mode: string;
   totalRows: number;

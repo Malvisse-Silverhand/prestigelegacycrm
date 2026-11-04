@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateMyProfile, setLeadEmailsEnabled, setFormEmailsEnabled } from "../actions";
 import { saveMyLandingImages } from "../branding-actions";
+import { setWeeklyReportOptIn } from "../weekly-report-actions";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { MyProfileDetails } from "../data";
 
@@ -69,6 +70,28 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
       if (result.error) {
         setFormEmails(previous);
         setEmailError(result.error);
+      }
+    });
+  }
+
+  const [weeklyOptIn, setWeeklyOptIn] = useState(details.weeklyReportOptIn);
+  const [weeklyPending, startWeekly] = useTransition();
+  const [weeklyError, setWeeklyError] = useState<string | null>(null);
+
+  function toggleWeekly(next: boolean) {
+    const previous = weeklyOptIn;
+    setWeeklyOptIn(next);
+    setWeeklyError(null);
+    startWeekly(async () => {
+      try {
+        const result = await setWeeklyReportOptIn(next);
+        if (result.error) {
+          setWeeklyOptIn(previous);
+          setWeeklyError(result.error);
+        }
+      } catch {
+        setWeeklyOptIn(previous);
+        setWeeklyError("Couldn't connect. Check your internet connection and try again.");
       }
     });
   }
@@ -213,6 +236,28 @@ export function MyProfileTab({ details }: { details: MyProfileDetails }) {
         </label>
         {emailError && <p className="mt-2 text-[11.5px] font-semibold text-alert-red">{emailError}</p>}
       </div>
+
+      {details.canReceiveWeeklyReport && (
+        <div className="mt-5 rounded-[14px] border border-sand bg-white p-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              role="switch"
+              checked={weeklyOptIn}
+              disabled={weeklyPending}
+              onChange={(e) => toggleWeekly(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-none accent-[var(--brand-primary)]"
+            />
+            <span>
+              <span className="block text-[13px] font-bold text-navy">Email me the weekly report</span>
+              <span className="mt-1 block text-[10.5px] font-medium text-taupe">
+                A summary of the week&rsquo;s leads and daily distributions, sent every Monday at 9:00 AM.
+              </span>
+            </span>
+          </label>
+          {weeklyError && <p className="mt-2 text-[11.5px] font-semibold text-alert-red">{weeklyError}</p>}
+        </div>
+      )}
 
       <div className="mt-5 rounded-[14px] border border-sand bg-white p-4">
         <div className="flex flex-col gap-3.5">

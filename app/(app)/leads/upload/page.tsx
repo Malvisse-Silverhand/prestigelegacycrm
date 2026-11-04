@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { isDistributorRole } from "@/lib/daily-distribution-shared";
 import { getAssignableTeam, getMyBatches } from "./data";
 import { UploadWizard } from "./upload-wizard";
 
@@ -39,7 +40,7 @@ export default async function UploadLeadsPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-4 lg:px-[30px] lg:py-6">
-        <UploadWizard isManager={isManager} team={team} batches={batches} />
+        <UploadWizard isManager={isManager} canPool={isDistributorRole(profile.role)} team={team} batches={batches} />
       </div>
     </div>
   );

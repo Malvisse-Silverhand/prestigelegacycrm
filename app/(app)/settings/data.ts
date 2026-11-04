@@ -606,6 +606,9 @@ export type MyProfileDetails = {
   leadEmailsEnabled: boolean;
   // "A lead submitted a form" emails; true until the agent switches them off.
   formEmailsEnabled: boolean;
+  // Weekly report email (GM / SuperAdmin only); true until switched off.
+  weeklyReportOptIn: boolean;
+  canReceiveWeeklyReport: boolean;
 };
 
 export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyProfileDetails> {
@@ -638,9 +641,18 @@ export async function getMyProfileDetails(profile: CurrentProfile): Promise<MyPr
   // Its own tolerant read: the column exists only after the mta_number migration.
   const { data: mta, error: mtaError } = await supabase.from("profiles").select("mta_number").eq("id", profile.id).maybeSingle();
 
+  // And for the weekly report switch: absent column means "on".
+  const { data: weeklyPref, error: weeklyError } = await supabase
+    .from("profiles")
+    .select("weekly_report_opt_in")
+    .eq("id", profile.id)
+    .maybeSingle();
+
   return {
     leadEmailsEnabled: prefsError ? true : prefs?.lead_emails_enabled !== false,
     formEmailsEnabled: formPrefsError ? true : formPrefs?.notify_lead_form_email !== false,
+    weeklyReportOptIn: weeklyError ? true : weeklyPref?.weekly_report_opt_in !== false,
+    canReceiveWeeklyReport: profile.role === "superadmin" || profile.role === "group_manager",
     fullName: data?.full_name ?? profile.full_name,
     email: data?.email ?? profile.email,
     phone: data?.phone ?? null,

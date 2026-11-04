@@ -49,10 +49,33 @@ export async function sendEmail(input: {
   }
 }
 
-function layout(heading: string, bodyHtml: string) {
+// Exported for the report templates (lib/email-templates/*), so every email the
+// CRM sends shares one look. `width` widens the card for emails with tables.
+export function emailLayout(heading: string, bodyHtml: string, opts: { width?: number } = {}) {
+  return layout(heading, bodyHtml, opts.width);
+}
+
+export function emailButton(href: string, label: string) {
+  return button(href, label);
+}
+
+// Escape anything typed by a person (names, lead details) before it goes into
+// email HTML; flatten to one line before it goes into a subject.
+export function escapeHtml(value: string) {
+  return esc(value);
+}
+
+export function oneLineText(value: string, max = 80) {
+  return oneLine(value, max);
+}
+
+// Brand colours used across the email templates.
+export const EMAIL_COLORS = { brand: "#d12822", ink: "#2b2b2b", muted: "#5c5648", faint: "#8b8271", line: "#efe7da", cream: "#fdf9f3" };
+
+function layout(heading: string, bodyHtml: string, width = 520) {
   return `<!doctype html>
 <html><body style="margin:0;padding:24px;background:#fdf9f3;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#2b2b2b">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:${width}px;margin:0 auto">
     <tr><td style="background:#d12822;border-radius:16px 16px 0 0;padding:22px 26px">
       <div style="font-size:17px;font-weight:700;color:#ffffff">Prestige Legacy</div>
     </td></tr>

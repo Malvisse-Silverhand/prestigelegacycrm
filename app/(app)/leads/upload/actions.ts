@@ -19,6 +19,8 @@ import { planAssignments, type PlanMember } from "@/lib/lead-assignment-plan";
 import type { RebalanceMode } from "@/lib/rebalance-targets";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { queueBulkAssignmentEmails, type BulkRecipient } from "@/lib/bulk-assignment-email";
+import { insertStagedRows } from "@/lib/lead-batch-insert";
+import { isDistributorRole } from "@/lib/daily-distribution-shared";
 import { getAssignableTeam } from "./data";
 
 // A manager uploads a lead database -> it is staged server-side -> the manager
@@ -56,7 +58,7 @@ type Batch = {
   id: string;
   created_by: string;
   filename: string | null;
-  status: "staged" | "assigning" | "done" | "cancelled";
+  status: "staged" | "assigning" | "done" | "cancelled" | "pooled";
   total_rows: number;
   valid_rows: number;
   duplicate_rows: number;
@@ -382,6 +384,8 @@ export async function getStagedPage(
 
 export type PlanRequest =
   | { mode: "self" }
+  // Leave the list unassigned in the owner's daily pool (distributors only).
+  | { mode: "pool" }
   | {
       mode: RebalanceMode;
       // Agents receiving leads (must all be inside the caller's team).
@@ -391,13 +395,17 @@ export type PlanRequest =
       overrides?: Record<string, string>;
     };
 
-export type PlanResult = Result & { counts?: { agentId: string; name: string; count: number }[] };
+export type PlanResult = Result & {
+  counts?: { agentId: string; name: string; count: number }[];
+  pooled?: number;
+};
 
 export async function saveAssignmentPlan(batchId: string, request: PlanRequest): Promise<PlanResult> {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };
   const batch = await loadBatch(batchId, profile.id);
   if (!batch) return { error: "Upload not found." };
+  if (batch.status === "pooled") return { error: "This list is in your daily pool." };
   if (batch.status !== "staged" && batch.status !== "assigning") return { error: "This upload is already finished." };
 
   try {
@@ -405,6 +413,17 @@ export async function saveAssignmentPlan(batchId: string, request: PlanRequest):
     const staged = await readStaged(batch.id, "idx");
     if (staged.length === 0) return { error: "There are no leads left to assign." };
     const idxList = staged.map((r) => r.idx);
+
+    // The daily pool: rows stay unassigned; the daily distribution hands them out.
+    if (request?.mode === "pool") {
+      if (!isDistributorRole(profile.role)) return { error: "Your role can't use the daily pool." };
+      const { error } = await admin
+        .from("lead_import_batches")
+        .update({ status: "pooled", mode: "pool", plan: null })
+        .eq("id", batch.id);
+      if (error) return { error: fail(error, "saveAssignmentPlan.pool", "Couldn't add the list to your pool. Please try again.") };
+      return { error: null, counts: [], pooled: staged.length };
+    }
 
     // Agents, and anyone who chose "keep all": everything goes to the uploader.
     if (profile.role === "agent" || request?.mode === "self") {
@@ -485,11 +504,6 @@ export async function saveAssignmentPlan(batchId: string, request: PlanRequest):
 
 // -- Creating the leads -----------------------------------------------------
 
-const STAGED_KEYS: (keyof StagedRow)[] = [
-  "full_name", "phone", "email", "date_of_birth", "gender", "is_smoker", "occupation", "address",
-  "postcode", "state", "lead_source", "interest", "agent_remark", "best_time_to_reach", "budget_indicated",
-];
-
 // Creates the next chunk of leads. Safe to call again after a failure: rows are
 // only removed from staging once their leads exist, and a lead already created
 // by this batch is never created twice.
@@ -500,6 +514,7 @@ export async function assignChunk(
   if (!profile) return { error: "Not signed in." };
   const batch = await loadBatch(batchId, profile.id);
   if (!batch) return { error: "Upload not found." };
+  if (batch.status === "pooled") return { error: "This list is in your daily pool." };
   if (batch.status === "done" || batch.status === "cancelled") return { error: "This upload is already finished." };
 
   try {
@@ -522,68 +537,15 @@ export async function assignChunk(
         : new Set((await getAssignableTeam(profile)).map((m) => m.id));
     allowedIds.add(profile.id);
 
-    const agentIds = [...new Set(rows.map((r) => r.agent_id as string))];
-    const { data: profs } = await admin.from("profiles").select("id, unit_id, is_active").in("id", agentIds);
-    const profById = new Map((profs ?? []).map((p) => [p.id as string, p]));
-
-    // Retry safety: leads this batch has already created.
-    const phones = rows.map((r) => (r.data as StagedRow).phone);
-    const { data: already } = await admin
-      .from("leads")
-      .select("phone")
-      .eq("import_batch_id", batch.id)
-      .in("phone", phones);
-    const alreadyPhones = new Set((already ?? []).map((l) => String(l.phone)));
-
-    let fallbacks = 0;
-    const now = new Date().toISOString();
-    const inserts: Record<string, unknown>[] = [];
-    for (const r of rows) {
-      const data = r.data as StagedRow;
-      if (alreadyPhones.has(data.phone)) continue;
-      let agentId = r.agent_id as string;
-      const prof = profById.get(agentId);
-      if (!allowedIds.has(agentId) || !prof || prof.is_active === false) {
-        agentId = profile.id; // keep it rather than lose it
-        fallbacks++;
-      }
-      const owner = profById.get(agentId);
-      const row: Record<string, unknown> = {};
-      for (const k of STAGED_KEYS) row[k] = data[k] ?? null;
-      const tagged = agentId !== profile.id;
-      inserts.push({
-        ...row,
-        status: "warm",
-        agent_id: agentId,
-        unit_id: (owner?.unit_id as string | null | undefined) ?? profile.unit_id,
-        import_batch_id: batch.id,
-        assigned_by: tagged ? profile.id : null,
-        assigned_at: tagged ? now : null,
-      });
-    }
-
-    let inserted = 0;
-    if (inserts.length > 0) {
-      const { data: created, error } = await admin.from("leads").insert(inserts).select("id, agent_id");
-      if (error) return { error: fail(error, "assignChunk.insert", "Couldn't save part of this upload. Press retry to continue.") };
-      inserted = created?.length ?? 0;
-
-      const label = batch.filename ? ` "${batch.filename}"` : "";
-      const { error: activityError } = await admin.from("lead_activity").insert(
-        (created ?? []).map((l) => {
-          const tagged = l.agent_id !== profile.id;
-          return {
-            lead_id: l.id as string,
-            actor_id: profile.id,
-            activity_type: tagged ? "assigned" : "created",
-            content: tagged
-              ? `Assigned by ${profile.full_name} (uploaded list${label})`
-              : `Imported from an uploaded list${label}`,
-          };
-        }),
-      );
-      if (activityError) console.error("assignChunk: lead_activity insert failed", activityError);
-    }
+    const result = await insertStagedRows(admin, {
+      batch: { id: batch.id, filename: batch.filename },
+      rows: rows.map((r) => ({ idx: r.idx as number, data: r.data as StagedRow, agentId: r.agent_id as string })),
+      assigner: { id: profile.id, full_name: profile.full_name, unit_id: profile.unit_id },
+      allowedAgentIds: allowedIds,
+    });
+    if (result.error) return { error: fail(null, "assignChunk.insert", "Couldn't save part of this upload. Press retry to continue.") };
+    const inserted = result.inserted.length;
+    const fallbacks = result.fallbacks;
 
     await deleteStaged(batch.id, rows.map((r) => r.idx as number));
     await admin
@@ -616,6 +578,7 @@ export async function finalizeBatch(batchId: string): Promise<FinalizeResult> {
   if (!profile) return { error: "Not signed in." };
   const batch = await loadBatch(batchId, profile.id);
   if (!batch) return { error: "Upload not found." };
+  if (batch.status === "pooled") return { error: "This list is in your daily pool." };
 
   try {
     const admin = createAdminClient();

@@ -15,6 +15,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-04",
+    title: "Daily lead distribution and a weekly report",
+    items: [
+      { kind: "new", text: "Settings > Daily Distribution (Unit Managers, Group Managers and SuperAdmin): put an uploaded list into your daily pool, then choose how many leads go out each day, at what time (9:00 AM by default), on which days, and how they are split between your agents: evenly, by percentage or by an exact number each." },
+      { kind: "new", text: "When each day's distribution finishes, agents get their usual notification and email, and a summary report is emailed to the upline and SuperAdmin. You can also hand out today's leads straight away with \"Distribute now\"." },
+      { kind: "new", text: "Weekly report: every Monday at 9:00 AM, Group Managers and SuperAdmin receive an email covering last week's leads, follow-ups, quotations, cases, ANC, top performers and daily distributions. SuperAdmin can switch it off for everyone, and each person can opt out under My Profile." },
+      { kind: "improved", text: "More date-of-birth formats in uploaded lists are understood, such as 16/05/59, 16051959 and 160559." },
+    ],
+  },
+  {
     date: "2026-10-24",
     title: "Upload lead lists and assign them to your team",
     items: [

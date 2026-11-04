@@ -19,6 +19,9 @@ import { getBenefitOptions } from "@/app/(app)/my-sales/data";
 import { getBrandLogoUrl, getBrandCoverUrl, getBrandPrimary } from "@/lib/site-settings";
 import { SettingsView } from "./settings-view";
 import { malaysiaDayKey } from "@/lib/malaysia-date";
+import { isDistributorRole } from "@/lib/daily-distribution-shared";
+import { getDailyDistribution } from "./daily-distribution-data";
+import { getWeeklyReportSettings } from "./weekly-report-actions";
 
 const EMPTY_ORG_TREE = {
   superadmins: [],
@@ -39,7 +42,13 @@ function currentMonthDate() {
   return `${malaysiaDayKey().slice(0, 7)}-01`;
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string | string[] }>;
+}) {
+  const { tab: tabParam } = await searchParams;
+  const initialTab = typeof tabParam === "string" ? tabParam : null;
   const profile = await getCurrentProfile();
   if (!profile) return null;
   // Every role reaches Settings now, because Set Target is open to everyone
@@ -75,6 +84,8 @@ export default async function SettingsPage() {
     brandPrimary,
     benefits,
     myProfile,
+    dailyDistribution,
+    weeklyReport,
   ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
@@ -100,6 +111,8 @@ export default async function SettingsPage() {
       // brought back rather than retyped.
       canManageBenefitCatalogue ? getBenefitOptions(false) : Promise.resolve([]),
       getMyProfileDetails(profile),
+      isDistributorRole(profile.role) ? getDailyDistribution(profile) : Promise.resolve(null),
+      isDistributorRole(profile.role) ? getWeeklyReportSettings() : Promise.resolve(null),
     ]);
 
   return (
@@ -124,6 +137,9 @@ export default async function SettingsPage() {
       benefits={benefits}
       currentUserId={profile.id}
       myProfile={myProfile}
+      dailyDistribution={dailyDistribution}
+      weeklyReport={weeklyReport}
+      initialTab={initialTab}
     />
   );
 }
