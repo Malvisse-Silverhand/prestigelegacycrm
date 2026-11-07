@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Client Portal · Storyboard</title>
+<script src="7fbc50be-2db4-49a6-9159-5c7d3de7c486"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("7a94d04a-9712-4774-9da2-d39639643ded") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("4d9d3f44-907d-4c74-849d-f749c54142d9") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0132433b-ff32-47eb-82b0-0a878187834d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("f42d52e8-b82a-442c-897e-72978b64598f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("62581170-73b7-4845-bd5d-b1ba588ee24a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#fdf9f3}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus{outline:3px solid #fac748;outline-offset:2px}
+@keyframes rise{0%{transform:translateY(12px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes grow{0%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+@keyframes drain{0%,15%{transform:scaleY(1)}70%,100%{transform:scaleY(0)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.9}}
+.rise{animation:rise .6s cubic-bezier(.16,1,.3,1) both}
+.grow{transform-box:fill-box;transform-origin:bottom;animation:grow 1.4s cubic-bezier(.16,1,.3,1) .2s both}
+.drain{transform-box:fill-box;transform-origin:bottom;animation:drain 4s ease-in-out infinite}
+.bob{animation:bob 2.6s ease-in-out infinite}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.rise,.grow,.drain,.bob,.pulse{animation:none}}
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #fdf9f3; min-height: 100vh; display: flex; flex-direction: column;">
+
+  <header style="background: #0f2540; color: #fdf9f3; padding: 12px 16px 0; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; z-index: 2;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="PortalHome.dc.html" aria-label="Back to my storyboards" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; color: #fdf9f3; text-decoration: none; font-size: 22px;">‹</a>
+      <span style="font-size: 15px; font-weight: 700;">My storyboard</span>
+      <span style="margin-left: auto; font-size: 12px; color: #c9d2e0;">Saved {{m.saved}}</span>
+    </div>
+    <div role="tablist" aria-label="Saved storyboards" style="display: flex; gap: 4px;">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+        <button type="button" role="tab" aria-selected="{{t.sel}}" sc-camel-on-click="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main role="tabpanel" style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+
+    <section class="rise" aria-label="Your gap" style="background: #0f2540; color: #fdf9f3; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #fac748;">{{m.kicker}}</span>
+        <span style="font-size: 36px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; font-variant-numeric: tabular-nums;">{{m.gap}}</span>
+        <span style="font-size: 13px; line-height: 1.6; color: #c9d2e0;">{{m.gapNote}}</span>
+      </div>
+
+      <sc-if value="{{isHibah}}" hint-placeholder-val="{{true}}">
+        <svg role="img" aria-label="{{m.artLabel}}" sc-camel-view-box="0 0 320 170" style="width: 100%; height: auto; background: #16305a; border-radius: 14px;">
+          <rect x="0" y="140" width="320" height="30" fill="#24406a"></rect>
+          <g class="bob">
+            <path d="M118 140 V92 L160 60 L202 92 V140 Z" fill="#fdf9f3"></path>
+            <path d="M108 96 L160 54 L212 96" fill="none" stroke="#fac748" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+            <rect x="150" y="112" width="20" height="28" rx="3" fill="#0f2540"></rect>
+            <circle cx="140" cy="102" r="7" fill="#0f4c35"></circle><circle cx="180" cy="102" r="7" fill="#0f4c35"></circle>
+          </g>
+          <text x="20" y="28" fill="#c9d2e0" font-size="11" font-family="Poppins">NEEDED</text>
+          <rect x="20" y="36" width="22" height="100" rx="5" fill="#24406a"></rect>
+          <rect class="grow" x="20" y="36" width="22" height="100" rx="5" fill="#b23a3a" opacity=".55"></rect>
+          <rect class="grow" x="20" y="{{m.coverY}}" width="22" height="{{m.coverH}}" rx="5" fill="#0f7a4c"></rect>
+          <text x="270" y="28" fill="#c9d2e0" font-size="11" font-family="Poppins" text-anchor="middle">GAP</text>
+          <path class="pulse" d="M270 40 L292 49 V66 C292 82 282 92 270 98 C258 92 248 82 248 66 V49 Z" fill="none" stroke="#fac748" stroke-width="3" stroke-dasharray="6 5"></path>
+          <text x="270" y="74" fill="#fac748" font-size="13" font-weight="700" font-family="Poppins" text-anchor="middle">{{m.openPct}}</text>
+        </svg>
+      </sc-if>
+      <sc-if value="{{isMed}}" hint-placeholder-val="{{false}}">
+        <svg role="img" aria-label="{{m.artLabel}}" sc-camel-view-box="0 0 320 170" style="width: 100%; height: auto; background: #16305a; border-radius: 14px;">
+          <rect x="24" y="96" width="120" height="40" rx="8" fill="#fdf9f3"></rect>
+          <rect x="24" y="80" width="30" height="20" rx="6" fill="#c9d2e0"></rect>
+          <rect x="30" y="136" width="8" height="18" fill="#c9d2e0"></rect><rect x="130" y="136" width="8" height="18" fill="#c9d2e0"></rect>
+          <path d="M84 70 h10 v-10 h10 v10 h10 v10 h-10 v10 h-10 v-10 h-10 Z" fill="#b23a3a" class="pulse"></path>
+          <text x="232" y="26" fill="#c9d2e0" font-size="11" font-family="Poppins" text-anchor="middle">YOUR SAVINGS</text>
+          <rect x="200" y="36" width="64" height="110" rx="10" fill="#24406a"></rect>
+          <rect class="drain" x="200" y="36" width="64" height="110" rx="10" fill="#0f7a4c"></rect>
+          <text x="232" y="164" fill="#fac748" font-size="12" font-weight="700" font-family="Poppins" text-anchor="middle">{{m.savingsText}}</text>
+        </svg>
+      </sc-if>
+    </section>
+
+    <section class="rise" aria-labelledby="ps-mean" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+      <h2 id="ps-mean" style="margin: 0; font-size: 16px; font-weight: 800; color: #0f2540;">What this means for you</h2>
+      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{m.means}}" as="x" hint-placeholder-count="3">
+          <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.6; color: #3d4757;"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; margin-top: 9px; border-radius: 9999px; background: #fac748;"></span><span>{{x}}</span></li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <section aria-label="Scenario flow" style="background: #0f2540; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">{{flow.heading}}</span><span aria-live="polite" style="font-size: 12px; color: #c9d2e0; white-space: nowrap;">{{flow.pos}}</span></div>
+      <div sc-camel-on-pointer-down="{{flow.down}}" sc-camel-on-pointer-up="{{flow.up}}" style="overflow: hidden; border-radius: 12px; touch-action: pan-y; cursor: grab;">
+        <div style="{{flow.trackStyle}}">
+          <sc-for list="{{flow.slides}}" as="f" hint-placeholder-count="5">
+            <div aria-hidden="{{f.hidden}}" style="flex: 0 0 100%; box-sizing: border-box; padding: 16px; background: #fdf9f3; color: #0f2540; display: flex; flex-direction: column; gap: 8px; min-height: 230px;">
+              <span style="{{f.tagStyle}}">{{f.tag}}</span>
+              <span style="font-size: 16px; font-weight: 800; line-height: 1.3;">{{f.title}}</span>
+              <span style="{{f.valueStyle}}">{{f.value}}</span>
+              <span style="font-size: 13px; line-height: 1.6; color: #3d4757;">{{f.desc}}</span>
+              <div style="display: flex; flex-direction: column; gap: 4px; margin-top: auto;"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>{{f.meterLabel}}</span><span>{{f.meterText}}</span></div><div aria-hidden="true" style="height: 10px; background: #e8e1d2; border-radius: 9999px; overflow: hidden;"><div style="{{f.meterStyle}}"></div></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <label for="ps-range" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Scenario step</label>
+      <input id="ps-range" type="range" min="0" max="{{flow.max}}" step="1" value="{{flow.idx}}" sc-camel-on-change="{{flow.onRange}}" style="width: 100%; accent-color: #fac748;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button type="button" sc-camel-on-click="{{flow.prev}}" aria-label="Previous step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">‹</button>
+        <div style="flex: 1; display: flex; justify-content: center; flex-wrap: wrap;"><sc-for list="{{flow.dots}}" as="d" hint-placeholder-count="5"><button type="button" sc-camel-on-click="{{d.pick}}" aria-label="{{d.label}}" aria-current="{{d.cur}}" style="{{d.style}}"><span style="{{d.dotStyle}}"></span></button></sc-for></div>
+        <button type="button" sc-camel-on-click="{{flow.togglePlay}}" aria-pressed="{{flow.playing}}" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 13px; font-weight: 700; cursor: pointer;">{{flow.playLabel}}</button>
+        <button type="button" sc-camel-on-click="{{flow.next}}" aria-label="Next step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">›</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="ps-have" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <h2 id="ps-have" style="margin: 0; font-size: 16px; font-weight: 800; color: #0f2540;">What you have vs what you need</h2>
+      <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px;"><span style="color: #3d4757;">{{r.label}}</span><b style="color: #0f2540; font-variant-numeric: tabular-nums;">{{r.value}}</b></div>
+          <div aria-hidden="true" style="height: 8px; background: #efe8da; border-radius: 9999px; overflow: hidden;"><div style="{{r.bar}}"></div></div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-labelledby="ps-plan" style="background: #fffaf0; border: 2px solid #fac748; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+      <span style="align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #0f2540; background: #fac748; border-radius: 9999px; padding: 3px 10px;">SUGGESTED BY YOUR AGENT</span>
+      <h2 id="ps-plan" style="margin: 0; font-size: 18px; font-weight: 800; color: #0f2540;">{{m.plan.name}}</h2>
+      <p style="margin: 0; font-size: 13px; color: #5b6576;">Great Eastern Takaful Berhad</p>
+      <dl style="margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #5b6576;">COVERAGE DISCUSSED</dt><dd style="margin: 2px 0 0; font-size: 15px; font-weight: 700; color: #0f2540; font-variant-numeric: tabular-nums;">{{m.plan.cover}}</dd></div>
+        <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #5b6576;">MONTHLY CONTRIBUTION</dt><dd style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #a45d00;">From official illustration</dd></div>
+      </dl>
+      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #3d4757;">{{m.plan.why}}</p>
+    </section>
+
+    <section aria-labelledby="ps-steps" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+      <h2 id="ps-steps" style="margin: 0; font-size: 16px; font-weight: 800; color: #0f2540;">Next steps</h2>
+      <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{m.steps}}" as="n" hint-placeholder-count="3">
+          <li style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; color: #3d4757;"><span style="{{n.badge}}">{{n.no}}</span><span>{{n.text}}</span></li>
+        </sc-for>
+      </ol>
+      <a href="#" style="min-height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: #0f7a4c; color: #ffffff; font-size: 15px; font-weight: 800; text-decoration: none; margin-top: 4px;">Ask my agent on WhatsApp</a>
+    </section>
+
+    <p style="margin: 0; font-size: 11px; line-height: 1.6; color: #5b6576;">Estimates for discussion only, based on what you shared. Not a quotation or advice to buy. Coverage, waiting periods and exclusions are subject to the Product Disclosure Sheet and certificate terms of Great Eastern Takaful Berhad, and to underwriting.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:2700}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'hibah', flowIdx: 0, flowPlay: false,
+      hibah: { saved: '6 Nov 2026', monthly: 4500, years: 10, debts: 305806, existing: 300000 },
+      med: { saved: '5 Nov 2026', bill: 150000, employer: 20000, savings: 40000 } };
+  }
+  componentDidMount() { this._flowTimer = setInterval(() => { if (this.state.flowPlay) { const n = this._flowN || 1; this.setState({ flowIdx: ((this.state.flowIdx || 0) + 1) % n }); } }, 3500); }
+  componentWillUnmount() { clearInterval(this._flowTimer); }
+  buildFlow(heading, data) {
+    const n = data.length; this._flowN = n;
+    const idx = Math.min(n - 1, this.state.flowIdx || 0);
+    const go = (i) => this.setState({ flowIdx: Math.max(0, Math.min(n - 1, i)), flowPlay: false });
+    const tones = { neutral: '#1d4f91', warn: '#a45d00', bad: '#b23a3a', good: '#0f7a4c' };
+    return {
+      heading: heading, idx: String(idx), max: String(n - 1), pos: (idx + 1) + ' of ' + n,
+      trackStyle: 'display: flex; transition: transform .55s cubic-bezier(.16,1,.3,1); transform: translateX(-' + (idx * 100) + '%);',
+      slides: data.map((d, i) => { const c = tones[d.tone] || tones.neutral; const m = Math.max(0, Math.min(100, Math.round(d.meter || 0))); return {
+        tag: d.tag, title: d.title, value: d.value, desc: d.desc, meterLabel: d.meterLabel, meterText: d.meterText, hidden: i === idx ? 'false' : 'true',
+        tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #ffffff; background: ' + c + '; border-radius: 9999px; padding: 3px 10px;',
+        valueStyle: 'font-size: 28px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: ' + c + '; font-variant-numeric: tabular-nums;',
+        meterStyle: 'height: 100%; width: ' + m + '%; background: ' + (m > 60 ? '#0f7a4c' : m > 25 ? '#e3a823' : '#b23a3a') + '; border-radius: 9999px; transition: width .6s ease;' }; }),
+      dots: data.map((d, i) => ({ label: 'Go to step ' + (i + 1) + ': ' + d.tag, cur: i === idx ? 'step' : 'false', pick: () => go(i),
+        style: 'width: 32px; height: 44px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;',
+        dotStyle: 'display: block; height: 8px; border-radius: 9999px; transition: all .3s; width: ' + (i === idx ? 22 : 8) + 'px; background: ' + (i === idx ? '#fac748' : '#5b7299') + ';' })),
+      prev: () => go(idx - 1), next: () => go(idx + 1), onRange: (e) => go(Number(e.target.value) || 0),
+      playing: this.state.flowPlay ? 'true' : 'false', playLabel: this.state.flowPlay ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ flowPlay: !this.state.flowPlay }),
+      down: (e) => { this._fx = e.clientX; },
+      up: (e) => { if (this._fx == null) return; const dx = e.clientX - this._fx; this._fx = null; if (dx < -40) go(idx + 1); else if (dx > 40) go(idx - 1); }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const rm = (x) => 'RM' + Math.round(Math.max(0, x)).toLocaleString('en-MY');
+    const bar = (pct, c) => 'height: 100%; width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%; background: ' + c + '; border-radius: 9999px;';
+    const badge = 'flex: none; width: 26px; height: 26px; border-radius: 9999px; background: #0f2540; color: #fac748; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;';
+    const isHibah = s.tab === 'hibah';
+    let m, flow;
+
+    if (isHibah) {
+      const h = s.hibah;
+      const income = h.monthly * 12 * h.years;
+      const need = income + h.debts;
+      const gap = Math.max(0, need - h.existing);
+      const coverPct = need ? h.existing / need * 100 : 0;
+      const runway = h.monthly ? h.existing / (h.monthly * 12) : 0;
+      m = {
+        saved: h.saved, kicker: 'YOUR FAMILY PROTECTION GAP', gap: rm(gap),
+        gapNote: 'What your family would still be short of if your income stopped tomorrow.',
+        artLabel: 'Your home is ' + Math.round(coverPct) + '% protected today, ' + Math.round(100 - coverPct) + '% is still open.',
+        coverY: (136 - coverPct).toFixed(1), coverH: coverPct.toFixed(1),
+        openPct: Math.round(100 - coverPct) + '%',
+        means: [
+          'Your family spends about ' + rm(h.monthly) + ' a month. To keep that going for ' + h.years + ' years, they need ' + rm(income) + '.',
+          'Your home loan and other debts of ' + rm(h.debts) + ' would still need settling.',
+          'The ' + rm(h.existing) + ' cover you have today lasts your family about ' + runway.toFixed(1) + ' years.'
+        ],
+        rows: [
+          { label: 'Family living costs (' + h.years + ' years)', value: rm(income), bar: bar(income / need * 100, '#1d4f91') },
+          { label: 'Debts to settle', value: rm(h.debts), bar: bar(h.debts / need * 100, '#a45d00') },
+          { label: 'Cover you already have', value: rm(h.existing), bar: bar(coverPct, '#0f7a4c') },
+          { label: 'Still open', value: rm(gap), bar: bar(100 - coverPct, '#b23a3a') }
+        ],
+        plan: { name: 'i-Great Nova', cover: rm(gap), why: 'A hibah nomination lets the benefit go to the person you name, so your family has cash while the estate is being settled. Exact terms follow the certificate.' },
+        steps: [
+          { no: '1', text: 'Review the official Great Eastern Takaful illustration with your agent.', badge: badge },
+          { no: '2', text: 'Read the Product Disclosure Sheet, especially waiting periods and exclusions.', badge: badge },
+          { no: '3', text: 'Decide who to name as your hibah beneficiary.', badge: badge }
+        ]
+      };
+      flow = this.buildFlow('IF YOUR INCOME STOPS', [
+        { tag: 'TODAY', title: 'Your family runs on your income', value: rm(h.monthly) + '/mo', desc: 'Rent or loan, school, food and bills all depend on this amount each month.', meterLabel: 'Family plan on track', meterText: '100%', meter: 100, tone: 'neutral' },
+        { tag: 'THE DAY IT STOPS', title: 'Income stops, bills do not', value: rm(need), desc: 'Living costs for ' + h.years + ' years plus ' + rm(h.debts) + ' in debts your family would face.', meterLabel: 'Covered by your plans', meterText: Math.round(coverPct) + '%', meter: coverPct, tone: 'bad' },
+        { tag: 'WHAT YOU HAVE', title: 'Your current cover steps in', value: rm(h.existing), desc: 'Enough for about ' + runway.toFixed(1) + ' years of family spending, before the debts.', meterLabel: 'Years covered', meterText: runway.toFixed(1) + ' of ' + h.years, meter: runway / h.years * 100, tone: 'warn' },
+        { tag: 'THE GAP', title: 'What is still missing', value: rm(gap), desc: 'This is the amount your family would have to find on their own.', meterLabel: 'Still open', meterText: Math.round(100 - coverPct) + '%', meter: 100 - coverPct, tone: 'bad' },
+        { tag: 'WITH A HIBAH PLAN', title: 'The gap is closed', value: rm(need), desc: 'The benefit goes to the person you named, subject to the certificate terms.', meterLabel: 'Family plan on track', meterText: '100%', meter: 100, tone: 'good' }
+      ]);
+    } else {
+      const d = s.med;
+      const outPocket = Math.max(0, d.bill - d.employer);
+      const left = d.savings - outPocket;
+      const short = Math.max(0, -left);
+      m = {
+        saved: d.saved, kicker: 'A HOSPITAL BILL YOU WOULD PAY YOURSELF', gap: rm(outPocket),
+        gapNote: 'For one serious hospital stay of ' + rm(d.bill) + ', after your employer cover.',
+        artLabel: 'A hospital stay drains your savings of ' + rm(d.savings) + ' to zero.',
+        savingsText: left < 0 ? 'Short ' + rm(short) : rm(left) + ' left',
+        means: [
+          'One serious hospital stay can cost around ' + rm(d.bill) + '.',
+          'Your employer cover pays up to ' + rm(d.employer) + ', and only while you work there.',
+          left < 0 ? 'Your savings of ' + rm(d.savings) + ' would be used up, and you would still be ' + rm(short) + ' short.' : 'You would be left with ' + rm(left) + ' of savings.'
+        ],
+        rows: [
+          { label: 'Hospital bill (example)', value: rm(d.bill), bar: bar(100, '#1d4f91') },
+          { label: 'Employer cover pays', value: rm(d.employer), bar: bar(d.employer / d.bill * 100, '#0f7a4c') },
+          { label: 'Your savings today', value: rm(d.savings), bar: bar(d.savings / d.bill * 100, '#a45d00') },
+          { label: 'Still unpaid', value: rm(short), bar: bar(short / d.bill * 100, '#b23a3a') }
+        ],
+        plan: { name: 'i-Medi Evolusi', cover: '[Annual limit per PDS]', why: 'A personal medical card stays with you even if you change jobs, so a hospital stay does not have to come out of your savings.' },
+        steps: [
+          { no: '1', text: 'Review the official illustration and the room and board, annual and lifetime limits.', badge: badge },
+          { no: '2', text: 'Check the waiting period for illnesses before cover starts.', badge: badge },
+          { no: '3', text: 'Answer the health questions fully and honestly when you apply.', badge: badge }
+        ]
+      };
+      flow = this.buildFlow('IF YOU ARE ADMITTED WITHOUT A MEDICAL CARD', [
+        { tag: 'TODAY', title: 'Your savings are safe', value: rm(d.savings), desc: 'Money set aside for your goals and emergencies.', meterLabel: 'Savings left', meterText: '100%', meter: 100, tone: 'good' },
+        { tag: 'ADMITTED', title: 'The hospital bill arrives', value: rm(d.bill), desc: 'An example bill for surgery, ward and medication for one serious stay.', meterLabel: 'Savings left', meterText: '100%', meter: 100, tone: 'bad' },
+        { tag: 'EMPLOYER COVER', title: 'Your company cover pays its limit', value: '-' + rm(d.employer), desc: 'You still owe ' + rm(outPocket) + '.', meterLabel: 'Savings left', meterText: '100%', meter: 100, tone: 'warn' },
+        { tag: 'YOUR SAVINGS', title: 'Savings are disrupted by ' + rm(Math.min(d.savings, outPocket)), value: left < 0 ? 'Short ' + rm(short) : rm(left) + ' left', desc: left < 0 ? 'All your savings are gone and you still need to find ' + rm(short) + '.' : 'Most of what you saved is used.', meterLabel: 'Savings left', meterText: Math.round(Math.max(0, left) / d.savings * 100) + '%', meter: Math.max(0, left) / d.savings * 100, tone: 'bad' },
+        { tag: 'WITH A MEDICAL CARD', title: 'The plan pays the hospital', value: rm(d.savings) + ' kept', desc: 'Covered bills are paid up to the plan limits, subject to the PDS and certificate terms.', meterLabel: 'Savings left', meterText: '100%', meter: 100, tone: 'good' }
+      ]);
+    }
+
+    const tabs = [['hibah', 'Hibah'], ['med', 'Medical Card']].map(([k, label]) => ({
+      label: label, sel: s.tab === k ? 'true' : 'false',
+      pick: () => this.setState({ tab: k, flowIdx: 0, flowPlay: false }),
+      style: 'flex: 1; min-height: 48px; border: 0; border-radius: 12px 12px 0 0; font-size: 14px; font-weight: 700; cursor: pointer; ' + (s.tab === k ? 'background: #fdf9f3; color: #0f2540;' : 'background: #16305a; color: #c9d2e0;')
+    }));
+
+    return { tabs: tabs, isHibah: isHibah, isMed: !isHibah, m: m, flow: flow };
+  }
+}
+</script>
+
+
+</body></html>

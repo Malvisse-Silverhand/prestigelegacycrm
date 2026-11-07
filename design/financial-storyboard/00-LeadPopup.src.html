@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Lead popup with Financial Storyboard button</title>
+<script src="22364dcf-a9dc-40eb-b8e6-723fa0cde90e"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx3cwhsk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxTcwhsk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxPcwhsk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx_cwhsk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwhsk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx3cwhsk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxTcwhsk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxPcwhsk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx_cwhsk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwhsk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b5d408dc-cf78-41f8-bf79-d5d91e936887") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b3cc60cc-1eb7-45e4-83a0-402987b67dd6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("feab88ac-5ef4-4742-b367-edac99e78235") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("2aaa7b10-1e2b-4a7f-966d-8e8eb64b11ab") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("bd77130c-7b89-4664-94c1-b39bb4d507d1") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#f3efe6}
+a{color:#0f2540}a:hover{color:#0f4c35}
+button,select{font-family:inherit}
+button:focus-visible,a:focus-visible,select:focus{outline:3px solid #fac748;outline-offset:2px}
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #f3efe6; min-height: 100vh; display: grid;">
+
+  <div aria-hidden="true" style="grid-area: 1 / 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+      <div><div style="font-size: 26px; font-weight: 800; color: #0f2540;">Lead Management</div><div style="font-size: 14px; color: #5b6576;">Track and manage incoming leads across every unit</div></div>
+      <div style="border: 1px solid #d6cdb9; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; background: #ffffff;">Export to CSV</div>
+    </div>
+    <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 10px; height: 44px;"></div>
+    <div style="background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e3dccd;">
+      <div style="background: #0f2540; height: 40px;"></div>
+      <div style="display: flex; flex-direction: column;">
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Aiman Hakim</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Nurul Izzah</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Faris Daniel</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Siti Aisyah</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Hafiz Rahman</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Mei Ling Tan</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; border-bottom: 1px solid #efe8da; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Kumaran Raj</b><span style="color: #5b6576;">Leader assigned</span></div>
+        <div style="height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 14px;"><b style="color: #0f2540;">Farah Nadia</b><span style="color: #5b6576;">Leader assigned</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="grid-area: 1 / 1; background: rgba(15,37,64,0.55); display: flex; justify-content: center; align-items: flex-start; padding: 64px 16px 32px; box-sizing: border-box;">
+    <div role="dialog" aria-modal="true" aria-labelledby="lead-name" style="width: 100%; max-width: 820px; background: #fdf9f3; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(15,37,64,0.35); display: flex; flex-direction: column;">
+
+      <div style="background: #0f2540; color: #fdf9f3; padding: 20px 24px; display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; flex: none; border-radius: 12px; background: #fac748; color: #0f2540; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px;">AH</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+            <span style="font-size: 11px; font-weight: 700; color: #fac748; background: #24406a; border-radius: 6px; padding: 2px 6px;">#84</span>
+            <h2 id="lead-name" style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">Aiman Hakim</h2>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #0f4c35; background: #e3f0e8; border-radius: 4px; padding: 3px 6px;">HIBAH</span>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #0f2540; background: #fac748; border-radius: 4px; padding: 3px 6px;">NEW</span>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #fac748; border: 1px solid #fac748; border-radius: 4px; padding: 2px 6px;">LEADER ASSIGNED</span>
+          </div>
+          <span style="font-size: 13px; color: #c9d2e0;">01X-XXX XXXX · Wangsa Maju</span>
+        </div>
+        <button type="button" aria-label="Close" style="width: 44px; height: 44px; flex: none; border: 0; border-radius: 10px; background: transparent; color: #fdf9f3; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+
+      <div style="padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e3dccd; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+        <button type="button" style="min-height: 48px; border: 0; border-radius: 10px; background: #0f2540; color: #ffffff; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#fac748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>Call</button>
+        <button type="button" style="min-height: 48px; border: 0; border-radius: 10px; background: #0f4c35; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">WhatsApp</button>
+        <a href="Main.dc.html" style="min-height: 48px; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; box-shadow: 0 6px 16px rgba(250,199,72,0.45);"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M10 9l5 2.5-5 2.5z"></path><path d="M8 21h8"></path></svg>Financial Storyboard</a>
+        <button type="button" style="min-height: 48px; border: 1px solid #e3dccd; border-radius: 10px; background: #ffffff; color: #0f2540; font-size: 14px; font-weight: 600; cursor: pointer;">Add note</button>
+      </div>
+
+      <div style="padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+        <div style="flex: 999 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+          <div role="tablist" aria-label="Lead sections" style="display: flex; background: #ffffff; border: 1px solid #e3dccd; border-radius: 12px; padding: 4px;">
+            <button type="button" role="tab" aria-selected="true" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: #0f2540; color: #ffffff; font-size: 13px; font-weight: 600; cursor: pointer;">Lead details</button>
+            <button type="button" role="tab" aria-selected="false" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: transparent; color: #5b6576; font-size: 13px; font-weight: 600; cursor: pointer;">Case &amp; Servicing</button>
+          </div>
+          <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 700; font-size: 15px; color: #0f2540;">Lead details</span>
+              <div style="display: flex; gap: 8px;"><button type="button" style="min-height: 40px; padding: 0 12px; border: 1px solid #e3dccd; border-radius: 8px; background: #ffffff; font-size: 13px; font-weight: 600; color: #0f2540; cursor: pointer;">Collect details</button><button type="button" style="min-height: 40px; padding: 0 14px; border: 0; border-radius: 8px; background: #fac748; font-size: 13px; font-weight: 700; color: #0f2540; cursor: pointer;">Edit</button></div>
+            </div>
+            <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px;">
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">FULL NAME</dt><dd style="margin: 2px 0 0; font-size: 14px;">Aiman Hakim</dd></div>
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">DATE OF BIRTH</dt><dd style="margin: 2px 0 0; font-size: 14px;">12/03/1992 · ANB 35</dd></div>
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">GENDER · SMOKER</dt><dd style="margin: 2px 0 0; font-size: 14px;">Male · Non-smoker</dd></div>
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">OCCUPATION</dt><dd style="margin: 2px 0 0; font-size: 14px;">Engineer</dd></div>
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">PRODUCT INTEREST</dt><dd style="margin: 2px 0 0; font-size: 14px;">Hibah</dd></div>
+              <div><dt style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">MONTHLY BUDGET</dt><dd style="margin: 2px 0 0; font-size: 14px;">RM150–300</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;"><label for="stage" style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">PIPELINE STAGE</label><sc-raw-select id="stage" style="min-height: 44px; border: 1px solid #e3dccd; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff; color: #0f2540;"><option>New Lead</option><option>Qualified</option><option>Quoted</option></sc-raw-select></div>
+          <div style="background: #0f2540; color: #fdf9f3; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">FINANCIAL STORYBOARD</span>
+            <span style="font-size: 13px; color: #c9d2e0;">Hibah · last saved 6 Nov 2026</span>
+            <span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; color: #fac748;">RM545,806 gap</span>
+            <div aria-hidden="true" style="display: flex; gap: 4px;"><span style="flex: 1; height: 6px; border-radius: 3px; background: #fac748;"></span><span style="flex: 1; height: 6px; border-radius: 3px; background: #fac748;"></span><span style="flex: 1; height: 6px; border-radius: 3px; background: #24406a;"></span><span style="flex: 1; height: 6px; border-radius: 3px; background: #24406a;"></span></div>
+            <span style="font-size: 12px; color: #c9d2e0;">2 of 4 steps done</span>
+            <a href="Main.dc.html" style="color: #fac748; font-size: 13px; font-weight: 600;">Continue storyboard →</a>
+          </div>
+          <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #5b6576;">CLIENT PORTAL</span>
+            <sc-for list="{{shares}}" as="sh" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="min-width: 0;"><p style="margin: 0; font-size: 14px; font-weight: 600; color: #0f2540;">{{sh.label}}</p><p style="margin: 0; font-size: 12px; color: #5b6576;">{{sh.status}}</p></div>
+                <button type="button" role="switch" aria-checked="{{sh.on}}" aria-label="{{sh.aria}}" sc-camel-on-click="{{sh.toggle}}" style="{{sh.track}}"><span style="{{sh.knob}}"></span></button>
+              </div>
+            </sc-for>
+            <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #5b6576;">Client sees the gap, scenario flow and suggested GE plan only. Scripts, objections, risk checklist and notes stay hidden.</p>
+            <button type="button" sc-camel-on-click="{{sendLink}}" style="{{sendStyle}}">{{sendLabel}}</button>
+            <a href="PortalLogin.dc.html" style="font-size: 13px; font-weight: 600; color: #0f2540;">Preview client portal →</a>
+          </div>
+          <div><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">LEAD ASSIGNED</span><p style="margin: 4px 0 0; font-size: 14px;">[Agent name]</p></div>
+          <div><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5b6576;">SOURCE</span><p style="margin: 4px 0 0; font-size: 14px;">Facebook Ad</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1100}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { shared: { hibah: true, med: false }, sent: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const items = [['hibah', 'Hibah storyboard', '6 Nov 2026'], ['med', 'Medical Card storyboard', '5 Nov 2026']];
+    const anyOn = items.some(([k]) => s.shared[k]);
+    return {
+      shares: items.map(([k, label, saved]) => { const on = !!s.shared[k]; return {
+        label: label, status: on ? 'Visible to client · saved ' + saved : 'Hidden from client',
+        on: on ? 'true' : 'false', aria: 'Share ' + label + ' to client portal',
+        toggle: () => this.setState({ shared: Object.assign({}, s.shared, { [k]: !on }), sent: false }),
+        track: 'flex: none; width: 52px; height: 44px; border: 0; background: transparent; cursor: pointer; padding: 0; display: inline-flex; align-items: center; position: relative;',
+        knob: 'display: block; width: 52px; height: 28px; box-sizing: border-box; border-radius: 9999px; transition: background .2s; background: ' + (on ? '#0f7a4c' : '#d6cdb9') + ' radial-gradient(circle at ' + (on ? '38px' : '14px') + ' 50%, #ffffff 9px, transparent 10px);' }; }),
+      sendLabel: s.sent ? 'Portal link sent on WhatsApp \u2713' : 'Send portal link on WhatsApp',
+      sendStyle: 'min-height: 44px; border: 0; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: ' + (anyOn ? 'pointer' : 'not-allowed') + '; ' + (s.sent ? 'background: #0f7a4c; color: #ffffff;' : anyOn ? 'background: #0f2540; color: #fdf9f3;' : 'background: #e3dccd; color: #5b6576;'),
+      sendLink: () => { if (anyOn) this.setState({ sent: true }); }
+    };
+  }
+}
+</script>
+
+
+</body></html>
