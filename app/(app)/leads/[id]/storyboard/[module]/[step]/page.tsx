@@ -3,21 +3,17 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { ageNextBirthday } from "@/lib/age";
-import { getHibahSettings, getLeadStoryboards, type SavedStoryboard } from "@/lib/storyboard/data";
-import { HIBAH_DEFAULT_INPUTS } from "@/lib/storyboard/defaults/hibah";
-import { resolveHibahSettings } from "@/lib/storyboard/settings";
-import { EMPTY_EXTRAS, isModule, isUuid, readStoredHibah } from "@/lib/storyboard/validate";
+import { getLeadStoryboards, getStoryboardSettings, type SavedStoryboard } from "@/lib/storyboard/data";
+import { isBuiltModule, MODULE_TITLE } from "@/lib/storyboard/modules";
+import { resolveSettings } from "@/lib/storyboard/settings";
+import { isModule, isUuid } from "@/lib/storyboard/validate";
 import { STORYBOARD_MISSING_MESSAGE } from "@/lib/storyboard/schema-error";
 import { STORYBOARD_MODULES, STORYBOARD_STEPS, type StoryboardModule, type StoryboardStep } from "@/lib/storyboard/types";
 import { t, type TKey } from "@/lib/storyboard/i18n";
 import { ModuleTabs, type ModuleKey } from "@/components/storyboard/module-tabs";
 import { ProspectProfile } from "@/components/storyboard/prospect-profile";
 import { StepTabs, type StepKey } from "@/components/storyboard/step-tabs";
-import { HibahFill } from "@/components/storyboard/hibah/hibah-fill";
-import { HibahExplain } from "@/components/storyboard/hibah/hibah-explain";
-import { HibahRisk } from "@/components/storyboard/hibah/hibah-risk";
-import { HibahObjections } from "@/components/storyboard/hibah/hibah-objections";
-import type { HibahScreenProps } from "@/components/storyboard/hibah/types";
+import { renderScreen, type ScreenCommon } from "@/components/storyboard/registry";
 
 type LeadRow = { id: string; full_name: string; phone: string | null; date_of_birth: string | null };
 
@@ -51,12 +47,17 @@ export default async function StoryboardStepPage({
     .maybeSingle<LeadRow>();
   if (!lead) notFound();
 
-  const [saved, settings] = await Promise.all([getLeadStoryboards(id), getHibahSettings(profile.id)]);
-  const dbReady = saved.ok && settings.ok;
+  // Mortgage (Phase 4b) has no screens or settings yet.
+  const built = isBuiltModule(mod) ? mod : null;
+  const [saved, settings] = await Promise.all([
+    getLeadStoryboards(id),
+    built ? getStoryboardSettings(built, profile.id) : Promise.resolve(null),
+  ]);
+  const dbReady = saved.ok && (settings === null || settings.ok);
   const rows: SavedStoryboard[] = saved.ok ? saved.data : [];
   const row = rows.find((r) => r.module === mod) ?? null;
-  const missing = (!saved.ok && saved.missing) || (!settings.ok && settings.missing);
-  const loadFailed = (!saved.ok && !saved.missing) || (!settings.ok && !settings.missing);
+  const missing = (!saved.ok && saved.missing) || (settings !== null && !settings.ok && settings.missing);
+  const loadFailed = (!saved.ok && !saved.missing) || (settings !== null && !settings.ok && !settings.missing);
 
   const base = `/leads/${id}/storyboard`;
   const moduleHrefs = Object.fromEntries(STORYBOARD_MODULES.map((m) => [m, `${base}/${m}/fill`])) as Record<ModuleKey, string>;
@@ -68,12 +69,12 @@ export default async function StoryboardStepPage({
   const firstName = lead.full_name.trim().split(/\s+/)[0] ?? "";
 
   let screen: React.ReactNode;
-  if (mod !== "hibah") {
+  if (!built) {
     screen = (
       <section className="rounded-[20px] border border-sand bg-white p-6 text-center shadow-card">
         <h2 className="m-0 text-lg font-bold text-navy">{t(`module.${mod}` as TKey)}: coming soon</h2>
         <p className="m-0 mt-2 text-sm text-ink">
-          This module is not available yet. Hibah is ready now, and the others follow the same four steps.
+          This module is not available yet. Hibah, Medical Card, Critical Illness and Business Protection are ready now.
         </p>
         <Link
           href={`${base}/hibah/fill`}
@@ -84,14 +85,9 @@ export default async function StoryboardStepPage({
       </section>
     );
   } else {
-    const stored = row
-      ? readStoredHibah(row.inputs)
-      : // Nothing saved yet: start from the design defaults, prefilled from the lead.
-        { ...HIBAH_DEFAULT_INPUTS, ...EMPTY_EXTRAS, nick: firstName.slice(0, 40), age: age ?? HIBAH_DEFAULT_INPUTS.age };
-    const resolved = resolveHibahSettings(settings.ok ? settings.data.org : {}, settings.ok ? settings.data.agent : {});
-    const common: HibahScreenProps = {
+    const resolved = resolveSettings(built, settings?.ok ? settings.data.org : {}, settings?.ok ? settings.data.agent : {});
+    const common: ScreenCommon = {
       leadId: id,
-      stored,
       notes: row?.notes ?? "",
       savedAt: row?.savedAt ?? null,
       hasRow: Boolean(row),
@@ -101,12 +97,8 @@ export default async function StoryboardStepPage({
       outcome: row?.outcome ?? null,
     };
     // key: a fresh form state whenever the saved row changes underneath.
-    const key = `${id}-${row?.savedAt ?? "new"}-${resolved.overridden.length}-${resolved.script.map((s) => s.text.length).join(",")}`;
-    screen =
-      stepKey === "fill" ? <HibahFill key={key} {...common} />
-      : stepKey === "explain" ? <HibahExplain key={key} {...common} />
-      : stepKey === "risk" ? <HibahRisk key={key} {...common} />
-      : <HibahObjections key={key} {...common} />;
+    const key = `${id}-${built}-${row?.savedAt ?? "new"}-${resolved.overridden.length}-${resolved.script.map((s) => s.text.length).join(",")}`;
+    screen = renderScreen(built, stepKey, common, row ? row.inputs : null, { firstName, age }, key);
   }
 
   return (
@@ -131,10 +123,10 @@ export default async function StoryboardStepPage({
       ) : null}
 
       <ModuleTabs current={mod} saved={rows.map((r) => r.module)} hrefs={moduleHrefs} />
-      {mod === "hibah" ? <StepTabs current={URL_TO_TAB[stepKey]} done={doneSteps} hrefs={stepHrefs} /> : null}
+      {built ? <StepTabs current={URL_TO_TAB[stepKey]} done={doneSteps} hrefs={stepHrefs} /> : null}
 
       <h1 className="m-0 text-2xl font-extrabold tracking-tight text-navy">
-        {mod === "hibah" ? "Hibah Takaful Planning" : t(`module.${mod}` as TKey)}
+        {built ? MODULE_TITLE[built] : t(`module.${mod}` as TKey)}
       </h1>
 
       {screen}

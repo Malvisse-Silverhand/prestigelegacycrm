@@ -12,8 +12,20 @@ import {
   HIBAH_DEFAULT_CONTENT,
   HIBAH_DEFAULT_PLAN,
 } from "./defaults/hibah";
-import { COMMON_OBJECTIONS, type Objection, type RiskItem, type ScriptStep } from "./defaults/common";
+import { MEDICAL_DEFAULT_CONTENT } from "./defaults/medical";
+import { CI_DEFAULT_CONTENT } from "./defaults/ci";
+import { BUSINESS_DEFAULT_CONTENT } from "./defaults/business";
+import { COMMON_OBJECTIONS, DEFAULT_PLAN_NAMES, type ModuleContent, type Objection, type RiskItem, type ScriptStep } from "./defaults/common";
+import type { BuiltModule } from "./modules";
 import { cleanText, clampNumber, type Validated } from "./validate";
+
+/** Built-in content and plan-name placeholder for each built module. */
+export const MODULE_CONTENT: Record<BuiltModule, { content: ModuleContent; planName: string }> = {
+  hibah: { content: HIBAH_DEFAULT_CONTENT, planName: HIBAH_DEFAULT_PLAN.name },
+  medical: { content: MEDICAL_DEFAULT_CONTENT, planName: DEFAULT_PLAN_NAMES.medical },
+  ci: { content: CI_DEFAULT_CONTENT, planName: DEFAULT_PLAN_NAMES.ci },
+  business: { content: BUSINESS_DEFAULT_CONTENT, planName: DEFAULT_PLAN_NAMES.business },
+};
 
 export type OrgHibahSettings = {
   planName?: string;
@@ -31,6 +43,9 @@ export type AgentHibahSettings = {
   riskItems?: RiskItem[];
 };
 
+export type OrgSettings = OrgHibahSettings;
+export type AgentSettings = AgentHibahSettings;
+
 export type ResolvedHibahSettings = {
   planName: string;
   base: number;
@@ -40,13 +55,14 @@ export type ResolvedHibahSettings = {
   script: ScriptStep[];
   riskItems: RiskItem[];
   riskReasons: RiskItem[];
-  /** Hibah-specific objections, answers already overridden. */
+  /** Module-specific objections, answers already overridden. */
   objectionsSpecific: Objection[];
   objectionGroups: { name: string; items: Objection[] }[];
   faq: Objection[];
   /** True where the agent changed the text, keyed by question. */
   overridden: string[];
 };
+export type ResolvedSettings = ResolvedHibahSettings;
 
 const MULT_COUNT = HIBAH_DEFAULT_PLAN.mults.length;
 const MAX_PLAN_NAME = 80;
@@ -65,10 +81,18 @@ function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
 }
 
-export function sanitizeOrgSettings(raw: unknown): Validated<OrgHibahSettings> {
+/** Only Hibah has an example base amount and benefit multiples. */
+const ORG_KEYS: Record<BuiltModule, string[]> = {
+  hibah: ["planName", "base", "mults", "statistics"],
+  medical: ["planName", "statistics"],
+  ci: ["planName", "statistics"],
+  business: ["planName", "statistics"],
+};
+
+export function sanitizeOrgSettings(raw: unknown, module: BuiltModule = "hibah"): Validated<OrgHibahSettings> {
   const src = asRecord(raw);
   if (!src) return { ok: false, error: "Invalid settings." };
-  const bad = rejectUnknown(src, ["planName", "base", "mults", "statistics"]);
+  const bad = rejectUnknown(src, ORG_KEYS[module]);
   if (bad) return { ok: false, error: bad };
   const out: OrgHibahSettings = {};
 
@@ -109,7 +133,7 @@ export function sanitizeOrgSettings(raw: unknown): Validated<OrgHibahSettings> {
   return { ok: true, value: out };
 }
 
-export function sanitizeAgentSettings(raw: unknown): Validated<AgentHibahSettings> {
+export function sanitizeAgentSettings(raw: unknown, module: BuiltModule = "hibah"): Validated<AgentHibahSettings> {
   const src = asRecord(raw);
   if (!src) return { ok: false, error: "Invalid settings." };
   const bad = rejectUnknown(src, ["script", "objections", "riskItems"]);
@@ -117,7 +141,7 @@ export function sanitizeAgentSettings(raw: unknown): Validated<AgentHibahSetting
   const out: AgentHibahSettings = {};
 
   if (src.script !== undefined) {
-    if (!Array.isArray(src.script) || src.script.length > HIBAH_DEFAULT_CONTENT.script.length) {
+    if (!Array.isArray(src.script) || src.script.length > MODULE_CONTENT[module].content.script.length) {
       return { ok: false, error: "Invalid script." };
     }
     const script: string[] = [];
@@ -166,13 +190,13 @@ export function sanitizeAgentSettings(raw: unknown): Validated<AgentHibahSetting
 }
 
 /** Read stored org settings (untrusted JSON) back, dropping anything invalid. */
-export function readOrgSettings(raw: unknown): OrgHibahSettings {
-  const parsed = sanitizeOrgSettings(pickKeys(raw, ["planName", "base", "mults", "statistics"]));
+export function readOrgSettings(raw: unknown, module: BuiltModule = "hibah"): OrgHibahSettings {
+  const parsed = sanitizeOrgSettings(pickKeys(raw, ORG_KEYS[module]), module);
   return parsed.ok ? parsed.value : {};
 }
 
-export function readAgentSettings(raw: unknown): AgentHibahSettings {
-  const parsed = sanitizeAgentSettings(pickKeys(raw, ["script", "objections", "riskItems"]));
+export function readAgentSettings(raw: unknown, module: BuiltModule = "hibah"): AgentHibahSettings {
+  const parsed = sanitizeAgentSettings(pickKeys(raw, ["script", "objections", "riskItems"]), module);
   return parsed.ok ? parsed.value : {};
 }
 
@@ -186,11 +210,9 @@ function pickKeys(raw: unknown, keys: string[]): Record<string, unknown> {
 
 const COMMON_QS = new Set(COMMON_OBJECTIONS.flatMap((g) => g.items.map((i) => i.q)));
 
-/** Org defaults <- agent overrides over the built-in content. */
-export function resolveHibahSettings(
-  org: OrgHibahSettings = {},
-  agent: AgentHibahSettings = {},
-): ResolvedHibahSettings {
+/** Org defaults <- agent overrides over the built-in content, for any built module. */
+export function resolveSettings(module: BuiltModule, org: OrgHibahSettings = {}, agent: AgentHibahSettings = {}): ResolvedHibahSettings {
+  const { content, planName } = MODULE_CONTENT[module];
   const answers = new Map<string, string>();
   for (const o of agent.objections ?? []) answers.set(o.q, o.a);
   const overridden: string[] = [];
@@ -203,20 +225,21 @@ export function resolveHibahSettings(
     return o;
   };
 
-  const script = HIBAH_DEFAULT_CONTENT.script.map((step, i) => {
+  const script = content.script.map((step, i) => {
     const text = agent.script?.[i];
-    return { title: step.title, text: text && text.trim() !== "" ? text : step.text };
+    return { title: step.title, group: step.group, text: text && text.trim() !== "" ? text : step.text };
   });
 
-  const content = HIBAH_DEFAULT_CONTENT;
   const specific = content.objections.filter((o) => !COMMON_QS.has(o.q)).map(apply);
   const groups = COMMON_OBJECTIONS.map((g) => ({ name: g.name, items: g.items.map(apply) }));
+  // Only Hibah has benefit multiples; the other modules ignore these fields.
+  const isHibah = module === "hibah";
 
   return {
-    planName: org.planName ?? HIBAH_DEFAULT_PLAN.name,
-    base: org.base ?? HIBAH_DEFAULT_PLAN.base,
-    mults: org.mults && org.mults.length === MULT_COUNT ? org.mults : [...HIBAH_DEFAULT_PLAN.mults],
-    multLabels: [...HIBAH_DEFAULT_PLAN.multLabels],
+    planName: org.planName ?? planName,
+    base: isHibah ? (org.base ?? HIBAH_DEFAULT_PLAN.base) : 0,
+    mults: isHibah ? (org.mults && org.mults.length === MULT_COUNT ? org.mults : [...HIBAH_DEFAULT_PLAN.mults]) : [],
+    multLabels: isHibah ? [...HIBAH_DEFAULT_PLAN.multLabels] : [],
     statistics: org.statistics ?? [],
     script,
     riskItems: agent.riskItems && agent.riskItems.length > 0 ? agent.riskItems : content.riskItems,
@@ -226,6 +249,11 @@ export function resolveHibahSettings(
     faq: content.faq.map(apply),
     overridden,
   };
+}
+
+/** Hibah settings (kept for existing callers). */
+export function resolveHibahSettings(org: OrgHibahSettings = {}, agent: AgentHibahSettings = {}): ResolvedHibahSettings {
+  return resolveSettings("hibah", org, agent);
 }
 
 /** Fill {name} {need} {have} {gap} {base} in a script step. Unknown tokens stay as written. */

@@ -5,7 +5,12 @@
 // invented. Wording is Great Eastern only, with no guarantees and no promise of
 // acceptance, claim payment or returns.
 
-export type ScriptStep = { title: string; text: string };
+export type ScriptStep = {
+  title: string;
+  text: string;
+  /** Optional section (Business: keyman / buysell / loan / enterprise). */
+  group?: string;
+};
 export type RiskItem = { label: string; detail: string };
 export type Objection = { q: string; a: string };
 export type ObjectionGroup = { name: string; items: Objection[] };
@@ -20,7 +25,12 @@ export type ModuleContent = {
 };
 
 /** Tokens a script may use. Filled at render time, never stored filled in. */
-export const SCRIPT_TOKENS = ["{name}", "{need}", "{have}", "{gap}", "{base}", "{bill}", "{level}", "{scenario}"] as const;
+export const SCRIPT_TOKENS = [
+  "{name}", "{need}", "{have}", "{gap}", "{base}",
+  "{bill}", "{level}", "{scenario}", "{reason}", "{company}",
+  "{commits}", "{dep}", "{recEarly}", "{gapEarly}", "{recLate}", "{gapLate}", "{runEarly}", "{runLate}",
+  "{keyman}", "{buysell}", "{loan}", "{frozen}", "{cash}",
+] as const;
 
 export const DEFAULT_PLAN_NAMES = {
   hibah: "[GE hibah plan]",

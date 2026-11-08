@@ -7,42 +7,35 @@ import { dispatchWebhook } from "@/lib/dispatch-webhook";
 import { malaysiaToday } from "@/lib/malaysia-date";
 import { stageLabel } from "@/lib/pipeline-stages";
 import { buildClientSummary } from "@/lib/storyboard/client-summary";
-import { HIBAH_DEFAULT_INPUTS } from "@/lib/storyboard/defaults/hibah";
 import { computeModule } from "@/lib/storyboard/engine";
 import { OUTCOME_LABEL, planOutcome } from "@/lib/storyboard/outcome";
+import { isBuiltModule, MODULE_NAME } from "@/lib/storyboard/modules";
 import { markStepSaved, readStepStatus } from "@/lib/storyboard/progress";
 import { isMissingSchemaError, STORYBOARD_MISSING_MESSAGE } from "@/lib/storyboard/schema-error";
 import {
   readAgentSettings,
   readOrgSettings,
-  resolveHibahSettings,
+  resolveSettings,
   sanitizeAgentSettings,
   sanitizeOrgSettings,
 } from "@/lib/storyboard/settings";
 import {
-  EMPTY_EXTRAS,
   cleanText,
+  defaultStored,
   isModule,
   isOutcome,
   isStep,
   isUuid,
-  mergeHibah,
-  readStoredHibah,
-  sanitizeHibahPatch,
+  mergeStored,
+  readStored,
   sanitizeNotes,
+  sanitizePatch,
 } from "@/lib/storyboard/validate";
 import type { StoryboardModule, StoryboardOutcome, StoryboardStep } from "@/lib/storyboard/types";
 
 type SaveResult = { error: string | null; savedAt: string | null };
 
 const NOT_YET = "This module isn't available yet.";
-const MODULE_NAME: Record<StoryboardModule, string> = {
-  hibah: "Hibah",
-  medical: "Medical Card",
-  ci: "Critical Illness",
-  business: "Business Protection",
-  mortgage: "Mortgage",
-};
 
 function revalidateStoryboard(leadId: string) {
   revalidatePath(`/leads/${leadId}`);
@@ -63,11 +56,12 @@ export async function saveStoryboard(input: {
   if (!profile) return { error: "Not signed in.", savedAt: null };
   if (!isUuid(input?.leadId)) return { error: "That lead could not be found.", savedAt: null };
   if (!isModule(input.module)) return { error: "Unknown module.", savedAt: null };
-  if (input.module !== "hibah") return { error: NOT_YET, savedAt: null };
+  if (!isBuiltModule(input.module)) return { error: NOT_YET, savedAt: null };
+  const mod = input.module;
   const step: StoryboardStep = input.step === undefined ? "fill" : input.step;
   if (!isStep(step)) return { error: "Unknown step.", savedAt: null };
 
-  const patch = sanitizeHibahPatch(input.inputs);
+  const patch = sanitizePatch(mod, input.inputs);
   if (!patch.ok) return { error: patch.error, savedAt: null };
 
   const supabase = await createClient();
@@ -81,7 +75,7 @@ export async function saveStoryboard(input: {
     .from("storyboards")
     .select("id, inputs, step_status, notes")
     .eq("lead_id", leadId)
-    .eq("module", input.module)
+    .eq("module", mod)
     .maybeSingle<{ id: string; inputs: unknown; step_status: unknown; notes: string | null }>();
   if (loadError) {
     return { error: isMissingSchemaError(loadError) ? STORYBOARD_MISSING_MESSAGE : "Couldn't save. Please try again.", savedAt: null };
@@ -89,28 +83,30 @@ export async function saveStoryboard(input: {
   if (step !== "fill" && !existing) return { error: "Save Step 1 first.", savedAt: null };
 
   // Step 1 sends the whole form; later steps patch what is stored.
-  const base = existing ? readStoredHibah(existing.inputs) : { ...HIBAH_DEFAULT_INPUTS, ...EMPTY_EXTRAS };
-  const merged = mergeHibah(base, patch.value);
+  const base = existing ? readStored(mod, existing.inputs) : defaultStored(mod);
+  const merged = mergeStored(mod, base, patch.value);
 
   // Everything the client sees is recomputed here. Client-sent outputs don't exist.
-  const result = computeModule("hibah", merged);
+  const result = computeModule(mod, merged as never);
 
   const [{ data: settingsRows }, { data: me }] = await Promise.all([
     supabase
       .from("storyboard_settings")
       .select("scope, owner_id, settings")
-      .eq("module", "hibah")
+      .eq("module", mod)
       .returns<{ scope: "org" | "agent"; owner_id: string | null; settings: unknown }[]>(),
     supabase.from("profiles").select("phone").eq("id", profile.id).maybeSingle<{ phone: string | null }>(),
   ]);
-  const org = readOrgSettings(settingsRows?.find((r) => r.scope === "org")?.settings);
-  const agent = readAgentSettings(settingsRows?.find((r) => r.scope === "agent" && r.owner_id === profile.id)?.settings);
-  const resolved = resolveHibahSettings(org, agent);
+  const org = readOrgSettings(settingsRows?.find((r) => r.scope === "org")?.settings, mod);
+  const agent = readAgentSettings(settingsRows?.find((r) => r.scope === "agent" && r.owner_id === profile.id)?.settings, mod);
+  const resolved = resolveSettings(mod, org, agent);
 
+  // The summary is built from computed outputs and the plan name only. Agent-only
+  // inputs (notes, the CI story, claim stories, proofs) are never passed on.
   const clientSummary = buildClientSummary(
-    "hibah",
+    mod,
     merged,
-    result,
+    result as never,
     { firstName: profile.full_name.trim().split(/\s+/)[0] ?? "", wa: me?.phone ?? "" },
     { name: resolved.planName },
   );
@@ -141,7 +137,7 @@ export async function saveStoryboard(input: {
   } else {
     const { data, error } = await supabase
       .from("storyboards")
-      .insert({ lead_id: leadId, module: input.module, ...row })
+      .insert({ lead_id: leadId, module: mod, ...row })
       .select("id")
       .maybeSingle();
     if (error?.code === "23505") {
@@ -150,7 +146,7 @@ export async function saveStoryboard(input: {
         .from("storyboards")
         .update(row)
         .eq("lead_id", leadId)
-        .eq("module", input.module)
+        .eq("module", mod)
         .select("id")
         .maybeSingle();
       writeError = retry.error;
@@ -171,7 +167,7 @@ export async function saveStoryboard(input: {
     lead_id: leadId,
     actor_id: profile.id,
     activity_type: "storyboard",
-    content: `Financial Storyboard (${MODULE_NAME[input.module]}) saved`,
+    content: `Financial Storyboard (${MODULE_NAME[mod]}) saved`,
   });
   if (activityError) console.error("saveStoryboard: lead_activity insert failed", activityError);
 
@@ -190,7 +186,7 @@ export async function setStoryboardOutcome(input: {
   if (!profile) return { error: "Not signed in.", message: null };
   if (!isUuid(input?.leadId)) return { error: "That lead could not be found.", message: null };
   if (!isModule(input.module)) return { error: "Unknown module.", message: null };
-  if (input.module !== "hibah") return { error: NOT_YET, message: null };
+  if (!isBuiltModule(input.module)) return { error: NOT_YET, message: null };
   if (!isOutcome(input.outcome)) return { error: "Unknown outcome.", message: null };
 
   const supabase = await createClient();
@@ -291,9 +287,9 @@ export async function saveStoryboardSettings(input: {
   if (!profile) return { error: "Not signed in." };
   if (input?.scope !== "agent") return { error: "Unknown settings scope." };
   if (!isModule(input.module)) return { error: "Unknown module." };
-  if (input.module !== "hibah") return { error: NOT_YET };
+  if (!isBuiltModule(input.module)) return { error: NOT_YET };
 
-  const parsed = sanitizeAgentSettings(input.settings);
+  const parsed = sanitizeAgentSettings(input.settings, input.module);
   if (!parsed.ok) return { error: parsed.error };
 
   const supabase = await createClient();
@@ -330,9 +326,9 @@ export async function saveOrgStoryboardSettings(input: {
   // Checked on the server: hiding the tab is not a permission.
   if (!profile || profile.role !== "superadmin") return { error: "Only a SuperAdmin can change the organisation defaults." };
   if (!isModule(input?.module)) return { error: "Unknown module." };
-  if (input.module !== "hibah") return { error: NOT_YET };
+  if (!isBuiltModule(input.module)) return { error: NOT_YET };
 
-  const parsed = sanitizeOrgSettings(input.settings);
+  const parsed = sanitizeOrgSettings(input.settings, input.module);
   if (!parsed.ok) return { error: parsed.error };
 
   const supabase = await createClient();

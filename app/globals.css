@@ -224,11 +224,28 @@ summary:active,
 .sb-pulse { animation: sb-pulse var(--sb-dur-1) ease-in-out infinite; }
 .sb-pop { animation: sb-pop 240ms var(--sb-ease) both; }
 
+/* Business protection: pure CSS 3D column chart (no libraries). */
+@keyframes sb-spin {
+  from { transform: rotateX(-24deg) rotateY(-30deg); }
+  to   { transform: rotateX(-24deg) rotateY(330deg); }
+}
+@keyframes sb-grow3d {
+  from { transform: scaleY(.02); }
+  to   { transform: scaleY(1); }
+}
+.sb-3d-scene { perspective: 1100px; perspective-origin: 50% 30%; }
+.sb-3d-stage { transform-style: preserve-3d; transform: rotateX(-24deg) rotateY(-30deg); animation: sb-spin 24s linear infinite; }
+.sb-3d-stage *, .sb-3d-col { transform-style: preserve-3d; }
+.sb-3d-grow { transform-origin: 50% 100%; animation: sb-grow3d 1.2s var(--sb-ease) both; }
+.sb-3d-still .sb-3d-stage, .sb-3d-still .sb-3d-grow { animation: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .sb-slide-in,
   .sb-meter,
   .sb-pulse,
-  .sb-pop {
+  .sb-pop,
+  .sb-3d-stage,
+  .sb-3d-grow {
     animation: none;
   }
   .sb-reduce-transition,

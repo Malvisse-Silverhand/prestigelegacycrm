@@ -1,7 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingSchemaError, STORYBOARD_MISSING_MESSAGE } from "./schema-error";
-import { readAgentSettings, readOrgSettings, type AgentHibahSettings, type OrgHibahSettings } from "./settings";
+import { readAgentSettings, readOrgSettings, type AgentSettings, type OrgSettings } from "./settings";
+import { BUILT_MODULES, type BuiltModule } from "./modules";
 import { readStepStatus } from "./progress";
 import {
   STORYBOARD_MODULES,
@@ -97,14 +98,15 @@ export async function getLeadStoryboardStatus(leadId: string): Promise<LeadStory
 }
 
 /** Org defaults plus this agent's own overrides for a module. */
-export async function getHibahSettings(
+export async function getStoryboardSettings(
+  module: BuiltModule,
   agentId: string,
-): Promise<DataResult<{ org: OrgHibahSettings; agent: AgentHibahSettings }>> {
+): Promise<DataResult<{ org: OrgSettings; agent: AgentSettings }>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("storyboard_settings")
     .select("scope, owner_id, settings")
-    .eq("module", "hibah")
+    .eq("module", module)
     .returns<{ scope: "org" | "agent"; owner_id: string | null; settings: unknown }[]>();
   if (error) return fail(error);
   const rows = data ?? [];
@@ -112,20 +114,28 @@ export async function getHibahSettings(
   const agent = rows.find((r) => r.scope === "agent" && r.owner_id === agentId);
   return {
     ok: true,
-    data: { org: readOrgSettings(org?.settings), agent: readAgentSettings(agent?.settings) },
+    data: { org: readOrgSettings(org?.settings, module), agent: readAgentSettings(agent?.settings, module) },
   };
 }
 
-export async function getOrgHibahSettings(): Promise<DataResult<OrgHibahSettings>> {
+export function getHibahSettings(agentId: string) {
+  return getStoryboardSettings("hibah", agentId);
+}
+
+/** Org defaults for every built module (SuperAdmin settings tab). */
+export async function getAllOrgSettings(): Promise<DataResult<Record<BuiltModule, OrgSettings>>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("storyboard_settings")
-    .select("settings")
+    .select("module, settings")
     .eq("scope", "org")
-    .eq("module", "hibah")
-    .maybeSingle<{ settings: unknown }>();
+    .returns<{ module: StoryboardModule; settings: unknown }[]>();
   if (error) return fail(error);
-  return { ok: true, data: readOrgSettings(data?.settings) };
+  const out = {} as Record<BuiltModule, OrgSettings>;
+  for (const m of BUILT_MODULES) {
+    out[m] = readOrgSettings((data ?? []).find((r) => r.module === m)?.settings, m);
+  }
+  return { ok: true, data: out };
 }
 
 export type StoryboardListRow = {
@@ -158,8 +168,12 @@ function readGap(outputs: unknown): string | null {
   if (!outputs || typeof outputs !== "object") return null;
   const text = (outputs as Record<string, unknown>).text;
   if (!text || typeof text !== "object") return null;
-  const gap = (text as Record<string, unknown>).gap;
-  return typeof gap === "string" ? gap : null;
+  // Hibah and Medical: gap. Critical illness: early-stage gap. Business: total need.
+  const t = text as Record<string, unknown>;
+  for (const key of ["gap", "gapEarly", "total"]) {
+    if (typeof t[key] === "string") return t[key];
+  }
+  return null;
 }
 
 /** Storyboards of every lead the viewer can see (RLS), newest save first. */

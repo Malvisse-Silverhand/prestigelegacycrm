@@ -22,7 +22,7 @@ import { malaysiaDayKey } from "@/lib/malaysia-date";
 import { isDistributorRole } from "@/lib/daily-distribution-shared";
 import { getDailyDistribution } from "./daily-distribution-data";
 import { getWeeklyReportSettings } from "./weekly-report-actions";
-import { getOrgHibahSettings } from "@/lib/storyboard/data";
+import { getAllOrgSettings } from "@/lib/storyboard/data";
 
 const EMPTY_ORG_TREE = {
   superadmins: [],
@@ -116,7 +116,7 @@ export default async function SettingsPage({
       isDistributorRole(profile.role) ? getDailyDistribution(profile) : Promise.resolve(null),
       isDistributorRole(profile.role) ? getWeeklyReportSettings() : Promise.resolve(null),
       // Org defaults for the Financial Storyboard: SuperAdmin only.
-      profile.role === "superadmin" ? getOrgHibahSettings() : Promise.resolve(null),
+      profile.role === "superadmin" ? getAllOrgSettings() : Promise.resolve(null),
     ]);
 
   return (
