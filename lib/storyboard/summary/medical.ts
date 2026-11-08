@@ -4,9 +4,6 @@ import { t, type Lang } from "../i18n";
 import type { SummaryBody } from "./hibah";
 import { cleanFlow, contributionText, safeText, type SummaryPlan } from "./shared";
 
-// TODO(BM): the Medical wording below is English only. Move each string to
-// i18n/dict/medical.{en,bm}.ts and build it with t(key, lang) as summary/hibah.ts does.
-
 export function summarizeMedical(
   result: ModuleResults["medical"],
   plan: SummaryPlan | undefined,
@@ -14,27 +11,23 @@ export function summarizeMedical(
 ): SummaryBody {
   const { out, flow } = result;
   return {
-    moduleLabel: "Medical card",
-    kicker: "Hospital bill",
+    moduleLabel: t("medical.summary.moduleLabel", lang),
+    kicker: t("medical.summary.kicker", lang),
     gap: out.text.gap,
     need: out.text.bill,
     have: rmWhole(out.companyUsed + out.savingsUsed),
-    gapNote: "This is an estimate for one scenario. The bill figure is a placeholder the agent has sourced.",
-    meaning: [
-      "Bill is the scenario estimate we looked at.",
-      "Covered is company cover plus your own savings.",
-      "Out of pocket is what would still need to be found.",
-    ],
+    gapNote: t("medical.summary.gapNote", lang),
+    meaning: [t("medical.summary.meaning1", lang), t("medical.summary.meaning2", lang), t("medical.summary.meaning3", lang)],
     flow: cleanFlow(flow),
     haveVsNeed: [
-      { label: "Company cover", value: out.text.company, tone: "neutral" },
-      { label: "Own savings", value: out.text.savings, tone: "good" },
-      { label: "Out of pocket", value: out.text.gap, tone: "bad" },
+      { label: t("medical.legend.company", lang), value: out.text.company, tone: "neutral" },
+      { label: t("medical.legend.savings", lang), value: out.text.savings, tone: "good" },
+      { label: t("medical.legend.oop", lang), value: out.text.gap, tone: "bad" },
     ],
     plan: {
       name: safeText(plan?.name, defaultPlanName("medical", lang)),
       cover: safeText(plan?.cover, t("scene.official", lang)),
-      why: safeText(plan?.why, "An own card could help keep savings intact, subject to limits, deductibles and exclusions.", 240),
+      why: safeText(plan?.why, t("medical.summary.planWhy", lang), 240),
       contribution: contributionText(plan, lang),
     },
   };

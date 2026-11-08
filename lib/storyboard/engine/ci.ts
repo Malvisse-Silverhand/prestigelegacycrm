@@ -1,5 +1,5 @@
 import type { FlowSlide } from "../types";
-import type { Lang } from "../i18n";
+import { translator, type Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fixed1, fromSen, num, rmWhole, safeDiv, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -92,9 +92,7 @@ export type CiScene = {
 export type CiResult = EngineResult<CiOut, CiScene>;
 
 export function computeCi(raw: Partial<CiInputs>, lang: Lang = "en"): CiResult {
-  // TODO(BM): ci text is English only for now. Build user-visible strings with
-  // translator(lang) as engine/hibah.ts does, then delete this line.
-  void lang;
+  const tr = translator(lang);
   const n = (v: unknown) => num(v);
 
   // months = 0 gives a recovery need of 0 (never NaN). The design clamps to 1;
@@ -137,44 +135,47 @@ export function computeCi(raw: Partial<CiInputs>, lang: Lang = "en"): CiResult {
 
   let reduceNote = "";
   if ((raw.reduces ?? "unsure") === "unsure") {
-    reduceNote = "Not yet sure whether a CI payout reduces the base cover. Check the certificate first; the effect on a large hibah matters.";
+    reduceNote = tr("ci.reduce.unsure");
   }
   if (raw.reduces === "yes") {
-    reduceNote = "This plan’s CI payout reduces the base cover. Hibah left after a late-stage claim: " + rmWhole(Math.max(0, n(raw.base) - ciLate)) + ".";
+    reduceNote = tr("ci.reduce.yes", { left: rmWhole(Math.max(0, n(raw.base) - ciLate)) });
   }
 
   const deps = raw.deps ?? {};
   let depScore = 0;
   for (let i = 0; i < CI_DEPENDENCY_COUNT; i++) if (deps[String(i)]) depScore++;
+  // depLevel is a stable English id (tests and styling key off it); screens translate it with ci.dep.*.
   const depLevel = depScore <= 3 ? "Low dependency so far" : depScore <= 6 ? "Moderate dependency" : "High dependency";
 
   const W = 420;
   const wE = Math.max(0, Math.min(W, safeDiv(W * runEarly, months)));
   const wL = Math.max(0, Math.min(W, safeDiv(W * runLate, months)));
   const earlyPct = n(raw.earlyPct);
-  const affordNote =
-    "With " + rmWhole(afford) + " extra CI cover, the early-stage gap becomes " +
-    rmWhole(Math.max(0, gapEarly - (afford * earlyPct) / 100)) +
-    " (if the new plan pays " + earlyPct + "% at early stage) and the late-stage gap " +
-    rmWhole(Math.max(0, gapLate - afford)) + ".";
+  const affordNote = tr("ci.afford", {
+    extra: rmWhole(afford),
+    early: rmWhole(Math.max(0, gapEarly - (afford * earlyPct) / 100)),
+    pct: earlyPct,
+    late: rmWhole(Math.max(0, gapLate - afford)),
+  });
 
   const runwayMeter = (r: number) => safeDiv(r, months) * 100;
   const fundedPct = total > 0 ? (srcEarly / total) * 100 : 100;
-  const caption =
-    "Cash lasts " + fixed1(runEarly) + " months (early) to " + fixed1(runLate) + " months (late) of " + months;
+  const caption = tr("ci.caption", { early: fixed1(runEarly), late: fixed1(runLate), months });
 
+  const runwayLabel = tr("ci.flow.runway");
+  const runwayEarlyText = tr("ci.flow.runwayText", { a: fixed1(runEarly), b: months });
   const flow: FlowSlide[] = buildFlowSlides([
-    { tag: "DIAGNOSIS", title: "Early-stage diagnosis, income paused", value: rmWhole(monthly) + "/mo", desc: "Commitments keep running for an estimated " + months + " months of treatment and recovery.", meterLabel: "Cash runway", meterText: fixed1(runEarly) + " / " + months + " mo", meter: runwayMeter(runEarly), tone: "neutral" },
-    { tag: "CI PAYOUT", title: ciEarly > 0 ? "Existing CI pays at early stage" : "Existing CI pays nothing yet", value: rmWhole(ciEarly), desc: ciEarly > 0 ? "Added to the savings available for recovery." : "A late-stage-only plan pays nothing at an early-stage diagnosis.", meterLabel: "Cash runway", meterText: fixed1(runEarly) + " / " + months + " mo", meter: runwayMeter(runEarly), tone: ciEarly > 0 ? "neutral" : "warn" },
-    { tag: "SAVINGS", title: "Savings disrupted by " + rmWhole(Math.min(sources, total)), value: fixed1(runEarly) + " months", desc: "Available cash of " + rmWhole(srcEarly) + " lasts about " + fixed1(runEarly) + " months at " + rmWhole(monthly) + " a month.", meterLabel: "Cash runway", meterText: fixed1(runEarly) + " / " + months + " mo", meter: runwayMeter(runEarly), tone: "warn" },
-    { tag: "MONTH " + Math.max(1, Math.ceil(runEarly)), title: "Cash runs out mid-recovery", value: rmWhole(gapEarly), desc: "Still needed for the rest of recovery, extra costs and caregiving.", meterLabel: "Need funded", meterText: (total > 0 ? Math.min(100, Math.round(fundedPct)) : 100) + "%", meter: fundedPct, tone: "bad" },
-    { tag: "WITH CI COVER", title: "Add " + rmWhole(suggest) + " of CI cover", value: months + " months", desc: "Cash for the full recovery period, if the new plan pays at early stage. Subject to the certificate’s definitions.", meterLabel: "Cash runway", meterText: months + " / " + months + " mo", meter: 100, tone: "good" },
+    { tag: tr("ci.flow.d.tag"), title: tr("ci.flow.d.title"), value: tr("ci.flow.perMonth", { amount: rmWhole(monthly) }), desc: tr("ci.flow.d.desc", { months }), meterLabel: runwayLabel, meterText: runwayEarlyText, meter: runwayMeter(runEarly), tone: "neutral" },
+    { tag: tr("ci.flow.p.tag"), title: ciEarly > 0 ? tr("ci.flow.p.titleYes") : tr("ci.flow.p.titleNo"), value: rmWhole(ciEarly), desc: ciEarly > 0 ? tr("ci.flow.p.descYes") : tr("ci.flow.p.descNo"), meterLabel: runwayLabel, meterText: runwayEarlyText, meter: runwayMeter(runEarly), tone: ciEarly > 0 ? "neutral" : "warn" },
+    { tag: tr("ci.flow.s.tag"), title: tr("ci.flow.s.title", { amount: rmWhole(Math.min(sources, total)) }), value: tr("ci.flow.monthsValue", { months: fixed1(runEarly) }), desc: tr("ci.flow.s.desc", { cash: rmWhole(srcEarly), months: fixed1(runEarly), monthly: rmWhole(monthly) }), meterLabel: runwayLabel, meterText: runwayEarlyText, meter: runwayMeter(runEarly), tone: "warn" },
+    { tag: tr("ci.flow.m.tag", { n: Math.max(1, Math.ceil(runEarly)) }), title: tr("ci.flow.m.title"), value: rmWhole(gapEarly), desc: tr("ci.flow.m.desc"), meterLabel: tr("ci.flow.m.meterLabel"), meterText: (total > 0 ? Math.min(100, Math.round(fundedPct)) : 100) + "%", meter: fundedPct, tone: "bad" },
+    { tag: tr("ci.flow.w.tag"), title: tr("ci.flow.w.title", { amount: rmWhole(suggest) }), value: tr("ci.flow.monthsValue", { months }), desc: tr("ci.flow.w.desc"), meterLabel: runwayLabel, meterText: tr("ci.flow.runwayText", { a: months, b: months }), meter: 100, tone: "good" },
   ]);
 
   const legend: LegendItem[] = [
-    { label: "Early-stage runway", value: fixed1(runEarly) + " mo", tone: "good" },
-    { label: "Late-stage runway", value: fixed1(runLate) + " mo", tone: "good" },
-    { label: "Still needed (early)", value: rmWhole(gapEarly), tone: "bad" },
+    { label: tr("ci.legend.early"), value: tr("ci.legend.mo", { n: fixed1(runEarly) }), tone: "good" },
+    { label: tr("ci.legend.late"), value: tr("ci.legend.mo", { n: fixed1(runLate) }), tone: "good" },
+    { label: tr("ci.legend.needed"), value: rmWhole(gapEarly), tone: "bad" },
   ];
 
   return {
@@ -194,7 +195,7 @@ export function computeCi(raw: Partial<CiInputs>, lang: Lang = "en"): CiResult {
       wEarly: wE,
       wLate: wL,
       xEarly: 110 + wE,
-      label: "Animated runway bars: cash lasts " + fixed1(runEarly) + " months at early stage and " + fixed1(runLate) + " months at late stage out of a " + months + "-month recovery",
+      label: tr("ci.scene.label", { early: fixed1(runEarly), late: fixed1(runLate), months }),
     },
     legend,
     caption,

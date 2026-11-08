@@ -1,9 +1,6 @@
 import type { MedicalOut } from "../engine/medical";
-import type { Lang } from "../i18n";
+import { t, type Lang, type TKey } from "../i18n";
 import { greeting, sourceText, waDisclaimer, withAgent } from "./shared";
-
-// TODO(BM): the Medical lines below are English only. Move them to
-// i18n/dict/medical.{en,bm}.ts and build them with t(key, lang) as wa/hibah.ts does.
 
 export function buildMedicalWaSummary(input: {
   nick: string;
@@ -16,16 +13,16 @@ export function buildMedicalWaSummary(input: {
   const lines: string[] = [
     greeting(input.nick, lang),
     "",
-    `Hospital bill scenario: ${out.billLabel}`,
-    `Estimated bill: ${out.text.bill} (an estimate for discussion; ${sourceText(out.billSource, "en")})`,
-    `  - Company cover used: ${out.text.company}`,
-    `  - Own savings used: ${out.text.savings}`,
-    out.gap > 0 ? `Estimated out of pocket: ${out.text.gap}` : "On these figures, company cover and savings meet the estimated bill.",
-    `The same bill in 5 years, at ${out.inflation}% a year (${sourceText(out.inflationSource, "en")}): ${out.text.future}`,
-    `Daily risk level from our checklist: ${out.level}`,
+    t("medical.wa.scenario", lang, { label: out.billLabel }),
+    t("medical.wa.bill", lang, { amount: out.text.bill, source: sourceText(out.billSource, lang) }),
+    t("medical.wa.company", lang, { amount: out.text.company }),
+    t("medical.wa.savings", lang, { amount: out.text.savings }),
+    out.gap > 0 ? t("medical.wa.gap", lang, { amount: out.text.gap }) : t("medical.wa.met", lang),
+    t("medical.wa.future", lang, { rate: out.inflation, source: sourceText(out.inflationSource, lang), amount: out.text.future }),
+    t("medical.wa.level", lang, { level: t(("medical.level." + out.level) as TKey, lang) }),
   ];
   if (out.gap > 0) {
-    lines.push("", "An own medical card could help keep your savings intact, subject to the plan limits, deductibles, waiting periods and exclusions.");
+    lines.push("", t("medical.wa.could", lang));
   }
   lines.push("", waDisclaimer(lang));
   return withAgent(lines, input.agentFirstName);

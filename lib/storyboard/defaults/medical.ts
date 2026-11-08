@@ -1,5 +1,5 @@
 import type { MedicalInputs } from "../engine/medical";
-import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import { COMMON_CONTENT, COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
 import type { Localised } from "./localised";
 
 const BILL_SOURCE = "[source + date, e.g. hospital estimate or published figure]";
@@ -139,15 +139,62 @@ export const MEDICAL_DEFAULT_CONTENT: ModuleContent = {
   ],
 };
 
-// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
-// MEDICAL_TODO_BM is the English content standing in so the BM screens still
-// render. Replace it with a full ModuleContent that is parallel to
-// MEDICAL_DEFAULT_CONTENT (same number of items, same order; spread
-// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
-// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
-export const MEDICAL_TODO_BM: ModuleContent = MEDICAL_DEFAULT_CONTENT;
-
+/**
+ * Bahasa Malaysia content, parallel to MEDICAL_DEFAULT_CONTENT: same number of items in the
+ * same order. Risk items and objections resolve to the English label/question as their key
+ * (see settings.ts), so ticks survive a language switch. Wording follows i18n/GLOSSARY.md;
+ * compliance-sensitive lines are in design/financial-storyboard/BM-REVIEW-medical.md.
+ */
+export const MEDICAL_CONTENT_BM: ModuleContent = {
+  script: [
+    { title: "Kes sebenar", text: "[Kisah tuntutan anda] Kongsikan satu kes sebenar yang pernah anda uruskan, dengan persetujuan prospek dan tanpa butiran yang mengenal pasti: bila mereka menyertai, apa yang berlaku, jumlah bil, dan berapa yang akhirnya dibayar oleh prospek." },
+    { title: "Risiko harian", text: "Ujian yang kita buat tadi menunjukkan risiko harian {name} ialah {level}, terutamanya disebabkan oleh: {reason}." },
+    { title: "Kaitkan dengan mereka", text: "Jika ia {scenario}, bil boleh mencecah sekitar {bill}. Perlindungan syarikat ialah {company}. Baki {gap} perlu dicari dari suatu tempat. [Sumber untuk angka bil]" },
+    { title: "Panel itu bukan milik anda", text: "Panel syarikat boleh tamat apabila anda bertukar kerja, diberhentikan atau bersara. Kad sendiri dibawa ke mana sahaja anda pergi, tertakluk kepada termanya." },
+    { title: "Faktor umur", text: "Bagi pelan dan kelas yang sama, bermula lebih awal biasanya bermakna caruman bulanan lebih rendah, dan anda menyertai ketika masih sihat." },
+    { title: "Penutup & pendedahan", text: "Saya akan sediakan 2 hingga 3 pilihan dengan perbandingan yang jelas. Sebelum kita mengisi borang, kita dedahkan semua sejarah kesihatan dengan jujur supaya sebarang tuntutan dapat dinilai dengan betul." },
+  ],
+  riskItems: [
+    { label: "Penyakit sedia ada", detail: "Contoh: darah tinggi, kencing manis, jantung, asma, kolesterol, buah pinggang, kanser, kesihatan mental. Kemungkinan hasil: mungkin diterima dengan caruman tambahan (loading), pengecualian bagi keadaan itu, ditangguhkan atau ditolak. Dedahkan sepenuhnya bersama laporan doktor." },
+    { label: "Merokok / vape", detail: "Contoh: termasuk vape dan merokok sekali-sekala. Kemungkinan hasil: kadar perokok yang lebih tinggi. Jangan sekali-kali mengisytiharkan bukan perokok jika anda merokok: tuntutan boleh ditolak." },
+    { label: "BMI tinggi / rendah", detail: "Contoh: berat dan tinggi di luar julat normal. Kemungkinan hasil: caruman tambahan (loading) atau penangguhan. Catat berat dan tinggi yang tepat." },
+    { label: "Pernah dimasukkan ke hospital / menjalani pembedahan", detail: "Contoh: kemasukan atau pembedahan baru-baru ini seperti bedah caesarean, apendiks, batu karang. Kemungkinan hasil: penilai risiko (underwriter) mungkin meminta laporan hospital; pengecualian adalah mungkin." },
+    { label: "Ujian / simptom yang belum disiasat", detail: "Contoh: menunggu keputusan ujian, ketulan, sakit dada, rujukan pakar. Kemungkinan hasil: biasanya ditangguhkan sehingga keputusan diperoleh. Jangan hantar tanpa mendedahkannya." },
+    { label: "Pekerjaan berbahaya", detail: "Contoh: pembinaan, jentera kilang, penghantaran dengan motosikal, luar pesisir, pengawal keselamatan. Kemungkinan hasil: caruman lebih tinggi atau had pada manfaat kemalangan." },
+    { label: "Hobi berisiko", detail: "Contoh: lumba kereta/motosikal, menyelam skuba, mendaki gunung tinggi, terjun udara. Kemungkinan hasil: pengecualian aktiviti atau caruman tambahan (loading)." },
+    { label: "Sejarah keluarga", detail: "Contoh: ibu bapa atau adik-beradik yang menghidap penyakit jantung, kanser atau strok pada usia muda. Kemungkinan hasil: caruman tambahan (loading) adalah mungkin." },
+    { label: "Jumlah tidak setara dengan pendapatan", detail: "Contoh: perlindungan yang jauh melebihi apa yang disokong oleh tahap pendapatan. Kemungkinan hasil: penilaian risiko (underwriting) kewangan dengan slip gaji dan bukti pendapatan; mungkin dikurangkan atau ditolak." },
+    { label: "Umur di luar had", detail: "Contoh: terlalu tua atau terlalu muda untuk pelan atau rider. Kemungkinan hasil: pilih pelan lain atau tempoh yang lebih pendek." },
+    { label: "Dokumen / maklumat tidak lengkap", detail: "Contoh: salinan IC, alamat, penama, tandatangan, pengesahan kesihatan. Kemungkinan hasil: permohonan tertangguh atau dibatalkan. Semak semuanya sebelum menghantar." },
+  ],
+  riskReasons: [
+    { label: "Tidak mendedahkan maklumat", detail: "Maklumat kesihatan tidak diisytiharkan semasa permohonan. Sebab biasa tuntutan ditolak atau sijil dibatalkan." },
+    { label: "Tempoh menunggu", detail: "Penyakit dalam tempoh menunggu pelan. [Semak bilangan hari dalam PDS.] Kemalangan selalunya dilindungi lebih awal." },
+    { label: "Pengecualian", detail: "Keadaan sedia ada, rawatan kosmetik, kecederaan yang disengajakan sendiri, dadah atau alkohol, aktiviti yang dikecualikan." },
+    { label: "Sijil luput", detail: "Caruman tertunggak melepasi tempoh bertoleransi (grace period) boleh menamatkan perlindungan. Sediakan auto-debit." },
+    { label: "Tidak menepati takrifan", detail: "Manfaat tertentu mengikut takrifan klinikal dalam sijil, bukan nama penyakit." },
+    { label: "Dokumen tuntutan tidak lengkap", detail: "Laporan perubatan, bil, borang GL atau bukti kejadian tiada." },
+  ],
+  objections: [
+    { q: "Saya masih muda dan sihat, kenapa sekarang?", a: "Inilah masanya caruman biasanya paling rendah dan rekod kesihatan anda bersih. Selepas diagnosis, keadaan itu mungkin dikecualikan atau permohonan ditolak." },
+    { q: "Hospital kerajaan murah, kan?", a: "Ia bagus, tetapi anda tidak boleh memilih doktor atau masa, dan mungkin ada senarai menunggu. Jika anda tetap memilih rawatan kerajaan, sesetengah pelan membayar elaun tunai harian. Semak PDS." },
+    { q: "Syarikat saya sudah ada panel.", a: "Had panel bergantung pada skim majikan dan tamat apabila anda meninggalkan pekerjaan. Kad sendiri melengkapi manfaat syarikat. [Semak had sebenar panel syarikat.]" },
+    { q: "Bolehkah caruman naik?", a: "Ya, caruman boleh disemak semula mengikut terma sijil. Pengendali memaklumkan peserta sebelum perubahan berkuat kuasa; semak tempoh notis dalam sijil." },
+    { q: "Kalau saya tak pernah tuntut, adakah sia-sia?", a: "Tabarru’ anda membantu peserta lain. Sesetengah pelan juga mempunyai akaun nilai tunai; semak PDS tentang cara ia berfungsi. Ia tidak dijamin." },
+    { q: "Bolehkah saya guna dari hari pertama?", a: "Kemalangan selalunya dilindungi lebih awal daripada penyakit, dan penyakit tertentu boleh mempunyai tempoh menunggu yang lebih lama. Jangan tunggu sehingga simptom muncul. [Semak tempoh menunggu dalam PDS.]" },
+    { q: "Bil hospital tidaklah setinggi itu.", a: "Angka senario di skrin ialah contoh dengan sumber. Mari kita guna sumber yang kita sepakati dan semak dengan anggaran hospital anda sendiri." },
+    ...COMMON_CONTENT.bm.objections.flatMap((g) => g.items),
+  ],
+  faq: [
+    { q: "Apa yang berlaku di hospital?", a: "Tunjukkan kad & IC, hospital memohon GL, anda dirawat tanpa deposit besar, dan anda membayar sebahagian kecil seperti deductible dan item yang tidak dilindungi." },
+    { q: "Bagaimana jika bilik lebih mahal daripada had saya?", a: "Anda membayar perbezaannya. Jika bilik lebih murah, baki tidak dibayar." },
+    { q: "Adakah keadaan sedia ada dilindungi?", a: "Biasanya tidak. Dedahkan dengan jujur; jika maklumat disembunyikan, tuntutan boleh ditolak atau sijil ditamatkan." },
+    { q: "Bolehkah saya batalkan selepas mendaftar?", a: "Ada tempoh free-look selepas anda menerima sijil. [Semak bilangan hari dan terma bayaran balik dalam PDS.]" },
+    { q: "Bolehkah saya guna untuk lawatan pesakit luar?", a: "Bergantung pada pelan. Semak jadual manfaat dalam PDS." },
+    ...COMMON_CONTENT.bm.faq,
+  ],
+};
 export const MEDICAL_CONTENT: Localised<ModuleContent> = {
   en: MEDICAL_DEFAULT_CONTENT,
-  bm: MEDICAL_TODO_BM,
+  bm: MEDICAL_CONTENT_BM,
 };

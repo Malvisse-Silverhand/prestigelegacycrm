@@ -1,5 +1,5 @@
 import type { BusinessInputs } from "../engine/business";
-import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import { COMMON_CONTENT, COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
 import type { Localised } from "./localised";
 
 export const BUSINESS_DEFAULT_INPUTS: BusinessInputs = {
@@ -169,15 +169,78 @@ export const BUSINESS_DEFAULT_CONTENT: ModuleContent = {
   ],
 };
 
-// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
-// BUSINESS_TODO_BM is the English content standing in so the BM screens still
-// render. Replace it with a full ModuleContent that is parallel to
-// BUSINESS_DEFAULT_CONTENT (same number of items, same order; spread
-// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
-// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
-export const BUSINESS_TODO_BM: ModuleContent = BUSINESS_DEFAULT_CONTENT;
+/**
+ * Bahasa Malaysia content, parallel to BUSINESS_DEFAULT_CONTENT: same number of
+ * items in the same order (a test enforces it, because ticks and the raised log
+ * are stored by the English label / question). Compliance-sensitive items are
+ * listed in design/financial-storyboard/BM-REVIEW-business.md.
+ */
+export const BUSINESS_CONTENT_BM: ModuleContent = {
+  script: [
+    { group: "keyman", title: "Soalan pembukaan", text: "Jika {name} tiada esok, berapa lama sebelum {company} berjalan sebaik hari ini?" },
+    { group: "keyman", title: "Tunjuk angka", text: "Berdasarkan sumbangan kepada keuntungan, syarikat memerlukan sekitar {keyman} untuk menampung kerugian semasa ia pulih." },
+    { group: "keyman", title: "Penyelesaian", text: "Takaful orang kunci dimiliki oleh syarikat dan dibayar kepada syarikat, jadi ia boleh mengambil pekerja, melatih dan terus membayar gaji serta pembekal, tertakluk kepada terma sijil." },
+    { group: "keyman", title: "Penutup", text: "Mari kita mulakan dengan orang yang ketiadaannya paling menjejaskan, dan semak yang lain pada suku tahun depan." },
+    { group: "buysell", title: "Soalan pembukaan", text: "Jika seorang daripada anda meninggal dunia, adakah anda selesa menjalankan {company} bersama waris beliau sebagai rakan kongsi?" },
+    { group: "buysell", title: "Tunjuk angka", text: "Secara keseluruhan, rakan kongsi memerlukan sekitar {buysell} dalam bentuk tunai untuk membeli saham seorang rakan kongsi pada nilai hari ini." },
+    { group: "buysell", title: "Penyelesaian", text: "Perjanjian beli-jual bertulis ditambah pembiayaan takaful: rakan kongsi mengekalkan kawalan, dan waris menerima wang tunai pada harga yang dipersetujui. Semak perjanjian itu dengan peguam syarikat." },
+    { group: "buysell", title: "Penutup", text: "Bolehkah kita bersetuju tentang kaedah penilaian dahulu, kemudian saya sediakan matriks sijil untuk setiap rakan kongsi?" },
+    { group: "loan", title: "Soalan pembukaan", text: "Siapa yang memberi komitmen peribadi sebagai penjamin bagi pinjaman perniagaan?" },
+    { group: "loan", title: "Tunjuk angka", text: "Jumlah yang belum dilindungi dan jatuh ke atas pemilik secara peribadi ialah sekitar {loan}. Jika orang itu meninggal dunia, bank boleh menuntut daripada harta pusaka terlebih dahulu." },
+    { group: "loan", title: "Penyelesaian", text: "Perlindungan pinjaman boleh melunaskan hutang supaya keluarga mengekalkan rumah dan simpanan, tertakluk kepada terma sijil." },
+    { group: "loan", title: "Penutup", text: "Mari kita senaraikan setiap kemudahan dan semak yang mana sudah ada perlindungan, kemudian tampung jurangnya." },
+    { group: "enterprise", title: "Soalan pembukaan", text: "Jika anda tiada semalam, siapa yang boleh mengeluarkan wang daripada akaun bank {company} hari ini?" },
+    { group: "enterprise", title: "Tunjuk angka", text: "Akaun dan aset sekitar {frozen} mungkin dibekukan. Untuk memastikan perniagaan terus berjalan semasa peralihan, keluarga memerlukan sekitar {cash} dalam bentuk tunai." },
+    { group: "enterprise", title: "Penyelesaian", text: "Takaful hibah boleh dibayar terus kepada penerima yang anda namakan, bukan melalui harta pusaka, tertakluk kepada penamaan yang sah dan terma sijil." },
+    { group: "enterprise", title: "Penutup", text: "Mari kita mulakan dengan hibah untuk pasangan anda, dan sediakan wasiat supaya perniagaan boleh diteruskan atau dijual dengan teratur." },
+  ],
+  riskItems: [
+    { label: "Penyakit sedia ada (mana-mana nyawa yang diinsuranskan)", detail: "Contoh: darah tinggi, kencing manis, jantung, asma, kolesterol, buah pinggang, kanser, kesihatan mental. Kemungkinan hasil: caruman tambahan (loading), pengecualian, penangguhan atau penolakan bagi orang itu. Dedahkan sepenuhnya bersama laporan doktor." },
+    { label: "Merokok / vape", detail: "Contoh: termasuk vape dan merokok sekali-sekala. Kemungkinan hasil: kadar perokok yang lebih tinggi. Jangan sekali-kali isytihar bukan perokok jika anda merokok: tuntutan boleh ditolak." },
+    { label: "BMI tinggi / rendah", detail: "Contoh: berat dan tinggi di luar julat normal. Kemungkinan hasil: caruman tambahan (loading) atau penangguhan." },
+    { label: "Pernah dimasukkan ke hospital / menjalani pembedahan", detail: "Contoh: kemasukan atau pembedahan baru-baru ini. Kemungkinan hasil: penilai risiko (underwriter) mungkin meminta laporan hospital; pengecualian boleh berlaku." },
+    { label: "Ujian / simptom yang belum disiasat", detail: "Contoh: menunggu keputusan, rujukan pakar. Kemungkinan hasil: biasanya ditangguhkan sehingga keputusan diperoleh." },
+    { label: "Pekerjaan berbahaya / kerja di tapak", detail: "Contoh: tapak pembinaan, lantai kilang, pemanduan logistik, luar pesisir. Kemungkinan hasil: caruman lebih tinggi atau had pada manfaat kemalangan." },
+    { label: "Hobi berisiko", detail: "Contoh: sukan permotoran, menyelam skuba, mendaki di altitud tinggi, terjun udara. Kemungkinan hasil: pengecualian aktiviti atau caruman tambahan (loading)." },
+    { label: "Sejarah keluarga", detail: "Contoh: ibu bapa atau adik-beradik yang menghidap penyakit jantung, kanser atau strok pada usia muda. Kemungkinan hasil: caruman tambahan (loading) mungkin dikenakan." },
+    { label: "Jumlah tidak setara dengan kewangan", detail: "Contoh: jumlah orang kunci jauh melebihi sumbangan kepada keuntungan; beli-jual melebihi penilaian yang boleh dipertahankan. Kemungkinan hasil: penilaian risiko (underwriting) kewangan dengan akaun, penyata cukai dan asas penilaian; jumlah mungkin dikurangkan atau ditolak." },
+    { label: "Tiada kepentingan boleh diinsuranskan / pemilikan tidak jelas", detail: "Contoh: pemilik sijil tidak mempunyai kepentingan kewangan terhadap nyawa yang diinsuranskan. Kemungkinan hasil: ditolak atau distruktur semula. Padankan pemilik, pembayar dan penerima dengan keperluan." },
+    { label: "Tiada resolusi lembaga pengarah / dokumen syarikat", detail: "Contoh: sijil milik syarikat tanpa resolusi, borang SSM atau perlembagaan. Kemungkinan hasil: permohonan tertangguh sehingga dokumen diterima." },
+    { label: "Umur di luar had", detail: "Contoh: rakan kongsi yang lebih berumur hampir umur kemasukan maksimum pelan. Kemungkinan hasil: tempoh lebih pendek atau pelan lain bagi rakan kongsi itu." },
+    { label: "Dokumen / maklumat tidak lengkap", detail: "Contoh: salinan IC, penama, tandatangan, penyata kewangan. Kemungkinan hasil: permohonan tertangguh atau dibatalkan. Semak semuanya sebelum menghantar." },
+  ],
+  riskReasons: [
+    { label: "Tidak mendedahkan maklumat", detail: "Maklumat kesihatan atau kewangan tidak diisytiharkan semasa permohonan. Sebab lazim tuntutan ditolak atau sijil dibatalkan." },
+    { label: "Tempoh menunggu", detail: "Manfaat tertentu hanya terpakai selepas tempoh menunggu dari tarikh mula. [Semak PDS.]" },
+    { label: "Pengecualian", detail: "Keadaan sedia ada, kecederaan yang disengajakan, dadah atau alkohol, aktiviti yang dikecualikan." },
+    { label: "Sijil luput", detail: "Caruman tidak dibayar melepasi tempoh bertoleransi (grace period), selalunya apabila aliran tunai syarikat mengetat. Sediakan auto-debit." },
+    { label: "Pemilikan / penerima tidak sepadan", detail: "Pemilik, pembayar dan penerima tidak sepadan dengan tujuan (contohnya bayaran orang kunci kepada waris), lalu menimbulkan pertikaian." },
+    { label: "Tiada perjanjian beli-jual", detail: "Tanpa perjanjian bertulis, waris mungkin enggan menjual, atau mempertikaikan harga, walaupun selepas bayaran dibuat." },
+    { label: "Tidak menepati takrifan", detail: "Manfaat TPD atau penyakit kritikal mengikut takrifan dalam sijil, bukan nama penyakit itu." },
+    { label: "Dokumen tuntutan tidak lengkap", detail: "Sijil kematian, resolusi syarikat, penyata pinjaman atau borang tuntutan tiada." },
+  ],
+  objections: [
+    { q: "Perniagaan saya kecil, saya tak perlu ini.", a: "Perniagaan kecil selalunya paling bergantung pada seorang. Bagi perusahaan, akaun dan hutang terus menjadi masalah keluarga." },
+    { q: "Rakan kongsi saya boleh mengambil alih.", a: "Boleh, tetapi dari mana wang tunai untuk membeli bahagian waris? Dan siapa yang melakukan kerja dua orang semasa peralihan?" },
+    { q: "Kami ada rizab tunai.", a: "Bagus, kalkulator sudah menolaknya. Jurang ialah apa yang rizab tidak dapat menampung." },
+    { q: "Bank sudah ada perlindungan pinjaman.", a: "Semak jumlah dan tempohnya. Overdraf, sewa beli dan kemudahan perdagangan selalunya tidak dilindungi, tetapi mungkin masih jatuh ke atas pemilik secara peribadi." },
+    { q: "Ia hanya kos perniagaan tambahan.", a: "Ia kos kecil yang diketahui berbanding kos besar yang tidak diketahui. Orang kunci mungkin boleh ditolak cukai jika memenuhi syarat; sahkan dengan ejen cukai anda." },
+    { q: "Keluarga akan uruskan nanti.", a: "Tanpa perjanjian dan wang tunai, “nanti” boleh bermakna akaun dibekukan, harga saham dipertikaikan dan bank menuntut daripada harta pusaka." },
+    { q: "Kami saling percaya, tak perlu perjanjian.", a: "Kepercayaan membantu hari ini. Waris seorang rakan kongsi mungkin tidak berkongsinya, itulah sebabnya perjanjian bertulis melindungi semua pihak." },
+    ...COMMON_CONTENT.bm.objections.flatMap((g) => g.items),
+  ],
+  faq: [
+    { q: "Orang kunci berbanding beli-jual?", a: "Orang kunci menggantikan kerugian syarikat apabila orang penting tiada. Beli-jual memberi rakan kongsi wang tunai untuk membeli saham pemilik yang meninggal daripada waris." },
+    { q: "Siapa pemilik dan pembayar sijil?", a: "Orang kunci: syarikat. Beli-jual: rakan kongsi, syarikat, atau nyawa sendiri dengan hibah kepada rakan kongsi. Pinjaman: penghutang. Perusahaan: pemilik." },
+    { q: "Adakah caruman orang kunci boleh ditolak cukai?", a: "Mungkin, jika memenuhi syarat dalam keputusan cukai yang berkaitan. Sahkan dengan ejen cukai." },
+    { q: "Bagaimana jika seorang rakan kongsi keluar daripada perniagaan?", a: "Perjanjian patut meliputi pengeluaran diri; sijil boleh ditugaskan semula atau diserahkan balik mengikut terma." },
+    { q: "Bolehkah saya guna hibah peribadi sedia ada?", a: "Boleh, untuk keperluan keluarga. Bagi beli-jual dan orang kunci, pemilik dan penerima mesti sepadan dengan tujuan perniagaan." },
+    { q: "Bagaimana perniagaan dinilai?", a: "Biasanya gandaan untung bersih bagi PKS, aset bersih bagi perniagaan beraset tinggi, atau nilai yang dipersetujui semua rakan kongsi. Semak setiap tahun." },
+    ...COMMON_CONTENT.bm.faq,
+  ],
+};
 
 export const BUSINESS_CONTENT: Localised<ModuleContent> = {
   en: BUSINESS_DEFAULT_CONTENT,
-  bm: BUSINESS_TODO_BM,
+  bm: BUSINESS_CONTENT_BM,
 };

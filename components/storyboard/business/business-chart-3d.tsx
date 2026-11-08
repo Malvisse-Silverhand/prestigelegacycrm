@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import type { BusinessScene } from "@/lib/storyboard/engine/business";
+import { useT } from "../lang-context";
 
 // Face colours per column: top, side shade, lighter side.
 const COLORS = [
@@ -25,6 +26,7 @@ const face: CSSProperties = { position: "absolute", boxSizing: "border-box" };
  * chart, so nothing depends on the animation.
  */
 export function BusinessChart3D({ scene }: { scene: BusinessScene }) {
+  const { t } = useT();
   const [still, setStill] = useState(false);
   const max = Math.max(1, ...scene.columns.map((c) => c.amount));
 
@@ -91,7 +93,7 @@ export function BusinessChart3D({ scene }: { scene: BusinessScene }) {
           onClick={() => setStill((s) => !s)}
           className="min-h-11 rounded-[10px] px-3 text-xs font-semibold text-navy hover:bg-sand-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
-          {still ? "Resume rotation" : "Pause rotation"}
+          {still ? t("business.chart.resume") : t("business.chart.pause")}
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import type { FlowSlide } from "../types";
-import type { Lang } from "../i18n";
+import { translator, type Lang, type Translate, type TKey } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fromSen, num, rmWhole, safeDiv, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -80,6 +80,36 @@ export const MEDICAL_RISK_MAX = MEDICAL_RISK_GROUPS.reduce(
   0,
 );
 
+/** The English labels of the nine design scenarios. A bill still carrying one of these is shown translated. */
+export const MEDICAL_DEFAULT_BILL_LABELS = [
+  "Heart attack, 2 stents",
+  "Stroke, treatment & rehab",
+  "Heart bypass",
+  "Kidney transplant",
+  "Accident with ICU stay",
+  "Open-heart / valve surgery",
+  "Leukaemia, bone marrow transplant",
+  "Breast cancer, full treatment",
+  "Liver transplant",
+];
+
+/** A scenario label in the chosen language. An agent-edited label is returned as typed. */
+export function billLabelText(label: string, tr: Translate): string {
+  const i = MEDICAL_DEFAULT_BILL_LABELS.indexOf(label);
+  return i >= 0 ? tr(("medical.bill." + i) as TKey) : label;
+}
+
+/** Group title, item label and item hint in the chosen language. */
+export function riskGroupTitle(g: MedicalRiskGroup, tr: Translate): string {
+  return tr(("medical.rg." + g.key + ".title") as TKey);
+}
+export function riskItemLabel(g: MedicalRiskGroup, i: number, tr: Translate): string {
+  return tr(("medical.rk." + g.key + i + ".label") as TKey);
+}
+export function riskItemHint(g: MedicalRiskGroup, i: number, tr: Translate): string {
+  return g.items[i]?.hint ? tr(("medical.rk." + g.key + i + ".hint") as TKey) : "";
+}
+
 export type MedicalOut = {
   score: number;
   level: MedicalRiskLevel;
@@ -123,10 +153,8 @@ export type MedicalScene = {
 export type MedicalResult = EngineResult<MedicalOut, MedicalScene>;
 
 export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): MedicalResult {
-  // TODO(BM): medical text is English only for now. Build user-visible strings with
-  // translator(lang) as engine/hibah.ts does, then delete this line.
-  void lang;
-  const nick = String(raw.nick ?? "") || "the prospect";
+  const tr = translator(lang);
+  const nick = String(raw.nick ?? "") || tr("common.prospect");
   const checked = raw.checked ?? {};
   let score = 0;
   const ticked: { label: string; w: number }[] = [];
@@ -134,7 +162,7 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
     g.items.forEach((it, i) => {
       if (checked[g.key + i]) {
         score += it.weight;
-        ticked.push({ label: it.label, w: it.weight });
+        ticked.push({ label: riskItemLabel(g, i, tr), w: it.weight });
       }
     });
   }
@@ -149,7 +177,7 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
   const savings = Math.max(0, num(raw.savings));
   const bills = raw.bills ?? [];
   const cur: MedicalBill = bills[Math.max(0, Math.floor(num(raw.scenario)))] ??
-    bills[0] ?? { label: "No scenario selected", amount: 0, source: "" };
+    bills[0] ?? { label: tr("medical.noScenario"), amount: 0, source: "" };
   const bill = Math.max(0, num(cur.amount));
   const cUsed = Math.min(company, bill);
   const sUsed = Math.min(savings, Math.max(0, bill - cUsed));
@@ -166,19 +194,21 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
   const gH = Math.max(0, H - cH - sH);
   const base = 204;
 
-  const caption = cur.label + " · " + rmWhole(gap) + " out of pocket";
+  const curLabel = billLabelText(cur.label, tr);
+  const caption = tr("medical.caption", { label: curLabel, gap: rmWhole(gap) });
+  const savingsLeft = tr("medical.flow.savingsLeft");
   const flow: FlowSlide[] = buildFlowSlides([
-    { tag: "ADMISSION", title: cur.label, value: rmWhole(bill), desc: "Private hospital estimate. Without an own card, a deposit is usually needed at the admission counter.", meterLabel: "Hospital savings left", meterText: rmWhole(savings), meter: 100, tone: "neutral" },
-    { tag: "COMPANY PANEL", title: noCompany ? "No company panel to fall back on" : "Company cover pays first", value: "− " + rmWhole(cUsed), desc: noCompany ? "Self-employed or not working: nothing comes from an employer." : "Up to the remaining annual limit, and only while " + nick + " stays in this job.", meterLabel: "Hospital savings left", meterText: rmWhole(savings), meter: 100, tone: "neutral" },
-    { tag: "SAVINGS", title: "Savings disrupted by " + rmWhole(sUsed), value: (savings > 0 ? Math.round((sUsed / savings) * 100) : 0) + "% gone", desc: rmWhole(sUsed) + " of " + rmWhole(savings) + " set aside for hospital is used up on this one stay.", meterLabel: "Hospital savings left", meterText: rmWhole(Math.max(0, savings - sUsed)), meter: savings > 0 ? ((savings - sUsed) / savings) * 100 : 0, tone: "warn" },
-    { tag: "OUT OF POCKET", title: "Still unpaid after cover and savings", value: rmWhole(gap), desc: "Paid through EPF, selling assets, loans or family. The same bill in 5 years could be " + rmWhole(future) + " at the placeholder inflation rate.", meterLabel: "Bill covered", meterText: (bill > 0 ? Math.round(((bill - gap) / bill) * 100) : 100) + "%", meter: bill > 0 ? ((bill - gap) / bill) * 100 : 100, tone: "bad" },
-    { tag: "WITH OWN CARD", title: "Own medical card, about " + rmWhole(cardCost) + " a month", value: rmWhole(cardCost * 12) + "/yr", desc: "Panel bills paid via GL up to plan limits, so savings stay intact. Subject to deductibles, limits and exclusions.", meterLabel: "Hospital savings left", meterText: rmWhole(savings), meter: 100, tone: "good" },
+    { tag: tr("medical.flow.adm.tag"), title: curLabel, value: rmWhole(bill), desc: tr("medical.flow.adm.desc"), meterLabel: savingsLeft, meterText: rmWhole(savings), meter: 100, tone: "neutral" },
+    { tag: tr("medical.flow.panel.tag"), title: noCompany ? tr("medical.flow.panel.titleNone") : tr("medical.flow.panel.titleYes"), value: "− " + rmWhole(cUsed), desc: noCompany ? tr("medical.flow.panel.descNone") : tr("medical.flow.panel.descYes", { nick }), meterLabel: savingsLeft, meterText: rmWhole(savings), meter: 100, tone: "neutral" },
+    { tag: tr("medical.flow.sav.tag"), title: tr("medical.flow.sav.title", { amount: rmWhole(sUsed) }), value: tr("medical.flow.sav.value", { pct: savings > 0 ? Math.round((sUsed / savings) * 100) : 0 }), desc: tr("medical.flow.sav.desc", { used: rmWhole(sUsed), savings: rmWhole(savings) }), meterLabel: savingsLeft, meterText: rmWhole(Math.max(0, savings - sUsed)), meter: savings > 0 ? ((savings - sUsed) / savings) * 100 : 0, tone: "warn" },
+    { tag: tr("medical.flow.oop.tag"), title: tr("medical.flow.oop.title"), value: rmWhole(gap), desc: tr("medical.flow.oop.desc", { future: rmWhole(future) }), meterLabel: tr("medical.flow.oop.meterLabel"), meterText: (bill > 0 ? Math.round(((bill - gap) / bill) * 100) : 100) + "%", meter: bill > 0 ? ((bill - gap) / bill) * 100 : 100, tone: "bad" },
+    { tag: tr("medical.flow.card.tag"), title: tr("medical.flow.card.title", { amount: rmWhole(cardCost) }), value: tr("medical.perYear", { amount: rmWhole(cardCost * 12) }), desc: tr("medical.flow.card.desc"), meterLabel: savingsLeft, meterText: rmWhole(savings), meter: 100, tone: "good" },
   ]);
 
   const legend: LegendItem[] = [
-    { label: "Company cover", value: rmWhole(cUsed), tone: "neutral" },
-    { label: "Own savings", value: rmWhole(sUsed), tone: "good" },
-    { label: "Out of pocket", value: rmWhole(gap), tone: "bad" },
+    { label: tr("medical.legend.company"), value: rmWhole(cUsed), tone: "neutral" },
+    { label: tr("medical.legend.savings"), value: rmWhole(sUsed), tone: "good" },
+    { label: tr("medical.legend.oop"), value: rmWhole(gap), tone: "bad" },
   ];
 
   return {
@@ -187,7 +217,7 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
       level,
       riskPct: Math.round(safeDiv(score, MEDICAL_RISK_MAX) * 100),
       topFactors,
-      billLabel: cur.label,
+      billLabel: curLabel,
       bill,
       companyUsed: cUsed,
       savingsUsed: sUsed,
@@ -205,10 +235,10 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
         savings: rmWhole(sUsed),
         future: rmWhole(future),
         monthlySave: rmWhole(ms),
-        years: yearsToSave === null ? "—" : yearsToSave + " years",
+        years: yearsToSave === null ? "—" : tr("medical.years", { n: yearsToSave }),
         card: rmWhole(cardCost),
         cardYear: rmWhole(cardCost * 12),
-        explain: cur.label + ": " + rmWhole(bill) + " − company cover " + rmWhole(cUsed) + " − savings " + rmWhole(sUsed) + ". Covered through EPF, selling assets, loans or family.",
+        explain: tr("medical.explain", { label: curLabel, bill: rmWhole(bill), company: rmWhole(cUsed), savings: rmWhole(sUsed) }),
       },
     },
     scene: {
@@ -218,7 +248,7 @@ export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): 
       cY: base - cH,
       sY: base - cH - sH,
       gY: base - cH - sH - gH,
-      label: "Animated hospital bed with a bill of " + rmWhole(bill) + ", with a bar showing company cover, savings and a gap of " + rmWhole(gap),
+      label: tr("medical.scene.label", { bill: rmWhole(bill), gap: rmWhole(gap) }),
     },
     legend,
     caption,

@@ -1,17 +1,18 @@
 "use client";
 
-import { MEDICAL_RISK_SPECIFIC } from "@/lib/storyboard/defaults/medical";
 import { RiskScreen } from "../risk-screen";
+import { useT } from "../lang-context";
 import type { MedicalScreenProps } from "./types";
 
 export function MedicalRisk(props: MedicalScreenProps) {
+  const { t } = useT();
   return (
     <RiskScreen
       {...props}
       module="medical"
-      subject={props.stored.nick.trim() || "the prospect"}
-      specificTitle="Medical card specific"
-      specificPoints={MEDICAL_RISK_SPECIFIC}
+      subject={props.stored.nick.trim() || t("common.prospect")}
+      specificTitle={t("medical.risk.specificTitle")}
+      specificPoints={[t("medical.risk.point1"), t("medical.risk.point2"), t("medical.risk.point3")]}
     />
   );
 }

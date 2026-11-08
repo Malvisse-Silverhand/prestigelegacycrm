@@ -1,17 +1,19 @@
 "use client";
 
-import { CI_RISK_SPECIFIC } from "@/lib/storyboard/defaults/ci";
 import { RiskScreen } from "../risk-screen";
+import { useT } from "../lang-context";
+import { ciRiskSpecific } from "./ci-text";
 import type { CiScreenProps } from "./types";
 
 export function CiRisk(props: CiScreenProps) {
+  const { t } = useT();
   return (
     <RiskScreen
       {...props}
       module="ci"
-      subject={props.stored.nick.trim() || "the prospect"}
-      specificTitle="Critical illness specific"
-      specificPoints={CI_RISK_SPECIFIC}
+      subject={props.stored.nick.trim() || t("common.prospect")}
+      specificTitle={t("ci.risk.specificTitle")}
+      specificPoints={ciRiskSpecific(t)}
     />
   );
 }

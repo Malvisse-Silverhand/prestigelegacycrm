@@ -1,4 +1,6 @@
 import type { MedicalOut, MedicalScene } from "@/lib/storyboard/engine/medical";
+import type { TKey } from "@/lib/storyboard/i18n";
+import { useT } from "../lang-context";
 
 const NAVY = "#0f2540";
 const BLUE = "#1d4f91";
@@ -8,6 +10,7 @@ const MUTED = "#5b6576";
 
 /** The Step 1 scene: a hospital bed, a bill and a "who pays?" bar. Static SVG; the numbers come from the engine. */
 export function MedicalGapScene({ scene, out }: { scene: MedicalScene; out: Pick<MedicalOut, "text"> }) {
+  const { t } = useT();
   return (
     <svg role="img" aria-label={scene.label} viewBox="0 0 560 226" width="100%" className="block">
       <rect x="0" y="210" width="560" height="30" fill="#efe6d2" />
@@ -24,7 +27,7 @@ export function MedicalGapScene({ scene, out }: { scene: MedicalScene; out: Pick
       </g>
       <g aria-hidden="true">
         <rect x="290" y="34" width="110" height="170" rx="6" fill="#ffffff" stroke={NAVY} strokeWidth="2.5" />
-        <text x="345" y="60" textAnchor="middle" fontSize="11" fontWeight="700" fill={MUTED}>HOSPITAL BILL</text>
+        <text x="345" y="60" textAnchor="middle" fontSize="11" fontWeight="700" fill={MUTED}>{t("medical.svg.hospitalBill")}</text>
         <path d="M304,76 h82 M304,90 h60 M304,104 h74 M304,118 h52 M304,132 h70" stroke="#c9d2e0" strokeWidth="5" strokeLinecap="round" />
         <text x="345" y="176" textAnchor="middle" fontSize="15" fontWeight="800" fill={NAVY}>{out.text.bill}</text>
       </g>
@@ -32,18 +35,19 @@ export function MedicalGapScene({ scene, out }: { scene: MedicalScene; out: Pick
         <rect x="440" y={scene.cY} width="80" height={scene.cH} fill={BLUE} />
         <rect x="440" y={scene.sY} width="80" height={scene.sH} fill={GREEN} />
         <rect x="440" y={scene.gY} width="80" height={scene.gH} fill={RED} />
-        <text x="480" y="24" textAnchor="middle" fontSize="11" fontWeight="700" fill={NAVY}>WHO PAYS?</text>
+        <text x="480" y="24" textAnchor="middle" fontSize="11" fontWeight="700" fill={NAVY}>{t("medical.svg.whoPays")}</text>
       </g>
     </svg>
   );
 }
 
-export const MEDICAL_SITUATIONS = [
-  { title: "Deposit vs cashless", sub: "GL instead of cash at the counter" },
-  { title: "The bill keeps growing", sub: "Every day adds up" },
-  { title: "Panel ends with the job", sub: "Own card goes with you" },
-  { title: "Medical inflation", sub: "Same bill, 5 years later (placeholder rate)" },
-];
+/** The four Step 2 situations, titled in the chosen language. */
+export function medicalSituations(t: (key: TKey) => string) {
+  return [0, 1, 2, 3].map((i) => ({
+    title: t(("medical.sit." + i + ".title") as TKey),
+    sub: t(("medical.sit." + i + ".sub") as TKey),
+  }));
+}
 
 function Caption({ children }: { children: string }) {
   return (
@@ -55,7 +59,8 @@ function Caption({ children }: { children: string }) {
 
 /** One of four simple 2D situations. Decorative; the title and caption carry the meaning. */
 export function MedicalSituation({ index, out, inflation }: { index: number; out: Pick<MedicalOut, "text" | "bill" | "futureBill">; inflation: number }) {
-  const label = MEDICAL_SITUATIONS[index]?.title ?? "";
+  const { t } = useT();
+  const label = medicalSituations(t)[index]?.title ?? "";
   // Bars for the inflation scene: now, then each of 5 years at the placeholder rate.
   const rate = 1 + inflation / 100;
   const values = Array.from({ length: 6 }, (_, k) => out.bill * Math.pow(rate, k));
@@ -66,25 +71,25 @@ export function MedicalSituation({ index, out, inflation }: { index: number; out
       {index === 0 && (
         <g>
           <line x1="360" y1="30" x2="360" y2="300" stroke="#d6cdb9" strokeWidth="2" strokeDasharray="6 6" />
-          <text x="180" y="50" textAnchor="middle" fontSize="15" fontWeight="700" fill={RED}>Without a card</text>
+          <text x="180" y="50" textAnchor="middle" fontSize="15" fontWeight="700" fill={RED}>{t("medical.svg.withoutCard")}</text>
           <rect x="70" y="110" width="220" height="90" rx="10" fill="#fff" stroke={NAVY} strokeWidth="3" />
-          <text x="180" y="140" textAnchor="middle" fontSize="13" fontWeight="600" fill={NAVY}>Admission counter</text>
-          <text x="180" y="172" textAnchor="middle" fontSize="17" fontWeight="800" fill={RED}>Deposit first</text>
+          <text x="180" y="140" textAnchor="middle" fontSize="13" fontWeight="600" fill={NAVY}>{t("medical.svg.counter")}</text>
+          <text x="180" y="172" textAnchor="middle" fontSize="17" fontWeight="800" fill={RED}>{t("medical.svg.depositFirst")}</text>
           {[120, 168, 216].map((x) => (
             <rect key={x} x={x} y="220" width="44" height="24" rx="4" fill="#4fbf86" stroke="#0f4c35" strokeWidth="2" />
           ))}
-          <text x="540" y="50" textAnchor="middle" fontSize="15" fontWeight="700" fill={GREEN}>With a medical card</text>
+          <text x="540" y="50" textAnchor="middle" fontSize="15" fontWeight="700" fill={GREEN}>{t("medical.svg.withCard")}</text>
           <rect x="400" y="120" width="70" height="44" rx="6" fill={BLUE} />
           <rect x="408" y="130" width="22" height="16" rx="3" fill="#fac748" />
-          <text x="435" y="190" textAnchor="middle" fontSize="12" fontWeight="600" fill={NAVY}>Card + IC</text>
+          <text x="435" y="190" textAnchor="middle" fontSize="12" fontWeight="600" fill={NAVY}>{t("medical.svg.cardIc")}</text>
           <rect x="620" y="110" width="70" height="80" rx="8" fill={NAVY} />
-          <text x="655" y="210" textAnchor="middle" fontSize="12" fontWeight="600" fill={NAVY}>Operator</text>
+          <text x="655" y="210" textAnchor="middle" fontSize="12" fontWeight="600" fill={NAVY}>{t("medical.svg.operator")}</text>
           <rect x="470" y="226" width="54" height="36" rx="4" fill="#fff" stroke={NAVY} strokeWidth="2.5" />
           <path d="M470,226 L497,248 L524,226" fill="none" stroke={NAVY} strokeWidth="2.5" />
-          <text x="540" y="290" textAnchor="middle" fontSize="12" fill={MUTED}>Guarantee letter (GL)</text>
+          <text x="540" y="290" textAnchor="middle" fontSize="12" fill={MUTED}>{t("medical.svg.gl")}</text>
           <circle cx="540" cy="140" r="22" fill={GREEN} />
           <path d="M529,140 l8,8 l15,-16" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-          <Caption>With a card, the hospital bills the operator, not your wallet</Caption>
+          <Caption>{t("medical.svg.cap0")}</Caption>
         </g>
       )}
       {index === 1 && (
@@ -94,12 +99,12 @@ export function MedicalSituation({ index, out, inflation }: { index: number; out
           <circle cx="122" cy="158" r="18" fill={NAVY} />
           <rect x="96" y="208" width="10" height="104" fill={NAVY} />
           <rect x="294" y="208" width="10" height="104" fill={NAVY} />
-          <text x="200" y="100" textAnchor="middle" fontSize="22" fontWeight="800" fill={NAVY}>Day after day in hospital</text>
+          <text x="200" y="100" textAnchor="middle" fontSize="22" fontWeight="800" fill={NAVY}>{t("medical.svg.dayAfterDay")}</text>
           <rect x="440" y="290" width="160" height="22" rx="4" fill={NAVY} />
           <rect x="460" y="40" width="120" height="250" fill="#fff" stroke={NAVY} strokeWidth="2.5" />
           <path d="M476,70 h88 M476,94 h60 M476,118 h80 M476,142 h52 M476,166 h86 M476,190 h64 M476,214 h80 M476,238 h56" stroke="#c9d2e0" strokeWidth="6" strokeLinecap="round" />
           <text x="520" y="272" textAnchor="middle" fontSize="15" fontWeight="800" fill={RED}>{out.text.bill}</text>
-          <Caption>Every day in hospital adds to the bill</Caption>
+          <Caption>{t("medical.svg.cap1")}</Caption>
         </g>
       )}
       {index === 2 && (
@@ -109,16 +114,16 @@ export function MedicalSituation({ index, out, inflation }: { index: number; out
             {[96, 153, 210].flatMap((x) => [106, 160].map((y) => <rect key={`${x}-${y}`} x={x} y={y} width="34" height="30" />))}
           </g>
           <rect x="146" y="250" width="48" height="62" fill="#c9d2e0" />
-          <text x="170" y="66" textAnchor="middle" fontSize="13" fontWeight="700" fill={NAVY}>Employer</text>
+          <text x="170" y="66" textAnchor="middle" fontSize="13" fontWeight="700" fill={NAVY}>{t("medical.svg.employer")}</text>
           <g fill={NAVY}>
             <circle cx="320" cy="232" r="13" />
             <path d="M304,300 C304,266 312,250 320,250 C328,250 336,266 336,300 Z" />
           </g>
           <rect x="342" y="236" width="56" height="34" rx="5" fill={BLUE} opacity="0.45" />
-          <text x="370" y="258" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">PANEL</text>
-          <text x="560" y="140" textAnchor="middle" fontSize="14" fontWeight="600" fill={MUTED}>Resign · retrenched · retire</text>
-          <text x="560" y="168" textAnchor="middle" fontSize="20" fontWeight="800" fill={RED}>Panel cover ends</text>
-          <Caption>Company panel belongs to the job. Your own card goes with you.</Caption>
+          <text x="370" y="258" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">{t("medical.svg.panel")}</text>
+          <text x="560" y="140" textAnchor="middle" fontSize="14" fontWeight="600" fill={MUTED}>{t("medical.svg.leave")}</text>
+          <text x="560" y="168" textAnchor="middle" fontSize="20" fontWeight="800" fill={RED}>{t("medical.svg.panelEnds")}</text>
+          <Caption>{t("medical.svg.cap2")}</Caption>
         </g>
       )}
       {index === 3 && (
@@ -130,13 +135,13 @@ export function MedicalSituation({ index, out, inflation }: { index: number; out
             return (
               <g key={k}>
                 <rect x={x} y={290 - h} width="60" height={h} rx="6" fill={k === 5 ? RED : BLUE} />
-                <text x={x + 30} y="308" textAnchor="middle" fontSize="12" fill={MUTED}>{k === 0 ? "Now" : `Y${k}`}</text>
+                <text x={x + 30} y="308" textAnchor="middle" fontSize="12" fill={MUTED}>{k === 0 ? t("medical.svg.now") : `Y${k}`}</text>
               </g>
             );
           })}
           <text x="140" y="60" textAnchor="middle" fontSize="13" fontWeight="700" fill={NAVY}>{out.text.bill}</text>
           <text x="590" y="60" textAnchor="middle" fontSize="15" fontWeight="800" fill={RED}>{out.text.future}</text>
-          <Caption>The same treatment costs more every year you wait (placeholder rate)</Caption>
+          <Caption>{t("medical.svg.cap3")}</Caption>
         </g>
       )}
     </svg>

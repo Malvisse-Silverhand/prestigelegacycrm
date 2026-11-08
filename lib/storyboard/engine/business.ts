@@ -1,5 +1,5 @@
 import type { FlowSlide } from "../types";
-import type { Lang } from "../i18n";
+import { translator, type Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fromSen, num, rmWhole, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -137,11 +137,9 @@ export type BusinessResult = EngineResult<BusinessOut, BusinessScene>;
 const successionFactor = (x: Succession | string) => (x === "ready" ? 0.5 : x === "second" ? 0.75 : 1);
 
 export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en"): BusinessResult {
-  // TODO(BM): business text is English only for now. Build user-visible strings with
-  // translator(lang) as engine/hibah.ts does, then delete this line.
-  void lang;
+  const tr = translator(lang);
   const n = (v: unknown) => num(v);
-  const company = String(raw.company ?? "") || "the business";
+  const company = String(raw.company ?? "") || tr("business.the.business");
   const entity = raw.entity ?? "sdn";
   const isCompany = entity === "sdn" || entity === "plt";
   const reserve = n(raw.reserve);
@@ -193,7 +191,7 @@ export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en")
   } else {
     ps.forEach((life) =>
       matrix.push({
-        owner: structure === "entity" ? company : String(life.name ?? "") + " (own life, hibah to partners)",
+        owner: structure === "entity" ? company : tr("business.matrix.ownLife", { name: String(life.name ?? "") }),
         life: String(life.name ?? ""),
         amount: Math.max(0, (businessValue * n(life.pct)) / 100 - n(life.ex)),
       }),
@@ -202,7 +200,7 @@ export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en")
 
   const warnings: string[] = [];
   if (ps.length > 0 && Math.abs(pctTotal - 100) > 1e-9) {
-    warnings.push("Partner shares total " + pctTotal + "%, not 100%. The figures are calculated as entered.");
+    warnings.push(tr("business.warn.pct", { pct: pctTotal }));
   }
 
   // Loan
@@ -221,39 +219,47 @@ export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en")
   const frozen = n(raw.eBank) + n(raw.eStock);
 
   const rows: BusinessOut["rows"] = [
-    { key: "keyman", label: "Keyman", amount: kmTotal },
-    { key: "buysell", label: "Buy-sell", amount: bsTotal },
-    { key: "loan", label: "Loan", amount: loanGap },
+    { key: "keyman", label: tr("business.row.keyman"), amount: kmTotal },
+    { key: "buysell", label: tr("business.row.buysell"), amount: bsTotal },
+    { key: "loan", label: tr("business.row.loan"), amount: loanGap },
   ];
-  if (!isCompany) rows.push({ key: "enterprise", label: "Enterprise", amount: eGap });
+  if (!isCompany) rows.push({ key: "enterprise", label: tr("business.row.enterprise"), amount: eGap });
   const total = fromSen(rows.reduce((a, r) => a + toSen(r.amount), 0));
 
   const columns = [
-    { label: "KEYMAN", amount: kmTotal },
-    { label: "BUY-SELL", amount: bsTotal },
-    { label: "LOAN", amount: loanGap },
-    { label: "ENTERPRISE", amount: isCompany ? 0 : eGap },
+    { label: tr("business.col.keyman"), amount: kmTotal },
+    { label: tr("business.col.buysell"), amount: bsTotal },
+    { label: tr("business.col.loan"), amount: loanGap },
+    { label: tr("business.col.enterprise"), amount: isCompany ? 0 : eGap },
   ].map((c) => ({ ...c, text: c.amount > 0 ? rmWhole(c.amount) : "—" }));
 
   const resLeft = Math.max(0, reserve - kmDeath);
   const resPct = reserve > 0 ? (resLeft / reserve) * 100 : 0;
-  const guarantor = String(raw.guarantor ?? "") || "the guarantor";
+  const guarantor = String(raw.guarantor ?? "") || tr("business.the.guarantor");
+  const meterLabel = tr("business.flow.meterLabel");
   const slides: Parameters<typeof buildFlowSlides>[0] = [
-    { tag: "DAY 1", title: "The key owner passes away", value: rmWhole(total), desc: "Every bill below lands on " + company + " and the family at the same time.", meterLabel: "Business cash reserve left", meterText: rmWhole(reserve), meter: 100, tone: "neutral" },
-    { tag: "KEYMAN", title: "Profit drops while replacing them", value: "− " + rmWhole(kmDeath), desc: "The reserve absorbs " + rmWhole(Math.min(reserve, kmDeath)) + "; the rest is lost profit and recruitment cost.", meterLabel: "Business cash reserve left", meterText: rmWhole(resLeft), meter: resPct, tone: "warn" },
-    { tag: "BANK", title: "The bank calls the personal guarantee", value: rmWhole(loanGap), desc: "Claimed from " + guarantor + "’s estate before the heirs receive anything.", meterLabel: "Business cash reserve left", meterText: rmWhole(resLeft), meter: resPct, tone: "bad" },
-    { tag: "PARTNERS", title: "Heirs want cash for the shares", value: rmWhole(bsTotal), desc: "The remaining partners must buy them out, or share control with heirs who may not be involved.", meterLabel: "Business cash reserve left", meterText: rmWhole(resLeft), meter: resPct, tone: "bad" },
+    { tag: tr("business.flow.d1.tag"), title: tr("business.flow.d1.title"), value: rmWhole(total), desc: tr("business.flow.d1.desc", { company }), meterLabel, meterText: rmWhole(reserve), meter: 100, tone: "neutral" },
+    { tag: tr("business.flow.keyman.tag"), title: tr("business.flow.keyman.title"), value: "− " + rmWhole(kmDeath), desc: tr("business.flow.keyman.desc", { amount: rmWhole(Math.min(reserve, kmDeath)) }), meterLabel, meterText: rmWhole(resLeft), meter: resPct, tone: "warn" },
+    { tag: tr("business.flow.bank.tag"), title: tr("business.flow.bank.title"), value: rmWhole(loanGap), desc: tr("business.flow.bank.desc", { guarantor }), meterLabel, meterText: rmWhole(resLeft), meter: resPct, tone: "bad" },
+    { tag: tr("business.flow.partners.tag"), title: tr("business.flow.partners.title"), value: rmWhole(bsTotal), desc: tr("business.flow.partners.desc"), meterLabel, meterText: rmWhole(resLeft), meter: resPct, tone: "bad" },
   ];
   if (!isCompany) {
-    slides.push({ tag: "ESTATE", title: "Accounts & assets may freeze", value: rmWhole(eGap), desc: "Cash the family needs while the estate is settled and the business keeps running.", meterLabel: "Business cash reserve left", meterText: rmWhole(resLeft), meter: resPct, tone: "bad" });
+    slides.push({ tag: tr("business.flow.estate.tag"), title: tr("business.flow.estate.title"), value: rmWhole(eGap), desc: tr("business.flow.estate.desc"), meterLabel, meterText: rmWhole(resLeft), meter: resPct, tone: "bad" });
   }
-  slides.push({ tag: "WITH BUSINESS TAKAFUL", title: "Each bill could have its own funding", value: rmWhole(total), desc: "Keyman to the company, buy-sell to the partners, loan cover to the bank, hibah to the family. Subject to the PDS & certificate terms.", meterLabel: "Business cash reserve left", meterText: rmWhole(reserve), meter: 100, tone: "good" });
+  slides.push({ tag: tr("business.flow.with.tag"), title: tr("business.flow.with.title"), value: rmWhole(total), desc: tr("business.flow.with.desc"), meterLabel, meterText: rmWhole(reserve), meter: 100, tone: "good" });
   const flow: FlowSlide[] = buildFlowSlides(slides);
 
+  const legendLabels = [
+    tr("business.legend.keyman"),
+    tr("business.legend.buysell"),
+    tr("business.legend.loan"),
+    tr("business.legend.enterprise"),
+  ];
   const legend: LegendItem[] = columns
+    .map((c, i) => ({ ...c, legendLabel: legendLabels[i] }))
     .filter((c) => c.amount > 0)
     .map((c) => ({
-      label: c.label.charAt(0) + c.label.slice(1).toLowerCase(),
+      label: c.legendLabel,
       value: rmWhole(c.amount),
       tone: "neutral",
     }));
@@ -270,10 +276,12 @@ export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en")
     },
     scene: {
       columns,
-      label: "3D chart: Keyman " + rmWhole(kmTotal) + ", Buy-sell " + rmWhole(bsTotal) + ", Loan " + rmWhole(loanGap) + (isCompany ? "" : ", Enterprise " + rmWhole(eGap)) + ", total " + rmWhole(total),
+      label: isCompany
+        ? tr("business.scene.label", { km: rmWhole(kmTotal), bs: rmWhole(bsTotal), loan: rmWhole(loanGap), total: rmWhole(total) })
+        : tr("business.scene.labelEnt", { km: rmWhole(kmTotal), bs: rmWhole(bsTotal), loan: rmWhole(loanGap), ent: rmWhole(eGap), total: rmWhole(total) }),
     },
     legend,
-    caption: "Total need " + rmWhole(total) + " · column height = amount needed, owner at the centre",
+    caption: tr("business.caption", { total: rmWhole(total) }),
     flow,
     warnings,
   };

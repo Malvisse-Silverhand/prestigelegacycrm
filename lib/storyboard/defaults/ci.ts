@@ -1,5 +1,5 @@
 import type { CiInputs } from "../engine/ci";
-import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import { COMMON_CONTENT, COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
 import type { Localised } from "./localised";
 
 export const CI_DEFAULT_INPUTS: CiInputs = {
@@ -205,15 +205,59 @@ export const CI_DEFAULT_CONTENT: ModuleContent = {
 /** One agent-only claim proof row for Step 2: title, amount, detail. */
 export type CiProofRow = { t: string; v: string; d: string };
 
-// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
-// CI_TODO_BM is the English content standing in so the BM screens still
-// render. Replace it with a full ModuleContent that is parallel to
-// CI_DEFAULT_CONTENT (same number of items, same order; spread
-// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
-// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
-export const CI_TODO_BM: ModuleContent = CI_DEFAULT_CONTENT;
+/** Bahasa Malaysia content, parallel to CI_DEFAULT_CONTENT (same counts, same order). Ticks use the English label as key. */
+export const CI_CONTENT_BM: ModuleContent = {
+  script: [
+    { title: "Pisahkan 3 produk", text: "Kad perubatan membayar bil hospital. Hibah membantu keluarga apabila kita tiada. CI memberi {name} tunai semasa masih hidup tetapi sedang diuji." },
+    { title: "Tunjuk komitmen", text: "Tadi {name} menanda {commits} komitmen yang terus berjalan walaupun sakit. Skor kebergantungan {dep}/10." },
+    { title: "Tunjuk kedua-dua senario", text: "Pada peringkat awal, {name} menerima {recEarly} dan jurangnya ialah {gapEarly}. Pada peringkat lewat, menerima {recLate}, jurang {gapLate}. Sumber semasa bertahan kira-kira {runEarly} hingga {runLate} bulan komitmen." },
+    { title: "Bukti", text: "[Bukti anda] Kongsikan satu tuntutan CI yang telah diluluskan dan pernah anda uruskan: jenis pelan, jumlah dan tarikh, dengan nama disembunyikan dan dengan kebenaran klien." },
+    { title: "Penutup", text: "Biar saya semak sijil sedia ada anda dahulu, kemudian tunjukkan pilihan yang sesuai dengan bajet anda. Setuju?" },
+  ],
+  riskItems: [
+    { label: "Penyakit sedia ada", detail: "Contoh: darah tinggi, kencing manis, jantung, asma, kolesterol, buah pinggang, kanser, kesihatan mental. Kemungkinan hasil: mungkin diterima dengan caruman tambahan (loading), pengecualian bagi keadaan itu, ditangguhkan atau ditolak. Dedahkan sepenuhnya dengan laporan doktor." },
+    { label: "Merokok / vape", detail: "Contoh: termasuk vape dan merokok sekali-sekala. Kemungkinan hasil: kadar perokok yang lebih tinggi. Jangan sekali-kali mengisytiharkan bukan perokok jika anda merokok: tuntutan boleh ditolak." },
+    { label: "BMI tinggi / rendah", detail: "Contoh: berat dan tinggi di luar julat normal. Kemungkinan hasil: caruman tambahan (loading) atau penangguhan. Catat berat dan tinggi yang tepat." },
+    { label: "Pernah dimasukkan ke hospital / menjalani pembedahan", detail: "Contoh: kemasukan atau pembedahan baru-baru ini. Kemungkinan hasil: penilai risiko (underwriter) mungkin meminta laporan hospital; pengecualian boleh berlaku." },
+    { label: "Ujian / simptom yang belum disiasat", detail: "Contoh: menunggu keputusan ujian, ketulan, sakit dada, rujukan pakar. Kemungkinan hasil: biasanya ditangguhkan sehingga keputusan diperoleh. Jangan hantar permohonan tanpa mendedahkannya." },
+    { label: "Pekerjaan berisiko tinggi", detail: "Contoh: pembinaan, jentera kilang, penghantaran dengan motosikal, luar pesisir, keselamatan. Kemungkinan hasil: caruman lebih tinggi atau had pada manfaat kemalangan." },
+    { label: "Hobi berisiko", detail: "Contoh: sukan permotoran, menyelam skuba, mendaki gunung tinggi, terjun payung. Kemungkinan hasil: pengecualian aktiviti atau caruman tambahan (loading)." },
+    { label: "Sejarah keluarga", detail: "Contoh: ibu bapa atau adik-beradik yang menghidap penyakit jantung, kanser atau strok pada usia muda. Kemungkinan hasil: penting bagi CI; caruman tambahan (loading) mungkin dikenakan." },
+    { label: "Jumlah tidak setara dengan pendapatan", detail: "Contoh: perlindungan jauh melebihi apa yang disokong oleh tahap pendapatan. Kemungkinan hasil: penilaian risiko (underwriting) kewangan dengan slip gaji, cukai dan sumber dana; mungkin dikurangkan atau ditolak." },
+    { label: "Umur di luar had", detail: "Contoh: terlalu tua atau terlalu muda untuk pelan atau rider. Kemungkinan hasil: pilih pelan lain atau tempoh yang lebih pendek." },
+    { label: "Dokumen / maklumat tidak lengkap", detail: "Contoh: salinan IC, alamat, penama, tandatangan, pengesahan kesihatan. Kemungkinan hasil: permohonan tertangguh atau dibatalkan. Semak semuanya sebelum menghantar." },
+  ],
+  riskReasons: [
+    { label: "Tidak mendedahkan maklumat", detail: "Maklumat kesihatan tidak diisytiharkan semasa permohonan. Antara sebab biasa tuntutan ditolak atau sijil dibatalkan." },
+    { label: "Tempoh menunggu", detail: "Diagnosis dalam tempoh menunggu, yang boleh berbeza mengikut penyakit dan pelan. [Semak bilangan hari dalam PDS.]" },
+    { label: "Pengecualian", detail: "Keadaan sedia ada, kecederaan yang dilakukan sendiri, dadah atau alkohol, aktiviti yang dikecualikan." },
+    { label: "Sijil luput", detail: "Caruman tertunggak melepasi tempoh bertoleransi (grace period) boleh menamatkan perlindungan. Sediakan auto-debit." },
+    { label: "Tidak menepati takrifan", detail: "Manfaat CI mengikut takrifan klinikal dan kriteria peringkat dalam sijil, bukan nama penyakit." },
+    { label: "Dokumen tuntutan tidak lengkap", detail: "Laporan pakar, keputusan diagnostik, borang tuntutan atau bukti kejadian tidak lengkap." },
+  ],
+  objections: [
+    { q: "Saya sudah ada kad perubatan.", a: "Kad perubatan membayar hospital; ia bukan tunai untuk menggantikan pendapatan. Siapa yang akan bayar ansuran rumah ketika anda tidak boleh bekerja?" },
+    { q: "Saya sudah ada hibah.", a: "Hibah untuk para penerima apabila anda meninggal dunia. CI untuk anda ketika masih hidup tetapi sakit." },
+    { q: "Saya belum perlukannya lagi.", a: "Komitmen itu wujud hari ini. Risiko diurus ketika anda masih sihat dan layak. [statistik + sumber, jika anda menggunakannya]" },
+    { q: "Saya tidak pasti CI apa yang saya sudah ada.", a: "Mari kita semak sijil dahulu sebelum mengubah apa-apa atau membeli yang baharu." },
+    { q: "Saya tidak mahu beli sekarang.", a: "Tidak mengapa. Kita semak sijil sedia ada dan minta ilustrasi, tanpa sebarang kewajipan untuk mendaftar." },
+    { q: "Adakah CI akan mengurangkan perlindungan hibah saya?", a: "Ia bergantung pada pelan. Sesetengah pelan mengurangkan perlindungan asas apabila bayaran CI dibuat. Kita semak sijil bersama-sama sebelum memutuskan." },
+    ...COMMON_CONTENT.bm.objections.flatMap((g) => g.items),
+  ],
+  faq: [
+    { q: "Jika kad perubatan sudah membayar, bolehkah saya masih menuntut CI?", a: "CI dibayar apabila diagnosis memenuhi takrifan dalam sijil, bukan berdasarkan jumlah bil. Semak terma." },
+    { q: "Adakah saya perlu dimasukkan ke wad atau ICU dahulu?", a: "Belum tentu. Pencetusnya ialah diagnosis yang memenuhi takrifan dalam sijil." },
+    { q: "Mengapa perlu CI jika saya sudah ada hibah?", a: "Hibah untuk kematian; CI untuk ketika anda masih hidup dengan penyakit kritikal." },
+    { q: "CI sekaligus berbanding CI berperingkat?", a: "CI sekaligus membayar sekali untuk penyakit yang disenaraikan. CI berperingkat melindungi dari peringkat awal hingga lewat, selalunya dengan manfaat tambahan. Semak setiap PDS." },
+    { q: "Apakah tempoh menunggu?", a: "Tempoh selepas tarikh mula di mana diagnosis tidak dilindungi. Ia boleh berbeza mengikut penyakit. [Semak sijil.]" },
+    { q: "Apakah tempoh survival?", a: "Bagi manfaat tertentu, orang yang dilindungi mesti hidup selama bilangan hari tertentu selepas diagnosis. [Semak sijil.]" },
+    { q: "Saya ada penyakit sedia ada. Bolehkah saya memohon?", a: "Boleh, dedahkan sepenuhnya. Mungkin ada terma tambahan, pengecualian, penangguhan atau penolakan." },
+    { q: "Adakah semua orang mendapat bayaran yang besar?", a: "Tidak. Ia bergantung pada rider, jumlah perlindungan, diagnosis, peringkat dan syarat sijil." },
+    ...COMMON_CONTENT.bm.faq,
+  ],
+};
 
 export const CI_CONTENT: Localised<ModuleContent> = {
   en: CI_DEFAULT_CONTENT,
-  bm: CI_TODO_BM,
+  bm: CI_CONTENT_BM,
 };

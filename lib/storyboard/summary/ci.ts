@@ -1,12 +1,10 @@
 import { defaultPlanName } from "../defaults/common";
 import type { ModuleResults } from "../engine";
-import type { Lang } from "../i18n";
+import { t, type Lang } from "../i18n";
 import type { SummaryBody } from "./hibah";
 import { cleanFlow, contributionText, safeText, type SummaryPlan } from "./shared";
 
-// TODO(BM): the Critical Illness wording below is English only. Move each string to
-// i18n/dict/ci.{en,bm}.ts and build it with t(key, lang) as summary/hibah.ts does.
-
+/** The Critical Illness part of a client summary. The agent-only story is never an input here. */
 export function summarizeCi(
   result: ModuleResults["ci"],
   plan: SummaryPlan | undefined,
@@ -14,27 +12,23 @@ export function summarizeCi(
 ): SummaryBody {
   const { out, flow } = result;
   return {
-    moduleLabel: "Critical illness",
-    kicker: "Recovery cash",
+    moduleLabel: t("ci.summary.moduleLabel", lang),
+    kicker: t("ci.summary.kicker", lang),
     gap: out.text.gapEarly,
     need: out.text.total,
     have: out.text.srcEarly,
-    gapNote: "This is an estimate for an early-stage diagnosis. The certificate’s definitions decide when a plan pays.",
-    meaning: [
-      "Need is income, recovery and extra costs over the recovery period.",
-      "Available is savings plus any existing CI that pays at that stage.",
-      "The gap is what would still be needed.",
-    ],
+    gapNote: t("ci.summary.gapNote", lang),
+    meaning: [t("ci.summary.meaning1", lang), t("ci.summary.meaning2", lang), t("ci.summary.meaning3", lang)],
     flow: cleanFlow(flow),
     haveVsNeed: [
-      { label: "Available", value: out.text.srcEarly, tone: "good" },
-      { label: "Still needed", value: out.text.gapEarly, tone: "bad" },
-      { label: "Estimated need", value: out.text.total, tone: "neutral" },
+      { label: t("ci.summary.have", lang), value: out.text.srcEarly, tone: "good" },
+      { label: t("ci.summary.gap", lang), value: out.text.gapEarly, tone: "bad" },
+      { label: t("ci.summary.need", lang), value: out.text.total, tone: "neutral" },
     ],
     plan: {
       name: safeText(plan?.name, defaultPlanName("ci", lang)),
       cover: safeText(plan?.cover, out.text.suggest),
-      why: safeText(plan?.why, "Could provide cash during recovery, subject to the PDS & certificate terms.", 240),
+      why: safeText(plan?.why, t("ci.summary.planWhy", lang), 240),
       contribution: contributionText(plan, lang),
     },
   };

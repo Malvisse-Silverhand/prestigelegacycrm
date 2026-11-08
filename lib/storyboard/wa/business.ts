@@ -1,11 +1,9 @@
 import type { BusinessOut } from "../engine/business";
-import type { Lang } from "../i18n";
+import { t, type Lang } from "../i18n";
 import { mentionsOtherOperator } from "../summary/shared";
 import { waDisclaimer, withAgent } from "./shared";
 
-// TODO(BM): the Business Protection lines below are English only. Move them to
-// i18n/dict/business.{en,bm}.ts and build them with t(key, lang) as wa/hibah.ts does.
-
+/** Copy-to-WhatsApp text for Business Protection. The partner-share warning is never printed here. */
 export function buildBusinessWaSummary(input: {
   company: string;
   out: Pick<BusinessOut, "text" | "showEstate">;
@@ -14,22 +12,17 @@ export function buildBusinessWaSummary(input: {
 }): string {
   const { out } = input;
   const lang = input.lang ?? "en";
-  const company = input.company.trim() && !mentionsOtherOperator(input.company) ? input.company.trim() : "your business";
+  const company =
+    input.company.trim() && !mentionsOtherOperator(input.company) ? input.company.trim() : t("business.wa.fallbackCompany", lang);
   const lines: string[] = [
-    `Salam, here is a short summary for ${company} of what we looked at together.`,
+    t("business.wa.intro", lang, { company }),
     "",
-    "Estimated amounts that could fall due if a key owner were gone:",
-    `  - Keyman (lost profit and replacing a key person): ${out.text.kmTotal}`,
-    `  - Buy-sell (cash for a partner's shares), based on the holdings entered: ${out.text.bsTotal}`,
-    `  - Business debt not yet protected: ${out.text.loanGap}`,
+    t("business.wa.heading", lang),
+    t("business.wa.keyman", lang, { amount: out.text.kmTotal }),
+    t("business.wa.buysell", lang, { amount: out.text.bsTotal }),
+    t("business.wa.loan", lang, { amount: out.text.loanGap }),
   ];
-  if (out.showEstate) lines.push(`  - Cash for the transition while accounts may be frozen: ${out.text.eGap}`);
-  lines.push(
-    `Total: ${out.text.total}`,
-    "",
-    "Each need could have its own funding, subject to the PDS and certificate terms. Tax and legal points should be confirmed with your accountant and lawyer.",
-    "",
-    waDisclaimer(lang),
-  );
+  if (out.showEstate) lines.push(t("business.wa.estate", lang, { amount: out.text.eGap }));
+  lines.push(t("business.wa.total", lang, { amount: out.text.total }), "", t("business.wa.closing", lang), "", waDisclaimer(lang));
   return withAgent(lines, input.agentFirstName);
 }

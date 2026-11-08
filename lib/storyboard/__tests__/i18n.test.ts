@@ -13,6 +13,7 @@ const EXEMPT = new Set<string>([
   "list.colLead",
   "hibah.summary.moduleLabel",
   "hibah.svg.hibah",
+  "medical.svg.panel",
 ]);
 
 const keys = Object.keys(en) as TKey[];
