@@ -82,8 +82,9 @@ export function planOutcome(input: OutcomeInput): OutcomePlan {
       if (input.hasQuotation) {
         if (moveTo("quoted")) notes.push("moved to Quoted");
       } else if (!PROTECTED.has(currentStage) && rank(currentStage) < rank("quoted")) {
-        // Entering Quoted needs a quotation on file; the outcome is still recorded.
-        notes.push("stage unchanged: create a quotation to move the lead to Quoted");
+        // Creating a quotation moves the lead to Quoted by itself (database trigger,
+        // 20261108090000), so there is nothing to move here; the outcome is still recorded.
+        notes.push("saved. The lead moves to Quoted automatically when you create a quotation or estimate");
       }
       break;
     }
