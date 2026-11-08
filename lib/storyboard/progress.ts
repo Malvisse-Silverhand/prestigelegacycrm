@@ -1,5 +1,6 @@
 // Step progress helpers shared by the lead tab, the list page and the actions.
 
+import { t, type Lang } from "./i18n";
 import { STORYBOARD_STEPS, type StepStatus, type StoryboardStep } from "./types";
 
 /** Reads step_status JSON defensively: only known steps with the value "saved" count. */
@@ -21,9 +22,9 @@ export function savedSteps(status: StepStatus): StoryboardStep[] {
   return STORYBOARD_STEPS.filter((s) => status[s] === "saved");
 }
 
-const LABELS = ["Not started", "Fill & Calculate done", "Explanation done", "Rejection Risk done", "Completed"];
+const LABEL_KEYS = ["progress.0", "progress.1", "progress.2", "progress.3", "progress.4"] as const;
 
 /** Label for a row in the lists, from how many steps are saved. */
-export function progressLabel(status: StepStatus): string {
-  return LABELS[savedSteps(status).length] ?? LABELS[0];
+export function progressLabel(status: StepStatus, lang: Lang = "en"): string {
+  return t(LABEL_KEYS[savedSteps(status).length] ?? LABEL_KEYS[0], lang);
 }

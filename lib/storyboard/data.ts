@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingSchemaError, STORYBOARD_MISSING_MESSAGE } from "./schema-error";
+import { getStoryboardLang } from "./i18n/server";
+import type { Lang } from "./i18n";
 import { readAgentSettings, readOrgSettings, type AgentSettings, type OrgSettings } from "./settings";
 import { BUILT_MODULES, type BuiltModule } from "./modules";
 import { readStepStatus } from "./progress";
@@ -73,7 +75,10 @@ export type StoryboardStatus = {
   outcome: StoryboardOutcome | null;
 };
 
-export type LeadStoryboardStatus = { ok: true; rows: StoryboardStatus[] } | { ok: false; message: string };
+/** `lang` is the viewer's storyboard language, so the lead tab needs no extra prop. */
+export type LeadStoryboardStatus =
+  | { ok: true; rows: StoryboardStatus[]; lang: Lang }
+  | { ok: false; message: string; missing: boolean; lang: Lang };
 
 export async function getLeadStoryboardStatus(leadId: string): Promise<LeadStoryboardStatus> {
   const supabase = await createClient();
@@ -82,12 +87,14 @@ export async function getLeadStoryboardStatus(leadId: string): Promise<LeadStory
     .select("module, step_status, outcome, saved_at")
     .eq("lead_id", leadId)
     .returns<{ module: StoryboardModule; step_status: unknown; outcome: string | null; saved_at: string | null }[]>();
+  const lang = await getStoryboardLang();
   if (error) {
     const r = fail<never>(error);
-    return { ok: false, message: r.ok ? "" : r.message };
+    return { ok: false, message: r.ok ? "" : r.message, missing: r.ok ? false : r.missing, lang };
   }
   return {
     ok: true,
+    lang,
     rows: (data ?? []).map((r) => ({
       module: r.module,
       savedAt: r.saved_at,
@@ -101,6 +108,7 @@ export async function getLeadStoryboardStatus(leadId: string): Promise<LeadStory
 export async function getStoryboardSettings(
   module: BuiltModule,
   agentId: string,
+  lang: Lang = "en",
 ): Promise<DataResult<{ org: OrgSettings; agent: AgentSettings }>> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -114,12 +122,12 @@ export async function getStoryboardSettings(
   const agent = rows.find((r) => r.scope === "agent" && r.owner_id === agentId);
   return {
     ok: true,
-    data: { org: readOrgSettings(org?.settings, module), agent: readAgentSettings(agent?.settings, module) },
+    data: { org: readOrgSettings(org?.settings, module), agent: readAgentSettings(agent?.settings, module, lang) },
   };
 }
 
-export function getHibahSettings(agentId: string) {
-  return getStoryboardSettings("hibah", agentId);
+export function getHibahSettings(agentId: string, lang: Lang = "en") {
+  return getStoryboardSettings("hibah", agentId, lang);
 }
 
 /** Org defaults for every built module (SuperAdmin settings tab). */

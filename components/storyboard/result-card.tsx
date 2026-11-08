@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useT } from "./lang-context";
 
 type Row = { label: string; value: string; tone?: "bad" };
 
@@ -8,7 +11,7 @@ export function ResultCard({
   big,
   context,
   rows,
-  ariaLabel = "Result",
+  ariaLabel,
   children,
 }: {
   heading: string;
@@ -18,8 +21,9 @@ export function ResultCard({
   ariaLabel?: string;
   children?: ReactNode;
 }) {
+  const { t } = useT();
   return (
-    <section className="rounded-[20px] bg-navy p-5 text-cream shadow-card" aria-label={ariaLabel}>
+    <section className="rounded-[20px] bg-navy p-5 text-cream shadow-card" aria-label={ariaLabel ?? t("result.aria")}>
       <div className="text-[15px] text-white/80">{heading}</div>
       <div className="mt-1 text-[40px] font-bold leading-[1.1] tracking-tight text-gold tabular-nums">{big}</div>
       {context ? <div className="mt-1 text-[13px] text-white/70">{context}</div> : null}

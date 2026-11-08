@@ -1,5 +1,6 @@
 import type { BusinessInputs } from "../engine/business";
 import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import type { Localised } from "./localised";
 
 export const BUSINESS_DEFAULT_INPUTS: BusinessInputs = {
   company: "Daniel Logistics Sdn Bhd",
@@ -166,4 +167,17 @@ export const BUSINESS_DEFAULT_CONTENT: ModuleContent = {
     { q: "How is the business valued?", a: "Usually a multiple of net profit for SMEs, net assets for asset-heavy businesses, or a value all partners agree on. Review it yearly." },
     ...COMMON_FAQ,
   ],
+};
+
+// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
+// BUSINESS_TODO_BM is the English content standing in so the BM screens still
+// render. Replace it with a full ModuleContent that is parallel to
+// BUSINESS_DEFAULT_CONTENT (same number of items, same order; spread
+// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
+// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
+export const BUSINESS_TODO_BM: ModuleContent = BUSINESS_DEFAULT_CONTENT;
+
+export const BUSINESS_CONTENT: Localised<ModuleContent> = {
+  en: BUSINESS_DEFAULT_CONTENT,
+  bm: BUSINESS_TODO_BM,
 };

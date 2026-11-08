@@ -1,4 +1,5 @@
 import type { FlowSlide } from "../types";
+import type { Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fromSen, num, rmWhole, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -135,7 +136,10 @@ export type BusinessResult = EngineResult<BusinessOut, BusinessScene>;
 
 const successionFactor = (x: Succession | string) => (x === "ready" ? 0.5 : x === "second" ? 0.75 : 1);
 
-export function computeBusiness(raw: Partial<BusinessInputs>): BusinessResult {
+export function computeBusiness(raw: Partial<BusinessInputs>, lang: Lang = "en"): BusinessResult {
+  // TODO(BM): business text is English only for now. Build user-visible strings with
+  // translator(lang) as engine/hibah.ts does, then delete this line.
+  void lang;
   const n = (v: unknown) => num(v);
   const company = String(raw.company ?? "") || "the business";
   const entity = raw.entity ?? "sdn";

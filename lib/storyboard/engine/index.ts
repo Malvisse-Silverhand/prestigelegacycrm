@@ -1,4 +1,5 @@
 import type { StoryboardModule } from "../types";
+import type { Lang } from "../i18n";
 import { computeBusiness, type BusinessInputs, type BusinessResult } from "./business";
 import { computeCi, type CiInputs, type CiResult } from "./ci";
 import { computeHibah, type HibahInputs, type HibahResult } from "./hibah";
@@ -30,22 +31,31 @@ export type ModuleResults = {
   mortgage: MortgageResult;
 };
 
-/** Run the engine for a module. Inputs are untrusted JSON, so every field is optional. */
+/**
+ * Run the engine for a module. Inputs are untrusted JSON, so every field is optional.
+ * `lang` selects the language of every user-visible string (slide text, caption,
+ * legend, scene label, warnings). Numbers and money are identical in both.
+ */
 export function computeModule<M extends StoryboardModule>(
   module: M,
   inputs: Partial<ModuleInputs[M]>,
+  lang?: Lang,
 ): ModuleResults[M];
-export function computeModule(module: StoryboardModule, inputs: Record<string, unknown>): ModuleResults[StoryboardModule] {
+export function computeModule(
+  module: StoryboardModule,
+  inputs: Record<string, unknown>,
+  lang: Lang = "en",
+): ModuleResults[StoryboardModule] {
   switch (module) {
     case "hibah":
-      return computeHibah(inputs as Partial<HibahInputs>);
+      return computeHibah(inputs as Partial<HibahInputs>, lang);
     case "medical":
-      return computeMedical(inputs as Partial<MedicalInputs>);
+      return computeMedical(inputs as Partial<MedicalInputs>, lang);
     case "ci":
-      return computeCi(inputs as Partial<CiInputs>);
+      return computeCi(inputs as Partial<CiInputs>, lang);
     case "business":
-      return computeBusiness(inputs as Partial<BusinessInputs>);
+      return computeBusiness(inputs as Partial<BusinessInputs>, lang);
     case "mortgage":
-      return computeMortgage(inputs as Partial<MortgageInputs>);
+      return computeMortgage(inputs as Partial<MortgageInputs>, lang);
   }
 }

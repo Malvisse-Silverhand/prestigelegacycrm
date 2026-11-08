@@ -1,5 +1,6 @@
 import type { CiInputs } from "../engine/ci";
 import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import type { Localised } from "./localised";
 
 export const CI_DEFAULT_INPUTS: CiInputs = {
   nick: "Siti",
@@ -203,3 +204,16 @@ export const CI_DEFAULT_CONTENT: ModuleContent = {
 
 /** One agent-only claim proof row for Step 2: title, amount, detail. */
 export type CiProofRow = { t: string; v: string; d: string };
+
+// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
+// CI_TODO_BM is the English content standing in so the BM screens still
+// render. Replace it with a full ModuleContent that is parallel to
+// CI_DEFAULT_CONTENT (same number of items, same order; spread
+// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
+// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
+export const CI_TODO_BM: ModuleContent = CI_DEFAULT_CONTENT;
+
+export const CI_CONTENT: Localised<ModuleContent> = {
+  en: CI_DEFAULT_CONTENT,
+  bm: CI_TODO_BM,
+};

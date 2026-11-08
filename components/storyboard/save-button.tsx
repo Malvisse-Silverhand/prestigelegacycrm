@@ -1,4 +1,6 @@
-import { t } from "@/lib/storyboard/i18n";
+"use client";
+
+import { useT } from "./lang-context";
 
 type Props = {
   /** ISO timestamp from the database. Never pass the client clock. */
@@ -22,6 +24,7 @@ export function formatSavedTime(iso: string): string | null {
 }
 
 export function SaveButton({ savedAt, pending = false, onSave, error, disabled }: Props) {
+  const { t } = useT();
   const time = savedAt ? formatSavedTime(savedAt) : null;
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -39,7 +42,7 @@ export function SaveButton({ savedAt, pending = false, onSave, error, disabled }
           <span className="font-semibold text-alert-red">{error}</span>
         ) : time ? (
           <span className="sb-pop inline-block font-semibold text-green">
-            {t("common.savedAt", "en", { time })}
+            {t("common.savedAt", { time })}
           </span>
         ) : null}
       </span>

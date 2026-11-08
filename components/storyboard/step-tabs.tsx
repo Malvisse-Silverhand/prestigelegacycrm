@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t, type TKey } from "@/lib/storyboard/i18n";
+import { t, type Lang, type TKey } from "@/lib/storyboard/i18n";
 
 export type StepKey = "fill" | "explain" | "risk" | "objection";
 
@@ -17,11 +17,13 @@ type Props = {
   done?: StepKey[];
   /** href for each step. A missing href renders a non-link. */
   hrefs: Partial<Record<StepKey, string>>;
+  lang: Lang;
 };
 
-export function StepTabs({ current, done = [], hrefs }: Props) {
+/** Server component: takes `lang` as a prop (hooks and context are for client components). */
+export function StepTabs({ current, done = [], hrefs, lang }: Props) {
   return (
-    <nav aria-label={t("step.nav")}>
+    <nav aria-label={t("step.nav", lang)}>
       <ol className="m-0 flex list-none gap-2 overflow-x-auto p-0">
         {ORDER.map((key, i) => {
           const isCurrent = key === current;
@@ -37,8 +39,8 @@ export function StepTabs({ current, done = [], hrefs }: Props) {
           const inner = (
             <>
               <span aria-hidden="true">{isDone ? "✓" : i + 1}</span>
-              <span>{t(LABEL[key])}</span>
-              {isDone ? <span className="sr-only">({t("step.done")})</span> : null}
+              <span>{t(LABEL[key], lang)}</span>
+              {isDone ? <span className="sr-only">({t("step.done", lang)})</span> : null}
             </>
           );
           return (

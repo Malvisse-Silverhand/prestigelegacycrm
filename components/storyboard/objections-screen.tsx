@@ -2,13 +2,14 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { COMMON_OBJECTIONS, type Objection } from "@/lib/storyboard/defaults/common";
+import { COMMON_CONTENT, type Objection } from "@/lib/storyboard/defaults/common";
 import type { BuiltModule } from "@/lib/storyboard/modules";
-import { addDays, OUTCOME_LABEL } from "@/lib/storyboard/outcome";
+import { addDays, outcomeLabel as outcomeLabelFor } from "@/lib/storyboard/outcome";
 import { MODULE_CONTENT } from "@/lib/storyboard/settings";
 import { saveStoryboardSettings, setStoryboardOutcome } from "@/app/(app)/leads/[id]/storyboard/actions";
 import { STORYBOARD_OUTCOMES, type StoryboardOutcome } from "@/lib/storyboard/types";
 import { SaveButton } from "./save-button";
+import { useT } from "./lang-context";
 import { BTN_GHOST, BTN_PRIMARY, CARD } from "./hibah/fields";
 import { useModuleStepSave } from "./use-step-save";
 import type { ScreenProps, TickedStored } from "./screen-types";
@@ -29,17 +30,18 @@ type Props<S extends TickedStored> = ScreenProps<S> & {
 /** Step 4 for every module: suggested answers, "raised" log and the outcome. */
 export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
   const router = useRouter();
+  const { t, lang } = useT();
   const { settings, stored, module } = props;
 
   // Built-in answers, to store only what the agent actually changed.
   const defaults = useMemo(() => {
-    const c = MODULE_CONTENT[module].content;
+    const c = MODULE_CONTENT[module].localised[lang];
     return new Map<string, string>([
       ...c.objections.map((o) => [o.q, o.a] as [string, string]),
       ...c.faq.map((o) => [o.q, o.a] as [string, string]),
-      ...COMMON_OBJECTIONS.flatMap((g) => g.items.map((o) => [o.q, o.a] as [string, string])),
+      ...COMMON_CONTENT[lang].objections.flatMap((g) => g.items.map((o) => [o.q, o.a] as [string, string])),
     ]);
-  }, [module]);
+  }, [module, lang]);
 
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
     const out: Record<string, string> = {};
@@ -60,7 +62,8 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
   const [outcomePending, startOutcome] = useTransition();
 
   const isOpen = (q: string) => open[q] !== false;
-  const toggleRaised = (q: string) => setRaised((r) => (r.includes(q) ? r.filter((x) => x !== q) : [...r, q]));
+  // Raised is stored by key: the English question for a default item, so it survives a language switch.
+  const toggleRaised = (key: string) => setRaised((r) => (r.includes(key) ? r.filter((x) => x !== key) : [...r, key]));
 
   const changed = useMemo(
     () => Object.entries(answers).filter(([q, a]) => defaults.has(q) && a.trim() !== "" && a !== defaults.get(q)),
@@ -75,14 +78,15 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
           scope: "agent",
           module,
           settings: { objections: changed.map(([q, a]) => ({ q, a })) },
+          lang,
         });
-        setListMsg(res.error ?? "Saved as your personal answers.");
+        setListMsg(res.error ?? t("obj.savedAnswers"));
         if (!res.error) {
           setEditing(false);
           router.refresh();
         }
       } catch {
-        setListMsg("Couldn't connect. Check your internet connection and try again.");
+        setListMsg(t("common.connectError"));
       }
     });
   }
@@ -98,18 +102,20 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
           outcome: choice,
           followUpDate: choice === "follow_up_later" ? date : null,
           reason: choice === "not_interested" ? reason : null,
+          lang,
         });
-        setOutcomeMsg(res.error ? { ok: false, text: res.error } : { ok: true, text: res.message ?? "Outcome recorded." });
+        setOutcomeMsg(res.error ? { ok: false, text: res.error } : { ok: true, text: res.message ?? t("obj.recorded") });
         if (!res.error) router.refresh();
       } catch {
-        setOutcomeMsg({ ok: false, text: "Couldn't connect. Check your internet connection and try again." });
+        setOutcomeMsg({ ok: false, text: t("common.connectError") });
       }
     });
   }
 
   function renderItem(o: Objection, quoted: boolean) {
     const expanded = isOpen(o.q);
-    const marked = raised.includes(o.q);
+    const rkey = o.key ?? o.q;
+    const marked = raised.includes(rkey);
     const id = `ans-${o.q.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 40)}`;
     return (
       <li key={o.q} className="rounded-[12px] border border-sand">
@@ -126,7 +132,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
         <div id={`${id}-panel`} hidden={!expanded} className="flex flex-col items-start gap-2.5 px-3 pb-3">
           {editing ? (
             <>
-              <label htmlFor={id} className="text-xs font-semibold text-muted-2">Your answer</label>
+              <label htmlFor={id} className="text-xs font-semibold text-muted-2">{t("obj.yourAnswer")}</label>
               <textarea
                 id={id}
                 rows={4}
@@ -142,35 +148,33 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
           <button
             type="button"
             aria-pressed={marked}
-            onClick={() => toggleRaised(o.q)}
+            onClick={() => toggleRaised(rkey)}
             className={`min-h-11 rounded-full border px-4 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
               marked ? "border-green bg-green text-white" : "border-navy bg-white text-navy"
             }`}
           >
-            {marked ? "Raised ✓ logged" : "Mark as raised"}
+            {marked ? t("obj.raised") : t("obj.markRaised")}
           </button>
         </div>
       </li>
     );
   }
 
-  const outcomeLabel = (o: StoryboardOutcome) => props.outcomeLabels?.[o] ?? OUTCOME_LABEL[o];
+  const outcomeLabel = (o: StoryboardOutcome) => props.outcomeLabels?.[o] ?? outcomeLabelFor(o, lang);
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="m-0 text-[13px] text-ink">
-          {editing
-            ? "Customize mode: open any item and rewrite the answer in your own words. Saved as your personal answers for every lead."
-            : "Open an objection to see a suggested answer, and mark the ones the prospect raised."}
+          {editing ? t("obj.helpEditing") : t("obj.help")}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={BTN_GHOST} aria-pressed={editing} onClick={() => setEditing((e) => !e)}>
-            {editing ? "Done customizing" : "Customize answers"}
+            {editing ? t("obj.customizeDone") : t("obj.customize")}
           </button>
           {editing ? (
             <button type="button" className={BTN_PRIMARY} onClick={saveAnswers} disabled={listPending}>
-              {listPending ? "Saving..." : "Save my answers"}
+              {listPending ? t("common.saving") : t("obj.saveAnswers")}
             </button>
           ) : null}
         </div>
@@ -186,7 +190,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
             </ul>
           </section>
           <section className={CARD}>
-            <h2 className="m-0 text-lg font-bold text-navy">Common questions</h2>
+            <h2 className="m-0 text-lg font-bold text-navy">{t("obj.common")}</h2>
             <ul className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
               {settings.faq.map((o) => renderItem(o, false))}
             </ul>
@@ -194,7 +198,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
         </div>
 
         <section className={`${CARD} min-w-0`}>
-          <h2 className="m-0 text-lg font-bold text-navy">General objections (all products)</h2>
+          <h2 className="m-0 text-lg font-bold text-navy">{t("obj.general")}</h2>
           <div className="mt-3 flex flex-col gap-4">
             {settings.objectionGroups.map((g) => (
               <div key={g.name}>
@@ -212,13 +216,13 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
       <section aria-labelledby="outcome-h" className={`${CARD} flex flex-col gap-3`}>
         <div>
           <h2 id="outcome-h" className="m-0 text-base font-bold text-navy">
-            Record the outcome · {raised.length} {raised.length === 1 ? "objection" : "objections"} logged
+            {t("obj.recordHeading", { n: raised.length, unit: raised.length === 1 ? t("obj.objection") : t("obj.objections") })}
           </h2>
           <p className="m-0 mt-1 text-xs text-muted-2">
-            Updates the lead stage and follow-up date. A lead already at Appointment or later never moves backwards.
+            {t("obj.recordHint")}
           </p>
         </div>
-        <div role="radiogroup" aria-label="Outcome" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div role="radiogroup" aria-label={t("obj.outcomeAria")} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {STORYBOARD_OUTCOMES.map((o) => (
             <button
               key={o}
@@ -236,7 +240,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
         </div>
         {choice === "follow_up_later" ? (
           <div className="flex max-w-xs flex-col gap-1.5">
-            <label htmlFor="fu-date" className="text-[13px] font-semibold text-navy">Follow-up date</label>
+            <label htmlFor="fu-date" className="text-[13px] font-semibold text-navy">{t("obj.followUpDate")}</label>
             <input
               id="fu-date"
               type="date"
@@ -249,14 +253,14 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
         ) : null}
         {choice === "not_interested" ? (
           <div className="flex max-w-md flex-col gap-1.5">
-            <label htmlFor="ni-reason" className="text-[13px] font-semibold text-navy">Reason</label>
+            <label htmlFor="ni-reason" className="text-[13px] font-semibold text-navy">{t("obj.reason")}</label>
             <input
               id="ni-reason"
               type="text"
               maxLength={200}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Already covered elsewhere"
+              placeholder={t("obj.reasonPlaceholder")}
               className="min-h-11 rounded-[10px] border border-sand-2 bg-white px-3 text-sm text-navy focus-visible:outline-2 focus-visible:outline-brand"
             />
           </div>
@@ -268,9 +272,9 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
             onClick={record}
             disabled={!choice || outcomePending || !props.dbReady || !props.hasRow}
           >
-            {outcomePending ? "Recording..." : "Record outcome"}
+            {outcomePending ? t("obj.recording") : t("obj.recordBtn")}
           </button>
-          {!props.hasRow && props.dbReady ? <span className="text-xs text-muted-2">Save Step 1 first.</span> : null}
+          {!props.hasRow && props.dbReady ? <span className="text-xs text-muted-2">{t("obj.saveStep1")}</span> : null}
           <span role="status" aria-live="polite" className={`text-xs font-semibold ${outcomeMsg?.ok ? "text-green" : "text-alert-red"}`}>
             {outcomeMsg?.text}
           </span>
@@ -286,8 +290,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
           disabled={step.blocked}
         />
         <p className="m-0 text-xs text-muted-2">
-          {props.footnote ??
-            "Responses are conversation guides for registered agents. Product terms, contributions and Shariah positions must follow the operator's official materials."}
+          {props.footnote ?? t("obj.footnote")}
         </p>
       </div>
     </div>

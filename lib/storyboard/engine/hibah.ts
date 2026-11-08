@@ -1,4 +1,5 @@
 import type { FlowSlide } from "../types";
+import { translator, type Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fromSen, num, rmWhole, safeDiv, toSen, fixed1 } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -79,9 +80,10 @@ function debtOf(amt: number, status: string, part: number): number {
   return amt; // unsure / no: treated as not covered
 }
 
-export function computeHibah(raw: Partial<HibahInputs>): HibahResult {
+export function computeHibah(raw: Partial<HibahInputs>, lang: Lang = "en"): HibahResult {
   const n = (v: unknown) => num(v);
-  const nick = String(raw.nick ?? "") || "the prospect";
+  const tr = translator(lang);
+  const nick = String(raw.nick ?? "") || tr("common.prospect");
 
   const itemTotal =
     n(raw.eFood) + n(raw.eUtil) + n(raw.eSchool) + n(raw.eTrans) + n(raw.eRent) + n(raw.eOther);
@@ -116,26 +118,26 @@ export function computeHibah(raw: Partial<HibahInputs>): HibahResult {
   const gapH = Math.max(14, Math.round(120 * (need > 0 ? gap / need : 0)));
   const caption =
     pct >= 100
-      ? "Shield full: what is in place meets the estimated need"
-      : "Shield " + pct + "% filled · " + rmWhole(gap) + " still to plan for";
+      ? tr("hibah.caption.full")
+      : tr("hibah.caption.partial", { pct, gap: rmWhole(gap) });
 
   const remaining = Math.max(0, have - debts - oneoff);
   const runway = monthly > 0 ? remaining / monthly : 0;
   const needMonths = years * 12;
 
   const flow: FlowSlide[] = buildFlowSlides([
-    { tag: "DAY 1", title: nick + "’s income stops", value: rmWhole(monthly) + "/mo", desc: "The family still needs this every month, for " + years + " years.", meterLabel: "Need covered by what’s in place", meterText: pct + "%", meter: pct, tone: "neutral" },
-    { tag: "WEEK 1", title: "Debts & one-off costs fall due", value: "− " + rmWhole(debts + oneoff), desc: "Uncovered loans, education fund, funeral and admin costs come first.", meterLabel: "Savings & cover left", meterText: rmWhole(remaining), meter: have > 0 ? (remaining / have) * 100 : 0, tone: "warn" },
-    { tag: "MONTH " + Math.max(1, Math.ceil(runway)), title: "What’s left runs out", value: fixed1(runway) + " months", desc: rmWhole(remaining) + " left covers about " + fixed1(runway) + " of the " + needMonths + " months needed.", meterLabel: "Runway vs need", meterText: fixed1(runway) + " / " + needMonths + " mo", meter: safeDiv(runway, needMonths) * 100, tone: "bad" },
-    { tag: "SHORTFALL", title: "The family must find the rest", value: rmWhole(gap), desc: "From EPF, selling the home, relatives or new debt.", meterLabel: "Need covered", meterText: pct + "%", meter: pct, tone: "bad" },
+    { tag: tr("hibah.flow.d1.tag"), title: tr("hibah.flow.d1.title", { nick }), value: tr("hibah.flow.d1.value", { amount: rmWhole(monthly) }), desc: tr("hibah.flow.d1.desc", { years }), meterLabel: tr("hibah.flow.d1.meterLabel"), meterText: pct + "%", meter: pct, tone: "neutral" },
+    { tag: tr("hibah.flow.w1.tag"), title: tr("hibah.flow.w1.title"), value: "− " + rmWhole(debts + oneoff), desc: tr("hibah.flow.w1.desc"), meterLabel: tr("hibah.flow.w1.meterLabel"), meterText: rmWhole(remaining), meter: have > 0 ? (remaining / have) * 100 : 0, tone: "warn" },
+    { tag: tr("hibah.flow.m.tag", { n: Math.max(1, Math.ceil(runway)) }), title: tr("hibah.flow.m.title"), value: tr("hibah.flow.m.value", { months: fixed1(runway) }), desc: tr("hibah.flow.m.desc", { remaining: rmWhole(remaining), runway: fixed1(runway), needMonths }), meterLabel: tr("hibah.flow.m.meterLabel"), meterText: tr("hibah.flow.m.meterText", { runway: fixed1(runway), needMonths }), meter: safeDiv(runway, needMonths) * 100, tone: "bad" },
+    { tag: tr("hibah.flow.s.tag"), title: tr("hibah.flow.s.title"), value: rmWhole(gap), desc: tr("hibah.flow.s.desc"), meterLabel: tr("hibah.flow.s.meterLabel"), meterText: pct + "%", meter: pct, tone: "bad" },
     // Compliance: no "fills the gap 100%". Subject to the PDS and certificate terms.
-    { tag: "WITH HIBAH", title: "A hibah of " + rmWhole(gap) + " could fill the gap", value: rmWhole(gap), desc: "Could fill the gap, subject to the PDS & certificate terms. Paid to the named beneficiary under a conditional hibah nomination.", meterLabel: "Need covered if the cover is in place", meterText: "Subject to terms", meter: 100, tone: "good" },
+    { tag: tr("hibah.flow.h.tag"), title: tr("hibah.flow.h.title", { gap: rmWhole(gap) }), value: rmWhole(gap), desc: tr("hibah.flow.h.desc"), meterLabel: tr("hibah.flow.h.meterLabel"), meterText: tr("hibah.flow.h.meterText"), meter: 100, tone: "good" },
   ]);
 
   const legend: LegendItem[] = [
-    { label: "In place", value: rmWhole(have), tone: "good" },
-    { label: "Still unprotected", value: rmWhole(gap), tone: "bad" },
-    { label: "Total need", value: rmWhole(need), tone: "neutral" },
+    { label: tr("hibah.legend.inPlace"), value: rmWhole(have), tone: "good" },
+    { label: tr("hibah.legend.unprotected"), value: rmWhole(gap), tone: "bad" },
+    { label: tr("hibah.legend.need"), value: rmWhole(need), tone: "neutral" },
   ];
 
   return {
@@ -149,7 +151,7 @@ export function computeHibah(raw: Partial<HibahInputs>): HibahResult {
     },
     scene: {
       level, gapH, gapY: 196 - gapH, ringOffset: 213.6 * (1 - pct / 100),
-      label: "Animated shield around a family, " + pct + " percent filled, " + rmWhole(have) + " in place and " + rmWhole(gap) + " unprotected",
+      label: tr("hibah.scene.label", { pct, have: rmWhole(have), gap: rmWhole(gap) }),
     },
     legend,
     caption,

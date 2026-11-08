@@ -1,5 +1,6 @@
 import type { HibahInputs } from "../engine/hibah";
-import { COMMON_FAQ, COMMON_OBJECTIONS, COMMON_RISK_REASONS, DEFAULT_PLAN_NAMES, type ModuleContent } from "./common";
+import { COMMON_CONTENT, COMMON_FAQ, COMMON_OBJECTIONS, COMMON_RISK_REASONS, DEFAULT_PLAN_NAMES, type ModuleContent } from "./common";
+import type { Localised } from "./localised";
 
 /** Design defaults from 02-Main.src.html. Produces need RM720,806 / have RM175,000 / gap RM545,806. */
 export const HIBAH_DEFAULT_INPUTS: HibahInputs = {
@@ -82,4 +83,67 @@ export const HIBAH_DEFAULT_CONTENT: ModuleContent = {
     { q: "Is critical illness included?", a: "It depends on the plan and any rider added. Check the Product Disclosure Sheet before assuming it is covered." },
     ...COMMON_FAQ,
   ],
+};
+
+/** Benefit-multiple labels in Bahasa Malaysia (same order as HIBAH_DEFAULT_PLAN.multLabels). */
+export const HIBAH_MULT_LABELS_BM = [
+  "Kematian",
+  "Kematian akibat kemalangan",
+  "Kematian akibat kemalangan · pengangkutan awam",
+  "Kematian akibat kemalangan · luar negara",
+  "Kematian akibat kemalangan · bencana alam",
+];
+
+export const HIBAH_MULT_LABELS: Localised<string[]> = {
+  en: HIBAH_DEFAULT_PLAN.multLabels,
+  bm: HIBAH_MULT_LABELS_BM,
+};
+
+/**
+ * Hibah content in Bahasa Malaysia. Parallel to HIBAH_DEFAULT_CONTENT: same
+ * number of items in the same order (ticks and the raised log are stored by
+ * the English label / question). Compliance-sensitive items are listed in
+ * design/financial-storyboard/BM-REVIEW.md.
+ */
+export const HIBAH_CONTENT_BM: ModuleContent = {
+  script: [
+    { title: "Pembukaan", text: "{name}, kita bekerja keras setiap hari, dan kita juga mahu meninggalkan sesuatu untuk keluarga. Jika anda tiada semalam, siapa yang akan terus menanggung rumah, dapur dan persekolahan anak-anak hari ini?" },
+    { title: "Tunjuk angka", text: "Daripada pengiraan tadi, keluarga anda memerlukan {need}. Yang sudah ada hari ini ialah {have}. Jurangnya ialah {gap}." },
+    { title: "Terangkan hibah", text: "Dengan penamaan hibah bersyarat, manfaat kematian dibayar kepada penerima yang anda namakan, tertakluk kepada sijil dan penamaan yang sah. Wasi (pelaksana) hanya mentadbir harta pusaka." },
+    { title: "Tunjuk pelan", text: "Sebagai contoh, jumlah asas {base} boleh membayar gandaan untuk kematian akibat kemalangan, bergantung kepada pelan. Saya akan tunjukkan angka tepat daripada ilustrasi rasmi." },
+    { title: "Penutup", text: "Mari kita bincangkan, fahami dahulu, dan pilih yang sesuai dengan bajet anda. Bolehkah saya sediakan ilustrasi sekitar {gap}? Saya perlukan tarikh lahir, pekerjaan dan status merokok anda." },
+  ],
+  riskItems: [
+    { label: "Penyakit sedia ada", detail: "cth. kencing manis, darah tinggi, asma. Mungkin menyebabkan caruman tambahan (loading), pengecualian atau penangguhan. Sediakan laporan terkini." },
+    { label: "Merokok / vape", detail: "Kadar perokok mungkin terpakai. Sesetengah pengendali menjalankan ujian nikotin. [Semak peraturan pelan tentang tempoh sejak berhenti merokok yang diambil kira.]" },
+    { label: "BMI tinggi / rendah", detail: "BMI di luar julat normal boleh mencetuskan caruman tambahan (loading) atau pemeriksaan perubatan." },
+    { label: "Pernah dimasukkan ke hospital / menjalani pembedahan", detail: "Nyatakan tarikh, diagnosis dan hasilnya. Ringkasan discaj mempercepat penilaian risiko (underwriting)." },
+    { label: "Ujian / simptom yang belum disiasat", detail: "Ujian yang belum selesai biasanya bermakna penangguhan sehingga keputusan diperoleh. Mohon selepas keputusan diterima." },
+    { label: "Pekerjaan berisiko tinggi", detail: "Kelas pekerjaan mempengaruhi penerimaan dan caruman; sesetengah pekerjaan mungkin ditolak atau dikecualikan." },
+    { label: "Hobi berisiko", detail: "cth. menyelam, lumba kereta, mendaki gunung. Mungkin menyebabkan pengecualian aktiviti." },
+    { label: "Sejarah keluarga", detail: "Penyakit jantung awal, kanser atau penyakit keturunan dalam kalangan ibu bapa atau adik-beradik mungkin dipertimbangkan." },
+    { label: "Jumlah tidak setara dengan pendapatan", detail: "Perlindungan yang jauh lebih tinggi daripada yang boleh dijustifikasikan oleh pendapatan mungkin mencetuskan penilaian risiko (underwriting) kewangan dan bukti pendapatan." },
+    { label: "Umur di luar had", detail: "Semak umur kemasukan dan tempoh perlindungan pelan sebelum memberi sebut harga." },
+    { label: "Dokumen / maklumat tidak lengkap", detail: "Maklumat yang tidak lengkap melambatkan atau menghentikan permohonan. Gunakan senarai semak daripada Langkah 2." },
+  ],
+  riskReasons: COMMON_CONTENT.bm.riskReasons,
+  objections: [
+    { q: "Saya sudah ada KWSP / ASB.", a: "Itu asas yang baik. KWSP terutamanya untuk persaraan dan melalui penamaannya sendiri; ASB ialah simpanan yang mungkin mengambil masa untuk dikeluarkan. Bandingkan bakinya dengan angka sokongan keluarga daripada Langkah 1." },
+    { q: "Mahal.", a: "Mari kita mulakan dengan bajet yang anda selesa. Perlindungan yang sesuai dengan bajet hari ini lebih baik daripada tiada, dan ia boleh ditambah apabila pendapatan meningkat." },
+    { q: "Saya masih muda, mungkin nanti.", a: "Terma bergantung pada umur dan kesihatan semasa anda memohon, jadi lebih awal biasanya lebih mudah. Keperluan keluarga sudah pun wujud hari ini." },
+    { q: "Isteri saya bekerja, dia boleh uruskan.", a: "Pendapatannya membantu, dan kita sudah mengiranya sebagai sokongan berterusan. Angka jurang ialah apa yang masih berbaki selepas sumbangannya." },
+    { q: "Pinjaman rumah saya sudah ada MRTT.", a: "Bagus, jadi pinjaman itu sudah ditangani. MRTT hanya melunaskan pinjaman; keluarga masih memerlukan wang untuk sara hidup harian, persekolahan dan hutang lain." },
+    ...COMMON_CONTENT.bm.objections.flatMap((g) => g.items),
+  ],
+  faq: [
+    { q: "Adakah hibah takaful sama dengan kad perubatan?", a: "Tidak. Hibah takaful membayar sejumlah wang sekaligus kepada penerima anda apabila berlaku kematian (dan TPD jika disertakan). Kad perubatan membayar bil hospital semasa anda masih hidup." },
+    { q: "Adakah hibah ini tertakluk kepada faraid?", a: "Dengan penamaan hibah bersyarat yang sah, manfaat dibayar kepada penerima yang anda namakan, tertakluk kepada terma sijil. Saya akan tunjukkan perkataan tepat daripada pengendali." },
+    { q: "Adakah penyakit kritikal termasuk?", a: "Ia bergantung pada pelan dan sebarang rider yang ditambah. Semak Helaian Pendedahan Produk sebelum menganggap ia dilindungi." },
+    ...COMMON_CONTENT.bm.faq,
+  ],
+};
+
+export const HIBAH_CONTENT: Localised<ModuleContent> = {
+  en: HIBAH_DEFAULT_CONTENT,
+  bm: HIBAH_CONTENT_BM,
 };

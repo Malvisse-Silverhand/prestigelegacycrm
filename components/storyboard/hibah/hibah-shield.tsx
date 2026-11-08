@@ -1,11 +1,13 @@
 import { useId } from "react";
 import type { HibahOut, HibahScene } from "@/lib/storyboard/engine/hibah";
+import { useT } from "../lang-context";
 
 const SHIELD = "M280,22 L352,48 L352,110 C352,156 322,182 280,200 C238,182 208,156 208,110 L208,48 Z";
 const WAVE = "M0,8 " + "q20,-8 40,0 t40,0 ".repeat(8) + "L640,240 L0,240 Z";
 
 /** The family shield: green fills up as more of the need is in place. */
 export function HibahShield({ scene, out }: { scene: HibahScene; out: Pick<HibahOut, "pct" | "text"> }) {
+  const { t } = useT();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const clip = `shield-clip-${uid}`;
   const fill = `shield-fill-${uid}`;
@@ -23,7 +25,7 @@ export function HibahShield({ scene, out }: { scene: HibahScene; out: Pick<Hibah
       <rect x="0" y="206" width="560" height="24" fill="#efe6d2" />
 
       <g aria-hidden="true">
-        <text x="70" y="40" textAnchor="middle" fontSize="12" fontWeight="600" fill="#0f4c35">ALREADY IN PLACE</text>
+        <text x="70" y="40" textAnchor="middle" fontSize="12" fontWeight="600" fill="#0f4c35">{t("hibah.svg.inPlace")}</text>
         <text x="70" y="60" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0f2540">{out.text.have}</text>
         <rect x="38" y="150" width="64" height="12" rx="6" fill="#e3a823" />
         <rect x="38" y="138" width="64" height="12" rx="6" fill="#fac748" />
@@ -51,7 +53,7 @@ export function HibahShield({ scene, out }: { scene: HibahScene; out: Pick<Hibah
       <text x="280" y="88" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0f2540">{out.pct}%</text>
 
       <g aria-hidden="true">
-        <text x="490" y="40" textAnchor="middle" fontSize="12" fontWeight="600" fill="#b23a3a">STILL UNPROTECTED</text>
+        <text x="490" y="40" textAnchor="middle" fontSize="12" fontWeight="600" fill="#b23a3a">{t("hibah.svg.unprotected")}</text>
         <text x="490" y="60" textAnchor="middle" fontSize="15" fontWeight="700" fill="#b23a3a">{out.text.gap}</text>
         <rect x="456" y={scene.gapY} width="68" height={scene.gapH} rx="8" fill="none" stroke="#b23a3a" strokeWidth="2.5" strokeDasharray="6 5" />
         <rect x="400" y="150" width="34" height="22" rx="3" fill="#ffffff" stroke="#0f2540" strokeWidth="2" />

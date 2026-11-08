@@ -1,5 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
-import { t } from "@/lib/storyboard/i18n";
+import { useT } from "./lang-context";
 
 type Props = {
   /** The 2D scene (svg / illustration). */
@@ -12,6 +14,7 @@ type Props = {
 };
 
 export function SceneFrame({ children, caption, legend, official, className = "" }: Props) {
+  const { t } = useT();
   return (
     <figure
       className={`m-0 overflow-hidden rounded-[20px] border border-sand bg-white shadow-card ${className}`}

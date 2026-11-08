@@ -23,6 +23,9 @@ import { isDistributorRole } from "@/lib/daily-distribution-shared";
 import { getDailyDistribution } from "./daily-distribution-data";
 import { getWeeklyReportSettings } from "./weekly-report-actions";
 import { getAllOrgSettings } from "@/lib/storyboard/data";
+import { getStoryboardLang } from "@/lib/storyboard/i18n/server";
+import { missingMessage } from "@/lib/storyboard/schema-error";
+import { t } from "@/lib/storyboard/i18n";
 
 const EMPTY_ORG_TREE = {
   superadmins: [],
@@ -119,6 +122,8 @@ export default async function SettingsPage({
       profile.role === "superadmin" ? getAllOrgSettings() : Promise.resolve(null),
     ]);
 
+  const storyboardLang = await getStoryboardLang();
+
   return (
     <SettingsView
       role={profile.role}
@@ -145,7 +150,11 @@ export default async function SettingsPage({
       weeklyReport={weeklyReport}
       storyboard={
         storyboardOrg
-          ? { settings: storyboardOrg.ok ? storyboardOrg.data : {}, message: storyboardOrg.ok ? null : storyboardOrg.message }
+          ? {
+              settings: storyboardOrg.ok ? storyboardOrg.data : {},
+              message: storyboardOrg.ok ? null : storyboardOrg.missing ? missingMessage(storyboardLang) : t("err.loadFailed", storyboardLang),
+              lang: storyboardLang,
+            }
           : null
       }
       initialTab={initialTab}

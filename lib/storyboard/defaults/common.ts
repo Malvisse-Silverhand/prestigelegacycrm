@@ -1,5 +1,8 @@
 // Shared shapes and content for the module defaults.
 //
+import { t } from "../i18n";
+import type { Lang, Localised } from "./localised";
+
 // Everything here is an editable default, not a fact. Scripts use bracketed
 // placeholders ([statistic + source]) wherever a number would otherwise be
 // invented. Wording is Great Eastern only, with no guarantees and no promise of
@@ -11,8 +14,13 @@ export type ScriptStep = {
   /** Optional section (Business: keyman / buysell / loan / enterprise). */
   group?: string;
 };
-export type RiskItem = { label: string; detail: string };
-export type Objection = { q: string; a: string };
+/**
+ * `key` is a language-neutral id for a default item: the English label / question.
+ * Ticks (riskChecked) and the raised log are stored by key, so switching language
+ * keeps them. It is absent in English (label / q is the key) and for items an agent added.
+ */
+export type RiskItem = { label: string; detail: string; key?: string };
+export type Objection = { q: string; a: string; key?: string };
 export type ObjectionGroup = { name: string; items: Objection[] };
 
 export type ModuleContent = {
@@ -41,7 +49,7 @@ export const DEFAULT_PLAN_NAMES = {
   mltt: "[GE MLTT plan]",
 } as const;
 
-export const COMMON_RISK_REASONS: RiskItem[] = [
+const COMMON_RISK_REASONS_EN: RiskItem[] = [
   { label: "Non-disclosure", detail: "Health or lifestyle facts not declared at application can affect a claim when they come to light." },
   { label: "Waiting period", detail: "Certain benefits only apply after a waiting period from the start date. Explain it clearly at sign-up." },
   { label: "Exclusions", detail: "Conditions or activities excluded in the certificate or by underwriting are not paid." },
@@ -50,7 +58,7 @@ export const COMMON_RISK_REASONS: RiskItem[] = [
   { label: "Incomplete claim documents", detail: "Missing forms, reports or proof of relationship delay a claim. Keep a document checklist for the family." },
 ];
 
-export const COMMON_OBJECTIONS: ObjectionGroup[] = [
+const COMMON_OBJECTIONS_EN: ObjectionGroup[] = [
   {
     name: "Money",
     items: [
@@ -95,9 +103,98 @@ export const COMMON_OBJECTIONS: ObjectionGroup[] = [
   },
 ];
 
-export const COMMON_FAQ: Objection[] = [
+const COMMON_FAQ_EN: Objection[] = [
   { q: "How much is the monthly contribution?", a: "It depends on age, gender, smoking status, occupation and the amount of cover. I’ll prepare an official illustration with the exact figure." },
   { q: "What if I already have health problems?", a: "Declare everything. The underwriter may accept on standard terms, add a loading, exclude a condition or postpone. See Step 3." },
   { q: "Are contributions and cash values guaranteed?", a: "Contributions can be revised under the certificate terms. Investment-linked cash values are not guaranteed. Check the PDS." },
   { q: "How does the family make a claim?", a: "Notify the operator or agent, then submit the claim form and the documents the certificate asks for. I will help the family through it." },
 ];
+
+// ---------------------------------------------------------------------------
+// Bahasa Malaysia. Parallel to the English lists above: same length, same
+// order. A test enforces it, because ticks and the raised log are stored by
+// the English label / question (the item `key`). Compliance-sensitive items
+// are listed in design/financial-storyboard/BM-REVIEW.md.
+// ---------------------------------------------------------------------------
+
+const COMMON_RISK_REASONS_BM: RiskItem[] = [
+  { label: "Tidak mendedahkan maklumat", detail: "Fakta kesihatan atau gaya hidup yang tidak diisytiharkan semasa permohonan boleh menjejaskan tuntutan apabila ia terbongkar." },
+  { label: "Tempoh menunggu", detail: "Manfaat tertentu hanya terpakai selepas tempoh menunggu dari tarikh mula. Terangkan dengan jelas semasa pendaftaran." },
+  { label: "Pengecualian", detail: "Keadaan atau aktiviti yang dikecualikan dalam sijil atau oleh penilaian risiko (underwriting) tidak dibayar." },
+  { label: "Sijil luput", detail: "Caruman yang tidak dibayar melepasi tempoh bertoleransi (grace period) boleh menamatkan perlindungan. Sediakan auto-debit." },
+  { label: "Tidak menepati takrifan", detail: "Manfaat hanya dibayar apabila kejadian menepati takrifan tepat dalam sijil." },
+  { label: "Dokumen tuntutan tidak lengkap", detail: "Borang, laporan atau bukti hubungan yang tiada melewatkan tuntutan. Sediakan senarai semak dokumen untuk keluarga." },
+];
+
+const COMMON_OBJECTIONS_BM: ObjectionGroup[] = [
+  {
+    name: "Wang",
+    items: [
+      { q: "Tiada duit / bajet ketat.", a: "Saya faham. Kita tidak perlu ambil semuanya sekarang. Lindungi risiko terbesar dahulu dengan jumlah yang anda selesa, kemudian tambah apabila bajet mengizinkan." },
+      { q: "Lebih mahal daripada syarikat lain.", a: "Mari kita bandingkan dengan adil: jumlah perlindungan, manfaat, tempoh dan pengecualian. Harga paling rendah belum tentu pelan yang paling sesuai dengan keperluan." },
+      { q: "Takut tidak mampu terus membayar nanti.", a: "Pilih caruman yang mampu anda kekalkan dan sediakan auto-debit. Kita boleh menyemak semula bersama jika keadaan anda berubah." },
+      { q: "Nanti bila gaji naik.", a: "Betul juga. Boleh kita mulakan dengan jumlah kecil sekarang dan tingkatkan apabila gaji naik? Risiko tidak menunggu kenaikan gaji." },
+    ],
+  },
+  {
+    name: "Menunda",
+    items: [
+      { q: "Biar saya fikir dahulu.", a: "Tentu sekali. Bahagian mana yang ingin anda fikirkan: jumlahnya, bajetnya, atau pelan itu sendiri? Saya akan hantar ringkasan pendek." },
+      { q: "Perlu berbincang dengan isteri / suami dahulu.", a: "Itu langkah yang tepat untuk keputusan keluarga. Boleh kita tetapkan 20 minit minggu ini supaya anda berdua melihat angka yang sama?" },
+      { q: "Nanti saya hubungi balik.", a: "Baik. Supaya mudah, boleh saya menghubungi anda semula pada hari yang sesuai? Saya akan catatkan dalam kalendar saya." },
+      { q: "Mungkin bulan depan.", a: "Tiada masalah. Boleh kita sediakan ilustrasi sekarang supaya sedia, dan mula apabila anda sudah membuat keputusan?" },
+    ],
+  },
+  {
+    name: "Kepercayaan",
+    items: [
+      { q: "Tuntutan takaful susah.", a: "Kebanyakan masalah tuntutan berpunca daripada maklumat yang tidak didedahkan atau dokumen yang tidak lengkap. Kita akan isytiharkan semuanya dengan betul sekarang, dan saya akan membimbing keluarga apabila tiba masanya. [statistik + sumber, jika anda menggunakannya]" },
+      { q: "Ejen hilang selepas jualan.", a: "Anda akan mendapat nombor saya dan talian hotline pengendali. Khidmat selepas jualan adalah sebahagian daripada tugas saya, bukan tambahan." },
+      { q: "Kawan saya pernah ditolak.", a: "Maaf mendengarnya. Adakah anda tahu sebabnya? Biasanya kerana tempoh menunggu, pengecualian atau sesuatu yang tidak didedahkan. Itulah yang kita semak dalam Langkah 3." },
+    ],
+  },
+  {
+    name: "Persepsi & agama",
+    items: [
+      { q: "Takaful bermakna tidak reda dengan takdir.", a: "Takaful ialah perancangan dan usaha (ikhtiar), kemudian kita bertawakal kepada Allah. Seperti mengunci rumah sebelum bermusafir." },
+      { q: "Takaful sama seperti judi / riba.", a: "Takaful dibina atas dasar tolong-menolong (ta’awun) dan derma (tabarru’), dan produknya disemak oleh jawatankuasa Syariah pengendali. Saya boleh tunjukkan konsep Syariahnya dalam PDS." },
+      { q: "Takut kalau beli nanti perkara itu benar-benar berlaku.", a: "Merancang tidak mengundang malang. Ia hanya bermakna keluarga bersedia, apa pun yang berlaku." },
+    ],
+  },
+  {
+    name: "Rasa sudah cukup terlindung",
+    items: [
+      { q: "Saya sihat, tak perlu.", a: "Ketika sihat biasanya permohonan lebih mudah, kerana terma bergantung kepada kesihatan hari ini. Keperluan keluarga sudah pun wujud." },
+      { q: "Saya sudah ada perlindungan.", a: "Bagus, mari kita kira. Langkah 1 sudah menolak perlindungan sedia ada; jurang ialah apa yang masih berbaki." },
+      { q: "Saya mahu bandingkan produk lain dahulu.", a: "Silakan. Ini senarai semak untuk perbandingan: jumlah, manfaat, tempoh, pengecualian dan caruman." },
+    ],
+  },
+];
+
+const COMMON_FAQ_BM: Objection[] = [
+  { q: "Berapakah caruman bulanan?", a: "Ia bergantung pada umur, jantina, status merokok, pekerjaan dan jumlah perlindungan. Saya akan menyediakan ilustrasi rasmi dengan angka yang tepat." },
+  { q: "Bagaimana jika saya sudah ada masalah kesihatan?", a: "Dedahkan semuanya. Penilai risiko (underwriter) mungkin menerima dengan terma standard, menambah caruman tambahan (loading), mengecualikan sesuatu keadaan atau menangguhkan. Lihat Langkah 3." },
+  { q: "Adakah caruman dan nilai tunai dijamin?", a: "Caruman boleh disemak semula mengikut terma sijil. Nilai tunai berkaitan pelaburan tidak dijamin. Semak PDS." },
+  { q: "Bagaimana keluarga membuat tuntutan?", a: "Maklumkan kepada pengendali atau ejen, kemudian serahkan borang tuntutan dan dokumen yang diminta oleh sijil. Saya akan membantu keluarga sepanjang prosesnya." },
+];
+
+/** The content every module shares: why claims fail, the general objections and the common FAQ. */
+export type CommonContent = { riskReasons: RiskItem[]; objections: ObjectionGroup[]; faq: Objection[] };
+
+export const COMMON_CONTENT: Localised<CommonContent> = {
+  en: { riskReasons: COMMON_RISK_REASONS_EN, objections: COMMON_OBJECTIONS_EN, faq: COMMON_FAQ_EN },
+  bm: { riskReasons: COMMON_RISK_REASONS_BM, objections: COMMON_OBJECTIONS_BM, faq: COMMON_FAQ_BM },
+};
+
+// English exports kept for the module defaults files and existing callers.
+export const COMMON_RISK_REASONS: RiskItem[] = COMMON_CONTENT.en.riskReasons;
+export const COMMON_OBJECTIONS: ObjectionGroup[] = COMMON_CONTENT.en.objections;
+export const COMMON_FAQ: Objection[] = COMMON_CONTENT.en.faq;
+
+/** A module's built-in content in both languages. */
+export type LocalisedContent = Localised<ModuleContent>;
+
+/** Plan-name placeholder in the chosen language. */
+export function defaultPlanName(key: keyof typeof DEFAULT_PLAN_NAMES, lang: Lang): string {
+  return t(`plan.default.${key}` as const, lang);
+}

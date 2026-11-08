@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { t } from "@/lib/storyboard/i18n";
+import { useT } from "./lang-context";
 
 type Props = {
   children: ReactNode;
@@ -10,6 +10,7 @@ type Props = {
 };
 
 export function CustomizeToggle({ children, defaultOpen = false, label }: Props) {
+  const { t } = useT();
   const [open, setOpen] = useState(defaultOpen);
   const id = useId();
   return (

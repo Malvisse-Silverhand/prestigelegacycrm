@@ -1,6 +1,7 @@
 import type { MortgageInputs } from "../engine/mortgage";
 import { MLTT_PLAN_PLACEHOLDER, MRTT_PLAN_PLACEHOLDER } from "../engine/mortgage";
 import { COMMON_FAQ, COMMON_OBJECTIONS, COMMON_RISK_REASONS, type ModuleContent } from "./common";
+import type { Localised } from "./localised";
 
 /**
  * No design exists for this module. Loan figures are illustrative defaults, not
@@ -50,4 +51,17 @@ export const MORTGAGE_DEFAULT_CONTENT: ModuleContent = {
     { q: "What is the difference between MRTT and MLTT?", a: "MRTT cover reduces over time, following a schedule. MLTT cover stays at the same sum for the term. Check the PDS for how each plan works." },
     ...COMMON_FAQ,
   ],
+};
+
+// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
+// MORTGAGE_TODO_BM is the English content standing in so the BM screens still
+// render. Replace it with a full ModuleContent that is parallel to
+// MORTGAGE_DEFAULT_CONTENT (same number of items, same order; spread
+// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
+// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
+export const MORTGAGE_TODO_BM: ModuleContent = MORTGAGE_DEFAULT_CONTENT;
+
+export const MORTGAGE_CONTENT: Localised<ModuleContent> = {
+  en: MORTGAGE_DEFAULT_CONTENT,
+  bm: MORTGAGE_TODO_BM,
 };

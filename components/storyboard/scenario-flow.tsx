@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FlowSlide, FlowTone } from "@/lib/storyboard/types";
-import { t } from "@/lib/storyboard/i18n";
+import { useT } from "./lang-context";
 
 const AUTO_MS = 4800;
 
@@ -24,6 +24,7 @@ function reducedMotion(): boolean {
 }
 
 export function ScenarioFlow({ slides, autoPlay = false, onIndexChange }: Props) {
+  const { t } = useT();
   const count = slides.length;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(autoPlay);
@@ -85,7 +86,7 @@ export function ScenarioFlow({ slides, autoPlay = false, onIndexChange }: Props)
         key={safe}
         className="sb-slide-in sb-reduce-transition"
         aria-roledescription="slide"
-        aria-label={t("flow.slideOf", "en", { n: safe + 1, total: count })}
+        aria-label={t("flow.slideOf", { n: safe + 1, total: count })}
       >
         <span
           className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${tone.chip}`}
@@ -139,7 +140,7 @@ export function ScenarioFlow({ slides, autoPlay = false, onIndexChange }: Props)
             key={`${i}-${s.tag}`}
             type="button"
             onClick={() => go(i)}
-            aria-label={t("flow.goTo", "en", { n: i + 1 })}
+            aria-label={t("flow.goTo", { n: i + 1 })}
             aria-current={i === safe ? "true" : undefined}
             className="flex h-11 w-7 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand"
           >

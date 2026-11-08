@@ -73,7 +73,9 @@ export function malaysiaDateTime(
     hour: "numeric",
     minute: "2-digit",
   },
+  /** "ms-MY" prints Malay month names. */
+  locale: string = "en-MY",
 ): string {
   const d = when instanceof Date ? when : new Date(when);
-  return d.toLocaleString("en-MY", { timeZone: MY_TIME_ZONE, ...options });
+  return d.toLocaleString(locale, { timeZone: MY_TIME_ZONE, ...options });
 }

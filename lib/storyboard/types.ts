@@ -3,6 +3,8 @@
 // 20261105090400_portal_access_log.sql. A test compares STORYBOARD_MODULES with
 // the enum in the migration, so the two cannot drift silently.
 
+import type { Lang } from "./i18n/lang";
+
 export const STORYBOARD_MODULES = [
   "hibah",
   "medical",
@@ -79,6 +81,19 @@ export type ClientSummary = {
   disclaimerKey: string;
 };
 
+/**
+ * What storyboards.client_summary now stores: the same ClientSummary built in
+ * both languages. `defaultLang` is the UI language when the agent saved; the
+ * portal shows that one first. JSON-only. Rows saved before this existed hold a
+ * flat ClientSummary: read them with pickSummary() (client-summary.ts), which
+ * accepts both shapes.
+ */
+export type ClientSummaryBundle = {
+  defaultLang: Lang;
+  en: ClientSummary;
+  bm: ClientSummary;
+};
+
 // ---------------------------------------------------------------------------
 // Row types (one per table).
 // ---------------------------------------------------------------------------
@@ -89,7 +104,8 @@ export type StoryboardRow = {
   module: StoryboardModule;
   inputs: Record<string, unknown>;
   outputs: Record<string, unknown>;
-  client_summary: ClientSummary | null;
+  /** A ClientSummaryBundle; a flat ClientSummary if saved before the language update. */
+  client_summary: ClientSummaryBundle | ClientSummary | null;
   step_status: StepStatus;
   notes: string | null;
   outcome: StoryboardOutcome | null;
@@ -155,6 +171,6 @@ export type PortalAccessLogRow = {
 export type PortalStoryboardDTO = {
   id: string;
   module: StoryboardModule;
-  client_summary: ClientSummary;
+  client_summary: ClientSummaryBundle | ClientSummary;
   saved_at: string | null;
 };

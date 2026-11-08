@@ -1,4 +1,5 @@
 import type { FlowSlide } from "../types";
+import type { Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fromSen, num, rmWhole, safeDiv, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -121,7 +122,10 @@ export type MedicalScene = {
 
 export type MedicalResult = EngineResult<MedicalOut, MedicalScene>;
 
-export function computeMedical(raw: Partial<MedicalInputs>): MedicalResult {
+export function computeMedical(raw: Partial<MedicalInputs>, lang: Lang = "en"): MedicalResult {
+  // TODO(BM): medical text is English only for now. Build user-visible strings with
+  // translator(lang) as engine/hibah.ts does, then delete this line.
+  void lang;
   const nick = String(raw.nick ?? "") || "the prospect";
   const checked = raw.checked ?? {};
   let score = 0;

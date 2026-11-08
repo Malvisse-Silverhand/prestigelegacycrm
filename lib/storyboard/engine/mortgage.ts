@@ -1,4 +1,5 @@
 import type { FlowSlide } from "../types";
+import type { Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fixed1, fromSen, num, rmWhole, safeDiv, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -133,7 +134,10 @@ function contributionText(v: number | null): string {
   return v !== null && v > 0 ? rmWhole(v) + "/mo" : CONTRIBUTION_FROM_ILLUSTRATION;
 }
 
-export function computeMortgage(raw: Partial<MortgageInputs>): MortgageResult {
+export function computeMortgage(raw: Partial<MortgageInputs>, lang: Lang = "en"): MortgageResult {
+  // TODO(BM): mortgage text is English only for now. Build user-visible strings with
+  // translator(lang) as engine/hibah.ts does, then delete this line.
+  void lang;
   const P = Math.max(0, num(raw.loanAmount));
   const rate = Math.max(0, num(raw.rate));
   const termYears = clampYears(raw.termYears, 30);

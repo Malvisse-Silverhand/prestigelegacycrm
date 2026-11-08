@@ -6,11 +6,15 @@ import { saveStoryboardSettings } from "@/app/(app)/leads/[id]/storyboard/action
 import type { BuiltModule } from "@/lib/storyboard/modules";
 import { Accordion } from "./accordion";
 import { SaveButton } from "./save-button";
+import { useT } from "./lang-context";
 import { BTN_GHOST, BTN_PRIMARY, CARD } from "./hibah/fields";
 import { useModuleStepSave } from "./use-step-save";
 import type { ScreenProps, TickedStored } from "./screen-types";
 
-type Item = { label: string; detail: string };
+type Item = { label: string; detail: string; key?: string };
+
+/** Ticks are stored by key: the English label of a default item, or the label of one the agent added. */
+const keyOf = (i: Item) => i.key ?? i.label;
 
 export type RiskLevel = "Low" | "Moderate" | "High";
 
@@ -18,11 +22,6 @@ export function riskLevel(count: number): RiskLevel {
   return count === 0 ? "Low" : count <= 2 ? "Moderate" : "High";
 }
 
-const LEVEL_NOTE: Record<RiskLevel, string> = {
-  Low: "Likely standard terms. Still declare everything accurately.",
-  Moderate: "Possible loading or exclusion. Prepare reports before submitting.",
-  High: "Possible postponement, exclusion or decline. Discuss before submitting, and prepare an alternative plan.",
-};
 const LEVEL_STYLE: Record<RiskLevel, string> = {
   Low: "bg-success-bg text-green",
   Moderate: "bg-warn-gold-bg text-warn-gold-text",
@@ -43,6 +42,7 @@ type Props<S extends TickedStored> = ScreenProps<S> & {
 /** Step 3 for every module: tick what applies, see the likely underwriting outcome. */
 export function RiskScreen<S extends TickedStored>(props: Props<S>) {
   const router = useRouter();
+  const { t, lang } = useT();
   const { settings, stored, module } = props;
   const [items, setItems] = useState<Item[]>(settings.riskItems);
   const [checked, setChecked] = useState<string[]>(stored.riskChecked);
@@ -53,7 +53,7 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
   const [listPending, startList] = useTransition();
   const step = useModuleStepSave(module, props, "risk");
 
-  const labels = new Set(items.map((i) => i.label));
+  const labels = new Set(items.map(keyOf));
   const tickedCount = checked.filter((l) => labels.has(l)).length;
   const level = riskLevel(tickedCount);
 
@@ -62,7 +62,7 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
   function addItem() {
     const label = draft.trim().slice(0, 80);
     if (!label || items.some((i) => i.label.toLowerCase() === label.toLowerCase())) return;
-    setItems((list) => [...list, { label, detail: "Your own note." }]);
+    setItems((list) => [...list, { label, detail: t("risk.ownNote") }]);
     setDraft("");
   }
 
@@ -70,11 +70,11 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
     setListMsg(null);
     startList(async () => {
       try {
-        const res = await saveStoryboardSettings({ scope: "agent", module, settings: { riskItems: items } });
-        setListMsg(res.error ?? "Saved as your personal checklist.");
+        const res = await saveStoryboardSettings({ scope: "agent", module, settings: { riskItems: items }, lang });
+        setListMsg(res.error ?? t("risk.savedList"));
         if (!res.error) router.refresh();
       } catch {
-        setListMsg("Couldn't connect. Check your internet connection and try again.");
+        setListMsg(t("common.connectError"));
       }
     });
   }
@@ -85,28 +85,29 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
         <section aria-labelledby="chk-h" className={CARD}>
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 id="chk-h" className="m-0 text-lg font-bold text-navy">Check before filling in the proposal form</h2>
+              <h2 id="chk-h" className="m-0 text-lg font-bold text-navy">{t("risk.title")}</h2>
               <p className="m-0 mt-1 text-[13px] text-ink">
-                Tick what applies to {props.subject}. This is a guide to likely outcomes; the actual decision is made by the underwriter.
+                {t("risk.intro", { subject: props.subject })}
               </p>
             </div>
             <button type="button" className={BTN_GHOST} aria-pressed={editing} onClick={() => setEditing((e) => !e)}>
-              {editing ? "Done customizing" : "Customize checklist"}
+              {editing ? t("risk.customizeDone") : t("risk.customize")}
             </button>
           </div>
 
           <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0">
             {items.map((it) => {
-              const id = `chk-${it.label.replace(/[^a-zA-Z0-9]/g, "-")}`;
-              const expanded = open[it.label] !== false;
+              const itemKey = keyOf(it);
+              const id = `chk-${itemKey.replace(/[^a-zA-Z0-9]/g, "-")}`;
+              const expanded = open[itemKey] !== false;
               return (
-                <li key={it.label} className="rounded-[12px] border border-sand px-3 py-1.5">
+                <li key={itemKey} className="rounded-[12px] border border-sand px-3 py-1.5">
                   <div className="flex min-h-11 items-center gap-3">
                     <input
                       id={id}
                       type="checkbox"
-                      checked={checked.includes(it.label)}
-                      onChange={() => toggle(it.label)}
+                      checked={checked.includes(itemKey)}
+                      onChange={() => toggle(itemKey)}
                       className="h-5 w-5 flex-none accent-[var(--brand-primary)]"
                     />
                     <label htmlFor={id} className="flex-1 cursor-pointer text-sm font-semibold text-navy">{it.label}</label>
@@ -114,17 +115,17 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
                       <button
                         type="button"
                         className="min-h-11 px-2 text-xs font-semibold text-alert-red"
-                        onClick={() => setItems((list) => list.filter((x) => x.label !== it.label))}
-                        aria-label={`Remove ${it.label}`}
+                        onClick={() => setItems((list) => list.filter((x) => keyOf(x) !== itemKey))}
+                        aria-label={t("risk.removeAria", { label: it.label })}
                       >
-                        Remove
+                        {t("risk.remove")}
                       </button>
                     ) : null}
                     <button
                       type="button"
                       aria-expanded={expanded}
-                      aria-label={`More about ${it.label}`}
-                      onClick={() => setOpen((o) => ({ ...o, [it.label]: !expanded }))}
+                      aria-label={t("risk.moreAria", { label: it.label })}
+                      onClick={() => setOpen((o) => ({ ...o, [itemKey]: !expanded }))}
                       className="flex h-11 w-11 items-center justify-center text-lg text-muted-2 focus-visible:outline-2 focus-visible:outline-brand"
                     >
                       <span aria-hidden="true">{expanded ? "−" : "+"}</span>
@@ -138,7 +139,7 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
 
           {editing ? (
             <div className="mt-4 flex flex-col gap-2">
-              <label htmlFor="add-item" className="text-[13px] font-semibold text-navy">New check item</label>
+              <label htmlFor="add-item" className="text-[13px] font-semibold text-navy">{t("risk.newItem")}</label>
               <div className="flex flex-wrap gap-2">
                 <input
                   id="add-item"
@@ -146,12 +147,12 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
                   maxLength={80}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Add your own check, e.g. Pregnant"
+                  placeholder={t("risk.placeholder")}
                   className="min-h-11 min-w-0 flex-1 rounded-[10px] border border-sand-2 bg-white px-3 text-sm text-navy focus-visible:outline-2 focus-visible:outline-brand"
                 />
-                <button type="button" className={BTN_GHOST} onClick={addItem}>Add check</button>
+                <button type="button" className={BTN_GHOST} onClick={addItem}>{t("risk.add")}</button>
                 <button type="button" className={BTN_PRIMARY} onClick={saveList} disabled={listPending}>
-                  {listPending ? "Saving..." : "Save my checklist"}
+                  {listPending ? t("common.saving") : t("risk.saveList")}
                 </button>
               </div>
             </div>
@@ -160,10 +161,10 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
 
           <div className={`mt-4 rounded-[16px] px-5 py-4 ${LEVEL_STYLE[level]}`} role="status" aria-live="polite">
             <div className="text-xs font-bold uppercase tracking-wide">
-              Underwriting risk · {tickedCount} {tickedCount === 1 ? "factor" : "factors"}
+              {t("risk.heading", { n: tickedCount, unit: tickedCount === 1 ? t("risk.factor") : t("risk.factors") })}
             </div>
-            <div className="text-4xl font-extrabold leading-tight tracking-tight">{level}</div>
-            <div className="text-[13px]">{LEVEL_NOTE[level]}</div>
+            <div className="text-4xl font-extrabold leading-tight tracking-tight">{t(`risk.level.${level}` as const)}</div>
+            <div className="text-[13px]">{t(`risk.note.${level}` as const)}</div>
           </div>
         </section>
 
@@ -176,7 +177,7 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
             </ul>
           </Accordion>
           {props.aside}
-          <Accordion title="Why claims get rejected">
+          <Accordion title={t("risk.why")}>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {settings.riskReasons.map((r) => (
                 <li key={r.label}>
@@ -186,7 +187,7 @@ export function RiskScreen<S extends TickedStored>(props: Props<S>) {
               ))}
             </ul>
             <p className="m-0 mt-3 text-xs text-muted-2">
-              Disclose fully and honestly. An exclusion for one condition is far better than an entire claim being rejected.
+              {t("risk.disclose")}
             </p>
           </Accordion>
         </div>

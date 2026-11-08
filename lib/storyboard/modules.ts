@@ -6,6 +6,7 @@
 
 import type { StoryboardModule, StoryboardStep } from "./types";
 import { STORYBOARD_STEPS } from "./types";
+import { t, type Lang } from "./i18n";
 
 /** Modules that are built. Mortgage is Phase 4b. */
 export const BUILT_MODULES = ["hibah", "medical", "ci", "business"] as const;
@@ -44,3 +45,13 @@ export const MODULE_NAME: Record<StoryboardModule, string> = {
   business: "Business Protection",
   mortgage: "Mortgage",
 };
+
+/** Module name in the chosen language ('Kad Perubatan' for Medical Card in BM). */
+export function moduleName(m: StoryboardModule, lang: Lang): string {
+  return t(`module.${m}` as const, lang);
+}
+
+/** Longer module title for the page heading, in the chosen language. */
+export function moduleTitle(m: StoryboardModule, lang: Lang): string {
+  return t(`module.title.${m}` as const, lang);
+}

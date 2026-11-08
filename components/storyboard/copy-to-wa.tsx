@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { t } from "@/lib/storyboard/i18n";
+import { useT } from "./lang-context";
 
 type Props = {
   text: string;
@@ -31,6 +31,7 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 export function CopyToWa({ text, label }: Props) {
+  const { t } = useT();
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   const timer = useRef<number | null>(null);
 

@@ -1,5 +1,6 @@
 import type { MedicalInputs } from "../engine/medical";
 import { COMMON_FAQ, COMMON_OBJECTIONS, type ModuleContent } from "./common";
+import type { Localised } from "./localised";
 
 const BILL_SOURCE = "[source + date, e.g. hospital estimate or published figure]";
 
@@ -136,4 +137,17 @@ export const MEDICAL_DEFAULT_CONTENT: ModuleContent = {
     { q: "Can I use it for outpatient visits?", a: "Depends on the plan. Check the benefit schedule in the PDS." },
     ...COMMON_FAQ,
   ],
+};
+
+// TODO_BM: the Bahasa Malaysia content for this module is not written yet.
+// MEDICAL_TODO_BM is the English content standing in so the BM screens still
+// render. Replace it with a full ModuleContent that is parallel to
+// MEDICAL_DEFAULT_CONTENT (same number of items, same order; spread
+// COMMON_CONTENT.bm for the shared objections and FAQ), then delete this
+// constant. See defaults/hibah.ts (HIBAH_CONTENT_BM) for the finished example.
+export const MEDICAL_TODO_BM: ModuleContent = MEDICAL_DEFAULT_CONTENT;
+
+export const MEDICAL_CONTENT: Localised<ModuleContent> = {
+  en: MEDICAL_DEFAULT_CONTENT,
+  bm: MEDICAL_TODO_BM,
 };

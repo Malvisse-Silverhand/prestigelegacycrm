@@ -6,6 +6,7 @@ import { saveStoryboardSettings } from "@/app/(app)/leads/[id]/storyboard/action
 import type { BuiltModule } from "@/lib/storyboard/modules";
 import { fillScript, MODULE_CONTENT, type ResolvedSettings } from "@/lib/storyboard/settings";
 import { BTN_GHOST, BTN_PRIMARY, CARD } from "./hibah/fields";
+import { useT } from "./lang-context";
 
 type Props = {
   module: BuiltModule;
@@ -14,15 +15,18 @@ type Props = {
   tokens: Record<string, string>;
   /** Only show these script steps (Business shows one need at a time). */
   indices?: number[];
+  /** Overrides the default "Conversation script" heading. */
   heading?: string;
   /** Statistics to quote. Org statistics win; otherwise these bracketed placeholders show. */
   statPlaceholders?: string[];
 };
 
 /** The conversation script: read it, or rewrite it as the agent's own personal script. */
-export function ScriptPanel({ module, settings, tokens, indices, heading = "Conversation script", statPlaceholders = [] }: Props) {
+export function ScriptPanel({ module, settings, tokens, indices, heading, statPlaceholders = [] }: Props) {
   const router = useRouter();
-  const defaults = MODULE_CONTENT[module].content.script;
+  const { t, lang } = useT();
+  // Compare against the default of the language being edited.
+  const defaults = MODULE_CONTENT[module].localised[lang].script;
   const [editing, setEditing] = useState(false);
   const [script, setScript] = useState<string[]>(() => settings.script.map((s) => s.text));
   const [msg, setMsg] = useState<string | null>(null);
@@ -37,14 +41,14 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
     const overrides = script.map((text, i) => (text.trim() === defaults[i].text ? "" : text));
     startTransition(async () => {
       try {
-        const res = await saveStoryboardSettings({ scope: "agent", module, settings: { script: overrides } });
-        setMsg(res.error ?? "Saved as your personal script.");
+        const res = await saveStoryboardSettings({ scope: "agent", module, settings: { script: overrides }, lang });
+        setMsg(res.error ?? t("script.saved"));
         if (!res.error) {
           setEditing(false);
           router.refresh();
         }
       } catch {
-        setMsg("Couldn't connect. Check your internet connection and try again.");
+        setMsg(t("common.connectError"));
       }
     });
   }
@@ -54,14 +58,14 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
   return (
     <section aria-labelledby={`script-h-${module}`} className={CARD}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={`script-h-${module}`} className="m-0 text-lg font-bold text-navy">{heading}</h2>
+        <h2 id={`script-h-${module}`} className="m-0 text-lg font-bold text-navy">{heading ?? t("script.heading")}</h2>
         <button type="button" className={BTN_GHOST} aria-pressed={editing} onClick={() => setEditing((e) => !e)}>
-          {editing ? "Done customizing" : "Customize script"}
+          {editing ? t("script.customizeDone") : t("script.customize")}
         </button>
       </div>
       {editing ? (
         <p className="mb-0 mt-2 text-[13px] text-ink">
-          Edit the script in your own words. Tokens {tokenList} fill in from this lead. Saved as your personal script for every lead.
+          {t("script.editHelp", { tokens: tokenList })}
         </p>
       ) : null}
       <ol className="m-0 mt-4 flex list-none flex-col gap-4 p-0">
@@ -77,7 +81,7 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
                 <span className="text-xs font-bold uppercase tracking-wide text-muted-2">{st.title}</span>
                 {editing ? (
                   <>
-                    <label htmlFor={`script-${module}-${i}`} className="sr-only">Script step {n + 1}</label>
+                    <label htmlFor={`script-${module}-${i}`} className="sr-only">{t("script.stepAria", { n: n + 1 })}</label>
                     <textarea
                       id={`script-${module}-${i}`}
                       rows={4}
@@ -89,7 +93,7 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
                   </>
                 ) : (
                   <p className="m-0 mt-1 text-sm leading-relaxed text-navy">
-                    <strong>Say:</strong> {fillScript(script[i], tokens)}
+                    <strong>{t("script.say")}</strong> {fillScript(script[i], tokens)}
                   </p>
                 )}
               </div>
@@ -100,14 +104,14 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
       {editing ? (
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="button" className={BTN_PRIMARY} onClick={save} disabled={pending}>
-            {pending ? "Saving..." : "Save my script"}
+            {pending ? t("common.saving") : t("script.save")}
           </button>
           <button
             type="button"
             className={BTN_GHOST}
             onClick={() => setScript((cur) => cur.map((t, j) => (shown.includes(j) ? defaults[j].text : t)))}
           >
-            Reset to default
+            {t("script.reset")}
           </button>
         </div>
       ) : null}
@@ -115,14 +119,14 @@ export function ScriptPanel({ module, settings, tokens, indices, heading = "Conv
       {stats.length > 0 ? (
         <div className="mt-4 rounded-[12px] bg-cream px-3.5 py-3">
           <h3 className="m-0 text-[13px] font-bold text-navy">
-            {settings.statistics.length > 0 ? "Statistics to quote (set by your admin)" : "Statistics to fill in before quoting"}
+            {settings.statistics.length > 0 ? t("script.statsAdmin") : t("script.statsFill")}
           </h3>
           <ul className="m-0 mt-1.5 list-disc pl-5 text-[13px] text-ink">
             {stats.map((s) => (
               <li key={s}>{s}</li>
             ))}
           </ul>
-          <p className="m-0 mt-1.5 text-xs text-muted-2">Quote only figures from a verified source, and name the source and year.</p>
+          <p className="m-0 mt-1.5 text-xs text-muted-2">{t("script.statsNote")}</p>
         </div>
       ) : null}
     </section>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t, type TKey } from "@/lib/storyboard/i18n";
+import { t, type Lang, type TKey } from "@/lib/storyboard/i18n";
 
 export type ModuleKey = "hibah" | "medical" | "ci" | "business" | "mortgage";
 
@@ -17,11 +17,13 @@ type Props = {
   /** Modules that have a saved storyboard (shows a dot). */
   saved?: ModuleKey[];
   hrefs: Record<ModuleKey, string>;
+  lang: Lang;
 };
 
-export function ModuleTabs({ current, saved = [], hrefs }: Props) {
+/** Server component: takes `lang` as a prop (hooks and context are for client components). */
+export function ModuleTabs({ current, saved = [], hrefs, lang }: Props) {
   return (
-    <nav aria-label={t("module.nav")}>
+    <nav aria-label={t("module.nav", lang)}>
       <ul className="m-0 flex list-none gap-2 overflow-x-auto p-0">
         {ORDER.map((key) => {
           const isCurrent = key === current;
@@ -35,11 +37,11 @@ export function ModuleTabs({ current, saved = [], hrefs }: Props) {
                   isCurrent ? "border-brand bg-brand text-white" : "border-sand bg-white text-ink"
                 }`}
               >
-                {t(LABEL[key])}
+                {t(LABEL[key], lang)}
                 {isSaved ? (
                   <>
                     <span aria-hidden="true" className="h-2 w-2 rounded-full bg-gold" />
-                    <span className="sr-only">({t("module.saved")})</span>
+                    <span className="sr-only">({t("module.saved", lang)})</span>
                   </>
                 ) : null}
               </Link>

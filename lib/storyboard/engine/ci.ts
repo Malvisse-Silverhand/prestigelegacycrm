@@ -1,4 +1,5 @@
 import type { FlowSlide } from "../types";
+import type { Lang } from "../i18n";
 import type { EngineResult, LegendItem } from "./types";
 import { fixed1, fromSen, num, rmWhole, safeDiv, toSen } from "./money";
 import { buildFlowSlides } from "./scenario-flow";
@@ -90,7 +91,10 @@ export type CiScene = {
 
 export type CiResult = EngineResult<CiOut, CiScene>;
 
-export function computeCi(raw: Partial<CiInputs>): CiResult {
+export function computeCi(raw: Partial<CiInputs>, lang: Lang = "en"): CiResult {
+  // TODO(BM): ci text is English only for now. Build user-visible strings with
+  // translator(lang) as engine/hibah.ts does, then delete this line.
+  void lang;
   const n = (v: unknown) => num(v);
 
   // months = 0 gives a recovery need of 0 (never NaN). The design clamps to 1;

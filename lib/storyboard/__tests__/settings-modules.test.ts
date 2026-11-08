@@ -68,6 +68,7 @@ describe("resolveSettings", () => {
   it("org plan name and statistics reach the module; agent overrides sit on top", () => {
     const r = resolveSettings(
       "medical",
+      "en",
       { planName: "[Org medical]", statistics: ["[stat + source]"] },
       { script: ["", "My own step"], objections: [{ q: "My company already has a panel.", a: "Mine" }] },
     );

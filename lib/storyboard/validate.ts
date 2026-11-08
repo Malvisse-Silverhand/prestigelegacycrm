@@ -11,7 +11,7 @@ import { BUSINESS_DEFAULT_INPUTS } from "./defaults/business";
 import { MEDICAL_RISK_GROUPS, type MedicalInputs } from "./engine/medical";
 import { CI_DEPENDENCY_COUNT, type CiInputs } from "./engine/ci";
 import type { BusinessInputs } from "./engine/business";
-import { mentionsOtherOperator } from "./client-summary";
+import { mentionsOtherOperator } from "./summary/shared";
 import type { BuiltModule } from "./modules";
 import { STORYBOARD_MODULES, STORYBOARD_OUTCOMES, STORYBOARD_STEPS, type StoryboardModule, type StoryboardOutcome, type StoryboardStep } from "./types";
 
@@ -181,7 +181,8 @@ type Field =
 type Schema = Record<string, Field>;
 
 const money: Field = { t: "num", min: 0, max: MONEY_MAX };
-const OPERATOR_MSG = "Use Great Eastern wording only: other operators' names are not allowed.";
+/** English text of the "other operators" refusal; actions translate it by comparing against this. */
+export const OPERATOR_MSG ="Use Great Eastern wording only: other operators' names are not allowed.";
 
 function parseField(key: string, f: Field, v: unknown): Validated<unknown> {
   switch (f.t) {
