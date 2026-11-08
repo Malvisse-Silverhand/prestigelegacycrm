@@ -31,12 +31,13 @@
 --           role list here would be a second copy to forget; if lead visibility
 --           changes, this follows. Same approach as client_portal_links.
 --   INSERT / UPDATE
---           the lead's own agent (public.owns_lead) or a superadmin. Managers are
+--           the lead's own agent (leads.agent_id = auth.uid(), checked inline: the
+--           owns_lead() helper was dropped in 20260909100000) or a superadmin. Managers are
 --           deliberately READ-ONLY: they can open a storyboard to coach, but
 --           the analysis is the owning agent's work and the "saved by" trail
---           should not be muddied. The extra `exists (...leads...)` makes sure a
---           soft-deleted lead cannot be written to, because owns_lead() itself
---           does not look at deleted_at.
+--           should not be muddied. The extra `exists (...leads...)` keeps the visibility check in
+--           step with the select policy; the ownership check also requires
+--           deleted_at is null, so a soft-deleted lead cannot be written to.
 --   DELETE  superadmin only.
 --
 -- Column grants: authenticated may update only the working columns. lead_id and
@@ -108,16 +109,16 @@ create policy "storyboards follow lead visibility" on public.storyboards for sel
 
 drop policy if exists "storyboards written by lead owner" on public.storyboards;
 create policy "storyboards written by lead owner" on public.storyboards for insert with check (
-	(public.owns_lead(lead_id) or (select public.current_role()) = 'superadmin')
+	(exists (select 1 from public.leads o where o.id = storyboards.lead_id and o.agent_id = (select auth.uid()) and o.deleted_at is null) or (select public.current_role()) = 'superadmin')
 	and exists (select 1 from public.leads l where l.id = storyboards.lead_id)
 );
 
 drop policy if exists "storyboards updated by lead owner" on public.storyboards;
 create policy "storyboards updated by lead owner" on public.storyboards for update using (
-	(public.owns_lead(lead_id) or (select public.current_role()) = 'superadmin')
+	(exists (select 1 from public.leads o where o.id = storyboards.lead_id and o.agent_id = (select auth.uid()) and o.deleted_at is null) or (select public.current_role()) = 'superadmin')
 	and exists (select 1 from public.leads l where l.id = storyboards.lead_id)
 ) with check (
-	(public.owns_lead(lead_id) or (select public.current_role()) = 'superadmin')
+	(exists (select 1 from public.leads o where o.id = storyboards.lead_id and o.agent_id = (select auth.uid()) and o.deleted_at is null) or (select public.current_role()) = 'superadmin')
 	and exists (select 1 from public.leads l where l.id = storyboards.lead_id)
 );
 
