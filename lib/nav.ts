@@ -5,6 +5,7 @@ import {
   PipelineIcon,
   TeamIcon,
   QuotationIcon,
+  StoryboardIcon,
   CalendarIcon,
   FunnelIcon,
   MySalesIcon,
@@ -61,6 +62,8 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/quotations", label: "Quotation", icon: QuotationIcon },
+  // Needs analysis per lead: every role that sees leads sees their storyboards (RLS scopes the rows).
+  { href: "/storyboards", label: "Financial Storyboard", icon: StoryboardIcon },
   {
     href: "/wa-flow",
     label: "WA Flow",

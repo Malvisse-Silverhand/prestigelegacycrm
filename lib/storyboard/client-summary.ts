@@ -42,7 +42,7 @@ const OTHER_OPERATORS = [
   "public mutual", "bsn takaful", "af takaful", "sunway",
 ];
 
-function mentionsOtherOperator(text: string): boolean {
+export function mentionsOtherOperator(text: string): boolean {
   const lower = text.toLowerCase();
   return OTHER_OPERATORS.some((o) => new RegExp("(^|[^a-z])" + o + "([^a-z]|$)").test(lower));
 }

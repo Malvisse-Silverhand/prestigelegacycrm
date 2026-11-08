@@ -10,6 +10,7 @@ import type { FillableLead } from "@/lib/wa-template-fill";
 import type { ClosingScript, ScriptSet } from "@/app/(app)/wa-flow/scripts/data";
 import type { FormLinkSummary, LeadNominee, LeadSignatureView } from "@/lib/lead-form-fields";
 import type { CaseSubmission, BenefitOption } from "@/app/(app)/my-sales/types";
+import type { LeadStoryboardStatus } from "@/lib/storyboard/data";
 
 export function LeadModalClient({
   lead,
@@ -27,6 +28,7 @@ export function LeadModalClient({
   formLinks,
   nominees,
   signature,
+  storyboardStatus,
   today,
 }: {
   lead: LeadDetail;
@@ -44,6 +46,7 @@ export function LeadModalClient({
   formLinks: FormLinkSummary[];
   nominees: LeadNominee[];
   signature: LeadSignatureView | null;
+  storyboardStatus: LeadStoryboardStatus;
   today: string;
 }) {
   const close = useModalClose();
@@ -66,6 +69,7 @@ export function LeadModalClient({
         formLinks={formLinks}
         nominees={nominees}
         signature={signature}
+        storyboardStatus={storyboardStatus}
         today={today}
         onClose={close}
         isModal

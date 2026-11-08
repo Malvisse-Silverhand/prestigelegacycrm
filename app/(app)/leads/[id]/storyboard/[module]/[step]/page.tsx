@@ -1,0 +1,165 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/supabase/profile";
+import { ageNextBirthday } from "@/lib/age";
+import { getHibahSettings, getLeadStoryboards, type SavedStoryboard } from "@/lib/storyboard/data";
+import { HIBAH_DEFAULT_INPUTS } from "@/lib/storyboard/defaults/hibah";
+import { resolveHibahSettings } from "@/lib/storyboard/settings";
+import { EMPTY_EXTRAS, isModule, isUuid, readStoredHibah } from "@/lib/storyboard/validate";
+import { STORYBOARD_MISSING_MESSAGE } from "@/lib/storyboard/schema-error";
+import { STORYBOARD_MODULES, STORYBOARD_STEPS, type StoryboardModule, type StoryboardStep } from "@/lib/storyboard/types";
+import { t, type TKey } from "@/lib/storyboard/i18n";
+import { ModuleTabs, type ModuleKey } from "@/components/storyboard/module-tabs";
+import { ProspectProfile } from "@/components/storyboard/prospect-profile";
+import { StepTabs, type StepKey } from "@/components/storyboard/step-tabs";
+import { HibahFill } from "@/components/storyboard/hibah/hibah-fill";
+import { HibahExplain } from "@/components/storyboard/hibah/hibah-explain";
+import { HibahRisk } from "@/components/storyboard/hibah/hibah-risk";
+import { HibahObjections } from "@/components/storyboard/hibah/hibah-objections";
+import type { HibahScreenProps } from "@/components/storyboard/hibah/types";
+
+type LeadRow = { id: string; full_name: string; phone: string | null; date_of_birth: string | null };
+
+const URL_TO_TAB: Record<StoryboardStep, StepKey> = {
+  fill: "fill",
+  explain: "explain",
+  risk: "risk",
+  objections: "objection",
+};
+
+export default async function StoryboardStepPage({
+  params,
+}: {
+  params: Promise<{ id: string; module: string; step: string }>;
+}) {
+  const { id, module, step } = await params;
+  if (!isUuid(id) || !isModule(module)) notFound();
+  if (!(STORYBOARD_STEPS as readonly string[]).includes(step)) notFound();
+  const mod: StoryboardModule = module;
+  const stepKey = step as StoryboardStep;
+
+  const profile = await getCurrentProfile();
+  if (!profile) return null;
+
+  const supabase = await createClient();
+  // RLS: a lead this person can't see comes back empty, which is a 404.
+  const { data: lead } = await supabase
+    .from("leads")
+    .select("id, full_name, phone, date_of_birth")
+    .eq("id", id)
+    .maybeSingle<LeadRow>();
+  if (!lead) notFound();
+
+  const [saved, settings] = await Promise.all([getLeadStoryboards(id), getHibahSettings(profile.id)]);
+  const dbReady = saved.ok && settings.ok;
+  const rows: SavedStoryboard[] = saved.ok ? saved.data : [];
+  const row = rows.find((r) => r.module === mod) ?? null;
+  const missing = (!saved.ok && saved.missing) || (!settings.ok && settings.missing);
+  const loadFailed = (!saved.ok && !saved.missing) || (!settings.ok && !settings.missing);
+
+  const base = `/leads/${id}/storyboard`;
+  const moduleHrefs = Object.fromEntries(STORYBOARD_MODULES.map((m) => [m, `${base}/${m}/fill`])) as Record<ModuleKey, string>;
+  const stepHrefs: Partial<Record<StepKey, string>> = {};
+  for (const s of STORYBOARD_STEPS) stepHrefs[URL_TO_TAB[s]] = `${base}/${mod}/${s}`;
+  const doneSteps = STORYBOARD_STEPS.filter((s) => row?.stepStatus[s] === "saved").map((s) => URL_TO_TAB[s]);
+
+  const age = lead.date_of_birth ? Math.max(0, ageNextBirthday(lead.date_of_birth) - 1) : null;
+  const firstName = lead.full_name.trim().split(/\s+/)[0] ?? "";
+
+  let screen: React.ReactNode;
+  if (mod !== "hibah") {
+    screen = (
+      <section className="rounded-[20px] border border-sand bg-white p-6 text-center shadow-card">
+        <h2 className="m-0 text-lg font-bold text-navy">{t(`module.${mod}` as TKey)}: coming soon</h2>
+        <p className="m-0 mt-2 text-sm text-ink">
+          This module is not available yet. Hibah is ready now, and the others follow the same four steps.
+        </p>
+        <Link
+          href={`${base}/hibah/fill`}
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[12px] bg-brand px-5 text-sm font-semibold text-white"
+        >
+          Open Hibah
+        </Link>
+      </section>
+    );
+  } else {
+    const stored = row
+      ? readStoredHibah(row.inputs)
+      : // Nothing saved yet: start from the design defaults, prefilled from the lead.
+        { ...HIBAH_DEFAULT_INPUTS, ...EMPTY_EXTRAS, nick: firstName.slice(0, 40), age: age ?? HIBAH_DEFAULT_INPUTS.age };
+    const resolved = resolveHibahSettings(settings.ok ? settings.data.org : {}, settings.ok ? settings.data.agent : {});
+    const common: HibahScreenProps = {
+      leadId: id,
+      stored,
+      notes: row?.notes ?? "",
+      savedAt: row?.savedAt ?? null,
+      hasRow: Boolean(row),
+      dbReady,
+      settings: resolved,
+      agentFirstName: profile.full_name.trim().split(/\s+/)[0] ?? "",
+      outcome: row?.outcome ?? null,
+    };
+    // key: a fresh form state whenever the saved row changes underneath.
+    const key = `${id}-${row?.savedAt ?? "new"}-${resolved.overridden.length}-${resolved.script.map((s) => s.text.length).join(",")}`;
+    screen =
+      stepKey === "fill" ? <HibahFill key={key} {...common} />
+      : stepKey === "explain" ? <HibahExplain key={key} {...common} />
+      : stepKey === "risk" ? <HibahRisk key={key} {...common} />
+      : <HibahObjections key={key} {...common} />;
+  }
+
+  return (
+    <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 py-5 sm:px-6 sm:py-7">
+      <nav aria-label="Breadcrumb" className="text-[13px] text-muted-2">
+        <Link href="/storyboards" className="hover:underline">Financial Storyboard</Link>
+        <span aria-hidden="true"> › </span>
+        {/* Plain anchor: a soft navigation to /leads/<id> is caught by the lead popup route. */}
+        <a href={`/leads/${id}`} className="font-semibold text-navy hover:underline">{lead.full_name}</a>
+      </nav>
+
+      <ProspectProfile name={lead.full_name} age={age} phone={lead.phone} />
+
+      {missing ? (
+        <p role="alert" className="m-0 rounded-[12px] border border-warn-orange bg-warn-gold-bg px-4 py-3 text-sm font-semibold text-warn-gold-text">
+          {STORYBOARD_MISSING_MESSAGE} You can still use the calculator, but saving is switched off.
+        </p>
+      ) : loadFailed ? (
+        <p role="alert" className="m-0 rounded-[12px] border border-alert-red bg-alert-red-bg px-4 py-3 text-sm font-semibold text-alert-red">
+          Couldn&apos;t load the saved storyboard. Saving is switched off until you reload.
+        </p>
+      ) : null}
+
+      <ModuleTabs current={mod} saved={rows.map((r) => r.module)} hrefs={moduleHrefs} />
+      {mod === "hibah" ? <StepTabs current={URL_TO_TAB[stepKey]} done={doneSteps} hrefs={stepHrefs} /> : null}
+
+      <h1 className="m-0 text-2xl font-extrabold tracking-tight text-navy">
+        {mod === "hibah" ? "Hibah Takaful Planning" : t(`module.${mod}` as TKey)}
+      </h1>
+
+      {screen}
+
+      <details className="rounded-[12px] border border-sand bg-white px-4">
+        <summary className="flex min-h-12 cursor-pointer items-center text-sm font-bold tracking-wide text-navy">DISCLAIMER</summary>
+        <div className="flex flex-col gap-2 pb-4 text-[13px] leading-relaxed text-ink">
+          <p className="m-0">
+            The Financial Storyboard is a discussion and planning aid for registered takaful agents. It is not an official document of
+            any takaful operator.
+          </p>
+          <p className="m-0">
+            All calculations, product examples and figures are estimates and educational illustrations only. They are not a quotation or
+            contract, and not financial, tax, legal or medical advice.
+          </p>
+          <p className="m-0">
+            Actual benefits, contributions and terms are subject to the Product Disclosure Sheet, official illustration, certificate and
+            the operator&apos;s underwriting. Prospects must disclose health information fully and truthfully through official channels.
+          </p>
+          <p className="m-0">
+            PDPA 2010: data saved here is stored against this lead in the CRM, visible to the assigned agent and upline only. Use
+            nicknames; never enter IC numbers or detailed medical information.
+          </p>
+        </div>
+      </details>
+    </div>
+  );
+}

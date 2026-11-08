@@ -257,3 +257,14 @@ export const SupportIcon = (p: IconProps) =>
       <path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9" />
     </>,
   );
+
+// A screen with a play mark: the Financial Storyboard.
+export const StoryboardIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <rect x="3" y="4" width="18" height="14" rx="2" />
+      <path d="M10 9l5 2.5-5 2.5z" />
+      <path d="M8 21h8" />
+    </>,
+  );

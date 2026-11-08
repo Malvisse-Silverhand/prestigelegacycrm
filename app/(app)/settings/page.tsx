@@ -22,6 +22,7 @@ import { malaysiaDayKey } from "@/lib/malaysia-date";
 import { isDistributorRole } from "@/lib/daily-distribution-shared";
 import { getDailyDistribution } from "./daily-distribution-data";
 import { getWeeklyReportSettings } from "./weekly-report-actions";
+import { getOrgHibahSettings } from "@/lib/storyboard/data";
 
 const EMPTY_ORG_TREE = {
   superadmins: [],
@@ -86,6 +87,7 @@ export default async function SettingsPage({
     myProfile,
     dailyDistribution,
     weeklyReport,
+    storyboardOrg,
   ] = await Promise.all([
       isManager ? getOrgTree(profile) : Promise.resolve(EMPTY_ORG_TREE),
       isManager ? getAssignmentOptions(profile) : Promise.resolve({ unitManagers: [], units: [] }),
@@ -113,6 +115,8 @@ export default async function SettingsPage({
       getMyProfileDetails(profile),
       isDistributorRole(profile.role) ? getDailyDistribution(profile) : Promise.resolve(null),
       isDistributorRole(profile.role) ? getWeeklyReportSettings() : Promise.resolve(null),
+      // Org defaults for the Financial Storyboard: SuperAdmin only.
+      profile.role === "superadmin" ? getOrgHibahSettings() : Promise.resolve(null),
     ]);
 
   return (
@@ -139,6 +143,11 @@ export default async function SettingsPage({
       myProfile={myProfile}
       dailyDistribution={dailyDistribution}
       weeklyReport={weeklyReport}
+      storyboard={
+        storyboardOrg
+          ? { settings: storyboardOrg.ok ? storyboardOrg.data : {}, message: storyboardOrg.ok ? null : storyboardOrg.message }
+          : null
+      }
       initialTab={initialTab}
     />
   );
