@@ -1,5 +1,6 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
+import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -16,14 +17,20 @@ import {
   verifyFormSessionToken,
 } from "@/lib/lead-form-session";
 import {
+  DOCUMENT_INFO,
+  DOCUMENT_MAX_BYTES,
+  DOCUMENT_MIME_TYPES,
   FORM_STAGES,
   MAX_NOMINEES,
   effectiveLinkStatus,
   formFieldKeys,
   getFormFields,
+  isDocumentKind,
   isFieldVisible,
   validateFormValues,
   validateNominees,
+  type DocumentKind,
+  type DocumentView,
   type FieldErrors,
   type FormField,
   type FormLinkStatus,
@@ -156,6 +163,45 @@ async function loadLeadNominees(leadId: string): Promise<NomineeInput[]> {
   }));
 }
 
+// ---- Documents (IC front / back, bank card) -----------------------------------
+
+export const DOCUMENT_BUCKET = "lead-documents";
+const DOCUMENT_URL_TTL_SECONDS = 60 * 60;
+
+export type DocumentRow = { kind: string; storage_path: string; uploaded_at: string };
+
+/**
+ * Turns stored rows into viewable documents by minting short-lived signed URLs
+ * (the bucket is private). The caller is responsible for having got `rows`
+ * through a lookup the viewer is allowed to make: the public form passes the
+ * rows of its own link's lead, the CRM passes rows read through RLS.
+ */
+export async function signDocuments(rows: DocumentRow[], ttlSeconds = DOCUMENT_URL_TTL_SECONDS): Promise<DocumentView[]> {
+  const known = rows.filter((r) => isDocumentKind(r.kind));
+  if (known.length === 0) return [];
+  const { data } = await createAdminClient()
+    .storage.from(DOCUMENT_BUCKET)
+    .createSignedUrls(
+      known.map((r) => r.storage_path),
+      ttlSeconds,
+    );
+  const urlByPath = new Map((data ?? []).map((d) => [d.path, d.signedUrl] as const));
+  return known.flatMap((r) => {
+    const url = urlByPath.get(r.storage_path);
+    return url ? [{ kind: r.kind as DocumentKind, url, uploadedAt: r.uploaded_at }] : [];
+  });
+}
+
+async function loadLeadDocumentRows(leadId: string): Promise<DocumentRow[]> {
+  const { data } = await createAdminClient()
+    .from("lead_documents")
+    .select("kind, storage_path, uploaded_at")
+    .eq("lead_id", leadId);
+  return (data ?? []) as DocumentRow[];
+}
+
+const EXT_FOR_MIME: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
 // ---- Stage 2 identity gate ---------------------------------------------------
 
 /** Case-insensitive, whitespace-collapsed, punctuation-light comparison of names. */
@@ -251,6 +297,8 @@ export async function loadPublicFormState(token: string): Promise<PublicFormStat
     nominees = Array.isArray(link.draft?.nominees) ? link.draft!.nominees! : await loadLeadNominees(link.lead_id);
   }
 
+  const documents = link.stage === 2 ? await signDocuments(await loadLeadDocumentRows(link.lead_id)) : [];
+
   return {
     state: "ready",
     form: {
@@ -260,7 +308,8 @@ export async function loadPublicFormState(token: string): Promise<PublicFormStat
       agentName,
       values,
       nominees,
-      resumed: link.draft != null,
+      resumed: link.draft != null || documents.length > 0,
+      documents,
     },
   };
 }
@@ -335,6 +384,135 @@ export async function saveFormDraft(
     .eq("id", link.id);
   if (error) return { error: "Couldn't save your progress. Please try again.", savedAt: null };
   return { error: null, savedAt };
+}
+
+// ---- Document uploads -------------------------------------------------------------
+//
+// A phone photo is several MB and Server Actions cap request bodies at 1 MB, so
+// the browser uploads straight to Storage. Two steps, both gated by the form
+// token: (1) request a one-shot signed upload URL for a path this action picks,
+// (2) after the upload, confirm it so the row is recorded against the lead.
+// Documents save the moment they are uploaded -- they do not wait for Submit --
+// so an agent can see them on a form that was saved but never submitted.
+
+type UploadTarget = { link: FormLinkRow } | { error: string };
+
+async function documentUploadGuard(token: string, bucket: string, max: number): Promise<UploadTarget> {
+  const ip = await clientIp();
+  if (!(await checkRateLimit(bucket, ip, max, 60 * 60))) {
+    return { error: "Too many uploads. Please wait a little and try again." };
+  }
+  const guard = await requireWritableLink(token);
+  if ("error" in guard) return { error: guard.error };
+  if (guard.link.stage !== 2) return { error: "This form doesn't take documents." };
+  return guard;
+}
+
+export async function requestDocumentUpload(
+  token: string,
+  kind: string,
+  mimeType: string,
+  size: number,
+): Promise<{ error: string | null; path?: string; uploadToken?: string }> {
+  if (!isDocumentKind(kind)) return { error: "Unknown document." };
+  if (!(DOCUMENT_MIME_TYPES as readonly string[]).includes(mimeType)) return { error: "Sila muat naik gambar JPG, PNG atau WebP." };
+  if (!Number.isFinite(size) || size <= 0 || size > DOCUMENT_MAX_BYTES) return { error: "Gambar terlalu besar. Maksimum 5 MB." };
+
+  const guard = await documentUploadGuard(token, `form-doc-request:${token}`, 30);
+  if ("error" in guard) return { error: guard.error };
+  const { link } = guard;
+
+  const path = `${link.lead_id}/${kind}-${randomUUID()}.${EXT_FOR_MIME[mimeType]}`;
+  const { data, error } = await createAdminClient().storage.from(DOCUMENT_BUCKET).createSignedUploadUrl(path);
+  if (error || !data) {
+    Sentry.captureException(error ?? new Error("createSignedUploadUrl returned no data"), { tags: { area: "lead_form", step: "document_upload_url" } });
+    return { error: "Couldn't start the upload. Please try again." };
+  }
+  return { error: null, path: data.path, uploadToken: data.token };
+}
+
+export async function confirmDocumentUpload(
+  token: string,
+  kind: string,
+  path: string,
+): Promise<{ error: string | null; document?: DocumentView }> {
+  if (!isDocumentKind(kind)) return { error: "Unknown document." };
+
+  const guard = await documentUploadGuard(token, `form-doc-confirm:${token}`, 30);
+  if ("error" in guard) return { error: guard.error };
+  const { link } = guard;
+
+  // The path must be one requestDocumentUpload could have issued for THIS lead
+  // and THIS kind: <lead_id>/<kind>-<uuid>.<ext>, nothing nested, nothing else.
+  const pattern = new RegExp(`^${link.lead_id}/${kind}-[0-9a-f-]{36}\\.(jpg|png|webp)$`);
+  if (typeof path !== "string" || !pattern.test(path)) return { error: "That upload isn't valid. Please try again." };
+
+  const admin = createAdminClient();
+  const name = path.slice(link.lead_id.length + 1);
+  const { data: objects } = await admin.storage.from(DOCUMENT_BUCKET).list(link.lead_id, { search: name, limit: 5 });
+  const object = objects?.find((o) => o.name === name);
+  if (!object) return { error: "We couldn't find your upload. Please try again." };
+
+  // The bucket itself enforces type and size; this re-checks what actually landed.
+  const meta = (object.metadata ?? {}) as { size?: number; mimetype?: string };
+  const size = Number(meta.size ?? 0);
+  const mime = String(meta.mimetype ?? "");
+  if (!size || size > DOCUMENT_MAX_BYTES || !(DOCUMENT_MIME_TYPES as readonly string[]).includes(mime)) {
+    await admin.storage.from(DOCUMENT_BUCKET).remove([path]);
+    return { error: "Sila muat naik gambar JPG, PNG atau WebP, maksimum 5 MB." };
+  }
+
+  const { data: previous } = await admin
+    .from("lead_documents")
+    .select("storage_path")
+    .eq("lead_id", link.lead_id)
+    .eq("kind", kind)
+    .maybeSingle();
+
+  const uploadedAt = new Date().toISOString();
+  const { error } = await admin.from("lead_documents").upsert(
+    { lead_id: link.lead_id, link_id: link.id, kind, storage_path: path, mime_type: mime, size_bytes: size, uploaded_at: uploadedAt },
+    { onConflict: "lead_id,kind" },
+  );
+  if (error) {
+    Sentry.captureException(error, { tags: { area: "lead_form", step: "document_row" } });
+    await admin.storage.from(DOCUMENT_BUCKET).remove([path]);
+    return { error: "Couldn't save your upload. Please try again." };
+  }
+
+  // The replaced file is now unreferenced.
+  const previousPath = (previous as { storage_path: string } | null)?.storage_path;
+  if (previousPath && previousPath !== path) await admin.storage.from(DOCUMENT_BUCKET).remove([previousPath]);
+
+  await admin.from("lead_form_links").update({ status: "in_progress" }).eq("id", link.id).neq("status", "completed");
+
+  const [document] = await signDocuments([{ kind, storage_path: path, uploaded_at: uploadedAt }]);
+  return { error: null, document };
+}
+
+export async function removeDocument(token: string, kind: string): Promise<{ error: string | null }> {
+  if (!isDocumentKind(kind)) return { error: "Unknown document." };
+
+  const guard = await documentUploadGuard(token, `form-doc-remove:${token}`, 30);
+  if ("error" in guard) return { error: guard.error };
+  const { link } = guard;
+
+  const admin = createAdminClient();
+  const { data: row } = await admin
+    .from("lead_documents")
+    .select("storage_path")
+    .eq("lead_id", link.lead_id)
+    .eq("kind", kind)
+    .maybeSingle();
+  if (!row) return { error: null };
+
+  const { error } = await admin.from("lead_documents").delete().eq("lead_id", link.lead_id).eq("kind", kind);
+  if (error) {
+    Sentry.captureException(error, { tags: { area: "lead_form", step: "document_remove" } });
+    return { error: "Couldn't remove that file. Please try again." };
+  }
+  await admin.storage.from(DOCUMENT_BUCKET).remove([(row as { storage_path: string }).storage_path]);
+  return { error: null };
 }
 
 // ---- Submit ---------------------------------------------------------------------
@@ -465,6 +643,10 @@ export async function submitLeadForm(
       return { error: "Couldn't save your signature. Please try again." };
     }
     changes.push("Signature captured");
+
+    const uploaded = new Set((await loadLeadDocumentRows(link.lead_id)).map((d) => d.kind));
+    const docLabels = (Object.keys(DOCUMENT_INFO) as DocumentKind[]).filter((k) => uploaded.has(k)).map((k) => DOCUMENT_INFO[k].short);
+    changes.push(`Documents uploaded: ${docLabels.length > 0 ? docLabels.join(", ") : "none"}`);
   }
 
   const stageLabel = FORM_STAGES[stage].label;

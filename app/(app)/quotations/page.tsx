@@ -15,6 +15,7 @@ export default async function QuotationsPage() {
     supabase
       .from("leads")
       .select("id, full_name, phone, email, date_of_birth, gender, is_smoker")
+      .is("deleted_at", null)
       .order("full_name")
       .returns<LauncherLead[]>(),
   ]);

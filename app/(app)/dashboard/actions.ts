@@ -88,6 +88,7 @@ async function buildPlan(rawAllocation?: unknown): Promise<BuiltPlan> {
   const { data, error } = await supabase
     .from("leads")
     .select("id, agent_id, created_at, full_name, interest, lead_source")
+    .is("deleted_at", null)
     .in("pipeline_stage", REBALANCEABLE_STAGES)
     .order("created_at", { ascending: false });
 

@@ -10,14 +10,21 @@ import {
   FORM_STAGES,
   MAX_NOMINEES,
   effectiveLinkStatus,
+  formatFieldValue,
+  getFormFields,
+  getFormSections,
+  isFieldVisible,
   validateNominees,
   type FormLinkStatus,
   type FormLinkSummary,
+  type FormSnapshot,
   type FormStage,
+  type FormValues,
   type LeadNominee,
   type LeadSignatureView,
   type NomineeInput,
 } from "@/lib/lead-form-fields";
+import { signDocuments, type DocumentRow } from "@/lib/lead-forms";
 import { malaysiaToday } from "@/lib/malaysia-date";
 
 // CRM side of the lead form links: generate, reopen, revoke and list links,
@@ -180,6 +187,104 @@ export async function listFormLinks(leadId: string): Promise<FormLinkSummary[]> 
     .order("created_at", { ascending: false });
   const origin = await appOrigin();
   return ((data ?? []) as unknown as LinkRow[]).map((row) => toSummary(row, origin));
+}
+
+// ---- View what the prospect has filled in -----------------------------------
+
+function asFormString(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return String(value);
+}
+
+/**
+ * The agent's "View" button: everything the prospect has entered through this
+ * link, including a saved-but-not-submitted draft. Draft answers are laid over
+ * the lead's current data the same way the public form resumes them; once the
+ * form is submitted the draft is gone and the lead itself is the record.
+ * Every read goes through the signed-in user's client, so RLS decides whether
+ * they may see this lead at all.
+ */
+export async function getFormSnapshot(linkId: string): Promise<{ error: string | null; snapshot: FormSnapshot | null }> {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Not signed in.", snapshot: null };
+
+  const link = await loadVisibleLink(linkId);
+  if (!link) return { error: "That link could not be found.", snapshot: null };
+
+  const supabase = await createClient();
+  const completed = link.status === "completed";
+
+  const { data: draftRow } = await supabase.from("lead_form_links").select("draft, draft_saved_at").eq("id", linkId).maybeSingle();
+  const draft = completed ? null : ((draftRow?.draft as { values?: FormValues; nominees?: NomineeInput[] } | null) ?? null);
+
+  const fields = getFormFields(link.stage);
+  const columns = Array.from(new Set(fields.map((f) => f.key)));
+  const { data: leadData } = await supabase.from("leads").select(columns.join(", ")).eq("id", link.lead_id).maybeSingle();
+  if (!leadData) return { error: "That lead could not be found.", snapshot: null };
+  const lead = leadData as unknown as Record<string, unknown>;
+
+  const values: FormValues = {};
+  for (const f of fields) {
+    const drafted = draft?.values?.[f.key];
+    values[f.key] = !f.readOnly && typeof drafted === "string" ? drafted.trim() : asFormString(lead[f.key]).trim();
+  }
+
+  const sections = getFormSections(link.stage)
+    .map((section) => ({
+      title: section.title,
+      rows: section.fields
+        .filter((f) => isFieldVisible(f, values))
+        .map((f) => ({ label: f.label, value: formatFieldValue(f, values[f.key] ?? ""), filled: (values[f.key] ?? "") !== "" })),
+    }))
+    .filter((s) => s.rows.length > 0);
+
+  let nominees: FormSnapshot["nominees"] = [];
+  let documents: FormSnapshot["documents"] = [];
+  let signature: LeadSignatureView | null = null;
+  if (link.stage === 2) {
+    const draftNominees = draft?.nominees;
+    if (Array.isArray(draftNominees)) {
+      nominees = draftNominees.map((n) => ({
+        name: n.name ?? "",
+        id_no: n.id_no ?? "",
+        relationship: n.relationship ?? "",
+        phone: n.phone ?? "",
+        share_percent: n.share_percent ?? "",
+        date_of_birth: n.date_of_birth ?? "",
+      }));
+    } else {
+      nominees = (await getLeadNominees(link.lead_id)).map((n) => ({
+        name: n.name,
+        id_no: n.id_no ?? "",
+        relationship: n.relationship ?? "",
+        phone: n.phone ?? "",
+        share_percent: n.share_percent == null ? "" : String(n.share_percent),
+        date_of_birth: n.date_of_birth ?? "",
+      }));
+    }
+
+    // Rows come through RLS; only then are signed URLs minted for them.
+    const { data: docRows } = await supabase.from("lead_documents").select("kind, storage_path, uploaded_at").eq("lead_id", link.lead_id);
+    documents = await signDocuments((docRows ?? []) as DocumentRow[], 60 * 15);
+
+    if (completed) signature = await getLeadSignature(link.lead_id);
+  }
+
+  return {
+    error: null,
+    snapshot: {
+      stage: link.stage,
+      status: effectiveLinkStatus(link),
+      isDraft: draft != null,
+      savedAt: draft ? ((draftRow?.draft_saved_at as string | null) ?? null) : null,
+      submittedAt: link.submitted_at,
+      sections,
+      nominees,
+      documents,
+      signature,
+    },
+  };
 }
 
 // ---- Nominees ---------------------------------------------------------------

@@ -129,6 +129,16 @@ export const SunIcon = (p: IconProps) =>
 export const MoonIcon = (p: IconProps) =>
   base(p, <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />);
 
+// Financial Storyboard: a presentation board with a rising bar.
+export const StoryboardIcon = (p: IconProps) =>
+  base(
+    p,
+    <>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M12 16v4M8 20h8M7.5 12.5l3-3 2 2 4-4" />
+    </>,
+  );
+
 export const ChevronDownIcon = (p: IconProps) => base(p, <path d="M6 9l6 6 6-6" />);
 export const CheckIcon = (p: IconProps) => base(p, <path d="M20 6 9 17l-5-5" />);
 export const ChevronRightIcon = (p: IconProps) => base(p, <path d="M9 6l6 6-6 6" />);

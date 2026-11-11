@@ -13,6 +13,7 @@ import {
   StatisticsIcon,
   SettingsIcon,
   SupportIcon,
+  StoryboardIcon,
 } from "@/components/icons";
 
 export type NavItem = {
@@ -41,6 +42,17 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
+  // What happens inside the appointment: the needs analysis presented with
+  // the prospect. Presenting one moves the lead into the Appointment stage.
+  {
+    href: "/storyboard",
+    label: "Financial Storyboard",
+    icon: StoryboardIcon,
+    children: [
+      { href: "/storyboard", label: "Sessions" },
+      { href: "/storyboard/insights", label: "My Insights" },
+    ],
+  },
   // Both sit after Appointment because that is where they fall in the work: a
   // case is filed once the meetings are done, and serviced once it is
   // inforced. Two top-level items rather than a "My Sales" group -- each is

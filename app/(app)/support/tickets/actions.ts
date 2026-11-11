@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import {
@@ -35,14 +36,22 @@ import {
 
 type Result = { error: string | null };
 
-function isMissingSchema(error: { code?: string } | null) {
-  return error?.code === "42P01" || error?.code === "42703";
-}
-
-function failure(error: { code?: string }, action: string, friendly: string): { error: string } {
+function failure(
+  error: { code?: string; message?: string; details?: string | null; hint?: string | null },
+  action: string,
+  friendly: string,
+): { error: string } {
   if (isMissingSchema(error)) return { error: MIGRATION_MESSAGE };
-  Sentry.captureException(error, { tags: { action } });
-  return { error: friendly };
+  // A PostgrestError is a plain object, not an Error, so Sentry would group
+  // every failure under one stack-less "Object captured as exception". Wrap it
+  // so the code and message are what show up in the issue.
+  const wrapped = new Error(`${action}: ${error.code ?? "?"} ${error.message ?? "unknown error"}`);
+  Sentry.captureException(wrapped, {
+    tags: { action, pg_code: error.code ?? "unknown" },
+    extra: { details: error.details, hint: error.hint },
+  });
+  // The code lets support find the exact failure in Sentry from a screenshot.
+  return { error: error.code ? `${friendly} (ref ${error.code})` : friendly };
 }
 
 type TicketHead = {
@@ -158,12 +167,22 @@ export async function createTicket(input: {
     return failure(error ?? {}, "createTicket", "Couldn't raise the ticket. Please try again.");
   }
 
+  // The ticket is saved. Telling the team is bookkeeping, so nothing in here
+  // may turn a saved ticket into a "couldn't raise" error for the raiser.
   const ticketNo = Number(data.ticket_no);
-  const admins = (await superAdminIds()).filter((id) => id !== profile.id);
-  await notify(admins, `New ticket #${ticketNo}: ${subject}`, `${profile.full_name} · ${snippet(description)}`, data.id as string);
-  await audit(profile.id, "support_ticket_created", { ticket_id: data.id, ticket_no: ticketNo });
+  try {
+    const admins = (await superAdminIds()).filter((id) => id !== profile.id);
+    await notify(admins, `New ticket #${ticketNo}: ${subject}`, `${profile.full_name} · ${snippet(description)}`, data.id as string);
+    await audit(profile.id, "support_ticket_created", { ticket_id: data.id, ticket_no: ticketNo });
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "createTicket.afterInsert" } });
+  }
 
-  revalidatePath("/support/tickets");
+  try {
+    revalidatePath("/support/tickets");
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "createTicket.revalidate" } });
+  }
   return { error: null, id: data.id as string };
 }
 
