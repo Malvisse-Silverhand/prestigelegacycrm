@@ -33,18 +33,12 @@ export function NewTicketForm({ initialPageUrl }: { initialPageUrl: string }) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      try {
-        const res = await createTicket({ subject, category, priority, description, pageUrl });
-        if (res.error || !res.id) {
-          setError(res.error ?? "Couldn't raise the ticket. Please try again.");
-          return;
-        }
-        router.push(`/support/tickets/${res.id}`);
-      } catch {
-        // A thrown action (network drop, a deploy mid-session) would otherwise
-        // leave the button silently doing nothing.
-        setError("Couldn't reach the server. Check your connection and try again.");
+      const res = await createTicket({ subject, category, priority, description, pageUrl });
+      if (res.error || !res.id) {
+        setError(res.error ?? "Couldn't raise the ticket. Please try again.");
+        return;
       }
+      router.push(`/support/tickets/${res.id}`);
     });
   }
 

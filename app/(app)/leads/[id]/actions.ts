@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { dispatchWebhook } from "@/lib/dispatch-webhook";
-import { emailAgentLeadsAssigned } from "@/lib/lead-assignment-email";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getReassignableUsers } from "./data";
 import { queueLeadAssignedEmail } from "@/lib/lead-assignment-email";
@@ -81,13 +80,6 @@ export async function reassignLead(leadId: string, newAgentId: string, newAgentN
     content: `Reassigned to ${newAgentName}`,
   });
   if (activityError) console.error("reassignLead: lead_activity insert failed", activityError);
-
-  await emailAgentLeadsAssigned({
-    agentId: newAgentId,
-    leadIds: [leadId],
-    via: `Assigned by ${profile.full_name}`,
-    actorId: profile.id,
-  });
 
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/leads");
