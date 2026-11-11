@@ -100,6 +100,55 @@ function esc(text: string) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+export type AssignedLeadSummary = {
+  id: string;
+  leadNo: number | null;
+  fullName: string;
+  phone: string | null;
+  interest: string | null;
+  source: string | null;
+};
+
+const ASSIGNED_EMAIL_MAX_LEADS = 10;
+
+export function leadAssignedEmail(input: {
+  agentName: string;
+  leads: AssignedLeadSummary[];
+  // How it reached them, e.g. "Landing page", "Assigned by Siti", "Rebalance".
+  via: string;
+  origin: string;
+}) {
+  const total = input.leads.length;
+  const shown = input.leads.slice(0, ASSIGNED_EMAIL_MAX_LEADS);
+  const rows = shown
+    .map((l) => {
+      const meta = [l.phone, l.interest, l.source].filter(Boolean).map((v) => esc(v as string)).join(" · ");
+      const label = `${l.leadNo != null ? `#${l.leadNo} ` : ""}${esc(l.fullName)}`;
+      return `<tr><td style="padding:10px 0;border-top:1px solid #efe7da">
+        <a href="${input.origin}/leads/${l.id}" style="color:#0f2540;font-weight:600;font-size:14px;text-decoration:none">${label}</a>
+        ${meta ? `<div style="margin-top:2px;font-size:12.5px;color:#5c5648">${meta}</div>` : ""}
+      </td></tr>`;
+    })
+    .join("");
+  const more =
+    total > shown.length
+      ? `<p style="margin:10px 0 0;font-size:12.5px;color:#5c5648">…and ${total - shown.length} more.</p>`
+      : "";
+
+  const single = total === 1;
+  const href = single ? `${input.origin}/leads/${shown[0].id}` : `${input.origin}/leads`;
+  const body =
+    `<p style="margin:0 0 14px;font-size:14px;line-height:1.6">Hi ${esc(input.agentName)}, ${single ? "a new lead has" : `${total} new leads have`} been assigned to you. <span style="color:#8b8271">(${esc(input.via)})</span></p>` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>${more}` +
+    button(href, single ? "Open lead" : "Open leads") +
+    `<p style="margin:14px 0 0;font-size:12.5px;color:#5c5648">Reach out soon &mdash; fresh leads convert best when contacted quickly.</p>`;
+
+  return {
+    subject: single ? `New lead assigned: ${shown[0].fullName}` : `${total} new leads assigned to you`,
+    html: layout(single ? "New lead assigned" : "New leads assigned", body),
+  };
+}
+
 export function leadFormSubmittedEmail(input: {
   agentName: string;
   leadId: string;

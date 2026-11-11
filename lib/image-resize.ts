@@ -54,6 +54,41 @@ export async function resizeImage(file: File, kind: ImageKind): Promise<Blob> {
   return blob;
 }
 
+/**
+ * Prepares an ID / bank card photo for upload: decoded, scaled to at most
+ * 2000px on the long side (text stays legible) and re-encoded as JPEG, which
+ * every viewer and the agent's printer handle. Throws a Malay/English message
+ * the form can show as-is.
+ */
+export async function resizeDocument(file: File, maxBytes: number): Promise<Blob> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Fail mesti gambar (JPG, PNG atau WebP) / File must be an image (JPG, PNG or WebP)");
+  }
+  if (file.size > maxBytes) {
+    throw new Error("Gambar terlalu besar, maksimum 5 MB / Image is too large, 5 MB max");
+  }
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error("Format gambar tidak disokong — guna JPG/PNG / Unsupported image format — use JPG or PNG");
+  }
+
+  let canvas: HTMLCanvasElement;
+  try {
+    canvas = drawToCanvas(bitmap, { maxWidth: 2000, maxHeight: 2000, crop: false });
+  } finally {
+    bitmap.close();
+  }
+
+  let blob = await canvasToBlob(canvas, "image/jpeg", 0.88);
+  if (blob && blob.size > maxBytes * 0.8) blob = await canvasToBlob(canvas, "image/jpeg", 0.7);
+  if (!blob) throw new Error("Tidak dapat memproses gambar ini / Couldn't process this image");
+  if (blob.size > maxBytes) throw new Error("Gambar terlalu besar, maksimum 5 MB / Image is too large, 5 MB max");
+  return blob;
+}
+
 function drawToCanvas(bitmap: ImageBitmap, target: Target): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
 

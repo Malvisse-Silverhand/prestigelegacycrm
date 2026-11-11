@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { appOrigin } from "@/lib/app-url";
+import { isMissingSchema } from "@/lib/schema-missing";
 import { getTargetableMembers } from "./data";
 import { ROLE_RANK, ROLE_LABEL, type Role } from "@/lib/profile-types";
 import { sendEmail, inviteEmail, resetPasswordEmail } from "@/lib/email";
@@ -1325,19 +1326,22 @@ export async function reorderBenefit(id: string, direction: "up" | "down") {
 // `profiles` covers only `is_active` (see the RLS hardening migrations) --
 // name, phone and email all need the service role, the same way
 // resetUserPasswordNow does for auth.users.
-export async function updateMyProfile(input: { fullName: string; phone: string; email: string }) {
+export async function updateMyProfile(input: { fullName: string; phone: string; email: string; mtaNumber: string }) {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Not signed in." };
 
   const fullName = input.fullName.trim();
   const phoneDigits = input.phone.trim();
   const email = input.email.trim().toLowerCase();
+  const mtaNumber = (input.mtaNumber ?? "").trim().toUpperCase();
 
   // Same rules the join form applies to a brand-new agent -- this is that
   // same information, just edited later rather than typed once at signup.
   if (fullName.length < 2) return { error: "Enter your full name." };
   if (!/^\d{9,11}$/.test(phoneDigits.replace(/\D/g, ""))) return { error: "Enter a valid phone number." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "Enter a valid email address." };
+  // Optional. Printed on the calculators' reports, so keep it to letters, digits and hyphens.
+  if (mtaNumber && !/^[A-Z0-9-]{3,20}$/.test(mtaNumber)) return { error: "MTA number can only use letters, numbers and hyphens (3-20 characters)." };
 
   const admin = createAdminClient();
 
@@ -1362,6 +1366,15 @@ export async function updateMyProfile(input: { fullName: string; phone: string; 
   if (profileError) {
     Sentry.captureException(profileError, { tags: { action: "updateMyProfile" } });
     return { error: "Couldn't save your profile. Please try again." };
+  }
+
+  // Its own update: mta_number exists only once the migration has run, and a
+  // missing column must not fail the name/phone/email save above.
+  const { error: mtaError } = await admin.from("profiles").update({ mta_number: mtaNumber || null }).eq("id", profile.id);
+  if (mtaError) {
+    if (isMissingSchema(mtaError)) return { error: "MTA number needs the latest database update first." };
+    Sentry.captureException(mtaError, { tags: { action: "updateMyProfile.mta" } });
+    return { error: "Couldn't save your MTA number. Please try again." };
   }
 
   // A self-edit rather than an admin acting on someone else, but still worth

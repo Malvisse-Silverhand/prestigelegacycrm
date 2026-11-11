@@ -178,6 +178,6 @@ export async function getFilterOptions() {
 
 export async function getVisibleLeadTotal() {
   const supabase = await createClient();
-  const { count } = await supabase.from("leads").select("id", { count: "exact", head: true });
+  const { count } = await supabase.from("leads").select("id", { count: "exact", head: true }).is("deleted_at", null);
   return count ?? 0;
 }

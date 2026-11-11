@@ -22,7 +22,8 @@ async function fetchLeadsAndActivity(unitIds: string[] | null) {
   const supabase = await createClient();
   let leadsQuery = supabase
     .from("leads")
-    .select("id, agent_id, unit_id, pipeline_stage, created_at");
+    .select("id, agent_id, unit_id, pipeline_stage, created_at")
+    .is("deleted_at", null);
   if (unitIds) leadsQuery = leadsQuery.in("unit_id", unitIds);
 
   const { data: leads } = await leadsQuery.returns<MinimalLead[]>();

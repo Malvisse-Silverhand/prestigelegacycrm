@@ -9,7 +9,8 @@ import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
 import { LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
-import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon } from "@/components/icons";
+import Link from "next/link";
+import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon, StoryboardIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage, updateSource, setClosedOn } from "./actions";
 import { WON_STAGES } from "@/lib/pipeline-stages";
 import { STAGES as STAGE_OPTIONS } from "@/lib/pipeline-stages";
@@ -86,6 +87,8 @@ function activityIcon(type: string) {
       return { bg: "bg-info-blue-bg", node: <FormLinkGlyph className="text-info-blue-text" /> };
     case "form_submitted":
       return { bg: "bg-success-bg", node: <CheckIcon width={14} height={14} className="text-green" /> };
+    case "storyboard":
+      return { bg: "bg-info-blue-bg", node: <StoryboardIcon width={14} height={14} className="text-info-blue-text" /> };
     default:
       return { bg: "bg-warn-gold-bg", node: <AlertIcon width={14} height={14} className="text-warn-gold-text" /> };
   }
@@ -376,8 +379,8 @@ export function LeadDetailContent({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_268px]">
-        <div className="max-h-[70vh] overflow-y-auto p-4 sm:p-[26px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className={`min-w-0 p-4 sm:p-[26px] ${isModal ? "max-h-[70vh] overflow-y-auto" : ""}`}>
           {/* Two tabs, not two pages: the lead is still one record. The second
               stays locked until the lead reaches Submission, because there is
               nothing to put in it before then. */}
@@ -464,7 +467,7 @@ export function LeadDetailContent({
               </div>
             </div>
 
-            <div className="mt-[16px] grid grid-cols-1 gap-x-5 gap-y-[14px] sm:grid-cols-2">
+            <div className="mt-[16px] grid grid-cols-1 gap-x-5 gap-y-[14px] sm:grid-cols-2 2xl:grid-cols-3">
               <Detail label="Full name" value={lead.full_name} />
               <Detail label="Phone / WhatsApp" value={lead.phone} />
               <Detail label="Email" value={lead.email} />
@@ -507,6 +510,13 @@ export function LeadDetailContent({
               <p className="mt-1.5 text-[11px] font-medium text-taupe">
                 Build a side-by-side plan comparison. Saving stores it on this lead. The Simple version is a Medical Card comparison sheet.
               </p>
+              <Link
+                href={`/storyboard?lead=${lead.id}`}
+                className="mt-3 flex w-fit items-center gap-2 rounded-[10px] bg-brand px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
+              >
+                <StoryboardIcon width={14} height={14} className="text-gold" />
+                Open Financial Storyboard
+              </Link>
             </div>
           </div>
 
@@ -557,85 +567,6 @@ export function LeadDetailContent({
               closingScripts={closingScripts}
             />
           )}
-
-          <div className="mt-[22px] flex items-center justify-between">
-            <div className="text-[14.5px] font-bold text-navy">Activity timeline</div>
-          </div>
-
-          <div className="mt-[18px] flex flex-col">
-            {activity.length === 0 && (
-              <p className="pb-4 text-[13px] text-muted">No activity logged yet.</p>
-            )}
-            {activity.map((a, i) => {
-              const meta = activityIcon(a.activity_type);
-              const isLast = i === activity.length - 1;
-              return (
-                <div key={a.id} className="flex gap-[14px]">
-                  <div className="flex flex-none flex-col items-center">
-                    <div className={`flex h-[30px] w-[30px] items-center justify-center rounded-[10px] ${meta.bg}`}>
-                      {meta.node}
-                    </div>
-                    {!isLast && <div className="my-1.5 w-[2px] flex-1 bg-sand" />}
-                  </div>
-                  <div className={`flex-1 ${isLast ? "" : "pb-5"}`}>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-[13.5px] font-semibold text-navy">
-                        {activityLabel(a)}
-                      </span>
-                      {/* timeAgo() reads Date.now(), so the server's render and
-                          the client's hydration pass -- moments apart -- can
-                          disagree right at a minute boundary. suppressHydration
-                          Warning accepts that one-off mismatch instead of
-                          reporting it; the client's value is the correct one
-                          for the reader either way. */}
-                      <span className="text-[11.5px] font-medium text-taupe" suppressHydrationWarning>
-                        {a.profiles?.full_name ?? "System"} · {timeAgo(a.created_at)}
-                      </span>
-                    </div>
-                    {a.activity_type === "note" && a.content && (
-                      <div className="mt-2 rounded-xl border border-sand bg-white p-3.5 text-[13px] leading-relaxed whitespace-pre-line text-ink">
-                        {a.content}
-                      </div>
-                    )}
-                    {a.activity_type !== "note" && a.content && (
-                      <div className="mt-1 text-[12.5px] font-medium whitespace-pre-line text-muted-2">{a.content}</div>
-                    )}
-                    {a.activity_type === "quotation_created" && quotationForActivity(a, quotations) && (
-                      <button
-                        type="button"
-                        onClick={() => openQuotation(quotationForActivity(a, quotations)!)}
-                        className="mt-1.5 text-[12px] font-semibold text-green underline underline-offset-2"
-                      >
-                        Open quotation
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-[22px] flex flex-col gap-2 rounded-[13px] border border-sand-2 bg-white p-3.5">
-            <textarea
-              ref={noteRef}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Add a note about this lead…"
-              rows={2}
-              className="resize-none bg-transparent text-[13px] text-navy outline-none placeholder:text-taupe"
-            />
-            {error && <p className="text-[12px] font-medium text-alert-red">{error}</p>}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={handleAddNote}
-                disabled={pending || !note.trim()}
-                className="rounded-[9px] bg-brand px-4 py-2 text-[12.5px] font-semibold text-white disabled:opacity-50"
-              >
-                Save
-              </button>
-            </div>
-          </div>
           </>
           )}
         </div>
@@ -751,6 +682,87 @@ export function LeadDetailContent({
               value={malaysiaDateTime(lead.created_at)}
             />
           </div>
+
+          <div className="h-px bg-sand-3" />
+
+          <div className="flex items-center justify-between">
+            <div className="text-[14.5px] font-bold text-navy">Activity timeline</div>
+          </div>
+
+          <div className="mt-[18px] flex flex-col">
+            {activity.length === 0 && (
+              <p className="pb-4 text-[13px] text-muted">No activity logged yet.</p>
+            )}
+            {activity.map((a, i) => {
+              const meta = activityIcon(a.activity_type);
+              const isLast = i === activity.length - 1;
+              return (
+                <div key={a.id} className="flex gap-[14px]">
+                  <div className="flex flex-none flex-col items-center">
+                    <div className={`flex h-[30px] w-[30px] items-center justify-center rounded-[10px] ${meta.bg}`}>
+                      {meta.node}
+                    </div>
+                    {!isLast && <div className="my-1.5 w-[2px] flex-1 bg-sand" />}
+                  </div>
+                  <div className={`flex-1 ${isLast ? "" : "pb-5"}`}>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-[13.5px] font-semibold text-navy">
+                        {activityLabel(a)}
+                      </span>
+                      {/* timeAgo() reads Date.now(), so the server's render and
+                          the client's hydration pass -- moments apart -- can
+                          disagree right at a minute boundary. suppressHydration
+                          Warning accepts that one-off mismatch instead of
+                          reporting it; the client's value is the correct one
+                          for the reader either way. */}
+                      <span className="text-[11.5px] font-medium text-taupe" suppressHydrationWarning>
+                        {a.profiles?.full_name ?? "System"} · {timeAgo(a.created_at)}
+                      </span>
+                    </div>
+                    {a.activity_type === "note" && a.content && (
+                      <div className="mt-2 rounded-xl border border-sand bg-white p-3.5 text-[13px] leading-relaxed whitespace-pre-line text-ink">
+                        {a.content}
+                      </div>
+                    )}
+                    {a.activity_type !== "note" && a.content && (
+                      <div className="mt-1 text-[12.5px] font-medium whitespace-pre-line text-muted-2">{a.content}</div>
+                    )}
+                    {a.activity_type === "quotation_created" && quotationForActivity(a, quotations) && (
+                      <button
+                        type="button"
+                        onClick={() => openQuotation(quotationForActivity(a, quotations)!)}
+                        className="mt-1.5 text-[12px] font-semibold text-green underline underline-offset-2"
+                      >
+                        Open quotation
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-[22px] flex flex-col gap-2 rounded-[13px] border border-sand-2 bg-white p-3.5">
+            <textarea
+              ref={noteRef}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add a note about this lead…"
+              rows={2}
+              className="resize-none bg-transparent text-[13px] text-navy outline-none placeholder:text-taupe"
+            />
+            {error && <p className="text-[12px] font-medium text-alert-red">{error}</p>}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleAddNote}
+                disabled={pending || !note.trim()}
+                className="rounded-[9px] bg-brand px-4 py-2 text-[12.5px] font-semibold text-white disabled:opacity-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -779,6 +791,7 @@ function activityLabel(a: ActivityRow) {
     case "quotation_created": return a.content ?? "Quotation created";
     case "form_link": return "Form link";
     case "form_submitted": return "Form submitted";
+    case "storyboard": return a.content ?? "Financial Storyboard presented";
     default: return "Note added";
   }
 }

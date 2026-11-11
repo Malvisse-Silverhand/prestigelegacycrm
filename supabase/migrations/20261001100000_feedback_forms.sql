@@ -80,21 +80,30 @@ create policy "feedback submissions: submit as yourself to an open form" on publ
   );
 -- No update/delete policies on submissions.
 
--- The first form: CRM improvement feedback. Only created if no form with
--- this slug exists, so re-running never duplicates or overwrites edits.
+-- The first form: a first-impressions survey for agents who are new to the
+-- CRM. Only created if no form with this slug exists, so re-running never
+-- duplicates or overwrites edits.
 insert into public.feedback_forms (slug, title, description, fields, is_open)
 select
   'crm-feedback',
-  'Maklum balas CRM / CRM feedback',
-  'Ada cadangan, penambahbaikan, masalah atau aduan tentang CRM? Beritahu kami di sini. Have a suggestion, an improvement, a problem or a complaint about the CRM? Tell us here.',
+  'CRM Feedback: first-time agents',
+  'Baru guna CRM ini? Beritahu kami pengalaman anda supaya kami boleh menambah baik. Just started using the CRM? Tell us how it went so we can make it better. Takes about 2 minutes.',
   '[
-    {"id":"type","label":"Jenis maklum balas / Type of feedback","type":"dropdown","required":true,
-     "options":["Maklum balas umum / General feedback","Cadangan penambahbaikan / Improvement idea","Masalah / ralat (bug)","Aduan / Complaint","Ciri baharu / New feature request","Lain-lain / Other"]},
-    {"id":"area","label":"Bahagian CRM / Area of the CRM","type":"dropdown","required":false,
-     "options":["Dashboard","Leads Manager","Sales Pipeline","Lead Generation / Landing Page","Appointment","Manage Cases","Servicing","Quotation","WA Flow","Statistics","My Team","Settings","Client Portal","Lain-lain / Other"]},
-    {"id":"rating","label":"Penilaian keseluruhan CRM / Overall rating of the CRM","type":"rating","required":false},
-    {"id":"message","label":"Maklum balas anda / Your feedback","type":"long_text","required":true},
-    {"id":"contact_ok","label":"Boleh kami hubungi anda tentang ini? / May we contact you about this?","type":"dropdown","required":false,
+    {"id":"first_impression","label":"Kesan pertama keseluruhan / Overall first impression of the CRM","type":"rating","required":true},
+    {"id":"ease_of_use","label":"Mudah tak untuk anda cari jalan? / How easy was it to find your way around?","type":"rating","required":true},
+    {"id":"how_long","label":"Sudah berapa lama anda guna CRM? / How long have you been using it?","type":"dropdown","required":true,
+     "options":["Hari pertama / First day","1-7 hari / 1-7 days","1-4 minggu / 1-4 weeks","Lebih sebulan / Over a month"]},
+    {"id":"device","label":"Peranti utama anda / Your main device","type":"dropdown","required":true,
+     "options":["Telefon / Phone","Komputer / Computer","Kedua-duanya / Both"]},
+    {"id":"tried","label":"Ciri yang sudah anda cuba / Features you have tried","type":"checkboxes","required":false,
+     "options":["Dashboard","Leads Manager","Sales Pipeline","Lead Generation / Landing Page","Appointment","Quotation","Manage Cases","Servicing","WA Flow","Support Tickets"]},
+    {"id":"speed","label":"Kelajuan CRM / How fast does the CRM feel?","type":"dropdown","required":false,
+     "options":["Laju / Fast","Sederhana / OK","Perlahan / Slow"]},
+    {"id":"liked","label":"Apa yang anda paling suka? / What did you like most?","type":"long_text","required":false},
+    {"id":"confusing","label":"Apa yang mengelirukan atau sukar? / What was confusing or hard?","type":"long_text","required":false},
+    {"id":"wished","label":"Ciri apa yang anda mahu ada? / What feature do you wish it had?","type":"long_text","required":false},
+    {"id":"recommend","label":"Berapa besar kemungkinan anda syorkan CRM ini kepada rakan agen? / How likely are you to recommend it to a fellow agent?","type":"rating","required":true},
+    {"id":"contact_ok","label":"Boleh kami hubungi anda tentang maklum balas ini? / May we contact you about this feedback?","type":"dropdown","required":false,
      "options":["Ya / Yes","Tidak / No"]}
   ]'::jsonb,
   true

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getReassignableUsers } from "@/app/(app)/leads/[id]/data";
 import { notify } from "@/lib/appointment-reminders";
+import { emailAgentLeadsAssigned } from "@/lib/lead-assignment-email";
 
 export type RebalanceMember = {
   id: string;
@@ -73,6 +74,7 @@ async function buildPlan(): Promise<BuiltPlan> {
   const { data, error } = await supabase
     .from("leads")
     .select("id, agent_id, created_at")
+    .is("deleted_at", null)
     .in("pipeline_stage", REBALANCEABLE_STAGES)
     .order("created_at", { ascending: false });
 
@@ -208,6 +210,13 @@ export async function applyRebalance(): Promise<{ error: string | null; moved: n
 
     // One summary per person, not one per lead -- a rebalance of forty leads
     // should not fire forty notifications at somebody.
+    await emailAgentLeadsAssigned({
+      agentId: m.id,
+      leadIds: done.map((l) => l.id as string),
+      via: `Rebalanced by ${profile.full_name}`,
+      actorId: profile.id,
+    });
+
     if (m.id !== profile.id) {
       await notify({
         profileId: m.id,

@@ -168,7 +168,19 @@ export async function deleteLead(leadId: string) {
     .select("id")
     .maybeSingle();
 
-  if (error || !data) return { error: "Couldn't delete this lead. Please try again." };
+  if (error) return { error: "Couldn't delete this lead. Please try again." };
+  if (!data) {
+    // No active row matched. For a superadmin (whose select policy still sees
+    // deleted rows) that usually means it was already deleted -- say so rather
+    // than a generic failure, and refresh so the stale card disappears.
+    const { data: existing } = await supabase.from("leads").select("deleted_at").eq("id", leadId).maybeSingle();
+    if (existing?.deleted_at) {
+      revalidatePath("/leads");
+      revalidatePath("/pipeline");
+      return { error: "This lead was already deleted. Refresh the page." };
+    }
+    return { error: "Couldn't delete this lead. Please try again." };
+  }
 
   revalidatePath("/leads");
   revalidatePath(`/leads/${leadId}`);

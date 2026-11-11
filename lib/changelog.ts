@@ -15,6 +15,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-10-23",
+    title: "Get emailed when a lead is assigned to you",
+    items: [
+      { kind: "new", text: "You now get an email the moment a lead lands in your book: from your landing page or form, when a manager assigns it to you, or after a team rebalance. It links straight to the lead." },
+      { kind: "fixed", text: "Landing page and form submissions now always create a new lead in Leads Manager. Before, a visitor using the same phone number as a lead you had deleted updated the hidden one instead." },
+      { kind: "improved", text: "Raising a ticket now always shows a clear message if something goes wrong, instead of doing nothing." },
+    ],
+  },
+  {
     date: "2026-10-01",
     title: "Support menu, a simpler Medical Card quotation and a system colour",
     items: [

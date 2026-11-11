@@ -191,6 +191,7 @@ export async function getSubmittableLeads(): Promise<SubmittableLead[]> {
         // person's details, already typed once on the lead.
         "id, lead_no, full_name, phone, email, pipeline_stage, interest, date_of_birth, gender, is_smoker, occupation, profiles!leads_agent_id_fkey(full_name)",
       )
+      .is("deleted_at", null)
       .order("lead_no", { ascending: false }),
     supabase.from("case_submissions").select("lead_id, status"),
   ]);

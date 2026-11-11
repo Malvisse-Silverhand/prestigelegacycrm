@@ -13,6 +13,7 @@ import {
 import { waLink } from "@/lib/whatsapp";
 import { malaysiaDateTime } from "@/lib/malaysia-date";
 import { createFormLink, reopenFormLink, revokeFormLink } from "./form-link-actions";
+import { ViewFormButton } from "./lead-form-view";
 
 function LinkIcon({ className }: { className?: string }) {
   return (
@@ -234,6 +235,8 @@ export function LeadFormLinks({
                 </div>
 
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {/* Always available: a saved-but-unsubmitted draft is visible here too. */}
+                  <ViewFormButton link={link} />
                   {live && (
                     <>
                       <button

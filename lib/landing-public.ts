@@ -32,6 +32,8 @@ export type PublicLandingPage = {
     logoUrl: string | null;
     headerUrl: string | null;
     photoUrl: string | null;
+    /** The agent's own MTA number (Settings > My Profile), printed by the calculators. */
+    mtaNumber: string | null;
   };
 };
 
@@ -81,6 +83,7 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
   let logoUrl: string | null = null;
   let headerUrl: string | null = null;
   let photoUrl: string | null = null;
+  let mtaNumber: string | null = null;
   try {
     const { data: branding, error } = await admin
       .from("profiles")
@@ -95,6 +98,15 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
     }
   } catch {
     // Columns not there yet -- fall through with nulls.
+  }
+
+  // Its own query: mta_number comes from a later migration than the columns
+  // above, and a missing column must not take the branding images with it.
+  try {
+    const { data: mta, error } = await admin.from("profiles").select("mta_number").eq("id", agent.id).maybeSingle();
+    if (!error && mta) mtaNumber = (mta.mta_number as string | null) ?? null;
+  } catch {
+    // Column not there yet -- the calculators just leave the MTA off.
   }
 
   // Tolerant on their own (see getBrandLogoUrl/getBrandCoverUrl) -- a missing
@@ -122,6 +134,7 @@ async function loadPage(filter: { slug: string; agentId?: string }): Promise<Pub
       logoUrl,
       headerUrl,
       photoUrl,
+      mtaNumber,
     },
   };
 }

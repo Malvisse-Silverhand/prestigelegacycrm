@@ -1,8 +1,8 @@
 <!-- ============================================================
-     QuickQuote · Kad Perubatan i-Medi Evolusi · Takaful4Us  (v5)
+     QuickQuote · Kad Perubatan i-Medi Evolusi  (v5)
      WordPress embed — paste dalam Custom HTML block.
      Data: 206 quotation PDF rasmi GET (ANB 1-60)
-     TETAPAN: WEBHOOK_URL (Pabbly) & AGENT_WA (601118818316) — SUDAH DISET.
+     TETAPAN: WEBHOOK_URL (Pabbly) & AGENT_WA (dari ?wa= pada landing page).
      NOTA TEKNIKAL: semua "<\/" dalam JS sengaja di-escape supaya
      WordPress tidak menamatkan blok script lebih awal. JANGAN ubah.
      ============================================================ -->
@@ -339,8 +339,8 @@
   var WEBHOOK_URL='https://connect.pabbly.com/webhook-listener/webhook/IjU3NjEwNTY4MDYzMzA0MzI1MjZmNTUzNCI_3D_pc/IjU3NjcwNTY4MDYzNzA0MzU1MjZjNTUzMzUxMzQi_pc';
   // Default agent for a standalone/WordPress embed; a landing page
   // overrides it per agent with ?wa= (digits only -- it lands in a wa.me URL).
-  var AGENT_WA=(new URLSearchParams(location.search).get('wa')||'').replace(/\D/g,'')
-    ||'601118818316';               // Ejen Kamal Husaini
+  var AGENT_WA=(new URLSearchParams(location.search).get('wa')||'').replace(/\D/g,'');
+  // No agent number: the WhatsApp button says so rather than using someone else's.
   /* ============ LANDING PAGE MODE ============
      When this tool runs inside an agent's public landing page (/p/<slug>),
      that page passes ?wa=<agent number>&lp=<slug>. The WhatsApp button then
@@ -406,8 +406,8 @@
     lockT:['Manfaat penuh dikunci','Full benefits locked'],
     lockD:['Isi maklumat di atas untuk buka senarai penuh 41 manfaat dan muat turun PDF.',
            'Fill in your details above to unlock all 41 benefits and the PDF download.'],
-    privacy:['Maklumat anda dihantar kepada ejen Takaful4Us untuk tujuan sebut harga sahaja.',
-             'Your details are sent to a Takaful4Us agent for quotation purposes only.'],
+    privacy:['Maklumat anda dihantar kepada ejen untuk tujuan sebut harga sahaja.',
+             'Your details are sent to an agent for quotation purposes only.'],
     profileFor:['Quotation ini khas untuk','This quotation is specially for'],
     pDob:['Tarikh Lahir','Date of Birth'], pAnb:['Umur Seterusnya','Age Next Birthday'],
     pGender:['Jantina','Gender'], pSmoke:['Merokok','Smoker'], pOcc:['Kelas Pekerjaan','Occupation Class'],
@@ -431,7 +431,7 @@
     benSub:['Tap ikon <b>i<\/b> untuk definisi setiap manfaat','Tap the <b>i<\/b> icon for each benefit definition'],
     viewSimple:['Ringkas','Simplified'], viewFull:['Penuh','Full'],
     colBenefit:['Manfaat','Benefit'],
-    btnWa:['Hantar kepada Ejen','Send to Agent'], btnPdf:['Download PDF','Download PDF'],
+    btnWa:[AGENT_WA?'Hantar kepada Ejen':'Ejen Tidak Dapat Dihubungi',AGENT_WA?'Send to Agent':'Ejen Tidak Dapat Dihubungi'], btnPdf:['Download PDF','Download PDF'],
     btnSave:['Simpan ke Lead','Save to Lead'], btnSaving:['Menyimpan…','Saving…'],
     savedTo:['Disimpan ke %s','Saved to %s'], saveFail:['Gagal simpan — cuba lagi.','Save failed — try again.'],
     flagCash:['Nilai Tunai (Simpanan)','Cash Value (Savings)'],
@@ -458,8 +458,8 @@
     sentT:['Terima kasih!','Thank you!'],
     sentD:['Maklumat anda dah dihantar kepada ejen. Kami akan hubungi anda tak lama lagi.',
            'Your details have been sent to the agent. We will contact you shortly.'],
-    disc:['<strong>Penafian:<\/strong> Angka di atas adalah anggaran caruman bulanan untuk pakej i-Great Evo + rider i-Medi Evolusi dan tertakluk kepada penilaian pengunderaitan, status kesihatan, dan terma sebenar Great Eastern Takaful. Bukan kontrak. Caruman &amp; manfaat sebenar tertakluk kepada Sijil Takaful dan Risalah Pemberitahuan Produk (PDS). Manfaat dilindungi PIDM sehingga had perlindungan. Disediakan oleh Takaful4Us — ejen berdaftar MTA1462134.',
-          '<strong>Disclaimer:<\/strong> The figures above are estimated monthly contributions for the i-Great Evo + i-Medi Evolusi rider package and are subject to underwriting assessment, health status, and the actual terms of Great Eastern Takaful. Not a contract. Actual contributions &amp; benefits are subject to the Takaful Certificate and Product Disclosure Sheet (PDS). Benefits are protected by PIDM up to limits. Provided by Takaful4Us — registered agent MTA1462134.'],
+    disc:['<strong>Penafian:<\/strong> Angka di atas adalah anggaran caruman bulanan untuk pakej i-Great Evo + rider i-Medi Evolusi dan tertakluk kepada penilaian pengunderaitan, status kesihatan, dan terma sebenar Great Eastern Takaful. Bukan kontrak. Caruman &amp; manfaat sebenar tertakluk kepada Sijil Takaful dan Risalah Pemberitahuan Produk (PDS). Manfaat dilindungi PIDM sehingga had perlindungan.',
+          '<strong>Disclaimer:<\/strong> The figures above are estimated monthly contributions for the i-Great Evo + i-Medi Evolusi rider package and are subject to underwriting assessment, health status, and the actual terms of Great Eastern Takaful. Not a contract. Actual contributions &amp; benefits are subject to the Takaful Certificate and Product Disclosure Sheet (PDS). Benefits are protected by PIDM up to limits.'],
     waIntro:['Salam, saya nak tanya pasal quotation Kad Perubatan i-Medi Evolusi ni.',
              'Hi, I would like to enquire about this i-Medi Evolusi Medical Card quotation.']
   };
@@ -623,15 +623,20 @@
     prefillSmoker=q.get('smoker')||''; // 'true' | 'false'
   })();
   var capturedQuotationId=null; // set once capture-quotation's insert responds
-  // Agent who produced the quotation, for the sign-off line on the PDF. Comes
-  // from the CRM session (same-origin /api/me); standalone just leaves it off.
-  var agentName='';
-  try{
-    fetch('/api/me',{headers:{'Accept':'application/json'}})
-      .then(function(r){return r.ok?r.json():null;})
-      .then(function(j){ if(j&&j.fullName) agentName=j.fullName; })
-      .catch(function(){});
-  }catch(e){}
+  // The agent whose name/MTA the quotation carries. A landing page passes
+  // ?an=<name>&mta=<MTA no.> for the page's own agent; inside the CRM the
+  // signed-in agent comes from the same-origin /api/me. Standalone: left off.
+  var agentName=(new URLSearchParams(location.search).get('an')||'').slice(0,80);
+  var agentMta=(new URLSearchParams(location.search).get('mta')||'').replace(/[^A-Za-z0-9-]/g,'').slice(0,20);
+  function agentTag(){return agentName?agentName+(agentMta?' ('+agentMta+')':''):'';}
+  if(!agentName){
+    try{
+      fetch('/api/me',{headers:{'Accept':'application/json'}})
+        .then(function(r){return r.ok?r.json():null;})
+        .then(function(j){ if(j&&j.fullName){ agentName=j.fullName; agentMta=(j.mtaNumber||'').replace(/[^A-Za-z0-9-]/g,''); } })
+        .catch(function(){});
+    }catch(e){}
+  }
   var $=function(id){return document.getElementById(id)};
   var formEl=$('mq-form'),resEl=$('mq-result');
 
@@ -706,7 +711,7 @@
       ?'<button type="button" class="mq-act mq-act-save" data-save="1" id="mq-save'+idSuffix+'">'+svgSave+t('btnSave')+'<\/button>'
       :'';
     return '<div class="mq-actions'+(leadId?' has-save':'')+'">'
-      +'<a class="mq-act mq-act-wa" data-wa-send="1" href="'+waLink()+'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a>'
+      +'<a class="mq-act mq-act-wa" data-wa-send="1" href="'+waLink()+'" target="_blank" rel="noopener"'+(AGENT_WA?'':' style="pointer-events:none;opacity:.6"')+'>'+svgWa+t('btnWa')+'<\/a>'
       +'<button type="button" class="mq-act mq-act-pdf" data-pdf="1" id="mq-pdf'+idSuffix+'">'+svgPdf+t('btnPdf')+'<\/button>'
       +saveBtn
       +'<\/div>';
@@ -812,6 +817,7 @@
   }
 
   function waLink(){
+    if(!AGENT_WA)return '#';
     if(!current)return 'https://wa.me/'+AGENT_WA;
     var d=current.data;
     var msg=plain(t('waIntro'))+'\n\n'
@@ -837,7 +843,7 @@
             : unlocked ? '<div class="mq-gate"><div class="mq-gate-h">'+tick+'<span>'+t('sentT')+'<\/span><\/div>'
               +'<p class="mq-gate-sub">'+t('sentD')+'<\/p>'
               +'<div class="mq-actions" style="grid-template-columns:1fr"><a class="mq-act mq-act-wa" href="'+waLink()
-              +'" target="_blank" rel="noopener">'+svgWa+t('btnWa')+'<\/a><\/div><\/div>'
+              +'" target="_blank" rel="noopener"'+(AGENT_WA?'':' style="pointer-events:none;opacity:.6"')+'>'+svgWa+t('btnWa')+'<\/a><\/div><\/div>'
             : gateHTML(true))
         + regenHTML();
       bindResult();return;
@@ -967,7 +973,7 @@
       +'<\/style><\/head><body>'
       +'<div class="hd"><div><h1>QuickQuote — '+(L?'i-Medi Evolusi Medical Card':'Kad Perubatan i-Medi Evolusi')+'<\/h1>'
         +'<div class="sub">Great Eastern Takaful Berhad (916257-H)<\/div><\/div>'
-        +'<div class="brand">TAKAFUL4US<br><span style="font-weight:normal;color:#8b8271">MTA1462134<\/span><\/div><\/div>'
+        +(agentName?'<div class="brand">'+esc(agentName.toUpperCase())+(agentMta?'<br><span style="font-weight:normal;color:#8b8271">'+esc(agentMta)+'<\/span>':'')+'<\/div>':'')+'<\/div>'
       +'<div class="pf"><h2>'+t('profileFor')+': '+esc(lead.name)+'<\/h2><table>'
         +'<tr><td class="k">'+t('pDob')+'<\/td><td class="v">'+dmy(d.dob)+'<\/td>'
           +'<td class="k">'+t('pAnb')+'<\/td><td class="v">'+current.anb+'<\/td><\/tr>'
@@ -988,7 +994,7 @@
       +'<table class="b"><thead><tr><th>'+t('colBenefit')+'<\/th><th class="c">'+t('opt1')+'<\/th><th class="c">'+t('opt2')+'<\/th><\/tr><\/thead><tbody>'
       +rowsHTML+'<\/tbody><\/table>'
       +'<div class="dc">'+t('disc')+'<\/div>'
-      +(agentName?'<div class="sg">Quotation disediakan oleh '+esc(agentName)+', Great Eastern Takaful Berhad<\/div>':'')
+      +(agentName?'<div class="sg">Quotation disediakan oleh '+esc(agentTag())+', Great Eastern Takaful Berhad<\/div>':'')
       +'<\/body><\/html>');
     w.document.close();
     setTimeout(function(){try{w.focus();w.print();}catch(e){}},450);

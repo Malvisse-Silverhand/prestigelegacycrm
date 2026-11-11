@@ -3,6 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { dispatchWebhook } from "@/lib/dispatch-webhook";
+import { emailAgentLeadsAssigned } from "@/lib/lead-assignment-email";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 
 // Submitted by a visitor with no account and no session -- the slug in the URL
@@ -54,6 +55,12 @@ export async function captureLandingLead(input: {
     .select("id")
     .eq("agent_id", page.agent_id)
     .eq("phone", phone)
+    // A lead the agent deleted is not "the same person re-submitting": matching
+    // it updated a hidden row and the visitor never reached the Leads Manager.
+    // limit(1) also keeps maybeSingle() from erroring when a phone repeats.
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   const row = {
@@ -104,6 +111,11 @@ export async function captureLandingLead(input: {
       content: `Lead masuk dari landing page /p/${input.slug}`,
     });
     await dispatchWebhook("lead_created", { ...lead, source: "landing_page", slug: input.slug });
+    await emailAgentLeadsAssigned({
+      agentId: page.agent_id as string,
+      leadIds: [lead.id as string],
+      via: `Landing page /p/${input.slug}`,
+    });
   }
 
   return { error: null };
@@ -172,6 +184,12 @@ export async function captureAgentFormLead(input: {
     .select("id")
     .eq("agent_id", page.agent_id)
     .eq("phone", phone)
+    // A lead the agent deleted is not "the same person re-submitting": matching
+    // it updated a hidden row and the visitor never reached the Leads Manager.
+    // limit(1) also keeps maybeSingle() from erroring when a phone repeats.
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   const row = {
@@ -230,6 +248,11 @@ export async function captureAgentFormLead(input: {
       content: `Lead masuk dari borang Agent Landing Page (${input.slug})`,
     });
     await dispatchWebhook("lead_created", { ...lead, source: "agent_landing_page", slug: input.slug });
+    await emailAgentLeadsAssigned({
+      agentId: page.agent_id as string,
+      leadIds: [lead.id as string],
+      via: `Agent landing page form (${input.slug})`,
+    });
   }
 
   return { error: null };
