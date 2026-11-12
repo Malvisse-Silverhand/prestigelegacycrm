@@ -25,6 +25,17 @@ function expiry(days: number, lang: Lang): string {
 export function PracticeSection({ lang, sessions, notice }: Props) {
   const now = new Date();
   return (
+    <>
+    {notice ? null : (
+      <section aria-labelledby="sb-plans-h" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#a57a12]">{t("plan.eyebrow", lang)}</p>
+          <h2 id="sb-plans-h" className="m-0 text-[26px] font-extrabold tracking-[-0.03em] text-navy sm:text-[30px]">{t("plan.heading", lang)}</h2>
+          <p className="m-0 max-w-[62ch] text-[13.5px] font-medium text-muted">{t("plan.sub", lang)}</p>
+        </div>
+        <NewPracticeButtons />
+      </section>
+    )}
     <section aria-labelledby="sb-practice-h" className="flex flex-col gap-3 rounded-[16px] border border-sand bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h2 id="sb-practice-h" className="m-0 text-lg font-extrabold text-navy">{t("practice.title", lang)}</h2>
@@ -45,7 +56,6 @@ export function PracticeSection({ lang, sessions, notice }: Props) {
         </p>
       ) : (
         <>
-          <NewPracticeButtons />
           {sessions && sessions.length === 0 ? (
             <p className="m-0 text-sm text-muted-2">{t("practice.empty", lang)}</p>
           ) : (
@@ -83,5 +93,6 @@ export function PracticeSection({ lang, sessions, notice }: Props) {
         </>
       )}
     </section>
+    </>
   );
 }
