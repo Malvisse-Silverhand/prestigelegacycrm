@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Financial Storyboard · Business Protection · Fill and Calculate</title>
+<script src="7c45ad21-7f7b-48b4-95ff-bbc0214b0771"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e325edc3-3548-4b71-86b4-cfccce8ec1e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("63864858-e0aa-4248-a6c5-5ad279720cd4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("43b647c8-6105-408c-97af-188f99555573") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("9dcb6a45-adda-4c4b-9876-1aae7552e38f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("a8e05cf9-5281-4bba-8557-41a1eceb05a1") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#f3efe6}
+a{color:#0f2540}a:hover{color:#0f4c35}
+input,select,button,textarea{font-family:inherit}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #fac748;outline-offset:2px}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+.scene3d{perspective:1100px;perspective-origin:50% 30%}
+.stage{transform-style:preserve-3d;animation:spin 24s linear infinite;transform:rotateX(-24deg) rotateY(-30deg)}
+@keyframes spin{from{transform:rotateX(-24deg) rotateY(-30deg)}to{transform:rotateX(-24deg) rotateY(330deg)}}
+.col,.col *{transform-style:preserve-3d}
+.grow{animation:grow3d 1.2s cubic-bezier(.16,1,.3,1) both;transform-origin:50% 100%}
+@keyframes grow3d{from{transform:scaleY(.02)}to{transform:scaleY(1)}}
+.g2{animation-delay:.15s}.g3{animation-delay:.3s}.g4{animation-delay:.45s}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.85}}
+.still .stage,.still .grow,.still .pulse{animation:none}
+@media (prefers-reduced-motion:reduce){.stage,.grow,.pulse{animation:none}}
+/* ---- Shared scene motion system (same in every dashboard) ---- */
+.fx-frame{--fx-ease:cubic-bezier(.16,1,.3,1)}
+@keyframes fxIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes fxInX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fxPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes fxFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes fxDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.45}}
+@keyframes fxFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fx-dot{animation:fxDot 2.4s ease-in-out infinite}
+.fx-legend li{animation:fxFade .6s cubic-bezier(.16,1,.3,1) both}
+.fx-legend li:nth-child(2){animation-delay:.15s}.fx-legend li:nth-child(3){animation-delay:.3s}.fx-legend li:nth-child(4){animation-delay:.45s}
+.still .fx-dot,.still .fx-legend li{animation:none}
+@media (prefers-reduced-motion:reduce){.fx-dot,.fx-legend li{animation:none}}
+
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #f3efe6; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+  <nav aria-label="CRM navigation" style="flex: 1 1 232px; max-width: 100%; background: #0f2540; color: #fdf9f3; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 8px 20px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: #fac748; color: #0f2540; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">PL</div>
+      <div style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 15px; line-height: 1.2;">Prestige Legacy</span><span style="font-size: 12px; color: #c9d2e0; line-height: 1.3;">Agent CRM</span></div>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</a>
+    <a href="LeadPopup.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Leads</a>
+    <a href="Storyboards.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #0f2540; background: #fac748; text-decoration: none; font-size: 14px; font-weight: 600;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M10 9l5 2.5-5 2.5z"></path><path d="M8 21h8"></path></svg>Financial Storyboard</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>Pipeline</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 13h7M9 17h5"></path></svg>Quotations</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"></path></svg>Tasks</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.5"></circle><circle cx="5" cy="17" r="2.5"></circle><circle cx="19" cy="17" r="2.5"></circle><path d="M12 10.5v3M12 13.5L6.5 15.5M12 13.5l5.5 2"></path></svg>Team</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+    <p style="margin: 0; font-size: 13px; color: #5b6576;"><a href="Storyboards.dc.html" style="color: #5b6576; text-decoration: none;">Financial Storyboard</a> <span aria-hidden="true">›</span> <span style="color: #1c2433; font-weight: 600;">Faris Daniel</span></p>
+
+    <section aria-label="Module header" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 420px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Module</span>
+          <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Business Protection Takaful</h1>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #3d4757; max-width: 680px;">One death in a business, four bills at once: the company loses a key person, partners need cash to buy the heirs' shares, the bank wants the loan settled, and the owner's family loses income. Calculate each with the prospect's own numbers.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Keyman</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Buy-sell</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Business loan</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Enterprise</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <a href="LeadPopup.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #0f2540; color: #0f2540; font-size: 14px; font-weight: 600; text-decoration: none;">← Back to lead</a>
+          <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;">
+        <a href="Main.dc.html" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">01</span><span style="font-weight: 700; font-size: 15px;">Hibah</span></a>
+        <a href="MedMain.dc.html" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">02</span><span style="font-weight: 700; font-size: 15px;">Medical Card</span></a>
+        <a href="#" aria-current="page" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 2px solid #0f2540; background: #0f2540; color: #fdf9f3; text-decoration: none;"><span style="display: block; font-size: 11px; color: #fac748;">03</span><span style="font-weight: 700; font-size: 15px;">Business Protection</span></a>
+        <a href="CiMain.dc.html" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">04</span><span style="font-weight: 700; font-size: 15px;">Critical Illness</span></a>
+      </div>
+      <nav aria-label="Storyboard steps" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <a href="#" aria-current="step" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #1d4f91; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none;">1 · Fill &amp; Calculate</a>
+        <a href="BizExplain.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #0f7a4c; color: #0f7a4c; font-weight: 600; font-size: 14px; text-decoration: none;">2 · Explanation</a>
+        <a href="BizRisk.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b23a3a; color: #b23a3a; font-weight: 600; font-size: 14px; text-decoration: none;">3 · Rejection Risk</a>
+        <a href="BizObjections.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b8600a; color: #8a4a06; font-weight: 600; font-size: 14px; text-decoration: none;">4 · Objection</a>
+      </nav>
+    </section>
+
+    <details open="" style="background: #ffffff; border: 1.5px dashed #c9d2e0; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 15px; color: #0f2540;">Prospect profile</span><span style="font-size: 12px; color: #5b6576; flex: 1;">Shared by all modules · pulled from the lead record</span><span aria-hidden="true">▾</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding-bottom: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-nick" style="font-size: 12px; font-weight: 600;">Nickname (not full name)</label><input id="p-nick" type="text" value="Faris" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-age" style="font-size: 12px; font-weight: 600;">Age</label><input id="p-age" type="text" value="42" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-occ" style="font-size: 12px; font-weight: 600;">Occupation</label><input id="p-occ" type="text" value="Managing Director" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-smoke" style="font-size: 12px; font-weight: 600;">Smoke / vape</label><sc-raw-select id="p-smoke" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>No</option><option>Yes</option><option>Quit &lt; 12 months</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-budget" style="font-size: 12px; font-weight: 600;">Monthly budget</label><sc-raw-select id="p-budget" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Discuss first</option><option>RM300–500</option><option selected="">Above RM500</option></sc-raw-select></div>
+      </div>
+    </details>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #0f7a4c;">01 / BUSINESS PROFILE</span>
+      <h2 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; color: #0f2540;">What kind of <span style="color: #1d4f91;">business</span> is this?</h2>
+    </div>
+
+    <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+      <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">1. Business profile</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; padding-bottom: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-name" style="font-size: 13px; font-weight: 600;">Company / business name</label><input id="b-name" type="text" value="{{v.company}}" sc-camel-on-change="{{h.company}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Appears in the summary and report.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-ent" style="font-size: 13px; font-weight: 600;">Entity type</label><sc-raw-select id="b-ent" value="{{v.entity}}" sc-camel-on-change="{{h.entity}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="sdn">Sdn. Bhd. (company)</option><option value="plt">PLT / LLP</option><option value="partner">Enterprise · Partnership</option><option value="sole">Enterprise · Sole proprietor</option></sc-raw-select><span style="font-size: 12px; color: #5b6576;">Check SSM: Sdn. Bhd. / PLT = separate entity. Enterprise = in the owner's name.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-ind" style="font-size: 13px; font-weight: 600;">Industry</label><input id="b-ind" type="text" value="Logistics" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Reference only.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-rev" style="font-size: 13px; font-weight: 600;">Annual revenue (RM)</label><input id="b-rev" type="text" inputmode="numeric" value="{{v.revenue}}" sc-camel-on-change="{{h.revenue}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-pro" style="font-size: 13px; font-weight: 600;">Net profit per year (RM)</label><input id="b-pro" type="text" inputmode="numeric" value="{{v.profit}}" sc-camel-on-change="{{h.profit}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Ask: "What was last year's net profit?"</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-fix" style="font-size: 13px; font-weight: 600;">Fixed operating costs / month (RM)</label><input id="b-fix" type="text" inputmode="numeric" value="{{v.fixed}}" sc-camel-on-change="{{h.fixed}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Salaries, rent, utilities, instalments.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-res" style="font-size: 13px; font-weight: 600;">Business cash reserve (RM)</label><input id="b-res" type="text" inputmode="numeric" value="{{v.reserve}}" sc-camel-on-change="{{h.reserve}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Deducted from the Keyman gap.</span></div>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #0f2540; background: #e9eef8; border-left: 4px solid #1d4f91; border-radius: 8px; padding: 10px 12px;"><strong>{{entityNote.t}}:</strong> {{entityNote.d}}</p>
+    </details>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #0f7a4c;">02 / CHOOSE THE NEED</span>
+      <div role="tablist" aria-label="Business needs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+          <button type="button" role="tab" aria-selected="{{t.sel}}" sc-camel-on-click="{{t.pick}}" style="{{t.style}}"><span style="font-weight: 800; font-size: 16px;">{{t.label}}</span><span style="font-size: 12px; opacity: .85;">{{t.sub}}</span><span style="font-size: 14px; font-weight: 700; margin-top: 4px;">{{t.amount}}</span></button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <div style="flex: 999 1 540px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+
+        <sc-if value="{{is.keyman}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div><h3 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f2540;">How much Keyman protection does the company need?</h3><p style="margin: 6px 0 0; font-size: 14px; color: #3d4757;">Keyman = the company protects itself from losses when a key person is gone. Money is paid to the company, not the heirs. Partner share issues are calculated under Buy-sell.</p></div>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">2. Calculation method</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="k-m" style="font-size: 13px; font-weight: 600;">Recommended method</label><sc-raw-select id="k-m" value="{{v.kMethod}}" sc-camel-on-change="{{h.kMethod}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="profit">Contribution to profit</option><option value="salary">Salary multiple</option><option value="replace">Replacement cost</option></sc-raw-select><span style="font-size: 12px; color: #5b6576;">Profit = most accurate; salary = simplest; replacement = lowest.</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="k-x" style="font-size: 13px; font-weight: 600;">Salary multiple (×)</label><input id="k-x" type="text" inputmode="numeric" value="{{v.kMult}}" sc-camel-on-change="{{h.kMult}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Typically 5–10×.</span></div>
+                <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px;"><legend style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Number of key persons</legend><div style="display: flex; gap: 8px;"><sc-for list="{{kCountChips}}" as="c" hint-placeholder-count="3"><button type="button" sc-camel-on-click="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.style}}">{{c.label}}</button></sc-for></div></fieldset>
+              </div>
+            </details>
+            <sc-for list="{{kps}}" as="k" hint-placeholder-count="2">
+              <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+                <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">Key person {{k.num}} · {{k.name}}</span></summary>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.name}}" style="font-size: 13px; font-weight: 600;">Name / label</label><input id="{{k.ids.name}}" type="text" value="{{k.name}}" sc-camel-on-change="{{k.set.name}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #ffffff;"></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.role}}" style="font-size: 13px; font-weight: 600;">Role</label><sc-raw-select id="{{k.ids.role}}" value="{{k.role}}" sc-camel-on-change="{{k.set.role}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option>Owner / Founder</option><option>CEO / Managing Director</option><option>Director</option><option>Top Sales / BD</option><option>Technical Specialist</option><option>Operations Head</option><option>Finance / Key Signatory</option><option>Other</option></sc-raw-select></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.salary}}" style="font-size: 13px; font-weight: 600;">Salary + allowances / year (RM)</label><input id="{{k.ids.salary}}" type="text" inputmode="numeric" value="{{k.salary}}" sc-camel-on-change="{{k.set.salary}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #0f2540;">{{k.salaryLine}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.impact}}" style="font-size: 13px; font-weight: 600;">Impact on profit if gone (%)</label><input id="{{k.ids.impact}}" type="text" inputmode="numeric" value="{{k.impact}}" sc-camel-on-change="{{k.set.impact}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #0f2540;">{{k.impactLine}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.stable}}" style="font-size: 13px; font-weight: 600;">Months until stable again</label><sc-raw-select id="{{k.ids.stable}}" value="{{k.stable}}" sc-camel-on-change="{{k.set.stable}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option><option value="24">24 months</option></sc-raw-select></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.ci}}" style="font-size: 13px; font-weight: 600;">If CI: expected disruption</label><sc-raw-select id="{{k.ids.ci}}" value="{{k.ci}}" sc-camel-on-change="{{k.set.ci}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option></sc-raw-select></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.cost}}" style="font-size: 13px; font-weight: 600;">Recruit / train / interim cost (RM)</label><input id="{{k.ids.cost}}" type="text" inputmode="numeric" value="{{k.cost}}" sc-camel-on-change="{{k.set.cost}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.succ}}" style="font-size: 13px; font-weight: 600;">Successor readiness</label><sc-raw-select id="{{k.ids.succ}}" value="{{k.succ}}" sc-camel-on-change="{{k.set.succ}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="ready">Successor ready now</option><option value="second">Second-in-line, needs 1–6 months</option><option value="none">No suitable successor</option></sc-raw-select></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.exD}}" style="font-size: 13px; font-weight: 600;">Existing Keyman Death/TPD cover (RM)</label><input id="{{k.ids.exD}}" type="text" inputmode="numeric" value="{{k.exD}}" sc-camel-on-change="{{k.set.exD}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;"><label for="{{k.ids.exC}}" style="font-size: 13px; font-weight: 600;">Existing Keyman CI cover (RM)</label><input id="{{k.ids.exC}}" type="text" inputmode="numeric" value="{{k.exC}}" sc-camel-on-change="{{k.set.exC}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                </div>
+              </details>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{is.buysell}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div><h3 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f2540;">If a partner dies, who buys their shares?</h3><p style="margin: 6px 0 0; font-size: 14px; color: #3d4757;">Without buy-sell, the heirs inherit the shares. Heirs want cash, the remaining partners want control, and often nobody has the cash. Buy-sell = an agreement + takaful funding, so partners buy at an agreed price and heirs receive cash.</p></div>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">2. Business value</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="bs-m" style="font-size: 13px; font-weight: 600;">Valuation method</label><sc-raw-select id="bs-m" value="{{v.valMethod}}" sc-camel-on-change="{{h.valMethod}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="multiple">Multiple of net profit</option><option value="assets">Net assets (assets − liabilities)</option><option value="agreed">Value agreed by partners</option></sc-raw-select></div>
+                <sc-if value="{{is.valMultiple}}" hint-placeholder-val="{{true}}"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="bs-x" style="font-size: 13px; font-weight: 600;">Profit multiple (×)</label><input id="bs-x" type="text" inputmode="numeric" value="{{v.valMult}}" sc-camel-on-change="{{h.valMult}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #0f2540;">{{bs.valueLine}}</span></div></sc-if>
+                <sc-if value="{{is.valOther}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="bs-v" style="font-size: 13px; font-weight: 600;">Business value (RM)</label><input id="bs-v" type="text" inputmode="numeric" value="{{v.valManual}}" sc-camel-on-change="{{h.valManual}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div></sc-if>
+              </div>
+            </details>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">3. Partners &amp; holdings</span></summary>
+              <fieldset style="border: 0; margin: 0 0 12px; padding: 0;"><legend style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Number of partners</legend><div style="display: flex; gap: 8px; flex-wrap: wrap;"><sc-for list="{{pCountChips}}" as="c" hint-placeholder-count="4"><button type="button" sc-camel-on-click="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.style}}">{{c.label}}</button></sc-for></div></fieldset>
+              <div style="display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px;">
+                <sc-for list="{{partners}}" as="p" hint-placeholder-count="3">
+                  <div style="background: #ffffff; border: 1px solid #ecdfc4; border-radius: 12px; padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;"><label for="{{p.ids.name}}" style="font-size: 12px; font-weight: 600;">Partner {{p.num}}</label><input id="{{p.ids.name}}" type="text" value="{{p.name}}" sc-camel-on-change="{{p.set.name}}" style="min-height: 40px; border: 1px solid #d6cdb9; border-radius: 8px; padding: 0 10px; font-size: 14px;"></div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;"><label for="{{p.ids.pct}}" style="font-size: 12px; font-weight: 600;">Holding (%)</label><input id="{{p.ids.pct}}" type="text" inputmode="numeric" value="{{p.pct}}" sc-camel-on-change="{{p.set.pct}}" style="min-height: 40px; border: 1px solid #d6cdb9; border-radius: 8px; padding: 0 10px; font-size: 14px;"><span style="font-size: 11px; color: #0f2540;">{{p.valueLine}}</span></div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;"><label for="{{p.ids.age}}" style="font-size: 12px; font-weight: 600;">Age</label><input id="{{p.ids.age}}" type="text" inputmode="numeric" value="{{p.age}}" sc-camel-on-change="{{p.set.age}}" style="min-height: 40px; border: 1px solid #d6cdb9; border-radius: 8px; padding: 0 10px; font-size: 14px;"></div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;"><label for="{{p.ids.ex}}" style="font-size: 12px; font-weight: 600;">Existing buy-sell cover (RM)</label><input id="{{p.ids.ex}}" type="text" inputmode="numeric" value="{{p.ex}}" sc-camel-on-change="{{p.set.ex}}" style="min-height: 40px; border: 1px solid #d6cdb9; border-radius: 8px; padding: 0 10px; font-size: 14px;"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="{{bs.pctStyle}}">Total holding: {{bs.pctTotal}}%{{bs.pctWarn}}</p>
+            </details>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">4. Structure &amp; agreement</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="bs-s" style="font-size: 13px; font-weight: 600;">Funding structure</label><sc-raw-select id="bs-s" value="{{v.structure}}" sc-camel-on-change="{{h.structure}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="cross">Cross-purchase: each partner covers the others</option><option value="entity">Entity: company covers each partner</option><option value="own">Own-life certificate, hibah to partners</option></sc-raw-select><span style="font-size: 12px; color: #5b6576;">Cross suits 2–3 partners. Entity suits many. Own-life + hibah is common in takaful and needs an agreement.</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="bs-a" style="font-size: 13px; font-weight: 600;">Buy-sell / shareholder agreement</label><sc-raw-select id="bs-a" value="{{v.agreement}}" sc-camel-on-change="{{h.agreement}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="none">None</option><option value="verbal">Verbal only</option><option value="written">Written agreement</option></sc-raw-select><span style="font-size: 12px; color: #5b6576;">Without a written agreement, heirs can dispute the share price.</span></div>
+              </div>
+            </details>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{is.loan}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div><h3 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f2540;">Whose problem is the business debt?</h3><p style="margin: 6px 0 0; font-size: 14px; color: #3d4757;">A director who signed a personal guarantee is personally liable. If they die, the bank can claim from their estate: house, savings, family assets.</p></div>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">2. Financing facilities</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-t" style="font-size: 13px; font-weight: 600;">Term loan balance (RM)</label><input id="l-t" type="text" inputmode="numeric" value="{{v.lTerm}}" sc-camel-on-change="{{h.lTerm}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Current balance, not the original amount.</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-o" style="font-size: 13px; font-weight: 600;">Overdraft / working capital used (RM)</label><input id="l-o" type="text" inputmode="numeric" value="{{v.lOd}}" sc-camel-on-change="{{h.lOd}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-h" style="font-size: 13px; font-weight: 600;">Hire purchase balance (RM)</label><input id="l-h" type="text" inputmode="numeric" value="{{v.lHp}}" sc-camel-on-change="{{h.lHp}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Lorries, vans, cars, machinery.</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-tr" style="font-size: 13px; font-weight: 600;">Trade / invoice financing (RM)</label><input id="l-tr" type="text" inputmode="numeric" value="{{v.lTrade}}" sc-camel-on-change="{{h.lTrade}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-x" style="font-size: 13px; font-weight: 600;">Other business debts (RM)</label><input id="l-x" type="text" inputmode="numeric" value="{{v.lOther}}" sc-camel-on-change="{{h.lOther}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-i" style="font-size: 13px; font-weight: 600;">Total monthly instalments (RM)</label><input id="l-i" type="text" inputmode="numeric" value="{{v.lInst}}" sc-camel-on-change="{{h.lInst}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #0f2540;">{{loan.reserveLine}}</span></div>
+              </div>
+            </details>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">3. Guarantees &amp; protection</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-g" style="font-size: 13px; font-weight: 600;">Main guarantor</label><input id="l-g" type="text" value="{{v.guarantor}}" sc-camel-on-change="{{h.guarantor}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-p" style="font-size: 13px; font-weight: 600;">% of debt personally guaranteed</label><input id="l-p" type="text" inputmode="numeric" value="{{v.guarPct}}" sc-camel-on-change="{{h.guarPct}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #0f2540;">{{loan.guarLine}}</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="l-c" style="font-size: 13px; font-weight: 600;">Existing loan protection (RM)</label><input id="l-c" type="text" inputmode="numeric" value="{{v.lCover}}" sc-camel-on-change="{{h.lCover}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">e.g. business MRTT/MLTT, term takaful assigned to the bank.</span></div>
+              </div>
+            </details>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{is.enterprise}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div><h3 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f2540;">Owner gone, business &amp; accounts frozen</h3><p style="margin: 6px 0 0; font-size: 14px; color: #3d4757;">For an enterprise, bank accounts, stock and assets in the owner's name become part of the estate. They can be frozen until letters of administration and distribution are settled, while salaries, rent, suppliers and instalments keep running.</p></div>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">2. Assets &amp; debts in the owner's name</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-b" style="font-size: 13px; font-weight: 600;">Business bank balance (RM)</label><input id="e-b" type="text" inputmode="numeric" value="{{v.eBank}}" sc-camel-on-change="{{h.eBank}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-s" style="font-size: 13px; font-weight: 600;">Stock, equipment &amp; business assets (RM)</label><input id="e-s" type="text" inputmode="numeric" value="{{v.eStock}}" sc-camel-on-change="{{h.eStock}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-d" style="font-size: 13px; font-weight: 600;">Total business debt (RM)</label><input id="e-d" type="text" inputmode="numeric" value="{{v.eDebt}}" sc-camel-on-change="{{h.eDebt}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-i" style="font-size: 13px; font-weight: 600;">Monthly instalments (RM)</label><input id="e-i" type="text" inputmode="numeric" value="{{v.eInst}}" sc-camel-on-change="{{h.eInst}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+              </div>
+            </details>
+            <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+              <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">3. Transition</span></summary>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-p" style="font-size: 13px; font-weight: 600;">Plan when the owner is gone</label><sc-raw-select id="e-p" value="{{v.ePlan}}" sc-camel-on-change="{{h.ePlan}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="continue">Heirs / staff continue</option><option value="sell">Sell the business</option><option value="close">Close in an orderly way</option></sc-raw-select></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-m" style="font-size: 13px; font-weight: 600;">Transition period</label><sc-raw-select id="e-m" value="{{v.eMonths}}" sc-camel-on-change="{{h.eMonths}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></sc-raw-select></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-o" style="font-size: 13px; font-weight: 600;">Operating costs / month excl. salaries (RM)</label><input id="e-o" type="text" inputmode="numeric" value="{{v.eOpex}}" sc-camel-on-change="{{h.eOpex}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-w" style="font-size: 13px; font-weight: 600;">Staff salaries / month, total (RM)</label><input id="e-w" type="text" inputmode="numeric" value="{{v.eWages}}" sc-camel-on-change="{{h.eWages}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-f" style="font-size: 13px; font-weight: 600;">Family income from the business / month (RM)</label><input id="e-f" type="text" inputmode="numeric" value="{{v.eFamily}}" sc-camel-on-change="{{h.eFamily}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-h" style="font-size: 13px; font-weight: 600;">Existing hibah takaful / cover (RM)</label><input id="e-h" type="text" inputmode="numeric" value="{{v.eHibah}}" sc-camel-on-change="{{h.eHibah}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-wl" style="font-size: 13px; font-weight: 600;">Will / estate documents</label><sc-raw-select id="e-wl" value="{{v.eWill}}" sc-camel-on-change="{{h.eWill}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="none">None</option><option value="drafting">Being prepared</option><option value="done">Will in place</option></sc-raw-select></div>
+              </div>
+            </details>
+          </div>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="b-notes" style="font-size: 13px; font-weight: 600;">Conversation notes</label><textarea id="b-notes" rows="3" placeholder="e.g. Lim handles all client contracts; bank OD renews in March" style="border: 1px solid #d6cdb9; border-radius: 10px; padding: 10px 12px; font-size: 14px; background: #ffffff; resize: vertical;"></textarea></div>
+      </div>
+
+      <aside aria-label="Business protection dashboard" style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: #0f2540; border-radius: 20px; padding: 20px; color: #fdf9f3; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 36px rgba(15,37,64,0.25);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;"><span style="font-size: 12px; font-weight: 700; color: #0f2540; background: #fac748; border-radius: 9999px; padding: 4px 12px;">One death, every bill</span><span style="font-size: 12px; color: #c9d2e0;">3D</span></div>
+
+          <figure class="{{animClass}} fx-frame" style="margin: 0; background: #fdf9f3; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #efe6d2;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #0f2540;">{{fx.title}}</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #5b6576;"><span class="fx-dot" aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0f7a4c;"></span>Live</span></div>
+            <div role="img" aria-label="{{chart.label}}" style="height: 280px; overflow: hidden; background: radial-gradient(120% 90% at 50% 10%, #ffffff 0%, #fdf9f3 55%, #efe6d2 100%); position: relative;">
+            <div class="scene3d" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+              <div class="stage" style="position: relative; width: 0; height: 0; top: 70px;">
+                <div style="position: absolute; left: -170px; top: -170px; width: 340px; height: 340px; transform: rotateX(90deg); border-radius: 50%; background: radial-gradient(circle, rgba(250,199,72,0.25) 0%, rgba(250,199,72,0.05) 55%, rgba(0,0,0,0) 70%);"></div>
+                <div style="position: absolute; left: -150px; top: -150px; width: 300px; height: 300px; transform: rotateX(90deg); background-image: linear-gradient(rgba(15,37,64,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(15,37,64,0.10) 1px, transparent 1px); background-size: 30px 30px;"></div>
+                <sc-for list="{{chart.cols}}" as="c" hint-placeholder-count="4">
+                  <div class="col" style="{{c.pos}}">
+                    <div class="col grow {{c.delay}}" style="{{c.box}}">
+                      <div style="{{c.front}}"><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em;">{{c.label}}</span><span style="font-size: 11px; font-weight: 700;">{{c.amt}}</span></div>
+                      <div style="{{c.back}}"></div>
+                      <div style="{{c.right}}"></div>
+                      <div style="{{c.left}}"></div>
+                      <div style="{{c.top}}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+                <div class="col" style="position: absolute; left: -22px; top: -44px; width: 44px; height: 44px; transform: translate3d(0, 0, 0);">
+                  <div class="pulse" style="position: absolute; inset: 0; border-radius: 50%; background: #fac748; transform: translateZ(0); box-shadow: 0 0 30px #fac748;"></div>
+                </div>
+              </div>
+            </div>
+            </div>
+            <figcaption style="padding: 10px 14px 12px; border-top: 1px solid #efe6d2; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 600; line-height: 1.4; color: #0f2540; font-variant-numeric: tabular-nums;">{{fx.caption}}</span>
+              <ul class="fx-legend" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px;">
+                <sc-for list="{{fx.legend}}" as="lg" hint-placeholder-count="3"><li style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #3d4757;"><span aria-hidden="true" style="{{lg.sw}}"></span>{{lg.label}} <b style="color: #0f2540; font-variant-numeric: tabular-nums;">{{lg.value}}</b></li></sc-for>
+              </ul>
+            </figcaption>
+          </figure>
+
+          <section aria-label="Scenario flow" style="background: #16305a; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">{{flow.heading}}</span><span aria-live="polite" style="font-size: 12px; color: #c9d2e0;">{{flow.pos}}</span></div>
+            <div sc-camel-on-pointer-down="{{flow.down}}" sc-camel-on-pointer-up="{{flow.up}}" style="overflow: hidden; border-radius: 12px; touch-action: pan-y; cursor: grab;">
+              <div style="{{flow.trackStyle}}">
+                <sc-for list="{{flow.slides}}" as="f" hint-placeholder-count="5">
+                  <div aria-hidden="{{f.hidden}}" style="flex: 0 0 100%; box-sizing: border-box; padding: 16px; background: #fdf9f3; color: #0f2540; display: flex; flex-direction: column; gap: 8px; min-height: 220px;">
+                    <span style="{{f.tagStyle}}">{{f.tag}}</span>
+                    <span style="font-size: 17px; font-weight: 800; line-height: 1.3;">{{f.title}}</span>
+                    <span style="{{f.valueStyle}}">{{f.value}}</span>
+                    <span style="font-size: 13px; line-height: 1.6; color: #3d4757;">{{f.desc}}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: auto;"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>{{f.meterLabel}}</span><span>{{f.meterText}}</span></div><div aria-hidden="true" style="height: 10px; background: #e8e1d2; border-radius: 9999px; overflow: hidden;"><div style="{{f.meterStyle}}"></div></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <label for="flow-range" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Scenario step</label>
+            <input id="flow-range" type="range" min="0" max="{{flow.max}}" step="1" value="{{flow.idx}}" sc-camel-on-change="{{flow.onRange}}" style="width: 100%; accent-color: #fac748;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" sc-camel-on-click="{{flow.prev}}" aria-label="Previous step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">‹</button>
+              <div style="flex: 1; display: flex; justify-content: center; flex-wrap: wrap;"><sc-for list="{{flow.dots}}" as="d" hint-placeholder-count="5"><button type="button" sc-camel-on-click="{{d.pick}}" aria-label="{{d.label}}" aria-current="{{d.cur}}" style="{{d.style}}"><span style="{{d.dotStyle}}"></span></button></sc-for></div>
+              <button type="button" sc-camel-on-click="{{flow.togglePlay}}" aria-pressed="{{flow.playing}}" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 13px; font-weight: 700; cursor: pointer;">{{flow.playLabel}}</button>
+              <button type="button" sc-camel-on-click="{{flow.next}}" aria-label="Next step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">›</button>
+            </div>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 15px; color: #e4e9f1;">{{panel.title}}</span>
+            <span style="font-size: 40px; font-weight: 800; line-height: 1.1; color: #fac748; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{panel.big}}</span>
+            <span style="font-size: 13px; line-height: 1.6; color: #c9d2e0;">{{panel.sub}}</span>
+          </div>
+
+          <sc-if value="{{is.keyman}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">EACH KEY PERSON · 3 METHODS</span>
+              <sc-for list="{{kps}}" as="k" hint-placeholder-count="2">
+                <div style="background: #16305a; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums;">
+                  <span style="font-weight: 700; font-size: 14px;">{{k.name}} · {{k.role}}</span>
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; font-size: 12px;"><span>Profit<br><b style="font-size: 14px;">{{k.r.profit}}</b></span><span>Salary ×<br><b style="font-size: 14px;">{{k.r.salary}}</b></span><span>Replace<br><b style="font-size: 14px;">{{k.r.replace}}</b></span></div>
+                  <span style="font-size: 12px; color: #fac748;">Suggested Death/TPD {{k.r.death}} · CI {{k.r.ci}}</span>
+                </div>
+              </sc-for>
+              <span style="font-size: 13px; color: #e4e9f1;">Keyman CI suggested: <b>{{km.ci}}</b> · cash reserve {{km.reserve}} deducted</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{is.buysell}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 10px; font-variant-numeric: tabular-nums;">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">SHARE VALUE PER PARTNER</span>
+              <sc-for list="{{partners}}" as="p" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; font-size: 14px;"><span>{{p.name}} {{p.pct}}%</span><b>{{p.value}}</b></div></sc-for>
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">{{bs.matrixTitle}}</span>
+              <div style="overflow-x: auto;"><sc-raw-table style="width: 100%; border-collapse: collapse; font-size: 13px;"><sc-raw-thead><sc-raw-tr style="color: #c9d2e0; text-align: left;"><sc-raw-th scope="col" style="padding: 4px;">Owner</sc-raw-th><sc-raw-th scope="col" style="padding: 4px;">On the life of</sc-raw-th><sc-raw-th scope="col" style="padding: 4px; text-align: right;">Amount</sc-raw-th></sc-raw-tr></sc-raw-thead><sc-raw-tbody><sc-for list="{{bs.matrix}}" as="m" hint-placeholder-count="6"><sc-raw-tr style="border-top: 1px solid #24406a;"><sc-raw-td style="padding: 6px 4px;">{{m.owner}}</sc-raw-td><sc-raw-td style="padding: 6px 4px;">{{m.life}}</sc-raw-td><sc-raw-td style="padding: 6px 4px; text-align: right; font-weight: 700;">{{m.amt}}</sc-raw-td></sc-raw-tr></sc-for></sc-raw-tbody></sc-raw-table></div>
+              <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #0f2540; background: #fff4d2; border-radius: 10px; padding: 10px 12px;"><b>Without buy-sell:</b> {{bs.without}}</p>
+              <sc-if value="{{bs.agreeWarn}}" hint-placeholder-val="{{true}}"><p style="margin: 0; font-size: 13px; color: #ffb4a8;">To discuss: no written buy-sell agreement, so price and timing can be disputed.</p></sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{is.loan}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 8px; font-variant-numeric: tabular-nums;">
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Total business debt</span><b>{{loan.total}}</b></div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Personally guaranteed ({{v.guarPct}}%)</span><b>{{loan.guar}}</b></div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Reserve covers instalments</span><b>{{loan.months}} months</b></div>
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0; margin-top: 6px;">DEBT BREAKDOWN</span>
+              <sc-for list="{{loan.parts}}" as="lp" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; font-size: 13px;"><span>{{lp.k}}</span><span>{{lp.v}}</span></div></sc-for>
+              <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #0f2540; background: #fff4d2; border-radius: 10px; padding: 10px 12px;"><b>What happens to the guarantor's family:</b> {{loan.family}}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{is.enterprise}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 8px; font-variant-numeric: tabular-nums;">
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Assets that may be frozen</span><b>{{ent.frozen}}</b></div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Cash needed during transition</span><b>{{ent.need}}</b></div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Gap after existing cover</span><b style="color: #ffb4a8;">{{ent.gap}}</b></div>
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0; margin-top: 6px;">{{ent.title}}</span>
+              <sc-for list="{{ent.parts}}" as="ep" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; font-size: 13px;"><span>{{ep.k}}</span><span>{{ep.v}}</span></div></sc-for>
+              <sc-if value="{{ent.companyNote}}" hint-placeholder-val="{{false}}"><p style="margin: 0; font-size: 13px; color: #fac748;">This entity is a company / PLT: business assets don't freeze, but the owner's shares become part of the estate. See Buy-sell.</p></sc-if>
+              <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #0f2540; background: #fff4d2; border-radius: 10px; padding: 10px 12px;"><b>Why hibah takaful:</b> paid directly to the named beneficiary, not through the estate, so the family has cash while accounts are frozen.</p>
+            </div>
+          </sc-if>
+
+          <div style="border-top: 1px solid #24406a; padding-top: 12px; display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums;">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">ONE DEATH, ALL THE BILLS</span>
+            <sc-for list="{{summary.rows}}" as="r" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; font-size: 14px;"><span>{{r.k}}</span><b>{{r.v}}</b></div></sc-for>
+            <div style="display: flex; justify-content: space-between; font-size: 16px; border-top: 1px solid #24406a; padding-top: 6px;"><span style="font-weight: 700;">Total</span><b style="color: #fac748;">{{summary.total}}</b></div>
+          </div>
+        </div>
+
+        <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 4px 18px;">
+          <summary style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; color: #0f2540; cursor: pointer;">How we calculate &amp; assumptions <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+          <ul style="margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #3d4757;">
+            <li>Keyman profit method = (net profit + fixed costs × 12) × impact % × months to stabilise ÷ 12 × successor factor + replacement cost. Factors: ready 0.5, second-in-line 0.75, none 1.0. Cash reserve deducted once from the total.</li>
+            <li>Salary multiple = annual salary × multiple. Replacement cost = recruit/train cost + salary overlap during the stabilising months.</li>
+            <li>Keyman CI = impact base × CI months ÷ 12 × factor + 50% of replacement cost − existing CI cover.</li>
+            <li>Buy-sell: share value = business value × holding − existing cover. Cross-purchase: survivors buy in proportion to their own holdings.</li>
+            <li>Loan: guaranteed = debt × % guaranteed; gap = guaranteed − existing loan protection; reserve months = reserve ÷ instalments.</li>
+            <li>Enterprise: cash needed = (instalments + opex + salaries + family income) × transition months; gap = cash needed − existing hibah.</li>
+            <li>Planning estimates only, not a business valuation, quotation, or tax or legal advice.</li>
+          </ul>
+        </details>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #e3dccd; padding-top: 18px;">
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: #1d4f91; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">Copy all for prospect's WhatsApp</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Preview text</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download image</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download PDF</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px dashed #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Combine all modules</button>
+      <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+    </div>
+    <details open="" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 12px; padding: 0 18px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; color: #0f2540; cursor: pointer;">DISCLAIMER</summary>
+      <p style="margin: 0 0 14px; font-size: 13px; line-height: 1.7; color: #3d4757;">A discussion aid for registered takaful agents, not an official document of any operator. All figures are planning estimates, not a business valuation, quotation, or tax, legal or financial advice. Buy-sell arrangements need a separate legal agreement; Keyman tax treatment must be confirmed by a tax adviser. Benefits follow the PDS, certificate and underwriting.</p>
+    </details>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;animate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;section&quot;:&quot;Dashboard&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:3000}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'keyman', savedAt: '',
+      company: 'Daniel Logistics Sdn Bhd', entity: 'sdn', revenue: 2400000, profit: 360000, fixed: 60000, reserve: 100000,
+      kMethod: 'profit', kMult: 5, kCount: 2,
+      kps: [
+        { name: 'Faris / Founder', role: 'Owner / Founder', salary: 120000, impact: 50, stable: '12', ci: '6', cost: 60000, succ: 'none', exD: 0, exC: 0 },
+        { name: 'Lim / Technical lead', role: 'Technical Specialist', salary: 96000, impact: 30, stable: '12', ci: '3', cost: 40000, succ: 'second', exD: 0, exC: 0 },
+        { name: 'Key person 3', role: 'Operations Head', salary: 72000, impact: 15, stable: '6', ci: '3', cost: 20000, succ: 'ready', exD: 0, exC: 0 }
+      ],
+      valMethod: 'multiple', valMult: 3, valManual: 1000000, pCount: 3,
+      partners: [
+        { name: 'Faris', pct: 50, age: 42, ex: 0 }, { name: 'Lim', pct: 30, age: 39, ex: 0 }, { name: 'Siti', pct: 20, age: 35, ex: 0 },
+        { name: 'Partner 4', pct: 0, age: 40, ex: 0 }, { name: 'Partner 5', pct: 0, age: 40, ex: 0 }
+      ],
+      structure: 'cross', agreement: 'none',
+      lTerm: 450000, lOd: 150000, lHp: 120000, lTrade: 0, lOther: 0, lInst: 18000, guarantor: 'Faris', guarPct: 100, lCover: 0,
+      eBank: 80000, eStock: 200000, eDebt: 300000, eInst: 8000, ePlan: 'continue', eMonths: '6', eOpex: 10000, eWages: 12000, eFamily: 8000, eHibah: 0, eWill: 'none'
+    };
+  }
+  componentDidMount() { this._flowTimer = setInterval(() => { if (this.state.flowPlay) { const n = this._flowN || 1; this.setState({ flowIdx: ((this.state.flowIdx || 0) + 1) % n }); } }, 3500); }
+  componentWillUnmount() { clearInterval(this._flowTimer); }
+  buildFlow(heading, data) {
+    const n = data.length; this._flowN = n;
+    const idx = Math.min(n - 1, this.state.flowIdx || 0);
+    const go = (i) => this.setState({ flowIdx: Math.max(0, Math.min(n - 1, i)), flowPlay: false });
+    const tones = { neutral: '#1d4f91', warn: '#a45d00', bad: '#b23a3a', good: '#0f7a4c' };
+    return {
+      heading: heading, idx: String(idx), max: String(n - 1), pos: 'Step ' + (idx + 1) + ' of ' + n,
+      trackStyle: 'display: flex; transition: transform .55s cubic-bezier(.16,1,.3,1); transform: translateX(-' + (idx * 100) + '%);',
+      slides: data.map((d, i) => { const c = tones[d.tone] || tones.neutral; const m = Math.max(0, Math.min(100, Math.round(d.meter || 0))); return {
+        tag: d.tag, title: d.title, value: d.value, desc: d.desc, meterLabel: d.meterLabel, meterText: d.meterText, hidden: i === idx ? 'false' : 'true',
+        tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #ffffff; background: ' + c + '; border-radius: 9999px; padding: 3px 10px;',
+        valueStyle: 'font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: ' + c + '; font-variant-numeric: tabular-nums;',
+        meterStyle: 'height: 100%; width: ' + m + '%; background: ' + (m > 60 ? '#0f7a4c' : m > 25 ? '#e3a823' : '#b23a3a') + '; border-radius: 9999px; transition: width .6s ease;' }; }),
+      dots: data.map((d, i) => ({ label: 'Go to step ' + (i + 1) + ': ' + d.tag, cur: i === idx ? 'step' : 'false', pick: () => go(i),
+        style: 'width: 32px; height: 44px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;',
+        dotStyle: 'display: block; height: 8px; border-radius: 9999px; transition: all .3s; width: ' + (i === idx ? 22 : 8) + 'px; background: ' + (i === idx ? '#fac748' : '#5b7299') + ';' })),
+      prev: () => go(idx - 1), next: () => go(idx + 1), onRange: (e) => go(Number(e.target.value) || 0),
+      playing: this.state.flowPlay ? 'true' : 'false', playLabel: this.state.flowPlay ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ flowPlay: !this.state.flowPlay }),
+      down: (e) => { this._fx = e.clientX; },
+      up: (e) => { if (this._fx == null) return; const dx = e.clientX - this._fx; this._fx = null; if (dx < -40) go(idx + 1); else if (dx > 40) go(idx - 1); }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const n = (v) => Number(v) || 0;
+    const rm = (x) => 'RM' + Math.round(x).toLocaleString('en-MY');
+    const num = (x) => Math.round(x).toLocaleString('en-MY');
+    const parse = (e) => { const r = String(e.target.value).replace(/[^0-9.]/g, ''); return r === '' ? 0 : Number(r); };
+    const setNum = (k) => (e) => this.setState({ [k]: parse(e) });
+    const setStr = (k) => (e) => this.setState({ [k]: e.target.value });
+    const chip = (on) => 'min-height: 44px; min-width: 52px; padding: 0 14px; border-radius: 9999px; font-size: 14px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #0f2540; color: #fdf9f3; border: 0;' : 'background: #ffffff; color: #0f2540; border: 1px solid #d6cdb9;');
+    const isCompany = s.entity === 'sdn' || s.entity === 'plt';
+    const entityNotes = {
+      sdn: ['Sdn. Bhd. (company)', 'A separate legal entity. Company assets and bank accounts don’t freeze when the owner dies, but the owner’s SHARES become part of the estate. Keyman can be owned by the company; buy-sell resolves the share issue.'],
+      plt: ['PLT / LLP', 'A separate entity under the LLP Act 2012. A partner’s interest becomes part of the estate; check the LLP agreement for exit and buyout mechanisms.'],
+      partner: ['Enterprise · Partnership', 'Not a separate entity. Business debts are the partners’ personal debts, and a deceased partner’s share becomes part of the estate. Buy-sell between partners is critical.'],
+      sole: ['Enterprise · Sole proprietor', 'Owner and business are the same in law. Accounts, stock and assets in the owner’s name can freeze until the estate is settled, and all business debt is personal. Focus: Enterprise & Loan.']
+    };
+
+    // Keyman
+    const base = n(s.profit) + n(s.fixed) * 12;
+    const factorOf = (x) => (x === 'ready' ? 0.5 : x === 'second' ? 0.75 : 1);
+    let kmDeath = 0, kmCI = 0;
+    const kps = s.kps.slice(0, s.kCount).map((k, i) => {
+      const f = factorOf(k.succ);
+      const imp = base * n(k.impact) / 100;
+      const replace = n(k.cost) + n(k.salary) * n(k.stable) / 12;
+      const profitM = imp * n(k.stable) / 12 * f + n(k.cost);
+      const salaryM = n(k.salary) * n(s.kMult);
+      const chosen = s.kMethod === 'salary' ? salaryM : s.kMethod === 'replace' ? replace : profitM;
+      const death = Math.max(0, chosen - n(k.exD));
+      const ci = Math.max(0, imp * n(k.ci) / 12 * f + 0.5 * n(k.cost) - n(k.exC));
+      kmDeath += death; kmCI += ci;
+      const up = (field, isNum) => (e) => { const nx = s.kps.map((x) => Object.assign({}, x)); nx[i][field] = isNum ? parse(e) : e.target.value; this.setState({ kps: nx }); };
+      const id = (f2) => 'kp' + i + '-' + f2;
+      return {
+        num: String(i + 1), name: k.name, role: k.role, salary: num(n(k.salary)), impact: String(n(k.impact)), stable: k.stable, ci: k.ci, cost: num(n(k.cost)), succ: k.succ, exD: num(n(k.exD)), exC: num(n(k.exC)),
+        salaryLine: rm(n(k.salary)) + ' × ' + n(s.kMult) + ' = ' + rm(salaryM),
+        impactLine: '(' + rm(n(s.profit)) + ' + ' + rm(n(s.fixed)) + ' × 12) × ' + n(k.impact) + '% = ' + rm(imp) + ' a year',
+        ids: { name: id('n'), role: id('r'), salary: id('s'), impact: id('i'), stable: id('st'), ci: id('c'), cost: id('co'), succ: id('su'), exD: id('ed'), exC: id('ec') },
+        set: { name: up('name'), role: up('role'), salary: up('salary', true), impact: up('impact', true), stable: up('stable'), ci: up('ci'), cost: up('cost', true), succ: up('succ'), exD: up('exD', true), exC: up('exC', true) },
+        r: { profit: rm(profitM), salary: rm(salaryM), replace: rm(replace), death: rm(death), ci: rm(ci) }
+      };
+    });
+    const kmTotal = Math.max(0, kmDeath - n(s.reserve));
+    const kmCITotal = Math.max(0, kmCI - n(s.reserve));
+
+    // Buy-sell
+    const value = s.valMethod === 'multiple' ? n(s.profit) * n(s.valMult) : n(s.valManual);
+    const ps = s.partners.slice(0, s.pCount);
+    const pctTotal = ps.reduce((a, p) => a + n(p.pct), 0);
+    let bsTotal = 0;
+    const partners = ps.map((p, i) => {
+      const val = value * n(p.pct) / 100;
+      const need = Math.max(0, val - n(p.ex));
+      bsTotal += need;
+      const up = (field, isNum) => (e) => { const nx = s.partners.map((x) => Object.assign({}, x)); nx[i][field] = isNum ? parse(e) : e.target.value; this.setState({ partners: nx }); };
+      const id = (f2) => 'pt' + i + '-' + f2;
+      return { num: String(i + 1), name: p.name, pct: String(n(p.pct)), age: String(n(p.age)), ex: num(n(p.ex)), value: rm(need),
+        valueLine: rm(value) + ' × ' + n(p.pct) + '% = ' + rm(val),
+        ids: { name: id('n'), pct: id('p'), age: id('a'), ex: id('e') }, set: { name: up('name'), pct: up('pct', true), age: up('age', true), ex: up('ex', true) } };
+    });
+    const matrix = [];
+    if (s.structure === 'cross') {
+      ps.forEach((life, i) => {
+        const val = Math.max(0, value * n(life.pct) / 100 - n(life.ex));
+        const rest = 100 - n(life.pct);
+        ps.forEach((own, j) => { if (i !== j && rest > 0) matrix.push({ owner: own.name, life: life.name, amt: rm(val * n(own.pct) / rest) }); });
+      });
+    } else {
+      ps.forEach((life) => matrix.push({ owner: s.structure === 'entity' ? s.company : life.name + ' (own life, hibah to partners)', life: life.name, amt: rm(Math.max(0, value * n(life.pct) / 100 - n(life.ex))) }));
+    }
+    const top = ps[0] || { name: 'the partner', pct: 0 };
+
+    // Loan
+    const debt = n(s.lTerm) + n(s.lOd) + n(s.lHp) + n(s.lTrade) + n(s.lOther);
+    const guarPct = isCompany ? n(s.guarPct) : 100;
+    const guar = debt * guarPct / 100;
+    const loanGap = Math.max(0, guar - n(s.lCover));
+    const resMonths = n(s.lInst) > 0 ? n(s.reserve) / n(s.lInst) : 0;
+    const loanParts = [['Term loan', s.lTerm], ['Overdraft / working capital', s.lOd], ['Hire purchase', s.lHp], ['Trade financing', s.lTrade], ['Other', s.lOther]].filter((x) => n(x[1]) > 0).map((x) => ({ k: x[0], v: rm(n(x[1])) }));
+
+    // Enterprise
+    const em = n(s.eMonths);
+    const eParts = [['Debt instalments', n(s.eInst) * em], ['Operating costs', n(s.eOpex) * em], ['Staff salaries', n(s.eWages) * em], ['Family income', n(s.eFamily) * em]];
+    const eNeed = eParts.reduce((a, x) => a + x[1], 0);
+    const eGap = Math.max(0, eNeed - n(s.eHibah));
+    const frozen = n(s.eBank) + n(s.eStock);
+    const planLabel = { continue: 'HEIRS / STAFF CONTINUE', sell: 'SELL THE BUSINESS', close: 'CLOSE IN AN ORDERLY WAY' }[s.ePlan];
+
+    const rows = [['Keyman', kmTotal], ['Buy-sell', bsTotal], ['Loan', loanGap]];
+    if (!isCompany) rows.push(['Enterprise', eGap]);
+    const total = rows.reduce((a, r) => a + r[1], 0);
+
+    // 3D columns
+    const colsData = [['KEYMAN', kmTotal, '#fac748', '#c99a2e', '#e3b23c'], ['BUY-SELL', bsTotal, '#6f9be0', '#3f6db3', '#5583c9'], ['LOAN', loanGap, '#ff8d7e', '#c75a4c', '#e57263'], ['ENTERPRISE', isCompany ? 0 : eGap, '#4fbf86', '#2f8a5d', '#3fa673']];
+    const maxV = Math.max(1, ...colsData.map((c) => c[1]));
+    const W = 56;
+    const posXZ = [[-95, -60], [95, -60], [-95, 80], [95, 80]];
+    const cols = colsData.map((c, i) => {
+      const H = Math.max(6, Math.round(170 * c[1] / maxV));
+      const face = 'position: absolute; box-sizing: border-box; ';
+      return {
+        label: c[0], amt: c[1] > 0 ? rm(c[1]) : '—', delay: ['', 'g2', 'g3', 'g4'][i],
+        pos: 'position: absolute; left: ' + (-W / 2) + 'px; top: ' + (-H) + 'px; width: ' + W + 'px; height: ' + H + 'px; transform: translate3d(' + posXZ[i][0] + 'px, 0, ' + posXZ[i][1] + 'px);',
+        box: 'position: absolute; inset: 0;',
+        front: face + 'inset: 0; transform: translateZ(' + W / 2 + 'px); background: linear-gradient(180deg, ' + c[2] + ', ' + c[3] + '); color: #0f2540; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 6px; gap: 2px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);',
+        back: face + 'inset: 0; transform: rotateY(180deg) translateZ(' + W / 2 + 'px); background: ' + c[3] + ';',
+        right: face + 'top: 0; left: 0; width: ' + W + 'px; height: ' + H + 'px; transform: rotateY(90deg) translateZ(' + W / 2 + 'px); background: linear-gradient(180deg, ' + c[4] + ', ' + c[3] + ');',
+        left: face + 'top: 0; left: 0; width: ' + W + 'px; height: ' + H + 'px; transform: rotateY(-90deg) translateZ(' + W / 2 + 'px); background: ' + c[3] + ';',
+        top: face + 'left: 0; top: ' + (-W / 2) + 'px; width: ' + W + 'px; height: ' + W + 'px; transform: rotateX(90deg); background: ' + c[2] + '; box-shadow: 0 0 24px ' + c[2] + ';'
+      };
+    });
+
+    const panels = {
+      keyman: ['Total Keyman Death/TPD suggested', rm(kmTotal), 'Method: ' + { profit: 'contribution to profit', salary: 'salary multiple', replace: 'replacement cost' }[s.kMethod] + ' · ' + s.company],
+      buysell: ['Total buy-sell funding needed', rm(bsTotal), 'Business value used ' + rm(value) + ' · ' + { cross: 'cross-purchase', entity: 'entity-owned', own: 'own life + hibah' }[s.structure]],
+      loan: ['Loan protection gap', rm(loanGap), 'Personally guaranteed ' + rm(guar) + ' less existing protection ' + rm(n(s.lCover))],
+      enterprise: ['Cash needed during transition', rm(eNeed), 'Gap after existing cover ' + rm(eGap) + ' · ' + em + ' months']
+    };
+    const tabsData = [['keyman', 'Keyman', 'The company’s key people', kmTotal], ['buysell', 'Buy-sell', 'Buy a deceased partner’s shares', bsTotal], ['loan', 'Loan', 'Debt & director guarantees', loanGap], ['enterprise', 'Enterprise', 'Business & frozen accounts', eGap]];
+    const tabs = tabsData.map((t) => { const on = s.tab === t[0]; return { label: t[1], sub: t[2], amount: rm(t[3]), sel: on ? 'true' : 'false', pick: () => this.setState({ tab: t[0] }),
+      style: 'text-align: left; min-height: 96px; padding: 14px 16px; border-radius: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; ' + (on ? 'background: #0f2540; color: #fdf9f3; border: 2px solid #0f2540; box-shadow: 0 10px 24px rgba(15,37,64,.25);' : 'background: #ffffff; color: #0f2540; border: 1px solid #e3dccd;') }; });
+    const save = () => { const d = new Date(); this.setState({ savedAt: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }); };
+
+    return {
+      tabs: tabs,
+      is: { keyman: s.tab === 'keyman', buysell: s.tab === 'buysell', loan: s.tab === 'loan', enterprise: s.tab === 'enterprise', valMultiple: s.valMethod === 'multiple', valOther: s.valMethod !== 'multiple' },
+      entityNote: { t: entityNotes[s.entity][0], d: entityNotes[s.entity][1] },
+      v: {
+        company: s.company, entity: s.entity, revenue: num(n(s.revenue)), profit: num(n(s.profit)), fixed: num(n(s.fixed)), reserve: num(n(s.reserve)),
+        kMethod: s.kMethod, kMult: String(n(s.kMult)), valMethod: s.valMethod, valMult: String(n(s.valMult)), valManual: num(n(s.valManual)), structure: s.structure, agreement: s.agreement,
+        lTerm: num(n(s.lTerm)), lOd: num(n(s.lOd)), lHp: num(n(s.lHp)), lTrade: num(n(s.lTrade)), lOther: num(n(s.lOther)), lInst: num(n(s.lInst)), guarantor: s.guarantor, guarPct: String(guarPct), lCover: num(n(s.lCover)),
+        eBank: num(n(s.eBank)), eStock: num(n(s.eStock)), eDebt: num(n(s.eDebt)), eInst: num(n(s.eInst)), ePlan: s.ePlan, eMonths: s.eMonths, eOpex: num(n(s.eOpex)), eWages: num(n(s.eWages)), eFamily: num(n(s.eFamily)), eHibah: num(n(s.eHibah)), eWill: s.eWill
+      },
+      h: {
+        company: setStr('company'), entity: setStr('entity'), revenue: setNum('revenue'), profit: setNum('profit'), fixed: setNum('fixed'), reserve: setNum('reserve'),
+        kMethod: setStr('kMethod'), kMult: setNum('kMult'), valMethod: setStr('valMethod'), valMult: setNum('valMult'), valManual: setNum('valManual'), structure: setStr('structure'), agreement: setStr('agreement'),
+        lTerm: setNum('lTerm'), lOd: setNum('lOd'), lHp: setNum('lHp'), lTrade: setNum('lTrade'), lOther: setNum('lOther'), lInst: setNum('lInst'), guarantor: setStr('guarantor'), guarPct: setNum('guarPct'), lCover: setNum('lCover'),
+        eBank: setNum('eBank'), eStock: setNum('eStock'), eDebt: setNum('eDebt'), eInst: setNum('eInst'), ePlan: setStr('ePlan'), eMonths: setStr('eMonths'), eOpex: setNum('eOpex'), eWages: setNum('eWages'), eFamily: setNum('eFamily'), eHibah: setNum('eHibah'), eWill: setStr('eWill')
+      },
+      kCountChips: [1, 2, 3].map((c) => ({ label: String(c), pressed: s.kCount === c ? 'true' : 'false', style: chip(s.kCount === c), pick: () => this.setState({ kCount: c }) })),
+      pCountChips: [2, 3, 4, 5].map((c) => ({ label: String(c), pressed: s.pCount === c ? 'true' : 'false', style: chip(s.pCount === c), pick: () => this.setState({ pCount: c }) })),
+      kps: kps, km: { ci: rm(kmCITotal), reserve: rm(n(s.reserve)) },
+      partners: partners,
+      bs: {
+        valueLine: rm(n(s.profit)) + ' × ' + n(s.valMult) + ' = ' + rm(value),
+        pctTotal: String(pctTotal), pctWarn: pctTotal === 100 ? '.' : ' — should total 100%.',
+        pctStyle: 'margin: 0 0 16px; font-size: 13px; font-weight: 700; color: ' + (pctTotal === 100 ? '#0f7a4c' : '#b23a3a'),
+        matrix: matrix, matrixTitle: s.structure === 'cross' ? 'CROSS MATRIX: WHO COVERS WHOM · ' + matrix.length + ' CERTIFICATES' : 'CERTIFICATES · ' + matrix.length,
+        without: 'If ' + top.name + ' died yesterday, today the heirs inherit ' + n(top.pct) + '% worth ' + rm(value * n(top.pct) / 100) + '. The remaining partners must find that much cash, or share the company with heirs who may not be involved in the business.',
+        agreeWarn: s.agreement !== 'written'
+      },
+      loan: {
+        total: rm(debt), guar: rm(guar), months: resMonths.toFixed(1), parts: loanParts,
+        reserveLine: 'Reserve ' + rm(n(s.reserve)) + ' ÷ ' + rm(n(s.lInst)) + ' = ' + resMonths.toFixed(1) + ' months',
+        guarLine: rm(debt) + ' × ' + guarPct + '% = ' + rm(guar) + (isCompany ? '' : ' (enterprise: automatically 100%)'),
+        family: 'If ' + s.guarantor + ' died, the bank can claim ' + rm(guar) + ' from the estate before the heirs receive anything. Some facilities let the bank recall the loan when a guarantor dies; check the facility terms.'
+      },
+      ent: { frozen: rm(frozen), need: rm(eNeed), gap: rm(eGap), title: 'CASH NEEDED · ' + planLabel + ', ' + em + ' MONTHS', parts: eParts.map((x) => ({ k: x[0], v: rm(x[1]) })), companyNote: isCompany },
+      summary: { rows: rows.map((r) => ({ k: r[0], v: rm(r[1]) })), total: rm(total) },
+      panel: { title: panels[s.tab][0], big: panels[s.tab][1], sub: panels[s.tab][2] },
+      chart: { cols: cols, label: '3D rotating chart: Keyman ' + rm(kmTotal) + ', Buy-sell ' + rm(bsTotal) + ', Loan ' + rm(loanGap) + (isCompany ? '' : ', Enterprise ' + rm(eGap)) + ', total ' + rm(total) },
+      flow: (() => {
+        const res = n(s.reserve);
+        const resLeft = Math.max(0, res - kmDeath);
+        const resPct = res > 0 ? resLeft / res * 100 : 0;
+        const slides = [
+          { tag: 'DAY 1', title: 'The key owner passes away', value: rm(total), desc: 'Every bill below lands on ' + s.company + ' and the family at the same time.', meterLabel: 'Business cash reserve left', meterText: rm(res), meter: 100, tone: 'neutral' },
+          { tag: 'KEYMAN', title: 'Profit drops while replacing them', value: '− ' + rm(kmDeath), desc: 'The reserve absorbs ' + rm(Math.min(res, kmDeath)) + '; the rest is lost profit and recruitment cost.', meterLabel: 'Business cash reserve left', meterText: rm(resLeft), meter: resPct, tone: 'warn' },
+          { tag: 'BANK', title: 'The bank calls the personal guarantee', value: rm(loanGap), desc: 'Claimed from ' + s.guarantor + '’s estate before the heirs receive anything.', meterLabel: 'Business cash reserve left', meterText: rm(resLeft), meter: resPct, tone: 'bad' },
+          { tag: 'PARTNERS', title: 'Heirs want cash for the shares', value: rm(bsTotal), desc: 'The remaining partners must buy them out, or share control with heirs who may not be involved.', meterLabel: 'Business cash reserve left', meterText: rm(resLeft), meter: resPct, tone: 'bad' }
+        ];
+        if (!isCompany) slides.push({ tag: 'ESTATE', title: 'Accounts & assets may freeze', value: rm(eGap), desc: 'Cash the family needs while the estate is settled and the business keeps running.', meterLabel: 'Business cash reserve left', meterText: rm(resLeft), meter: resPct, tone: 'bad' });
+        slides.push({ tag: 'WITH BUSINESS TAKAFUL', title: 'Each bill has its own funding', value: rm(total), desc: 'Keyman to the company, buy-sell to the partners, loan cover to the bank, hibah to the family.', meterLabel: 'Business cash reserve left', meterText: rm(res), meter: 100, tone: 'good' });
+        return this.buildFlow('IF THE KEY OWNER PASSED AWAY TOMORROW', slides);
+      })(),
+      animClass: (this.props.animate ?? true) ? 'live' : 'still',
+      fx: { title: 'ONE DEATH, EVERY BILL · 3D', caption: 'Total need ' + rm(total) + ' · column height = amount needed, owner at the centre', legend: colsData.filter((c) => c[1] > 0).map((c) => ({ label: c[0].charAt(0) + c[0].slice(1).toLowerCase(), value: rm(c[1]), sw: 'width: 10px; height: 10px; border-radius: 3px; flex: none; background: ' + c[3] + ';' })) },
+      saveLabel: s.savedAt ? 'Saved ✓ ' + s.savedAt : 'Save',
+      saveStyle: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 0; ' + (s.savedAt ? 'background: #0f7a4c; color: #ffffff;' : 'background: #0f2540; color: #fdf9f3;'),
+      save: save
+    };
+  }
+}
+</script>
+
+
+</body></html>

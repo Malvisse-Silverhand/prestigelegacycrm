@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Financial Storyboard · Medical Card · Fill and Calculate</title>
+<script src="cd13c389-05f3-4022-a12c-adff9bf2fe4f"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("9c3abf13-8bcc-4388-8c6f-fe3f5a9c308f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("7179c600-3a9f-4328-bd10-83dca4577428") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("174c5252-af44-4771-bbc3-660eb9d8df04") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("8b88f008-b022-474e-b9f6-c64e4c4f6d99") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("dc6fc072-7841-4274-afd1-b15562a3daea") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#f3efe6}
+a{color:#0f2540}a:hover{color:#0f4c35}
+input,select,button,textarea{font-family:inherit}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #fac748;outline-offset:2px}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+@keyframes drip{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(34px);opacity:0}}
+@keyframes print{0%{transform:scaleY(.15)}50%,100%{transform:scaleY(1)}}
+@keyframes beat{0%{stroke-dashoffset:320}100%{stroke-dashoffset:0}}
+.drip{animation:drip 1.2s ease-in infinite}
+.receipt{animation:print 4.8s cubic-bezier(.16,1,.3,1) infinite;transform-box:fill-box;transform-origin:center bottom}
+.ecg{stroke-dasharray:320;animation:beat 2.4s linear infinite}
+.ecg.mid{animation-duration:1.6s}
+.ecg.fast{animation-duration:1.2s}
+.blink{animation:fxPulse 2.4s ease-in-out infinite}
+.seg{animation:fxIn 1.2s cubic-bezier(.16,1,.3,1) both;transform-box:fill-box;transform-origin:center bottom}
+.seg2{animation-delay:.15s}.seg3{animation-delay:.3s}
+.still .drip,.still .receipt,.still .ecg,.still .blink,.still .seg{animation:none}
+@media (prefers-reduced-motion:reduce){.drip,.receipt,.ecg,.blink,.seg{animation:none}}
+/* ---- Shared scene motion system (same in every dashboard) ---- */
+.fx-frame{--fx-ease:cubic-bezier(.16,1,.3,1)}
+@keyframes fxIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes fxInX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fxPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes fxFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes fxDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.45}}
+@keyframes fxFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fx-dot{animation:fxDot 2.4s ease-in-out infinite}
+.fx-legend li{animation:fxFade .6s cubic-bezier(.16,1,.3,1) both}
+.fx-legend li:nth-child(2){animation-delay:.15s}.fx-legend li:nth-child(3){animation-delay:.3s}.fx-legend li:nth-child(4){animation-delay:.45s}
+.still .fx-dot,.still .fx-legend li{animation:none}
+@media (prefers-reduced-motion:reduce){.fx-dot,.fx-legend li{animation:none}}
+
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #f3efe6; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+  <nav aria-label="CRM navigation" style="flex: 1 1 232px; max-width: 100%; background: #0f2540; color: #fdf9f3; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 8px 20px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: #fac748; color: #0f2540; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">PL</div>
+      <div style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 15px; line-height: 1.2;">Prestige Legacy</span><span style="font-size: 12px; color: #c9d2e0; line-height: 1.3;">Agent CRM</span></div>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</a>
+    <a href="LeadPopup.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Leads</a>
+    <a href="Storyboards.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #0f2540; background: #fac748; text-decoration: none; font-size: 14px; font-weight: 600;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M10 9l5 2.5-5 2.5z"></path><path d="M8 21h8"></path></svg>Financial Storyboard</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>Pipeline</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 13h7M9 17h5"></path></svg>Quotations</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"></path></svg>Tasks</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.5"></circle><circle cx="5" cy="17" r="2.5"></circle><circle cx="19" cy="17" r="2.5"></circle><path d="M12 10.5v3M12 13.5L6.5 15.5M12 13.5l5.5 2"></path></svg>Team</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+    <p style="margin: 0; font-size: 13px; color: #5b6576;"><a href="Storyboards.dc.html" style="color: #5b6576; text-decoration: none;">Financial Storyboard</a> <span aria-hidden="true">›</span> <span style="color: #1c2433; font-weight: 600;">Nurul Izzah</span></p>
+
+    <section aria-label="Module header" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 420px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Module</span>
+          <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Medical &amp; Health Takaful</h1>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #3d4757; max-width: 640px;">One hospital stay can cost more than a year's salary. A medical card pays panel hospital bills directly, with no cash deposit at the counter.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Accidents covered immediately</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Cashless at panel hospitals</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Shariah-compliant</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <a href="LeadPopup.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #0f2540; color: #0f2540; font-size: 14px; font-weight: 600; text-decoration: none;">← Back to lead</a>
+          <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;">
+        <a href="Main.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">01</span><span style="font-weight: 700; font-size: 15px;">Hibah</span></a>
+        <a href="#" aria-current="page" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 2px solid #0f2540; background: #0f2540; color: #fdf9f3; text-decoration: none;"><span style="display: block; font-size: 11px; color: #fac748;">02</span><span style="font-weight: 700; font-size: 15px;">Medical Card</span></a>
+        <a href="BizMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">03</span><span style="font-weight: 700; font-size: 15px;">Business Protection</span></a>
+        <a href="CiMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">04</span><span style="font-weight: 700; font-size: 15px;">Critical Illness</span></a>
+      </div>
+      <nav aria-label="Storyboard steps" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <a href="#" aria-current="step" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #1d4f91; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none;">1 · Fill &amp; Calculate</a>
+        <a href="MedExplain.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #0f7a4c; color: #0f7a4c; font-weight: 600; font-size: 14px; text-decoration: none;">2 · Explanation</a>
+        <a href="MedRisk.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b23a3a; color: #b23a3a; font-weight: 600; font-size: 14px; text-decoration: none;">3 · Rejection Risk</a>
+        <a href="MedObjections.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b8600a; color: #8a4a06; font-weight: 600; font-size: 14px; text-decoration: none;">4 · Objection</a>
+      </nav>
+    </section>
+
+    <details open="" style="background: #ffffff; border: 1.5px dashed #c9d2e0; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 15px; color: #0f2540;">Prospect profile</span><span style="font-size: 12px; color: #5b6576; flex: 1;">Shared by all modules · pulled from the lead record</span><span aria-hidden="true" style="font-size: 14px;">▾</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding-bottom: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-nick" style="font-size: 12px; font-weight: 600;">Nickname (not full name)</label><input id="p-nick" type="text" value="{{nick}}" sc-camel-on-change="{{setNick}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-age" style="font-size: 12px; font-weight: 600;">Age</label><input id="p-age" type="text" inputmode="numeric" value="31" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-gender" style="font-size: 12px; font-weight: 600;">Gender</label><sc-raw-select id="p-gender" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Female</option><option>Male</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-status" style="font-size: 12px; font-weight: 600;">Status</label><sc-raw-select id="p-status" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Married</option><option>Single</option><option>Single parent</option><option>Widowed / divorced</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-occ" style="font-size: 12px; font-weight: 600;">Occupation</label><input id="p-occ" type="text" value="Sales executive" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-class" style="font-size: 12px; font-weight: 600;">Occupation class</label><sc-raw-select id="p-class" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Class 1 (office)</option><option selected="">Class 2 (light field)</option><option>Class 3 (field / machinery)</option><option>Class 4 (high risk)</option><option>Not sure</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-smoke" style="font-size: 12px; font-weight: 600;">Smoke / vape</label><sc-raw-select id="p-smoke" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>No</option><option>Yes</option><option>Quit &lt; 12 months</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-dep" style="font-size: 12px; font-weight: 600;">Dependants</label><input id="p-dep" type="text" inputmode="numeric" value="2" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-budget" style="font-size: 12px; font-weight: 600;">Monthly budget</label><sc-raw-select id="p-budget" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Discuss first</option><option>Below RM150</option><option selected="">RM150–300</option><option>RM300–500</option><option>Above RM500</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-op" style="font-size: 12px; font-weight: 600;">Takaful operator</label><input id="p-op" type="text" value="Great Eastern Takaful" readonly="" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #efe8da; color: #0f2540; font-weight: 600;"></div>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 12px; color: #5b6576;">Do not enter IC numbers or detailed medical information. Use the operator's official channel when applying.</p>
+    </details>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0f7a4c;">Risk test</span>
+      <h2 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; color: #0f2540;">How high is {{nick}}'s <span style="color: #1d4f91;">daily risk?</span></h2>
+      <p style="margin: 0; font-size: 14px; color: #3d4757; max-width: 680px;">Tick everything that applies. Score and main reasons update instantly. An awareness tool, not financial or medical advice.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+          <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+            <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">{{g.title}}</span><span style="font-size: 12px; font-weight: 700; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 2px 10px;">{{g.ticked}}</span></summary>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; padding-bottom: 16px;">
+              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+                <label for="{{it.id}}" style="{{it.style}}">
+                  <input id="{{it.id}}" type="checkbox" checked="{{it.checked}}" sc-camel-on-change="{{it.toggle}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: #1d4f91; flex: none;">
+                  <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600; font-size: 14px;">{{it.label}}</span><span style="font-size: 12px; color: #5b6576;">{{it.hint}}</span></span>
+                </label>
+              </sc-for>
+            </div>
+          </details>
+        </sc-for>
+      </div>
+
+      <aside aria-label="Daily risk result" style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <div class="{{animClass}}" style="background: #0f2540; color: #fdf9f3; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 12px 36px rgba(15,37,64,0.25);">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #fac748;">DAILY RISK LEVEL</span>
+          <svg role="img" aria-label="Animated heartbeat line, faster as the daily risk rises" sc-camel-view-box="0 0 320 70" width="100%" style="display: block; background: #16305a; border-radius: 12px;">
+            <path class="{{risk.ecgClass}}" d="M0,40 L70,40 L82,40 L90,18 L100,60 L110,10 L120,46 L130,40 L200,40 L212,40 L220,22 L230,58 L240,14 L250,44 L260,40 L320,40" fill="none" stroke="{{risk.color}}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path>
+            <circle class="blink" cx="306" cy="12" r="5" fill="{{risk.color}}"></circle>
+          </svg>
+          <span style="{{risk.levelStyle}}">{{risk.level}}</span>
+          <span style="font-size: 14px; color: #e4e9f1;">Score {{risk.score}} / 35. {{risk.note}}</span>
+          <div aria-hidden="true" style="height: 10px; background: #24406a; border-radius: 9999px; overflow: hidden;"><div style="{{risk.barStyle}}"></div></div>
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">MAIN REASONS</span>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7;">
+            <sc-for list="{{risk.top}}" as="t" hint-placeholder-count="2"><li>{{t.label}}</li></sc-for>
+          </ul>
+          <sc-if value="{{risk.none}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #c9d2e0;">Nothing ticked yet.</span></sc-if>
+        </div>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0f7a4c;">Gap calculator</span>
+      <h2 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; color: #0f2540;">Are company cover + savings <span style="color: #1d4f91;">enough?</span></h2>
+      <p style="margin: 0; font-size: 14px; color: #3d4757; max-width: 680px;">Choose a private hospital bill scenario and enter what the prospect has.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <form aria-label="Medical gap inputs" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">1. What the prospect has</span></summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-work" style="font-size: 13px; font-weight: 600;">Work status</label><sc-raw-select id="g-work" value="{{v.work}}" sc-camel-on-change="{{h.work}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="employed">Employed (has company panel)</option><option value="self">Self-employed / gig</option><option value="none">Not working</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-company" style="font-size: 13px; font-weight: 600;">Remaining company medical benefit (RM)</label><input id="g-company" type="text" inputmode="numeric" value="{{v.company}}" sc-camel-on-change="{{h.company}}" disabled="{{v.noCompany}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Annual limit still available.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-sav" style="font-size: 13px; font-weight: 600;">Cash savings willing to use (RM)</label><input id="g-sav" type="text" inputmode="numeric" value="{{v.savings}}" sc-camel-on-change="{{h.savings}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">For hospital only.</span></div>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">2. Private hospital bill scenario</span></summary>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;"><p style="margin: 0; font-size: 13px; color: #3d4757;">Rough, upper-end estimates. Tap to choose.</p><button type="button" sc-camel-on-click="{{toggleEdit}}" aria-pressed="{{editStr}}" style="{{editBtnStyle}}">{{editLabel}}</button></div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; padding-bottom: 16px;">
+            <sc-for list="{{scenarios}}" as="sc" hint-placeholder-count="9">
+              <div style="{{sc.style}}">
+                <button type="button" sc-camel-on-click="{{sc.pick}}" aria-pressed="{{sc.pressed}}" style="width: 100%; min-height: 72px; border: 0; background: transparent; text-align: left; padding: 12px 14px; cursor: pointer; color: inherit; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 13px; font-weight: 600;">{{sc.label}}</span><span style="font-size: 17px; font-weight: 800;">{{sc.amountText}}</span></button>
+                <sc-if value="{{sc.editing}}" hint-placeholder-val="{{false}}"><div style="padding: 0 12px 12px;"><label for="{{sc.id}}" style="font-size: 11px; font-weight: 600;">Amount (RM)</label><input id="{{sc.id}}" type="text" inputmode="numeric" value="{{sc.amountNum}}" sc-camel-on-change="{{sc.setAmount}}" style="width: 100%; box-sizing: border-box; min-height: 36px; border: 1.5px solid #fac748; border-radius: 8px; padding: 0 8px; font-size: 13px; background: #fffbf0;"></div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">3. If they save it themselves</span></summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-save" style="font-size: 13px; font-weight: 600;">Saving per month (RM)</label><input id="g-save" type="text" inputmode="numeric" value="{{v.monthlySave}}" sc-camel-on-change="{{h.monthlySave}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-card" style="font-size: 13px; font-weight: 600;">Compare: own medical card / month (RM)</label><input id="g-card" type="text" inputmode="numeric" value="{{v.cardCost}}" sc-camel-on-change="{{h.cardCost}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Use the figure from QuickQuote i-Medi.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-inf" style="font-size: 13px; font-weight: 600;">Medical inflation / year (%)</label><input id="g-inf" type="text" inputmode="decimal" value="{{v.inflation}}" sc-camel-on-change="{{h.inflation}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">A scenario, not a forecast.</span></div>
+          </div>
+        </details>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="g-notes" style="font-size: 13px; font-weight: 600;">Conversation notes</label><textarea id="g-notes" rows="3" placeholder="e.g. Company panel limit RM20k, husband self-employed" style="border: 1px solid #d6cdb9; border-radius: 10px; padding: 10px 12px; font-size: 14px; background: #ffffff; resize: vertical;"></textarea></div>
+      </form>
+
+      <aside aria-label="Medical gap dashboard" style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: #0f2540; border-radius: 20px; padding: 20px; color: #fdf9f3; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 12px 36px rgba(15,37,64,0.25);">
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 700; color: #0f2540; background: #fac748; border-radius: 9999px; padding: 4px 12px;">Let the numbers tell the story</span>
+
+          <figure class="{{animClass}} fx-frame" style="margin: 0; background: #fdf9f3; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #efe6d2;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #0f2540;">{{fx.title}}</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #5b6576;"><span class="fx-dot" aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0f7a4c;"></span>Live</span></div>
+            <svg role="img" aria-label="{{gapScene.label}}" sc-camel-view-box="0 0 560 226" width="100%" style="display: block;">
+              <rect x="0" y="210" width="560" height="30" fill="#efe6d2"></rect>
+              <g aria-hidden="true">
+                <rect x="40" y="150" width="170" height="16" rx="6" fill="#0f2540"></rect>
+                <rect x="40" y="128" width="130" height="26" rx="10" fill="#c9d2e0"></rect>
+                <rect x="44" y="166" width="10" height="44" fill="#0f2540"></rect>
+                <rect x="196" y="166" width="10" height="44" fill="#0f2540"></rect>
+                <circle cx="70" cy="122" r="16" fill="#0f2540"></circle>
+                <rect x="232" y="40" width="6" height="170" fill="#9aa3b2"></rect>
+                <rect x="222" y="40" width="28" height="40" rx="6" fill="#e6eef9" stroke="#1d4f91" stroke-width="2.5"></rect>
+                <circle class="drip" cx="236" cy="88" r="3.5" fill="#1d4f91"></circle>
+                <path d="M236,80 C236,110 200,120 180,136" fill="none" stroke="#9aa3b2" stroke-width="2"></path>
+              </g>
+              <g class="receipt">
+                <rect x="290" y="34" width="110" height="170" rx="6" fill="#ffffff" stroke="#0f2540" stroke-width="2.5"></rect>
+                <text x="345" y="60" text-anchor="middle" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#5b6576">HOSPITAL BILL</text>
+                <path d="M304,76 h82 M304,90 h60 M304,104 h74 M304,118 h52 M304,132 h70" stroke="#c9d2e0" stroke-width="5" stroke-linecap="round"></path>
+                <text x="345" y="176" text-anchor="middle" font-family="Poppins, sans-serif" font-size="15" font-weight="800" fill="#0f2540">{{out.bill}}</text>
+              </g>
+              <g aria-hidden="true">
+                <rect class="seg" x="440" y="{{gapScene.cY}}" width="80" height="{{gapScene.cH}}" fill="#1d4f91"></rect>
+                <rect class="seg seg2" x="440" y="{{gapScene.sY}}" width="80" height="{{gapScene.sH}}" fill="#0f7a4c"></rect>
+                <rect class="seg seg3" x="440" y="{{gapScene.gY}}" width="80" height="{{gapScene.gH}}" fill="#b23a3a"></rect>
+                <text x="480" y="24" text-anchor="middle" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#0f2540">WHO PAYS?</text>
+              </g>
+            </svg>
+            <figcaption style="padding: 10px 14px 12px; border-top: 1px solid #efe6d2; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 600; line-height: 1.4; color: #0f2540; font-variant-numeric: tabular-nums;">{{fx.caption}}</span>
+              <ul class="fx-legend" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px;">
+                <sc-for list="{{fx.legend}}" as="lg" hint-placeholder-count="3"><li style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #3d4757;"><span aria-hidden="true" style="{{lg.sw}}"></span>{{lg.label}} <b style="color: #0f2540; font-variant-numeric: tabular-nums;">{{lg.value}}</b></li></sc-for>
+              </ul>
+            </figcaption>
+          </figure>
+
+          <section aria-label="Scenario flow" style="background: #16305a; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">{{flow.heading}}</span><span aria-live="polite" style="font-size: 12px; color: #c9d2e0;">{{flow.pos}}</span></div>
+            <div sc-camel-on-pointer-down="{{flow.down}}" sc-camel-on-pointer-up="{{flow.up}}" style="overflow: hidden; border-radius: 12px; touch-action: pan-y; cursor: grab;">
+              <div style="{{flow.trackStyle}}">
+                <sc-for list="{{flow.slides}}" as="f" hint-placeholder-count="5">
+                  <div aria-hidden="{{f.hidden}}" style="flex: 0 0 100%; box-sizing: border-box; padding: 16px; background: #fdf9f3; color: #0f2540; display: flex; flex-direction: column; gap: 8px; min-height: 220px;">
+                    <span style="{{f.tagStyle}}">{{f.tag}}</span>
+                    <span style="font-size: 17px; font-weight: 800; line-height: 1.3;">{{f.title}}</span>
+                    <span style="{{f.valueStyle}}">{{f.value}}</span>
+                    <span style="font-size: 13px; line-height: 1.6; color: #3d4757;">{{f.desc}}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: auto;"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>{{f.meterLabel}}</span><span>{{f.meterText}}</span></div><div aria-hidden="true" style="height: 10px; background: #e8e1d2; border-radius: 9999px; overflow: hidden;"><div style="{{f.meterStyle}}"></div></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <label for="flow-range" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Scenario step</label>
+            <input id="flow-range" type="range" min="0" max="{{flow.max}}" step="1" value="{{flow.idx}}" sc-camel-on-change="{{flow.onRange}}" style="width: 100%; accent-color: #fac748;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" sc-camel-on-click="{{flow.prev}}" aria-label="Previous step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">‹</button>
+              <div style="flex: 1; display: flex; justify-content: center; flex-wrap: wrap;"><sc-for list="{{flow.dots}}" as="d" hint-placeholder-count="5"><button type="button" sc-camel-on-click="{{d.pick}}" aria-label="{{d.label}}" aria-current="{{d.cur}}" style="{{d.style}}"><span style="{{d.dotStyle}}"></span></button></sc-for></div>
+              <button type="button" sc-camel-on-click="{{flow.togglePlay}}" aria-pressed="{{flow.playing}}" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 13px; font-weight: 700; cursor: pointer;">{{flow.playLabel}}</button>
+              <button type="button" sc-camel-on-click="{{flow.next}}" aria-label="Next step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">›</button>
+            </div>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 15px; color: #e4e9f1;">Gap paid out of pocket</span>
+            <span style="font-size: 44px; font-weight: 800; line-height: 1.1; color: #ff9b8f; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{out.gap}}</span>
+            <span style="font-size: 13px; line-height: 1.6; color: #c9d2e0;">{{out.explain}}</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #c9d2e0;">WHO PAYS THIS BILL?</span>
+            <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 9999px; overflow: hidden; background: #24406a;">
+              <div style="{{out.barC}}; background: #6f9be0;"></div>
+              <div style="{{out.barS}}; background: #4fbf86;"></div>
+              <div style="{{out.barG}}; background: #ff9b8f;"></div>
+            </div>
+            <dl style="margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px;">
+              <div style="display: flex; justify-content: space-between;"><dt style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #6f9be0;"></span>Company cover</dt><dd style="margin: 0; font-weight: 700;">{{out.company}}</dd></div>
+              <div style="display: flex; justify-content: space-between;"><dt style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #4fbf86;"></span>Savings</dt><dd style="margin: 0; font-weight: 700;">{{out.savings}}</dd></div>
+              <div style="display: flex; justify-content: space-between;"><dt style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #ff9b8f;"></span>Gap</dt><dd style="margin: 0; font-weight: 700; color: #ffb4a8;">{{out.gap}}</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
+          <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 12px; color: #5b6576;">Same bill in 5 years ({{v.inflation}}% / yr)</span><span style="font-size: 20px; font-weight: 800; color: #0f2540;">{{out.future}}</span></div>
+          <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 12px; color: #5b6576;">Saving {{out.monthlySave}}/month to cover the gap</span><span style="font-size: 20px; font-weight: 800; color: #b23a3a;">{{out.years}}</span></div>
+          <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 12px; color: #5b6576;">Own medical card ±{{out.card}}/month</span><span style="font-size: 20px; font-weight: 800; color: #0f7a4c;">{{out.cardYear}}/yr</span></div>
+        </div>
+
+        <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 4px 18px;">
+          <summary style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; color: #0f2540; cursor: pointer;">How we calculate &amp; assumptions <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+          <ul style="margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #3d4757;">
+            <li>Gap = bill scenario − remaining company cover − savings willing to use (minimum 0).</li>
+            <li>Company cover is 0 when self-employed or not working.</li>
+            <li>Future bill = bill × (1 + medical inflation)^5.</li>
+            <li>Years to save = gap ÷ (monthly saving × 12), without returns.</li>
+            <li>Bill amounts are rough upper-end private hospital estimates for discussion, not quotations.</li>
+          </ul>
+        </details>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #e3dccd; padding-top: 18px;">
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: #1d4f91; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">Copy all for prospect's WhatsApp</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Preview text</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download image</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download PDF</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px dashed #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Combine all modules</button>
+      <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+    </div>
+
+    <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 12px; padding: 0 18px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; color: #0f2540; cursor: pointer;">DISCLAIMER <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+      <div style="padding-bottom: 14px; font-size: 13px; line-height: 1.7; color: #3d4757; display: flex; flex-direction: column; gap: 8px;">
+        <p style="margin: 0;">The Financial Storyboard is a discussion aid for registered takaful agents, not an official document of any takaful operator.</p>
+        <p style="margin: 0;">Bill scenarios, rates and figures are estimates and educational illustrations only, not a quotation, contract, guarantee of acceptance or claim, or medical or financial advice.</p>
+        <p style="margin: 0;">Benefits, contributions and terms follow the Product Disclosure Sheet, official illustration, certificate and the operator's underwriting.</p>
+        <p style="margin: 0;">PDPA 2010: data saved here stays with this lead in the CRM, visible to the assigned agent and upline only.</p>
+      </div>
+    </details>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;animate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;section&quot;:&quot;Dashboard&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:3000}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      nick: 'Nurul', edit: false, savedAt: '',
+      checked: { 'w0': true, 'l0': true },
+      work: 'employed', company: 20000, savings: 10000, scenario: 7,
+      monthlySave: 500, cardCost: 300, inflation: 15,
+      bills: [
+        ['Heart attack, 2 stents', 60000], ['Stroke, treatment & rehab', 75000], ['Heart bypass', 120000],
+        ['Kidney transplant', 150000], ['Accident with ICU stay', 165000], ['Open-heart / valve surgery', 200000],
+        ['Leukaemia, bone marrow transplant', 300000], ['Breast cancer, full treatment', 395000], ['Liver transplant', 500000]
+      ]
+    };
+  }
+  componentDidMount() { this._flowTimer = setInterval(() => { if (this.state.flowPlay) { const n = this._flowN || 1; this.setState({ flowIdx: ((this.state.flowIdx || 0) + 1) % n }); } }, 3500); }
+  componentWillUnmount() { clearInterval(this._flowTimer); }
+  buildFlow(heading, data) {
+    const n = data.length; this._flowN = n;
+    const idx = Math.min(n - 1, this.state.flowIdx || 0);
+    const go = (i) => this.setState({ flowIdx: Math.max(0, Math.min(n - 1, i)), flowPlay: false });
+    const tones = { neutral: '#1d4f91', warn: '#a45d00', bad: '#b23a3a', good: '#0f7a4c' };
+    return {
+      heading: heading, idx: String(idx), max: String(n - 1), pos: 'Step ' + (idx + 1) + ' of ' + n,
+      trackStyle: 'display: flex; transition: transform .55s cubic-bezier(.16,1,.3,1); transform: translateX(-' + (idx * 100) + '%);',
+      slides: data.map((d, i) => { const c = tones[d.tone] || tones.neutral; const m = Math.max(0, Math.min(100, Math.round(d.meter || 0))); return {
+        tag: d.tag, title: d.title, value: d.value, desc: d.desc, meterLabel: d.meterLabel, meterText: d.meterText, hidden: i === idx ? 'false' : 'true',
+        tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #ffffff; background: ' + c + '; border-radius: 9999px; padding: 3px 10px;',
+        valueStyle: 'font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: ' + c + '; font-variant-numeric: tabular-nums;',
+        meterStyle: 'height: 100%; width: ' + m + '%; background: ' + (m > 60 ? '#0f7a4c' : m > 25 ? '#e3a823' : '#b23a3a') + '; border-radius: 9999px; transition: width .6s ease;' }; }),
+      dots: data.map((d, i) => ({ label: 'Go to step ' + (i + 1) + ': ' + d.tag, cur: i === idx ? 'step' : 'false', pick: () => go(i),
+        style: 'width: 32px; height: 44px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;',
+        dotStyle: 'display: block; height: 8px; border-radius: 9999px; transition: all .3s; width: ' + (i === idx ? 22 : 8) + 'px; background: ' + (i === idx ? '#fac748' : '#5b7299') + ';' })),
+      prev: () => go(idx - 1), next: () => go(idx + 1), onRange: (e) => go(Number(e.target.value) || 0),
+      playing: this.state.flowPlay ? 'true' : 'false', playLabel: this.state.flowPlay ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ flowPlay: !this.state.flowPlay }),
+      down: (e) => { this._fx = e.clientX; },
+      up: (e) => { if (this._fx == null) return; const dx = e.clientX - this._fx; this._fx = null; if (dx < -40) go(idx + 1); else if (dx > 40) go(idx - 1); }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const rm = (x) => 'RM' + Math.round(x).toLocaleString('en-MY');
+    const num = (x) => Math.round(x).toLocaleString('en-MY');
+    const n = (k) => Number(s[k]) || 0;
+    const setNum = (k) => (e) => { const raw = String(e.target.value).replace(/[^0-9.]/g, ''); this.setState({ [k]: raw === '' ? 0 : Number(raw) }); };
+
+    const defs = [
+      { key: 'w', title: '1. Type of work', items: [
+        ['Field work / sales / delivery', 'Always on the road meeting customers', 3],
+        ['Factory, construction, machinery', 'Heavy lifting, heights, power tools', 3],
+        ['Self-employed, gig, freelance', 'E-hailing, rider, contract, no company panel', 3],
+        ['Office, long hours at a screen', 'Little movement, target pressure', 1],
+        ['Shift / night work', 'Often short of sleep', 2]
+      ] },
+      { key: 'l', title: '2. Lifestyle', items: [
+        ['Ride a motorcycle every day', 'Commute or work', 4],
+        ['Smoke or vape', 'Including occasional', 3],
+        ['Rarely exercise', 'Less than once a week', 2],
+        ['Often eat out / fast food', 'Most meals outside', 1],
+        ['Sleep less than 6 hours', 'Most nights', 1]
+      ] },
+      { key: 't', title: '3. Travel', items: [
+        ['Long-distance / highway driving almost daily', '', 2],
+        ['Frequent outstation or overseas trips', '', 2],
+        ['Often travel far with children / family', '', 1]
+      ] },
+      { key: 'h', title: '4. Health & dependants', items: [
+        ['Aged 40 and above', '', 2],
+        ['Family history of heart disease, cancer, stroke, diabetes', '', 2],
+        ['Children / parents depend on me', '', 1],
+        ['No own medical card (company panel only, or none)', '', 1],
+        ['Emergency savings under 6 months', '', 1]
+      ] }
+    ];
+    let score = 0;
+    const ticked = [];
+    const groups = defs.map((g) => {
+      let c = 0;
+      const items = g.items.map((it, i) => {
+        const key = g.key + i;
+        const on = !!s.checked[key];
+        if (on) { score += it[2]; c++; ticked.push({ label: it[0], w: it[2] }); }
+        return {
+          id: 'rk-' + key, label: it[0], hint: it[1] || ' ', checked: on,
+          toggle: () => this.setState({ checked: Object.assign({}, s.checked, { [key]: !on }) }),
+          style: 'display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; cursor: pointer; ' + (on ? 'background: #e6eef9; border: 1.5px solid #1d4f91;' : 'background: #ffffff; border: 1px solid #ecdfc4;')
+        };
+      });
+      return { title: g.title, items: items, ticked: c + ' ticked' };
+    });
+    const level = score <= 7 ? 'LOW' : score <= 15 ? 'MODERATE' : 'HIGH';
+    const color = score <= 7 ? '#4fbf86' : score <= 15 ? '#fac748' : '#ff7a6b';
+    const notes = {
+      LOW: 'Low daily factors, but accidents and illness can still happen.',
+      MODERATE: 'Several daily factors add up. A hospital stay is a real possibility.',
+      HIGH: 'Many daily risk factors. Prioritise medical protection now.'
+    };
+    const top = ticked.sort((a, b) => b.w - a.w).slice(0, 3).map((t) => ({ label: t.label }));
+
+    const noCompany = s.work !== 'employed';
+    const company = noCompany ? 0 : n('company');
+    const savings = n('savings');
+    const editing = s.edit;
+    const scenarios = s.bills.map((b, i) => {
+      const on = s.scenario === i;
+      return {
+        id: 'bill-' + i, label: b[0], amountText: rm(b[1]), amountNum: num(b[1]), pressed: on ? 'true' : 'false', editing: editing,
+        pick: () => this.setState({ scenario: i }),
+        setAmount: (e) => { const next = s.bills.map((x) => x.slice()); next[i][1] = Number(String(e.target.value).replace(/[^0-9.]/g, '')) || 0; this.setState({ bills: next }); },
+        style: 'border-radius: 12px; overflow: hidden; ' + (on ? 'background: #0f2540; color: #fdf9f3; border: 2px solid #0f2540;' : 'background: #ffffff; color: #0f2540; border: 1px solid #ecdfc4;')
+      };
+    });
+    const cur = s.bills[s.scenario] || s.bills[0];
+    const bill = cur[1];
+    const cUsed = Math.min(company, bill);
+    const sUsed = Math.min(savings, Math.max(0, bill - cUsed));
+    const gap = Math.max(0, bill - cUsed - sUsed);
+    const pc = (x) => (bill > 0 ? (x / bill) * 100 : 0);
+    const inf = n('inflation') / 100;
+    const future = bill * Math.pow(1 + inf, 5);
+    const ms = n('monthlySave');
+    const years = ms > 0 ? Math.ceil(gap / (ms * 12)) : 0;
+    const H = 170;
+    const cH = Math.round(H * pc(cUsed) / 100), sH = Math.round(H * pc(sUsed) / 100), gH = Math.max(0, H - cH - sH);
+    const base = 204;
+
+    const save = () => { const d = new Date(); this.setState({ savedAt: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }); };
+    return {
+      nick: s.nick, setNick: (e) => this.setState({ nick: e.target.value }),
+      groups: groups,
+      risk: {
+        score: String(score), level: level, color: color, note: notes[level], top: top, none: top.length === 0,
+        ecgClass: 'ecg ' + (level === 'HIGH' ? 'fast' : level === 'MODERATE' ? 'mid' : ''),
+        levelStyle: 'font-size: 40px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.1; color: ' + color,
+        barStyle: 'height: 100%; width: ' + Math.round((score / 35) * 100) + '%; background: ' + color + '; border-radius: 9999px; transition: width .6s cubic-bezier(.16,1,.3,1);'
+      },
+      v: { work: s.work, company: num(company), noCompany: noCompany, savings: num(savings), monthlySave: num(ms), cardCost: num(n('cardCost')), inflation: String(n('inflation')) },
+      h: { work: (e) => this.setState({ work: e.target.value }), company: setNum('company'), savings: setNum('savings'), monthlySave: setNum('monthlySave'), cardCost: setNum('cardCost'), inflation: setNum('inflation') },
+      scenarios: scenarios,
+      edit: editing, editStr: editing ? 'true' : 'false', editLabel: editing ? 'Done' : 'Customize amounts',
+      editBtnStyle: 'min-height: 36px; padding: 0 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; cursor: pointer; ' + (editing ? 'background: #fac748; color: #0f2540; border: 0;' : 'background: #ffffff; color: #0f2540; border: 1px solid #0f2540;'),
+      toggleEdit: () => this.setState({ edit: !editing }),
+      out: {
+        bill: rm(bill), gap: rm(gap), company: rm(cUsed), savings: rm(sUsed),
+        explain: cur[0] + ': ' + rm(bill) + ' − company cover ' + rm(cUsed) + ' − savings ' + rm(sUsed) + '. Covered through EPF, selling assets, loans or family.',
+        barC: 'width: ' + pc(cUsed).toFixed(2) + '%', barS: 'width: ' + pc(sUsed).toFixed(2) + '%', barG: 'width: ' + pc(gap).toFixed(2) + '%',
+        future: rm(future), monthlySave: rm(ms), years: ms > 0 ? years + ' years' : '—', card: rm(n('cardCost')), cardYear: rm(n('cardCost') * 12)
+      },
+      gapScene: {
+        cY: base - cH, cH: cH, sY: base - cH - sH, sH: sH, gY: base - cH - sH - gH, gH: gH,
+        caption: cur[0] + ' · ' + rm(gap) + ' out of pocket',
+        label: 'Animated hospital bed with drip and a printing bill of ' + rm(bill) + ', with a bar showing company cover, savings and a gap of ' + rm(gap)
+      },
+      flow: this.buildFlow('IF ' + String(s.nick || 'THE PROSPECT').toUpperCase() + ' HAS NO MEDICAL CARD', [
+        { tag: 'ADMISSION', title: cur[0], value: rm(bill), desc: 'Private hospital estimate. Without an own card, a deposit is usually needed at the admission counter.', meterLabel: 'Hospital savings left', meterText: rm(savings), meter: 100, tone: 'neutral' },
+        { tag: 'COMPANY PANEL', title: noCompany ? 'No company panel to fall back on' : 'Company cover pays first', value: '− ' + rm(cUsed), desc: noCompany ? 'Self-employed or not working: nothing comes from an employer.' : 'Up to the remaining annual limit, and only while ' + s.nick + ' stays in this job.', meterLabel: 'Hospital savings left', meterText: rm(savings), meter: 100, tone: 'neutral' },
+        { tag: 'SAVINGS', title: 'Savings disrupted by ' + rm(sUsed), value: (savings > 0 ? Math.round(sUsed / savings * 100) : 0) + '% gone', desc: rm(sUsed) + ' of ' + rm(savings) + ' set aside for hospital is used up on this one stay.', meterLabel: 'Hospital savings left', meterText: rm(Math.max(0, savings - sUsed)), meter: savings > 0 ? (savings - sUsed) / savings * 100 : 0, tone: 'warn' },
+        { tag: 'OUT OF POCKET', title: 'Still unpaid after cover and savings', value: rm(gap), desc: 'Paid through EPF, selling assets, loans or family. The same bill in 5 years could be ' + rm(future) + '.', meterLabel: 'Bill covered', meterText: (bill > 0 ? Math.round((bill - gap) / bill * 100) : 100) + '%', meter: bill > 0 ? (bill - gap) / bill * 100 : 100, tone: 'bad' },
+        { tag: 'WITH OWN CARD', title: 'Own medical card ±' + rm(n('cardCost')) + ' a month', value: rm(n('cardCost') * 12) + '/yr', desc: 'Panel bills paid via GL up to plan limits, so savings stay intact. Subject to deductibles, limits and exclusions.', meterLabel: 'Hospital savings left', meterText: rm(savings), meter: 100, tone: 'good' }
+      ]),
+      animClass: (this.props.animate ?? true) ? 'live' : 'still',
+      fx: { title: 'HOSPITAL BILL · WHO PAYS?', caption: cur[0] + ' · ' + rm(gap) + ' out of pocket', legend: [['Company cover', rm(cUsed), '#1d4f91'], ['Own savings', rm(sUsed), '#0f7a4c'], ['Out of pocket', rm(gap), '#b23a3a']].map(([l, v, c]) => ({ label: l, value: v, sw: 'width: 10px; height: 10px; border-radius: 3px; flex: none; background: ' + c + ';' })) },
+      saveLabel: s.savedAt ? 'Saved ✓ ' + s.savedAt : 'Save',
+      saveStyle: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 0; ' + (s.savedAt ? 'background: #0f7a4c; color: #ffffff;' : 'background: #0f2540; color: #fdf9f3;'),
+      save: save
+    };
+  }
+}
+</script>
+
+
+</body></html>

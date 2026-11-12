@@ -34,6 +34,7 @@ import type { MyProfileDetails } from "./data";
 import { DailyDistributionTab, type WeeklyReportSettings } from "./tabs/daily-distribution-tab";
 import type { DailyDistributionData } from "./daily-distribution-data";
 import { isDistributorRole } from "@/lib/daily-distribution-shared";
+import { StoryboardTab, type StoryboardTabData } from "./tabs/storyboard-tab";
 
 const TABS = [
   "My Profile",
@@ -45,6 +46,7 @@ const TABS = [
   "Daily Distribution",
   "Lead Sources",
   "Benefits",
+  "Storyboard",
   "Webhooks",
   "Tracking Code",
   "Branding",
@@ -59,7 +61,7 @@ const GROUPS: { heading: string; tabs: readonly Tab[] }[] = [
   { heading: "Account", tabs: ["My Profile"] },
   { heading: "People", tabs: ["Users & Hierarchy", "Join Requests", "Roles & Permissions"] },
   { heading: "Performance", tabs: ["Set Target", "Lead Distribution", "Daily Distribution", "Lead Sources"] },
-  { heading: "Sales", tabs: ["Benefits"] },
+  { heading: "Sales", tabs: ["Benefits", "Storyboard"] },
   { heading: "Integrations", tabs: ["Webhooks", "Tracking Code", "Branding"] },
   { heading: "Security", tabs: ["Audit Log"] },
 ];
@@ -74,6 +76,7 @@ const DESCRIPTIONS: Record<Tab, string> = {
   "Daily Distribution": "Hand out leads from your pool every day",
   "Lead Sources": "Where your leads are coming from",
   Benefits: "The benefits agents can pick when submitting a case",
+  Storyboard: "Financial Storyboard defaults: plan names, multiples and statistics placeholders",
   Webhooks: "Send lead events to Pabbly Connect and other tools",
   "Tracking Code": "Meta and TikTok pixels on your landing pages",
   Branding: "System colour, plus the insurer logo and header cover on Agent Landing Pages",
@@ -103,6 +106,7 @@ export function SettingsView({
   myProfile,
   dailyDistribution,
   weeklyReport,
+  storyboard,
   initialTab,
 }: {
   role: Role;
@@ -127,6 +131,7 @@ export function SettingsView({
   myProfile: MyProfileDetails;
   dailyDistribution: DailyDistributionData | null;
   weeklyReport: WeeklyReportSettings | null;
+  storyboard: StoryboardTabData | null;
   // From ?tab=<Tab name>; ignored unless that tab is visible to this role.
   initialTab: string | null;
 }) {
@@ -144,13 +149,14 @@ export function SettingsView({
     : role === "superadmin"
       ? TABS
       : role === "group_manager"
-        ? TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Branding")
+        ? TABS.filter((t) => t !== "Audit Log" && t !== "Tracking Code" && t !== "Branding" && t !== "Storyboard")
         : TABS.filter(
           (t) =>
             t !== "Audit Log" &&
             t !== "Tracking Code" &&
             t !== "Branding" &&
             t !== "Webhooks" &&
+            t !== "Storyboard" &&
             t !== "Benefits",
         );
   // Daily Distribution is for the roles that can run it (not aspirant UMs).
@@ -273,6 +279,7 @@ export function SettingsView({
               canManage={role === "superadmin" || role === "group_manager"}
             />
           )}
+          {tab === "Storyboard" && role === "superadmin" && storyboard && <StoryboardTab initial={storyboard} />}
           {tab === "Webhooks" && <WebhooksTab webhooks={webhooks} />}
           {tab === "Tracking Code" && role === "superadmin" && (
             <TrackingCodeTab initial={trackingCode} pages={trackablePages} />

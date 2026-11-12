@@ -5,6 +5,7 @@ import {
   PipelineIcon,
   TeamIcon,
   QuotationIcon,
+  StoryboardIcon,
   CalendarIcon,
   FunnelIcon,
   MySalesIcon,
@@ -13,7 +14,6 @@ import {
   StatisticsIcon,
   SettingsIcon,
   SupportIcon,
-  StoryboardIcon,
 } from "@/components/icons";
 
 export type NavItem = {
@@ -45,12 +45,12 @@ export const SIDEBAR_NAV: NavItem[] = [
   // What happens inside the appointment: the needs analysis presented with
   // the prospect. Presenting one moves the lead into the Appointment stage.
   {
-    href: "/storyboard",
+    href: "/storyboards",
     label: "Financial Storyboard",
     icon: StoryboardIcon,
     children: [
-      { href: "/storyboard", label: "Sessions" },
-      { href: "/storyboard/insights", label: "My Insights" },
+      { href: "/storyboards", label: "Storyboards" },
+      { href: "/storyboards/insights", label: "My Insights" },
     ],
   },
   // Both sit after Appointment because that is where they fall in the work: a

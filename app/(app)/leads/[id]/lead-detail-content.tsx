@@ -10,7 +10,6 @@ import { waLink } from "@/lib/whatsapp";
 import { productTag } from "@/lib/product-interest";
 import { LEAD_SOURCES, OCCUPATION_CLASSES } from "@/lib/lead-constants";
 import { ageNextBirthday } from "@/lib/age";
-import Link from "next/link";
 import { PhoneIcon, WaFlowIcon, QuotationIcon, ChevronDownIcon, CheckIcon, AlertIcon, ClockIcon, StoryboardIcon } from "@/components/icons";
 import { addNote, reassignLead, updateStage, updateSource, setClosedOn } from "./actions";
 import { WON_STAGES } from "@/lib/pipeline-stages";
@@ -34,6 +33,8 @@ import { LeadCaseTab, LockedCaseTab } from "@/app/(app)/my-sales/lead-case-tab";
 import type { CaseSubmission, BenefitOption } from "@/app/(app)/my-sales/types";
 import { quoteLauncherUrl } from "@/lib/quote-launcher";
 import type { QuotationRow } from "./data";
+import { LeadStoryboardTab } from "./lead-storyboard-tab";
+import type { LeadStoryboardStatus } from "@/lib/storyboard/data";
 
 const NEW_THRESHOLD_MS = 48 * 3600000;
 
@@ -138,6 +139,7 @@ export function LeadDetailContent({
   formLinks,
   nominees,
   signature,
+  storyboardStatus,
   today,
   onClose,
   isModal,
@@ -162,6 +164,8 @@ export function LeadDetailContent({
   formLinks: FormLinkSummary[];
   nominees: LeadNominee[];
   signature: LeadSignatureView | null;
+  /** Financial Storyboard progress per module (or why it couldn't be loaded). */
+  storyboardStatus: LeadStoryboardStatus;
   /** Malaysia's today, settled server-side: the servicing maths depends on it. */
   today: string;
   onClose?: () => void;
@@ -173,7 +177,7 @@ export function LeadDetailContent({
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [quoteTool, setQuoteTool] = useState<{ url: string; title: string } | null>(null);
-  const [tab, setTab] = useState<"details" | "case">("details");
+  const [tab, setTab] = useState<"details" | "case" | "storyboard">("details");
   // Unlocked from Submission onwards -- plus whenever a case already exists,
   // so a lead that was submitted and then lost doesn't hide its own history.
   const caseTabUnlocked =
@@ -379,6 +383,14 @@ export function LeadDetailContent({
         >
           Add note
         </button>
+        <button
+          type="button"
+          onClick={() => setTab("storyboard")}
+          className="h-11 flex-[1.4] rounded-[11px] bg-gold text-[13px] font-bold text-navy hover:brightness-95"
+        >
+          <span className="sm:hidden">Storyboard</span>
+          <span className="hidden sm:inline">Financial Storyboard</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -427,9 +439,21 @@ export function LeadDetailContent({
                 </span>
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("storyboard")}
+              aria-pressed={tab === "storyboard"}
+              className={`flex-1 rounded-[9px] px-3 py-2 text-[12.5px] font-semibold ${
+                tab === "storyboard" ? "bg-brand text-white" : "text-navy hover:bg-cream"
+              }`}
+            >
+              Storyboard
+            </button>
           </div>
 
-          {tab === "case" ? (
+          {tab === "storyboard" ? (
+            <LeadStoryboardTab leadId={lead.id} status={storyboardStatus} />
+          ) : tab === "case" ? (
             caseTabUnlocked ? (
               <LeadCaseTab
                 lead={{
@@ -515,13 +539,13 @@ export function LeadDetailContent({
               <p className="mt-1.5 text-[11px] font-medium text-taupe">
                 Build a side-by-side plan comparison. Saving stores it on this lead. The Simple version is a Medical Card comparison sheet.
               </p>
-              <Link
-                href={`/storyboard?lead=${lead.id}`}
+              <a
+                href={`/leads/${lead.id}/storyboard`}
                 className="mt-3 flex w-fit items-center gap-2 rounded-[10px] bg-brand px-3.5 py-2.5 text-[12.5px] font-semibold text-white"
               >
                 <StoryboardIcon width={14} height={14} className="text-gold" />
                 Open Financial Storyboard
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -796,7 +820,7 @@ function activityLabel(a: ActivityRow) {
     case "quotation_created": return a.content ?? "Quotation created";
     case "form_link": return "Form link";
     case "form_submitted": return "Form submitted";
-    case "storyboard": return a.content ?? "Financial Storyboard presented";
+    case "storyboard": return a.content ?? "Financial Storyboard";
     default: return "Note added";
   }
 }

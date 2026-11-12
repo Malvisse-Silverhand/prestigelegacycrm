@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Financial Storyboard · Critical Illness · Fill and Calculate</title>
+<script src="759bcc3a-e72a-4c30-adf7-1db9271ba0bb"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e5c6cf76-2965-45c3-8394-4fd36e58e887") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d330cc87-9653-41fd-92b2-47cee2217022") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("ea7c17a0-e779-4d02-8367-49de632110c7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("4e0bb7e4-38ea-4266-a0fc-3ffa002ef83c") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("b43f03f3-aea4-4185-9e25-c754c668c73f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#f3efe6}
+a{color:#0f2540}a:hover{color:#0f4c35}
+input,select,button,textarea{font-family:inherit}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #fac748;outline-offset:2px}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+@keyframes walk{0%{transform:translateX(0)}100%{transform:translateX(var(--d))}}
+@keyframes legs{0%,100%{transform:rotate(14deg)}50%{transform:rotate(-14deg)}}
+.fill{animation:fxInX 1.2s cubic-bezier(.16,1,.3,1) both;transform-box:fill-box;transform-origin:left center}
+.fill2{animation-delay:.15s}
+.walker{animation:walk 4.8s linear infinite}
+.leg{animation:legs .6s ease-in-out infinite;transform-box:fill-box;transform-origin:top center}
+.leg2{animation-delay:.3s}
+.warn{animation:fxPulse 2.4s ease-in-out infinite}
+.still .fill,.still .walker,.still .leg,.still .warn{animation:none}
+@media (prefers-reduced-motion:reduce){.fill,.walker,.leg,.warn{animation:none}}
+/* ---- Shared scene motion system (same in every dashboard) ---- */
+.fx-frame{--fx-ease:cubic-bezier(.16,1,.3,1)}
+@keyframes fxIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes fxInX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fxPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes fxFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes fxDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.45}}
+@keyframes fxFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fx-dot{animation:fxDot 2.4s ease-in-out infinite}
+.fx-legend li{animation:fxFade .6s cubic-bezier(.16,1,.3,1) both}
+.fx-legend li:nth-child(2){animation-delay:.15s}.fx-legend li:nth-child(3){animation-delay:.3s}.fx-legend li:nth-child(4){animation-delay:.45s}
+.still .fx-dot,.still .fx-legend li{animation:none}
+@media (prefers-reduced-motion:reduce){.fx-dot,.fx-legend li{animation:none}}
+
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #f3efe6; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+  <nav aria-label="CRM navigation" style="flex: 1 1 232px; max-width: 100%; background: #0f2540; color: #fdf9f3; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 8px 20px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: #fac748; color: #0f2540; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">PL</div>
+      <div style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 15px; line-height: 1.2;">Prestige Legacy</span><span style="font-size: 12px; color: #c9d2e0; line-height: 1.3;">Agent CRM</span></div>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</a>
+    <a href="LeadPopup.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Leads</a>
+    <a href="Storyboards.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #0f2540; background: #fac748; text-decoration: none; font-size: 14px; font-weight: 600;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M10 9l5 2.5-5 2.5z"></path><path d="M8 21h8"></path></svg>Financial Storyboard</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>Pipeline</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 13h7M9 17h5"></path></svg>Quotations</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"></path></svg>Tasks</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.5"></circle><circle cx="5" cy="17" r="2.5"></circle><circle cx="19" cy="17" r="2.5"></circle><path d="M12 10.5v3M12 13.5L6.5 15.5M12 13.5l5.5 2"></path></svg>Team</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+    <p style="margin: 0; font-size: 13px; color: #5b6576;"><a href="Storyboards.dc.html" style="color: #5b6576; text-decoration: none;">Financial Storyboard</a> <span aria-hidden="true">›</span> <span style="color: #1c2433; font-weight: 600;">Siti Aisyah</span></p>
+
+    <section aria-label="Module header" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 420px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Module</span>
+          <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Critical Illness Compensation</h1>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #3d4757; max-width: 640px;">Cash while you're alive. Show the prospect how long the family's cashflow lasts if a critical illness stops their income.</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <a href="LeadPopup.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #0f2540; color: #0f2540; font-size: 14px; font-weight: 600; text-decoration: none;">← Back to lead</a>
+          <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;">
+        <a href="Main.dc.html" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">01</span><span style="font-weight: 700; font-size: 15px;">Hibah</span></a>
+        <a href="MedMain.dc.html" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">02</span><span style="font-weight: 700; font-size: 15px;">Medical Card</span></a>
+        <a href="BizMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">03</span><span style="font-weight: 700; font-size: 15px;">Business Protection</span></a>
+        <a href="#" aria-current="page" style="display: block; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 2px solid #0f2540; background: #0f2540; color: #fdf9f3; text-decoration: none;"><span style="display: block; font-size: 11px; color: #fac748;">04</span><span style="font-weight: 700; font-size: 15px;">Critical Illness</span></a>
+      </div>
+      <nav aria-label="Storyboard steps" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <a href="#" aria-current="step" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #1d4f91; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none;">1 · Fill &amp; Calculate</a>
+        <a href="CiExplain.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #0f7a4c; color: #0f7a4c; font-weight: 600; font-size: 14px; text-decoration: none;">2 · Explanation</a>
+        <a href="CiRisk.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b23a3a; color: #b23a3a; font-weight: 600; font-size: 14px; text-decoration: none;">3 · Rejection Risk</a>
+        <a href="CiObjections.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b8600a; color: #8a4a06; font-weight: 600; font-size: 14px; text-decoration: none;">4 · Objection</a>
+      </nav>
+    </section>
+
+    <details open="" style="background: #ffffff; border: 1.5px dashed #c9d2e0; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 15px; color: #0f2540;">Prospect profile</span><span style="font-size: 12px; color: #5b6576; flex: 1;">Shared by all modules · pulled from the lead record</span><span aria-hidden="true">▾</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding-bottom: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-nick" style="font-size: 12px; font-weight: 600;">Nickname (not full name)</label><input id="p-nick" type="text" value="{{nick}}" sc-camel-on-change="{{setNick}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-age" style="font-size: 12px; font-weight: 600;">Age</label><input id="p-age" type="text" value="38" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-gender" style="font-size: 12px; font-weight: 600;">Gender</label><sc-raw-select id="p-gender" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Female</option><option>Male</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-status" style="font-size: 12px; font-weight: 600;">Status</label><sc-raw-select id="p-status" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Married</option><option>Single</option><option>Single parent</option><option>Widowed / divorced</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-occ" style="font-size: 12px; font-weight: 600;">Occupation</label><input id="p-occ" type="text" value="Business owner" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-smoke" style="font-size: 12px; font-weight: 600;">Smoke / vape</label><sc-raw-select id="p-smoke" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>No</option><option>Yes</option><option>Quit &lt; 12 months</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-dep" style="font-size: 12px; font-weight: 600;">Dependants</label><input id="p-dep" type="text" value="3" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-budget" style="font-size: 12px; font-weight: 600;">Monthly budget</label><sc-raw-select id="p-budget" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Discuss first</option><option>Below RM150</option><option selected="">RM150–300</option><option>RM300–500</option><option>Above RM500</option></sc-raw-select></div>
+      </div>
+    </details>
+
+    <section aria-label="Why critical illness compensation" style="background: #0f2540; color: #fdf9f3; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 18px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #fac748;">CRITICAL ILLNESS COMPENSATION · CASH WHILE YOU'RE ALIVE</span>
+      <h2 style="margin: 0; font-size: 38px; line-height: 1.1; font-weight: 800; letter-spacing: -0.03em;">Illness is a test.<br>Being unprepared is a choice.</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #e4e9f1; max-width: 760px;">Medical card: done. Hibah: done. But if the doctor confirmed cancer, a heart attack or a stroke yesterday, and {{nick}} couldn't work for months, who replaces the income?</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+        <div style="background: #16305a; border-radius: 14px; padding: 16px;"><span style="display: block; font-weight: 800; font-size: 18px;">Medical Card</span><span style="font-size: 13px; color: #c9d2e0;">pays the hospital bill</span></div>
+        <div style="background: #16305a; border-radius: 14px; padding: 16px;"><span style="display: block; font-weight: 800; font-size: 18px;">Hibah</span><span style="font-size: 13px; color: #c9d2e0;">helps the family when you're gone</span></div>
+        <div style="background: #fac748; color: #0f2540; border-radius: 14px; padding: 16px;"><span style="display: block; font-weight: 800; font-size: 18px;">Critical Illness</span><span style="font-size: 13px;">gives you cash while you're alive but tested</span></div>
+      </div>
+    </section>
+
+    <details open="" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 17px; color: #0f2540;">▾ Why CI compensation matters</span></summary>
+      <p style="margin: 0 0 14px; font-size: 14px; color: #3d4757;">Critical illness isn't only a health issue, it's a financial one. Treatment may be covered by the medical card, but the house, car, food, children's school, a caregiver and months without work still need cash.</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding-bottom: 16px;">
+        <div style="background: #f7f4ee; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px;"><span style="font-weight: 800; color: #1d4f91;">01</span><span style="font-weight: 700;">Income can stop</span><span style="font-size: 13px; color: #3d4757;">Cancer, heart attack or stroke need long treatment and recovery. Bills and loans don't wait for us to heal.</span></div>
+        <div style="background: #f7f4ee; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px;"><span style="font-weight: 800; color: #1d4f91;">02</span><span style="font-weight: 700;">Costs outside the medical card</span><span style="font-size: 13px; color: #3d4757;">Caregiver, travel to hospital, special food, follow-up care, certain medicines, home modification.</span></div>
+        <div style="background: #f7f4ee; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px;"><span style="font-weight: 800; color: #1d4f91;">03</span><span style="font-weight: 700;">Family doesn't take over the burden</span><span style="font-size: 13px; color: #3d4757;">Cash reduces dependence on spouse, children or parents during treatment.</span></div>
+        <div style="background: #f7f4ee; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px;"><span style="font-weight: 800; color: #1d4f91;">04</span><span style="font-weight: 700;">Focus on recovery</span><span style="font-size: 13px; color: #3d4757;">With a financial runway, treatment and rest aren't forced by "what do I pay tomorrow?".</span></div>
+      </div>
+      <blockquote style="margin: 0 0 16px; padding: 14px 18px; border-radius: 12px; background: #fff4d2; font-size: 16px; font-weight: 700; color: #0f2540;">CI compensation isn't paid when you die. It's there to help you live. <span style="display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: #5b6576;">Think of CI as a recovery fund and cashflow protection, not just a rider name on the certificate.</span></blockquote>
+    </details>
+
+    <details open="" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 17px; color: #0f2540; flex: 1;">▾ The story we often see</span></summary>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px;">
+        <sc-if value="{{viewOnly}}" hint-placeholder-val="{{true}}"><p style="margin: 0; font-size: 14px; line-height: 1.7; color: #3d4757;">{{story}}</p></sc-if>
+        <sc-if value="{{edit}}" hint-placeholder-val="{{false}}"><label for="ci-story" style="font-size: 12px; font-weight: 600;">Your story (anonymised, with consent)</label><textarea id="ci-story" rows="4" value="{{story}}" sc-camel-on-change="{{setStory}}" style="border: 1.5px solid #fac748; border-radius: 10px; padding: 10px 12px; font-size: 14px; background: #fffbf0;"></textarea></sc-if>
+        <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #0f2540; font-weight: 600;">Manage the risk while still healthy. Not because we know when we'll fall ill, but because our commitments already exist today.</p>
+        <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center;"><span style="font-size: 12px; color: #5b6576;">A story is an anecdote, not a claim document. Past claims don't guarantee future ones.</span><button type="button" sc-camel-on-click="{{toggleEdit}}" aria-pressed="{{editStr}}" style="{{editBtnStyle}}">{{editLabel}}</button></div>
+      </div>
+    </details>
+
+    <details open="" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 56px; display: flex; align-items: center; cursor: pointer;"><span style="font-weight: 700; font-size: 17px; color: #0f2540;">▾ If income stopped yesterday, what still needs paying today?</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; padding-bottom: 12px;">
+        <sc-for list="{{commits}}" as="c" hint-placeholder-count="10">
+          <label for="{{c.id}}" style="{{c.style}}"><input id="{{c.id}}" type="checkbox" checked="{{c.checked}}" sc-camel-on-change="{{c.toggle}}" style="width: 20px; height: 20px; margin: 0; accent-color: #1d4f91; flex: none;"><span style="font-size: 14px; font-weight: 500;">{{c.label}}</span></label>
+        </sc-for>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #b23a3a;">{{commitCount}} of 10 still need paying even when ill.</p>
+    </details>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <details open="" style="flex: 999 1 520px; min-width: 0; background: #fffbf2; border: 1px solid #ecdfc4; border-radius: 16px; padding: 0 20px;">
+        <summary style="min-height: 56px; display: flex; flex-direction: column; justify-content: center; cursor: pointer; padding: 10px 0;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #0f7a4c;">CI CASHFLOW GAP TEST</span><span style="font-weight: 800; font-size: 20px; color: #0f2540;">Medical card and hibah done. Is cashflow during illness enough?</span></summary>
+        <p style="margin: 0 0 12px; font-size: 13px; color: #3d4757;">Tick what applies. This isn't about how likely illness is, only how much the family depends on {{nick}} continuing to work.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; padding-bottom: 16px;">
+          <sc-for list="{{deps}}" as="d" hint-placeholder-count="10">
+            <label for="{{d.id}}" style="{{d.style}}"><input id="{{d.id}}" type="checkbox" checked="{{d.checked}}" sc-camel-on-change="{{d.toggle}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: #1d4f91; flex: none;"><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600; font-size: 14px;">{{d.label}}</span><span style="font-size: 12px; color: #5b6576;">{{d.hint}}</span></span></label>
+          </sc-for>
+        </div>
+      </details>
+      <aside aria-label="Dependency score" style="flex: 1 1 300px; background: #0f2540; color: #fdf9f3; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #fac748;">DEPENDENCY ON YOUR INCOME</span>
+        <span style="font-size: 52px; font-weight: 800; line-height: 1;">{{dep.score}}<span style="font-size: 22px; color: #c9d2e0;">/10</span></span>
+        <div aria-hidden="true" style="display: flex; gap: 4px;"><sc-for list="{{dep.segs}}" as="sg" hint-placeholder-count="10"><span style="{{sg.style}}"></span></sc-for></div>
+        <span style="{{dep.levelStyle}}">{{dep.level}}</span>
+        <span style="font-size: 13px; line-height: 1.6; color: #e4e9f1;">{{dep.note}}</span>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0f7a4c;">Calculator</span>
+      <h2 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; color: #0f2540;">How much CI compensation does {{nick}} <span style="color: #1d4f91;">really need?</span></h2>
+      <p style="margin: 0; font-size: 14px; color: #3d4757;">A cashflow stress test, not a mandatory takaful formula.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <form aria-label="CI calculator inputs" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 60px; display: flex; align-items: center; gap: 12px; cursor: pointer;"><span style="width: 30px; height: 30px; border-radius: 9999px; background: #1d4f91; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">1</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">Income &amp; recovery period</span><span style="font-size: 12px; color: #5b6576;">Start with the basic cashflow figures.</span></span></summary>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-inc" style="font-size: 13px; font-weight: 600;">Monthly income (RM)</label><input id="c-inc" type="text" inputmode="numeric" value="{{v.income}}" sc-camel-on-change="{{h.income}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-com" style="font-size: 13px; font-weight: 600;">Fixed family commitments / month (RM)</label><input id="c-com" type="text" inputmode="numeric" value="{{v.commit}}" sc-camel-on-change="{{h.commit}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            </div>
+            <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;"><legend style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Share of income to replace during recovery</legend>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{pctChips}}" as="p" hint-placeholder-count="3"><button type="button" sc-camel-on-click="{{p.pick}}" aria-pressed="{{p.pressed}}" style="{{p.style}}">{{p.label}}</button></sc-for><label for="c-pct" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Other percentage</label><input id="c-pct" type="text" inputmode="numeric" value="{{v.pct}}" sc-camel-on-change="{{h.pct}}" style="width: 90px; min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;" aria-describedby="pct-unit"><span id="pct-unit" style="align-self: center; font-size: 13px; color: #5b6576;">% other</span></div>
+            </fieldset>
+            <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;"><legend style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Recovery / income disruption period</legend>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{monthChips}}" as="m" hint-placeholder-count="4"><button type="button" sc-camel-on-click="{{m.pick}}" aria-pressed="{{m.pressed}}" style="{{m.style}}">{{m.label}}</button></sc-for><label for="c-mon" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Other months</label><input id="c-mon" type="text" inputmode="numeric" value="{{v.months}}" sc-camel-on-change="{{h.months}}" style="width: 90px; min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><span style="align-self: center; font-size: 13px; color: #5b6576;">months other</span></div>
+            </fieldset>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 60px; display: flex; align-items: center; gap: 12px; cursor: pointer;"><span style="width: 30px; height: 30px; border-radius: 9999px; background: #1d4f91; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">2</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">Treatment &amp; recovery costs outside the hospital bill</span><span style="font-size: 12px; color: #5b6576;">Caregiver, travel, rehab and transition costs.</span></span></summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-reh" style="font-size: 13px; font-weight: 600;">Recovery / rehab / caregiver costs (RM)</label><input id="c-reh" type="text" inputmode="numeric" value="{{v.rehab}}" sc-camel-on-change="{{h.rehab}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-em" style="font-size: 13px; font-weight: 600;">Extra emergency / transition fund (RM)</label><input id="c-em" type="text" inputmode="numeric" value="{{v.emer}}" sc-camel-on-change="{{h.emer}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-cg" style="font-size: 13px; font-weight: 600;">Caregiver's lost income (RM / month)</label><input id="c-cg" type="text" inputmode="numeric" value="{{v.cg}}" sc-camel-on-change="{{h.cg}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Spouse works less or stops to care.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-cgm" style="font-size: 13px; font-weight: 600;">Months affected</label><input id="c-cgm" type="text" inputmode="numeric" value="{{v.cgMonths}}" sc-camel-on-change="{{h.cgMonths}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-wv" style="font-size: 13px; font-weight: 600;">Takaful contributions during recovery</label><sc-raw-select id="c-wv" value="{{v.waiver}}" sc-camel-on-change="{{h.waiver}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="yes">Has waiver</option><option value="no">Must pay myself</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-ct" style="font-size: 13px; font-weight: 600;">Takaful contribution / month (RM)</label><input id="c-ct" type="text" inputmode="numeric" value="{{v.contrib}}" sc-camel-on-change="{{h.contrib}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Counted only without a waiver.</span></div>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 60px; display: flex; align-items: center; gap: 12px; cursor: pointer;"><span style="width: 30px; height: 30px; border-radius: 9999px; background: #1d4f91; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">3</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 16px; color: #0f2540;">What's already in place?</span><span style="font-size: 12px; color: #5b6576;">Deduct savings and existing CI compensation.</span></span></summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-sv" style="font-size: 13px; font-weight: 600;">Savings willing to use (RM)</label><input id="c-sv" type="text" inputmode="numeric" value="{{v.savings}}" sc-camel-on-change="{{h.savings}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-emp" style="font-size: 13px; font-weight: 600;">Employer / group CI benefit (RM)</label><input id="c-emp" type="text" inputmode="numeric" value="{{v.employer}}" sc-camel-on-change="{{h.employer}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-empc" style="font-size: 13px; font-weight: 600;">Count employer benefit as a source?</label><sc-raw-select id="c-empc" value="{{v.countEmp}}" sc-camel-on-change="{{h.countEmp}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="no">Don't count</option><option value="yes">Count</option></sc-raw-select><span style="font-size: 12px; color: #5b6576;">Group cover is tied to the job; if illness forces you to stop work, it usually goes too.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-st" style="font-size: 13px; font-weight: 600;">Existing CI plan structure</label><sc-raw-select id="c-st" value="{{v.structure}}" sc-camel-on-change="{{h.structure}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="none">None</option><option value="late">Lump sum, late stage only</option><option value="staged">Staged (early → late)</option><option value="standalone">Standalone CI plan</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-amt" style="font-size: 13px; font-weight: 600;">Existing CI sum covered (RM)</label><input id="c-amt" type="text" inputmode="numeric" value="{{v.ciAmt}}" sc-camel-on-change="{{h.ciAmt}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Medical card limits are not counted as cash.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-ep" style="font-size: 13px; font-weight: 600;">Early-stage payout (% of sum covered)</label><input id="c-ep" type="text" inputmode="numeric" value="{{v.earlyPct}}" sc-camel-on-change="{{h.earlyPct}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">For staged / standalone plans. Check the certificate.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-bo" style="font-size: 13px; font-weight: 600;">Accumulated booster (%)</label><sc-raw-select id="c-bo" value="{{v.booster}}" sc-camel-on-change="{{h.booster}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-ra" style="font-size: 13px; font-weight: 600;">Extra cash benefit (recovery allowance)</label><sc-raw-select id="c-ra" value="{{v.recovery}}" sc-camel-on-change="{{h.recovery}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="0">None</option><option value="10000">RM10,000</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-red" style="font-size: 13px; font-weight: 600;">Does a CI payout reduce the base cover?</label><sc-raw-select id="c-red" value="{{v.reduces}}" sc-camel-on-change="{{h.reduces}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="no">No</option><option value="yes">Yes</option><option value="unsure">Not sure</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-base" style="font-size: 13px; font-weight: 600;">Current base / hibah sum covered (RM)</label><input id="c-base" type="text" inputmode="numeric" value="{{v.base}}" sc-camel-on-change="{{h.base}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Shows how much hibah is left after a CI claim.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-aff" style="font-size: 13px; font-weight: 600;">If the client can only afford this cover (RM)</label><input id="c-aff" type="text" inputmode="numeric" value="{{v.afford}}" sc-camel-on-change="{{h.afford}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Leave 0 to skip.</span></div>
+          </div>
+        </details>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="c-notes" style="font-size: 13px; font-weight: 600;">Conversation notes</label><textarea id="c-notes" rows="3" placeholder="e.g. Runs a small catering business, husband part-time" style="border: 1px solid #d6cdb9; border-radius: 10px; padding: 10px 12px; font-size: 14px; background: #ffffff; resize: vertical;"></textarea></div>
+      </form>
+
+      <aside aria-label="CI gap dashboard" style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: #0f2540; border-radius: 20px; padding: 20px; color: #fdf9f3; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 12px 36px rgba(15,37,64,0.25);">
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 700; color: #0f2540; background: #fac748; border-radius: 9999px; padding: 4px 12px;">Let the numbers tell the story</span>
+
+          <figure class="{{animClass}} fx-frame" style="margin: 0; background: #fdf9f3; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #efe6d2;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #0f2540;">{{fx.title}}</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #5b6576;"><span class="fx-dot" aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0f7a4c;"></span>Live</span></div>
+            <svg role="img" aria-label="{{scene.label}}" sc-camel-view-box="0 38 560 172" width="100%" style="display: block;">
+              <text x="20" y="66" font-family="Poppins, sans-serif" font-size="12" font-weight="600" fill="#5b6576">Early stage</text>
+              <rect x="110" y="52" width="420" height="22" rx="11" fill="#f1d4d4"></rect>
+              <rect class="fill" x="110" y="52" width="{{scene.wEarly}}" height="22" rx="11" fill="#0f7a4c"></rect>
+              <text x="20" y="114" font-family="Poppins, sans-serif" font-size="12" font-weight="600" fill="#5b6576">Late stage</text>
+              <rect x="110" y="100" width="420" height="22" rx="11" fill="#f1d4d4"></rect>
+              <rect class="fill fill2" x="110" y="100" width="{{scene.wLate}}" height="22" rx="11" fill="#2f9e6a"></rect>
+              <g class="warn"><line x1="{{scene.xEarly}}" y1="44" x2="{{scene.xEarly}}" y2="82" stroke="#b23a3a" stroke-width="3"></line></g>
+              <text x="110" y="146" font-family="Poppins, sans-serif" font-size="11" fill="#5b6576">Month 0</text>
+              <text x="530" y="146" text-anchor="end" font-family="Poppins, sans-serif" font-size="11" fill="#5b6576">Month {{scene.months}}</text>
+              <rect x="0" y="194" width="560" height="16" fill="#efe6d2"></rect>
+              <g class="walker" style="{{scene.walkVar}}">
+                <g transform="translate(110,150)" fill="#0f2540">
+                  <circle cx="10" cy="6" r="7"></circle>
+                  <rect x="5" y="14" width="10" height="18" rx="4"></rect>
+                  <rect class="leg" x="6" y="31" width="4" height="12" rx="2"></rect>
+                  <rect class="leg leg2" x="10" y="31" width="4" height="12" rx="2"></rect>
+                </g>
+              </g>
+            </svg>
+            <figcaption style="padding: 10px 14px 12px; border-top: 1px solid #efe6d2; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 600; line-height: 1.4; color: #0f2540; font-variant-numeric: tabular-nums;">{{fx.caption}}</span>
+              <ul class="fx-legend" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px;">
+                <sc-for list="{{fx.legend}}" as="lg" hint-placeholder-count="3"><li style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #3d4757;"><span aria-hidden="true" style="{{lg.sw}}"></span>{{lg.label}} <b style="color: #0f2540; font-variant-numeric: tabular-nums;">{{lg.value}}</b></li></sc-for>
+              </ul>
+            </figcaption>
+          </figure>
+
+          <section aria-label="Scenario flow" style="background: #16305a; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">{{flow.heading}}</span><span aria-live="polite" style="font-size: 12px; color: #c9d2e0;">{{flow.pos}}</span></div>
+            <div sc-camel-on-pointer-down="{{flow.down}}" sc-camel-on-pointer-up="{{flow.up}}" style="overflow: hidden; border-radius: 12px; touch-action: pan-y; cursor: grab;">
+              <div style="{{flow.trackStyle}}">
+                <sc-for list="{{flow.slides}}" as="f" hint-placeholder-count="5">
+                  <div aria-hidden="{{f.hidden}}" style="flex: 0 0 100%; box-sizing: border-box; padding: 16px; background: #fdf9f3; color: #0f2540; display: flex; flex-direction: column; gap: 8px; min-height: 220px;">
+                    <span style="{{f.tagStyle}}">{{f.tag}}</span>
+                    <span style="font-size: 17px; font-weight: 800; line-height: 1.3;">{{f.title}}</span>
+                    <span style="{{f.valueStyle}}">{{f.value}}</span>
+                    <span style="font-size: 13px; line-height: 1.6; color: #3d4757;">{{f.desc}}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: auto;"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>{{f.meterLabel}}</span><span>{{f.meterText}}</span></div><div aria-hidden="true" style="height: 10px; background: #e8e1d2; border-radius: 9999px; overflow: hidden;"><div style="{{f.meterStyle}}"></div></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <label for="flow-range" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Scenario step</label>
+            <input id="flow-range" type="range" min="0" max="{{flow.max}}" step="1" value="{{flow.idx}}" sc-camel-on-change="{{flow.onRange}}" style="width: 100%; accent-color: #fac748;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" sc-camel-on-click="{{flow.prev}}" aria-label="Previous step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">‹</button>
+              <div style="flex: 1; display: flex; justify-content: center; flex-wrap: wrap;"><sc-for list="{{flow.dots}}" as="d" hint-placeholder-count="5"><button type="button" sc-camel-on-click="{{d.pick}}" aria-label="{{d.label}}" aria-current="{{d.cur}}" style="{{d.style}}"><span style="{{d.dotStyle}}"></span></button></sc-for></div>
+              <button type="button" sc-camel-on-click="{{flow.togglePlay}}" aria-pressed="{{flow.playing}}" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 13px; font-weight: 700; cursor: pointer;">{{flow.playLabel}}</button>
+              <button type="button" sc-camel-on-click="{{flow.next}}" aria-label="Next step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">›</button>
+            </div>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 15px; color: #e4e9f1;">CI compensation gap</span>
+            <span style="font-size: 44px; font-weight: 800; line-height: 1.1; color: #fac748; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{out.gapEarly}}</span>
+            <span style="font-size: 13px; color: #c9d2e0;">The big figure is the worst case: diagnosed at an early stage.</span>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <sc-raw-table style="width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums;">
+              <sc-raw-thead><sc-raw-tr style="color: #c9d2e0; font-size: 12px;"><sc-raw-th scope="col" style="text-align: left; padding: 6px 4px;"></sc-raw-th><sc-raw-th scope="col" style="text-align: right; padding: 6px 4px;">Early stage</sc-raw-th><sc-raw-th scope="col" style="text-align: right; padding: 6px 4px;">Late stage</sc-raw-th></sc-raw-tr></sc-raw-thead>
+              <sc-raw-tbody>
+                <sc-raw-tr style="border-top: 1px solid #24406a;"><sc-raw-th scope="row" style="text-align: left; padding: 8px 4px; font-weight: 500;">Compensation received</sc-raw-th><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.recEarly}}</sc-raw-td><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.recLate}}</sc-raw-td></sc-raw-tr>
+                <sc-raw-tr style="border-top: 1px solid #24406a;"><sc-raw-th scope="row" style="text-align: left; padding: 8px 4px; font-weight: 500;">Effective sources</sc-raw-th><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.srcEarly}}</sc-raw-td><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.srcLate}}</sc-raw-td></sc-raw-tr>
+                <sc-raw-tr style="border-top: 1px solid #24406a;"><sc-raw-th scope="row" style="text-align: left; padding: 8px 4px; font-weight: 500;">Gap</sc-raw-th><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 800; color: #ffb4a8;">{{out.gapEarly}}</sc-raw-td><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 800; color: #ffb4a8;">{{out.gapLate}}</sc-raw-td></sc-raw-tr>
+                <sc-raw-tr style="border-top: 1px solid #24406a;"><sc-raw-th scope="row" style="text-align: left; padding: 8px 4px; font-weight: 500;">Runway (months)</sc-raw-th><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.runEarly}}</sc-raw-td><sc-raw-td style="text-align: right; padding: 8px 4px; font-weight: 700;">{{out.runLate}}</sc-raw-td></sc-raw-tr>
+              </sc-raw-tbody>
+            </sc-raw-table>
+          </div>
+          <sc-if value="{{out.showReduceNote}}" hint-placeholder-val="{{false}}"><p style="margin: 0; font-size: 13px; line-height: 1.6; color: #0f2540; background: #fff4d2; border-radius: 10px; padding: 10px 12px;">{{out.reduceNote}}</p></sc-if>
+          <p style="margin: 0; font-size: 15px; font-weight: 700; color: #4fbf86;">Suggested additional CI cover: {{out.suggest}}.</p>
+          <sc-if value="{{out.hasAfford}}" hint-placeholder-val="{{false}}"><p style="margin: 0; font-size: 13px; color: #e4e9f1;">{{out.affordNote}}</p></sc-if>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #5b6576;">TOTAL NEED</span>
+          <dl style="margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums;">
+            <div style="display: flex; justify-content: space-between;"><dt>Monthly need</dt><dd style="margin: 0; font-weight: 700;">{{out.monthly}}/month</dd></div>
+            <div style="display: flex; justify-content: space-between;"><dt>Recovery period</dt><dd style="margin: 0; font-weight: 700;">{{out.recovery}} · {{out.months}} months</dd></div>
+            <div style="display: flex; justify-content: space-between;"><dt>Extra costs</dt><dd style="margin: 0; font-weight: 700;">{{out.extra}}</dd></div>
+            <div style="display: flex; justify-content: space-between;"><dt>Caregiver's lost income</dt><dd style="margin: 0; font-weight: 700;">{{out.cgLoss}}</dd></div>
+            <div style="display: flex; justify-content: space-between;"><dt>Contributions during recovery</dt><dd style="margin: 0; font-weight: 700;">{{out.contribTotal}}</dd></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid #e3dccd; padding-top: 8px;"><dt style="font-weight: 700;">Total need</dt><dd style="margin: 0; font-weight: 800; color: #0f2540;">{{out.total}}</dd></div>
+          </dl>
+        </div>
+        <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 4px 18px;">
+          <summary style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; color: #0f2540; cursor: pointer;">How we calculate &amp; assumptions <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+          <ul style="margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #3d4757;">
+            <li>Monthly need = the higher of (income × share replaced) and fixed commitments.</li>
+            <li>Total need = monthly need × months + extra costs + caregiver's lost income + contributions (if no waiver).</li>
+            <li>Early stage: lump-sum late-only plans pay 0; staged / standalone plans pay the early-stage %. Late stage pays 100%. Booster and recovery allowance are added.</li>
+            <li>Runway = effective sources ÷ monthly need. Suggested cover = early-stage gap, rounded up to the next RM10,000.</li>
+          </ul>
+        </details>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #e3dccd; padding-top: 18px;">
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: #1d4f91; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">Copy all for prospect's WhatsApp</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Preview text</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download image</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download PDF</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px dashed #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Combine all modules</button>
+      <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+    </div>
+
+    <details open="" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 12px; padding: 0 18px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; color: #0f2540; cursor: pointer;">DISCLAIMER</summary>
+      <div style="padding-bottom: 14px; font-size: 13px; line-height: 1.7; color: #3d4757; display: flex; flex-direction: column; gap: 8px;">
+        <p style="margin: 0;">The Financial Storyboard is a discussion aid for registered takaful agents, not an official document of any takaful operator.</p>
+        <p style="margin: 0;">All figures are estimates and educational illustrations, not a quotation, contract, guarantee of acceptance or claim, or medical or financial advice. Benefits, definitions and terms follow the PDS, official illustration, certificate and underwriting.</p>
+        <p style="margin: 0;">PDPA 2010: data saved here stays with this lead in the CRM, visible to the assigned agent and upline only.</p>
+      </div>
+    </details>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;animate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;section&quot;:&quot;Dashboard&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:3700}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      nick: 'Siti', edit: false, savedAt: '',
+      story: '[Your story] A client tested with a critical illness received their CI compensation days before a major expense. The illness was still a heavy test, but money didn’t add to the burden, unlike those who drained savings, sold assets, stopped working without income or borrowed.',
+      commits: { 0: true, 1: true, 2: true, 3: true, 4: true },
+      deps: {},
+      income: 5000, commit: 3000, pct: 70, months: 12,
+      rehab: 20000, emer: 10000, cg: 0, cgMonths: 0, waiver: 'yes', contrib: 0,
+      savings: 10000, employer: 0, countEmp: 'no', structure: 'late', ciAmt: 30000, earlyPct: 50, booster: '0', recovery: '0', reduces: 'unsure', base: 0, afford: 0
+    };
+  }
+  componentDidMount() { this._flowTimer = setInterval(() => { if (this.state.flowPlay) { const n = this._flowN || 1; this.setState({ flowIdx: ((this.state.flowIdx || 0) + 1) % n }); } }, 3500); }
+  componentWillUnmount() { clearInterval(this._flowTimer); }
+  buildFlow(heading, data) {
+    const n = data.length; this._flowN = n;
+    const idx = Math.min(n - 1, this.state.flowIdx || 0);
+    const go = (i) => this.setState({ flowIdx: Math.max(0, Math.min(n - 1, i)), flowPlay: false });
+    const tones = { neutral: '#1d4f91', warn: '#a45d00', bad: '#b23a3a', good: '#0f7a4c' };
+    return {
+      heading: heading, idx: String(idx), max: String(n - 1), pos: 'Step ' + (idx + 1) + ' of ' + n,
+      trackStyle: 'display: flex; transition: transform .55s cubic-bezier(.16,1,.3,1); transform: translateX(-' + (idx * 100) + '%);',
+      slides: data.map((d, i) => { const c = tones[d.tone] || tones.neutral; const m = Math.max(0, Math.min(100, Math.round(d.meter || 0))); return {
+        tag: d.tag, title: d.title, value: d.value, desc: d.desc, meterLabel: d.meterLabel, meterText: d.meterText, hidden: i === idx ? 'false' : 'true',
+        tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #ffffff; background: ' + c + '; border-radius: 9999px; padding: 3px 10px;',
+        valueStyle: 'font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: ' + c + '; font-variant-numeric: tabular-nums;',
+        meterStyle: 'height: 100%; width: ' + m + '%; background: ' + (m > 60 ? '#0f7a4c' : m > 25 ? '#e3a823' : '#b23a3a') + '; border-radius: 9999px; transition: width .6s ease;' }; }),
+      dots: data.map((d, i) => ({ label: 'Go to step ' + (i + 1) + ': ' + d.tag, cur: i === idx ? 'step' : 'false', pick: () => go(i),
+        style: 'width: 32px; height: 44px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;',
+        dotStyle: 'display: block; height: 8px; border-radius: 9999px; transition: all .3s; width: ' + (i === idx ? 22 : 8) + 'px; background: ' + (i === idx ? '#fac748' : '#5b7299') + ';' })),
+      prev: () => go(idx - 1), next: () => go(idx + 1), onRange: (e) => go(Number(e.target.value) || 0),
+      playing: this.state.flowPlay ? 'true' : 'false', playLabel: this.state.flowPlay ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ flowPlay: !this.state.flowPlay }),
+      down: (e) => { this._fx = e.clientX; },
+      up: (e) => { if (this._fx == null) return; const dx = e.clientX - this._fx; this._fx = null; if (dx < -40) go(idx + 1); else if (dx > 40) go(idx - 1); }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const n = (k) => Number(s[k]) || 0;
+    const rm = (x) => 'RM' + Math.round(x).toLocaleString('en-MY');
+    const num = (x) => Math.round(x).toLocaleString('en-MY');
+    const setNum = (k) => (e) => { const raw = String(e.target.value).replace(/[^0-9.]/g, ''); this.setState({ [k]: raw === '' ? 0 : Number(raw) }); };
+    const setStr = (k) => (e) => this.setState({ [k]: e.target.value });
+
+    const commitLabels = ['Home instalment / rent', 'Car / motorcycle loan', 'Electricity, water, phone & internet', 'Groceries & family meals', 'School fees, childcare, school transport', 'Caregiver / helper', 'Travel to hospital & parking', 'Follow-up treatment, physio & rehab', 'Business / staff costs if self-employed', 'Living fund until able to work again'];
+    const commits = commitLabels.map((l, i) => {
+      const on = !!s.commits[i];
+      return { id: 'cm-' + i, label: l, checked: on, toggle: () => this.setState({ commits: Object.assign({}, s.commits, { [i]: !on }) }),
+        style: 'display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 12px; cursor: pointer; ' + (on ? 'background: #e6eef9; border: 1.5px solid #1d4f91;' : 'background: #f7f4ee; border: 1px solid #ecdfc4;') };
+    });
+    const depData = [
+      ['I’m the main breadwinner', 'The family relies on my income.'], ['I run a business / earn commission', 'No work = income can drop fast.'],
+      ['Emergency fund under 6 months', 'Savings may run out quickly.'], ['Home loan / high rent', 'Big commitments keep running.'],
+      ['Vehicle loan / other debts', 'Monthly payments still due.'], ['Children / dependants', 'Their needs don’t stop while we’re ill.'],
+      ['Spouse also relies on my income', 'Household income is easily hit.'], ['Company medical is limited / tied to the job', 'Cover can be lost when changing or leaving work.'],
+      ['Not sure how much CI I already have', 'Have a plan but don’t know the rider sum covered.'], ['Current savings are earmarked', 'House, education, business, retirement and so on.']
+    ];
+    let depScore = 0;
+    const deps = depData.map((d, i) => {
+      const on = !!s.deps[i];
+      if (on) depScore++;
+      return { id: 'dp-' + i, label: d[0], hint: d[1], checked: on, toggle: () => this.setState({ deps: Object.assign({}, s.deps, { [i]: !on }) }),
+        style: 'display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; cursor: pointer; ' + (on ? 'background: #e6eef9; border: 1.5px solid #1d4f91;' : 'background: #ffffff; border: 1px solid #ecdfc4;') };
+    });
+    const depLevel = depScore <= 3 ? 'Low dependency so far' : depScore <= 6 ? 'Moderate dependency' : 'High dependency';
+    const depColor = depScore <= 3 ? '#4fbf86' : depScore <= 6 ? '#fac748' : '#ff7a6b';
+    const depNote = depScore <= 3 ? 'The family relies less on this income, but commitments still run.' : depScore <= 6 ? 'Several commitments depend on this income continuing.' : 'The household depends heavily on this income. CI cash is a priority.';
+
+    const chip = (on) => 'min-height: 44px; padding: 0 16px; border-radius: 9999px; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #0f2540; color: #fdf9f3; border: 0;' : 'background: #ffffff; color: #0f2540; border: 1px solid #d6cdb9;');
+    const pctChips = [50, 70, 100].map((p) => ({ label: p + '%', pressed: n('pct') === p ? 'true' : 'false', style: chip(n('pct') === p), pick: () => this.setState({ pct: p }) }));
+    const monthChips = [6, 12, 24, 36].map((m) => ({ label: m + ' months', pressed: n('months') === m ? 'true' : 'false', style: chip(n('months') === m), pick: () => this.setState({ months: m }) }));
+
+    const monthly = Math.max(n('income') * n('pct') / 100, n('commit'));
+    const months = Math.max(1, n('months'));
+    const recovery = monthly * months;
+    const extra = n('rehab') + n('emer');
+    const cgLoss = n('cg') * n('cgMonths');
+    const contribTotal = s.waiver === 'yes' ? 0 : n('contrib') * months;
+    const total = recovery + extra + cgLoss + contribTotal;
+    const sources = n('savings') + (s.countEmp === 'yes' ? n('employer') : 0);
+    const boost = 1 + Number(s.booster) / 100;
+    const ra = Number(s.recovery) || 0;
+    const amt = n('ciAmt');
+    let ciEarly = 0, ciLate = 0;
+    if (s.structure === 'late') { ciEarly = 0; ciLate = amt * boost; }
+    if (s.structure === 'staged' || s.structure === 'standalone') { ciEarly = amt * boost * n('earlyPct') / 100; ciLate = amt * boost; }
+    if (s.structure !== 'none' && ra) { ciEarly += ra; ciLate += ra; }
+    const srcEarly = sources + ciEarly, srcLate = sources + ciLate;
+    const gapEarly = Math.max(0, total - srcEarly), gapLate = Math.max(0, total - srcLate);
+    const runEarly = monthly > 0 ? srcEarly / monthly : 0, runLate = monthly > 0 ? srcLate / monthly : 0;
+    const suggest = Math.ceil(gapEarly / 10000) * 10000;
+    const afford = n('afford');
+    let reduceNote = '';
+    if (s.reduces === 'unsure') reduceNote = 'Not yet sure whether a CI payout reduces the base cover. Check the certificate first; the effect on a large hibah matters.';
+    if (s.reduces === 'yes') reduceNote = 'This plan’s CI payout reduces the base cover. Hibah left after a late-stage claim: ' + rm(Math.max(0, n('base') - ciLate)) + '.';
+    const W = 420;
+    const wE = Math.max(0, Math.min(W, W * runEarly / months)), wL = Math.max(0, Math.min(W, W * runLate / months));
+    const save = () => { const d = new Date(); this.setState({ savedAt: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }); };
+    const edit = s.edit;
+    return {
+      nick: s.nick, setNick: setStr('nick'),
+      story: s.story, setStory: setStr('story'), edit: edit, viewOnly: !edit, editStr: edit ? 'true' : 'false',
+      editLabel: edit ? 'Done' : 'Customize story',
+      editBtnStyle: 'min-height: 40px; padding: 0 14px; border-radius: 9999px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (edit ? 'background: #fac748; color: #0f2540; border: 0;' : 'background: #ffffff; color: #0f2540; border: 1px solid #0f2540;'),
+      toggleEdit: () => this.setState({ edit: !edit }),
+      commits: commits, commitCount: String(commits.filter((c) => c.checked).length),
+      deps: deps,
+      dep: { score: String(depScore), level: depLevel, note: depNote,
+        levelStyle: 'font-size: 18px; font-weight: 800; color: ' + depColor,
+        segs: depData.map((x, i) => ({ style: 'flex: 1; height: 8px; border-radius: 4px; background: ' + (i < depScore ? depColor : '#24406a') })) },
+      pctChips: pctChips, monthChips: monthChips,
+      v: { income: num(n('income')), commit: num(n('commit')), pct: String(n('pct')), months: String(n('months')), rehab: num(n('rehab')), emer: num(n('emer')), cg: num(n('cg')), cgMonths: String(n('cgMonths')), waiver: s.waiver, contrib: num(n('contrib')),
+        savings: num(n('savings')), employer: num(n('employer')), countEmp: s.countEmp, structure: s.structure, ciAmt: num(amt), earlyPct: String(n('earlyPct')), booster: s.booster, recovery: s.recovery, reduces: s.reduces, base: num(n('base')), afford: num(afford) },
+      h: { income: setNum('income'), commit: setNum('commit'), pct: setNum('pct'), months: setNum('months'), rehab: setNum('rehab'), emer: setNum('emer'), cg: setNum('cg'), cgMonths: setNum('cgMonths'), waiver: setStr('waiver'), contrib: setNum('contrib'),
+        savings: setNum('savings'), employer: setNum('employer'), countEmp: setStr('countEmp'), structure: setStr('structure'), ciAmt: setNum('ciAmt'), earlyPct: setNum('earlyPct'), booster: setStr('booster'), recovery: setStr('recovery'), reduces: setStr('reduces'), base: setNum('base'), afford: setNum('afford') },
+      out: {
+        monthly: rm(monthly), recovery: rm(recovery), months: String(months), extra: rm(extra), cgLoss: rm(cgLoss), contribTotal: rm(contribTotal), total: rm(total),
+        recEarly: rm(ciEarly), recLate: rm(ciLate), srcEarly: rm(srcEarly), srcLate: rm(srcLate), gapEarly: rm(gapEarly), gapLate: rm(gapLate),
+        runEarly: runEarly.toFixed(1), runLate: runLate.toFixed(1), suggest: rm(suggest),
+        showReduceNote: reduceNote !== '', reduceNote: reduceNote,
+        hasAfford: afford > 0, affordNote: 'With ' + rm(afford) + ' extra CI cover, the early-stage gap becomes ' + rm(Math.max(0, gapEarly - afford * n('earlyPct') / 100)) + ' (if the new plan pays ' + n('earlyPct') + '% at early stage) and the late-stage gap ' + rm(Math.max(0, gapLate - afford)) + '.'
+      },
+      scene: {
+        months: String(months), wEarly: wE.toFixed(1), wLate: wL.toFixed(1), xEarly: (110 + wE).toFixed(1),
+        walkVar: '--d: ' + Math.round(wL) + 'px',
+        caption: 'Cash lasts ' + runEarly.toFixed(1) + ' months (early) to ' + runLate.toFixed(1) + ' months (late) of ' + months,
+        label: 'Animated runway bars: cash lasts ' + runEarly.toFixed(1) + ' months at early stage and ' + runLate.toFixed(1) + ' months at late stage out of a ' + months + '-month recovery'
+      },
+      flow: this.buildFlow('IF ' + String(s.nick || 'THE PROSPECT').toUpperCase() + ' IS DIAGNOSED TOMORROW', [
+        { tag: 'DIAGNOSIS', title: 'Early-stage diagnosis, income paused', value: rm(monthly) + '/mo', desc: 'Commitments keep running for an estimated ' + months + ' months of treatment and recovery.', meterLabel: 'Cash runway', meterText: runEarly.toFixed(1) + ' / ' + months + ' mo', meter: runEarly / months * 100, tone: 'neutral' },
+        { tag: 'CI PAYOUT', title: ciEarly > 0 ? 'Existing CI pays at early stage' : 'Existing CI pays nothing yet', value: rm(ciEarly), desc: ciEarly > 0 ? 'Added to the savings available for recovery.' : 'A late-stage-only plan pays nothing at an early-stage diagnosis.', meterLabel: 'Cash runway', meterText: runEarly.toFixed(1) + ' / ' + months + ' mo', meter: runEarly / months * 100, tone: ciEarly > 0 ? 'neutral' : 'warn' },
+        { tag: 'SAVINGS', title: 'Savings disrupted by ' + rm(Math.min(sources, total)), value: runEarly.toFixed(1) + ' months', desc: 'Available cash of ' + rm(srcEarly) + ' lasts about ' + runEarly.toFixed(1) + ' months at ' + rm(monthly) + ' a month.', meterLabel: 'Cash runway', meterText: runEarly.toFixed(1) + ' / ' + months + ' mo', meter: runEarly / months * 100, tone: 'warn' },
+        { tag: 'MONTH ' + Math.max(1, Math.ceil(runEarly)), title: 'Cash runs out mid-recovery', value: rm(gapEarly), desc: 'Still needed for the rest of recovery, extra costs and caregiving.', meterLabel: 'Need funded', meterText: (total > 0 ? Math.min(100, Math.round(srcEarly / total * 100)) : 100) + '%', meter: total > 0 ? srcEarly / total * 100 : 100, tone: 'bad' },
+        { tag: 'WITH CI COVER', title: 'Add ' + rm(suggest) + ' of CI cover', value: months + ' months', desc: 'Cash for the full recovery period, if the new plan pays at early stage. Subject to the certificate’s definitions.', meterLabel: 'Cash runway', meterText: months + ' / ' + months + ' mo', meter: 100, tone: 'good' }
+      ]),
+      animClass: (this.props.animate ?? true) ? 'live' : 'still',
+      fx: { title: 'CASH RUNWAY · ' + months + ' MONTHS OF RECOVERY', caption: 'Cash lasts ' + runEarly.toFixed(1) + ' months (early stage) to ' + runLate.toFixed(1) + ' months (late stage) of ' + months, legend: [['Early-stage runway', runEarly.toFixed(1) + ' mo', '#0f7a4c'], ['Late-stage runway', runLate.toFixed(1) + ' mo', '#2f9e6a'], ['Still needed (early)', rm(gapEarly), '#b23a3a']].map(([l, v, c]) => ({ label: l, value: v, sw: 'width: 10px; height: 10px; border-radius: 3px; flex: none; background: ' + c + ';' })) },
+      saveLabel: s.savedAt ? 'Saved ✓ ' + s.savedAt : 'Save',
+      saveStyle: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 0; ' + (s.savedAt ? 'background: #0f7a4c; color: #ffffff;' : 'background: #0f2540; color: #fdf9f3;'),
+      save: save
+    };
+  }
+}
+</script>
+
+
+</body></html>

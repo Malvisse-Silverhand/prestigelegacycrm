@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Financial Storyboard · Hibah · Fill and Calculate</title>
+<script src="ffd520ef-a254-43cf-96fb-a4deee7e6f52"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJbecmNE.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJnecmNE.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("8a73321f-3867-422f-b65d-84f6255793b1") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLGT9Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("8a2063e3-9638-46ea-aa60-59de77858671") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("5208eee3-89eb-437d-8fae-f17616199ce6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("5dae8a66-f5e3-4d3c-bf74-44218569e65d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z11lFc-K.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF4, U+1CF7-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B0A;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("ce80bbfe-12f4-4fa0-82a7-4fb35a96c84b") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#f3efe6}
+a{color:#0f2540}a:hover{color:#0f4c35}
+input,select,button,textarea{font-family:inherit}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #fac748;outline-offset:2px}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+details[open] .chev{transform:rotate(180deg)}
+@keyframes waveSlide{from{transform:translateX(0)}to{transform:translateX(-80px)}}
+@keyframes waveSlide2{from{transform:translateX(-40px)}to{transform:translateX(-120px)}}
+@keyframes coinIn{0%{transform:translate(0,0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate(118px,10px);opacity:0}}
+@keyframes billUp{0%{transform:translateY(16px);opacity:0}25%{opacity:1}100%{transform:translateY(-40px);opacity:0}}
+@keyframes sparkle{0%,100%{opacity:0;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
+.wave1{animation:waveSlide 2.4s linear infinite}
+.wave2{animation:waveSlide2 4.8s linear infinite}
+.coin{animation:coinIn 2.4s cubic-bezier(.16,1,.3,1) infinite}
+.coin.d2{animation-delay:.8s}.coin.d3{animation-delay:1.6s}
+.bill{animation:billUp 2.4s cubic-bezier(.16,1,.3,1) infinite}
+.bill.d2{animation-delay:.8s}.bill.d3{animation-delay:1.6s}
+.gapblock{animation:fxPulse 2.4s ease-in-out infinite}
+.fam{animation:fxFloat 2.4s ease-in-out infinite;transform-box:fill-box}
+.fam.d2{animation-delay:.3s}.fam.d3{animation-delay:.6s}
+.spark{animation:sparkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.still .wave1,.still .wave2,.still .coin,.still .bill,.still .gapblock,.still .fam,.still .spark{animation:none}
+@media (prefers-reduced-motion:reduce){.wave1,.wave2,.coin,.bill,.gapblock,.fam,.spark{animation:none}}
+/* ---- Shared scene motion system (same in every dashboard) ---- */
+.fx-frame{--fx-ease:cubic-bezier(.16,1,.3,1)}
+@keyframes fxIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes fxInX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fxPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes fxFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes fxDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.45}}
+@keyframes fxFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fx-dot{animation:fxDot 2.4s ease-in-out infinite}
+.fx-legend li{animation:fxFade .6s cubic-bezier(.16,1,.3,1) both}
+.fx-legend li:nth-child(2){animation-delay:.15s}.fx-legend li:nth-child(3){animation-delay:.3s}.fx-legend li:nth-child(4){animation-delay:.45s}
+.still .fx-dot,.still .fx-legend li{animation:none}
+@media (prefers-reduced-motion:reduce){.fx-dot,.fx-legend li{animation:none}}
+
+</style>
+</helmet>
+<div style="font-family: Poppins, system-ui, sans-serif; color: #1c2433; background: #f3efe6; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+  <nav aria-label="CRM navigation" style="flex: 1 1 232px; max-width: 100%; background: #0f2540; color: #fdf9f3; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 8px 20px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: #fac748; color: #0f2540; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">PL</div>
+      <div style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 15px; line-height: 1.2;">Prestige Legacy</span><span style="font-size: 12px; color: #c9d2e0; line-height: 1.3;">Agent CRM</span></div>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</a>
+    <a href="LeadPopup.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Leads</a>
+    <a href="Storyboards.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #0f2540; background: #fac748; text-decoration: none; font-size: 14px; font-weight: 600;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M10 9l5 2.5-5 2.5z"></path><path d="M8 21h8"></path></svg>Financial Storyboard</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>Pipeline</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 13h7M9 17h5"></path></svg>Quotations</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"></path></svg>Tasks</a>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9d2e0; text-decoration: none; font-size: 14px; font-weight: 500;"><svg aria-hidden="true" width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.5"></circle><circle cx="5" cy="17" r="2.5"></circle><circle cx="19" cy="17" r="2.5"></circle><path d="M12 10.5v3M12 13.5L6.5 15.5M12 13.5l5.5 2"></path></svg>Team</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+      <p style="margin: 0; font-size: 13px; color: #5b6576;"><a href="Storyboards.dc.html" style="color: #5b6576; text-decoration: none;">Financial Storyboard</a> <span aria-hidden="true">›</span> <span style="color: #1c2433; font-weight: 600;">Aiman Hakim</span></p>
+      <div role="group" aria-label="Language" style="display: flex; background: #ffffff; border: 1px solid #e3dccd; border-radius: 9999px; padding: 4px;">
+        <button type="button" aria-pressed="true" style="min-height: 36px; min-width: 52px; border: 0; border-radius: 9999px; background: #0f2540; color: #fdf9f3; font-size: 13px; font-weight: 600; cursor: pointer;">EN</button>
+        <button type="button" aria-pressed="false" style="min-height: 36px; min-width: 52px; border: 0; border-radius: 9999px; background: transparent; color: #0f2540; font-size: 13px; font-weight: 600; cursor: pointer;">BM</button>
+      </div>
+    </div>
+
+    <section aria-label="Module header" style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 420px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Module</span>
+          <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; color: #0f2540;">Hibah Takaful Planning</h1>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #3d4757; max-width: 640px;">We earn for today and leave something for tomorrow. Show the prospect how much financial room the family needs if the breadwinner is gone, so the kitchen, the children's schooling and monthly commitments keep running.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Family legacy plan</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Conditional hibah</span>
+            <span style="font-size: 12px; font-weight: 600; color: #1d4f91; background: #e6eef9; border-radius: 9999px; padding: 4px 10px;">Beneficiary ≠ executor</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <a href="LeadPopup.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #0f2540; color: #0f2540; font-size: 14px; font-weight: 600; text-decoration: none;">← Back to lead</a>
+          <button type="button" sc-camel-on-click="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;">
+        <button type="button" aria-pressed="true" style="text-align: left; min-height: 56px; padding: 10px 14px; border-radius: 12px; border: 2px solid #0f2540; background: #0f2540; color: #fdf9f3; cursor: pointer;"><span style="display: block; font-size: 11px; color: #fac748;">01</span><span style="font-weight: 700; font-size: 15px;">Hibah</span></button>
+        <a href="MedMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">02</span><span style="font-weight: 700; font-size: 15px;">Medical Card</span></a>
+        <a href="BizMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">03</span><span style="font-weight: 700; font-size: 15px;">Business Protection</span></a>
+        <a href="CiMain.dc.html" style="display: block; text-align: left; min-height: 56px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #e3dccd; background: #ffffff; color: #0f2540; text-decoration: none;"><span style="display: block; font-size: 11px; color: #5b6576;">04</span><span style="font-weight: 700; font-size: 15px;">Critical Illness</span></a>
+      </div>
+      <nav aria-label="Storyboard steps" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <a href="#" aria-current="step" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #1d4f91; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none;">1 · Fill &amp; Calculate</a>
+        <a href="Explain.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #0f7a4c; color: #0f7a4c; font-weight: 600; font-size: 14px; text-decoration: none;">2 · Explanation</a>
+        <a href="Risk.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b23a3a; color: #b23a3a; font-weight: 600; font-size: 14px; text-decoration: none;">3 · Rejection Risk</a>
+        <a href="Objections.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #b8600a; color: #8a4a06; font-weight: 600; font-size: 14px; text-decoration: none;">4 · Objection</a>
+      </nav>
+    </section>
+
+    <details open="" style="background: #ffffff; border: 1.5px dashed #c9d2e0; border-radius: 16px; padding: 0 20px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 15px; color: #0f2540;">Prospect profile</span><span style="font-size: 12px; color: #5b6576; flex: 1;">Shared by all modules · pulled from the lead record</span><span class="chev" aria-hidden="true" style="font-size: 14px; color: #0f2540;">▾</span></summary>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding-bottom: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-nick" style="font-size: 12px; font-weight: 600;">Nickname (not full name)</label><input id="p-nick" type="text" value="{{v.nick}}" sc-camel-on-change="{{h.nick}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-age" style="font-size: 12px; font-weight: 600;">Age</label><input id="p-age" type="text" inputmode="numeric" value="{{v.age}}" sc-camel-on-change="{{h.age}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-gender" style="font-size: 12px; font-weight: 600;">Gender</label><sc-raw-select id="p-gender" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Male</option><option>Female</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-status" style="font-size: 12px; font-weight: 600;">Status</label><sc-raw-select id="p-status" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Married</option><option>Single</option><option>Single parent</option><option>Widowed / divorced</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-occ" style="font-size: 12px; font-weight: 600;">Occupation</label><input id="p-occ" type="text" value="Engineer" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-class" style="font-size: 12px; font-weight: 600;">Occupation class</label><sc-raw-select id="p-class" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Class 1 (office)</option><option>Class 2 (light field)</option><option>Class 3 (field / machinery)</option><option>Class 4 (high risk)</option><option>Not sure</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-smoke" style="font-size: 12px; font-weight: 600;">Smoke / vape</label><sc-raw-select id="p-smoke" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>No</option><option>Yes</option><option>Quit &lt; 12 months</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-dep" style="font-size: 12px; font-weight: 600;">Dependants</label><input id="p-dep" type="text" inputmode="numeric" value="3" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #fdf9f3;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-budget" style="font-size: 12px; font-weight: 600;">Monthly budget</label><sc-raw-select id="p-budget" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #fdf9f3;"><option>Discuss first</option><option>Below RM150</option><option selected="">RM150–300</option><option>RM300–500</option><option>Above RM500</option></sc-raw-select></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="p-op" style="font-size: 12px; font-weight: 600;">Takaful operator</label><input id="p-op" type="text" value="Great Eastern Takaful" readonly="" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 14px; background: #efe8da; color: #0f2540; font-weight: 600;"></div>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 12px; color: #5b6576;">Do not enter IC numbers or detailed medical information. Use the operator's official channel when applying.</p>
+    </details>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0f7a4c;">Calculate around the prospect's life</span>
+      <h2 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; color: #0f2540;">How much hibah takaful does {{v.nick}} <span style="color: #1d4f91;">really need?</span></h2>
+      <p style="margin: 0; font-size: 14px; color: #3d4757; max-width: 680px;">If income stopped yesterday, today's bills and family needs keep running. Fill in the prospect's figures to see what is already in place and what still needs planning. All amounts in RM; leave 0 if none.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+
+      <form aria-label="Hibah needs inputs" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">1. Family situation</span><span style="font-size: 12px; font-weight: 600; border: 1px solid #0f2540; border-radius: 9999px; padding: 2px 10px;">Collapse <span class="chev" aria-hidden="true" style="display: inline-block;">▴</span></span></summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; padding-bottom: 14px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-scen" style="font-size: 13px; font-weight: 600;">If this happened yesterday…</label><sc-raw-select id="f-scen" value="{{v.scenario}}" sc-camel-on-change="{{h.scenario}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="death">I passed away</option><option value="tpd">I became totally &amp; permanently disabled (TPD)</option></sc-raw-select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-income" style="font-size: 13px; font-weight: 600;">Net monthly income (RM)</label><input id="f-income" type="text" inputmode="numeric" value="{{v.income}}" sc-camel-on-change="{{h.income}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Salary or average income after statutory deductions.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-years" style="font-size: 13px; font-weight: 600;">Years of family support</label><input id="f-years" type="text" inputmode="numeric" value="{{v.years}}" sc-camel-on-change="{{h.years}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">5 years is only a starting point. Adjust freely.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-inflation" style="font-size: 13px; font-weight: 600;">Cost of living increase / year (%)</label><input id="f-inflation" type="text" inputmode="decimal" value="{{v.inflation}}" sc-camel-on-change="{{h.inflation}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">0% = no inflation. A scenario, not a forecast.</span></div>
+          </div>
+          <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #0f2540; background: #e9eef8; border-left: 4px solid #1d4f91; border-radius: 8px; padding: 10px 12px;">{{scenarioNote}}</p>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">2. How much does the family need each month?</span><span style="font-size: 12px; font-weight: 600; border: 1px solid #0f2540; border-radius: 9999px; padding: 2px 10px;">Collapse <span class="chev" aria-hidden="true" style="display: inline-block;">▴</span></span></summary>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;">
+            <p style="margin: 0; font-size: 13px; color: #3d4757;">Default: replace 100% of net income from section 1. Switch method to list family expenses one by one.</p>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-method" style="font-size: 13px; font-weight: 600;">How to estimate the monthly need</label><sc-raw-select id="f-method" value="{{v.method}}" sc-camel-on-change="{{h.method}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="replace">Replace part of my income</option><option value="itemize">List family expenses one by one</option></sc-raw-select></div>
+            <sc-if value="{{is.replace}}" hint-placeholder-val="{{true}}">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-replace" style="font-size: 13px; font-weight: 600;">Share of income to replace (%)</label><input id="f-replace" type="text" inputmode="numeric" value="{{v.replace}}" sc-camel-on-change="{{h.replace}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Exclude debt instalments settled in section 3. Example: 70% of RM5,000 = RM3,500 a month.</span></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.itemize}}" hint-placeholder-val="{{false}}">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-food" style="font-size: 13px; font-weight: 600;">Food &amp; groceries</label><input id="e-food" type="text" inputmode="numeric" value="{{v.eFood}}" sc-camel-on-change="{{h.eFood}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-util" style="font-size: 13px; font-weight: 600;">Utilities, phone &amp; internet</label><input id="e-util" type="text" inputmode="numeric" value="{{v.eUtil}}" sc-camel-on-change="{{h.eUtil}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-school" style="font-size: 13px; font-weight: 600;">School fees &amp; childcare</label><input id="e-school" type="text" inputmode="numeric" value="{{v.eSchool}}" sc-camel-on-change="{{h.eSchool}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-trans" style="font-size: 13px; font-weight: 600;">Transport</label><input id="e-trans" type="text" inputmode="numeric" value="{{v.eTrans}}" sc-camel-on-change="{{h.eTrans}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-rent" style="font-size: 13px; font-weight: 600;">Rent / housing (if no home loan)</label><input id="e-rent" type="text" inputmode="numeric" value="{{v.eRent}}" sc-camel-on-change="{{h.eRent}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><label for="e-oth" style="font-size: 13px; font-weight: 600;">Others (parents, zakat, misc)</label><input id="e-oth" type="text" inputmode="numeric" value="{{v.eOther}}" sc-camel-on-change="{{h.eOther}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+              </div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 6px; max-width: 320px;"><label for="f-other" style="font-size: 13px; font-weight: 600;">Other ongoing monthly support (RM)</label><input id="f-other" type="text" inputmode="numeric" value="{{v.other}}" sc-camel-on-change="{{h.other}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Only amounts that will truly continue, e.g. spouse's contribution.</span></div>
+            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #0f2540; background: #e9eef8; border-left: 4px solid #1d4f91; border-radius: 8px; padding: 10px 12px;">{{monthlyNote}}</p>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">3. Debts to settle</span><span style="font-size: 12px; font-weight: 600; border: 1px solid #0f2540; border-radius: 9999px; padding: 2px 10px;">Collapse <span class="chev" aria-hidden="true" style="display: inline-block;">▴</span></span></summary>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;">
+            <p style="margin: 0; font-size: 13px; color: #3d4757;">Check the cover for the chosen scenario. If unsure, the whole balance counts as uncovered for this estimate.</p>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f2540;">Is the home loan covered?</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-home" style="font-size: 13px; font-weight: 600;">Home loan balance (RM)</label><input id="f-home" type="text" inputmode="numeric" value="{{v.home}}" sc-camel-on-change="{{h.home}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-homecov" style="font-size: 13px; font-weight: 600;">Loan cover (MRTT / MLTT)</label><sc-raw-select id="f-homecov" value="{{v.homeCov}}" sc-camel-on-change="{{h.homeCov}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="unsure">Not sure, need to check</option><option value="covered">Yes, fully covered</option><option value="partial">Partly covered</option><option value="none">Not covered</option></sc-raw-select></div>
+              <sc-if value="{{is.homePartial}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-homepart" style="font-size: 13px; font-weight: 600;">Amount covered (RM)</label><input id="f-homepart" type="text" inputmode="numeric" value="{{v.homePart}}" sc-camel-on-change="{{h.homePart}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div></sc-if>
+            </div>
+            <div style="border-top: 1px dashed #d6cdb9;"></div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f2540;">Is the car loan covered?</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-car" style="font-size: 13px; font-weight: 600;">Car loan balance (RM)</label><input id="f-car" type="text" inputmode="numeric" value="{{v.car}}" sc-camel-on-change="{{h.car}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-carcov" style="font-size: 13px; font-weight: 600;">Loan cover</label><sc-raw-select id="f-carcov" value="{{v.carCov}}" sc-camel-on-change="{{h.carCov}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 10px; font-size: 14px; background: #ffffff;"><option value="unsure">Not sure, need to check</option><option value="covered">Yes, fully covered</option><option value="partial">Partly covered</option><option value="none">Not covered</option></sc-raw-select></div>
+              <sc-if value="{{is.carPartial}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-carpart" style="font-size: 13px; font-weight: 600;">Amount covered (RM)</label><input id="f-carpart" type="text" inputmode="numeric" value="{{v.carPart}}" sc-camel-on-change="{{h.carPart}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"></div></sc-if>
+            </div>
+            <div style="border-top: 1px dashed #d6cdb9;"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-odebt" style="font-size: 13px; font-weight: 600;">Other uncovered debts (RM)</label><input id="f-odebt" type="text" inputmode="numeric" value="{{v.otherDebt}}" sc-camel-on-change="{{h.otherDebt}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Personal loan, credit card, instalment purchases, business liabilities.</span></div>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">4. One-off costs &amp; future funds</span><span style="font-size: 12px; font-weight: 600; border: 1px solid #0f2540; border-radius: 9999px; padding: 2px 10px;">Collapse <span class="chev" aria-hidden="true" style="display: inline-block;">▴</span></span></summary>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;">
+            <p style="margin: 0; font-size: 13px; color: #3d4757;">Children's education fund, emergency fund and other one-off costs.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-edu" style="font-size: 13px; font-weight: 600;">Additional education fund (RM)</label><input id="f-edu" type="text" inputmode="numeric" value="{{v.edu}}" sc-camel-on-change="{{h.edu}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Future fund, excluding monthly fees already counted.</span></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-emer" style="font-size: 13px; font-weight: 600;">Transition / emergency fund (RM)</label><input id="f-emer" type="text" inputmode="numeric" value="{{v.emergency}}" sc-camel-on-change="{{h.emergency}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Moving costs or urgent needs. Don't repeat monthly expenses.</span></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-funeral" style="font-size: 13px; font-weight: 600;">{{funeralLabel}}</label><input id="f-funeral" type="text" inputmode="numeric" value="{{v.funeral}}" sc-camel-on-change="{{h.funeral}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Net of any confirmed assistance.</span></div>
+            </div>
+          </div>
+        </details>
+
+        <details open="" style="border: 1px solid #ecdfc4; border-radius: 16px; background: #fffbf2; padding: 0 20px;">
+          <summary style="min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer;"><span style="font-weight: 700; font-size: 16px; color: #0f2540; flex: 1;">5. What's already in place?</span><span style="font-size: 12px; font-weight: 600; border: 1px solid #0f2540; border-radius: 9999px; padding: 2px 10px;">Collapse <span class="chev" aria-hidden="true" style="display: inline-block;">▴</span></span></summary>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;">
+            <p style="margin: 0; font-size: 13px; color: #3d4757;">Existing savings and takaful benefits are deducted from the gap.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-sav" style="font-size: 13px; font-weight: 600;">Usable savings (RM)</label><input id="f-sav" type="text" inputmode="numeric" value="{{v.savings}}" sc-camel-on-change="{{h.savings}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">Not funds already set aside for another purpose.</span></div>
+              <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-exist" style="font-size: 13px; font-weight: 600;">{{existingLabel}}</label><input id="f-exist" type="text" inputmode="numeric" value="{{v.existing}}" sc-camel-on-change="{{h.existing}}" style="min-height: 44px; border: 1px solid #d6cdb9; border-radius: 10px; padding: 0 12px; font-size: 15px; font-variant-numeric: tabular-nums; background: #ffffff;"><span style="font-size: 12px; color: #5b6576;">After the portion already used for debts above.</span></div>
+            </div>
+          </div>
+        </details>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="f-notes" style="font-size: 13px; font-weight: 600;">Conversation notes</label><textarea id="f-notes" rows="3" placeholder="e.g. 3 children, wife is a homemaker" style="border: 1px solid #d6cdb9; border-radius: 10px; padding: 10px 12px; font-size: 14px; color: #1c2433; background: #ffffff; resize: vertical;"></textarea></div>
+      </form>
+
+      <aside aria-label="Protection gap dashboard" style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: #0f2540; border-radius: 20px; padding: 20px; color: #fdf9f3; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 12px 36px rgba(15,37,64,0.25);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span style="font-size: 12px; font-weight: 700; color: #0f2540; background: #fac748; border-radius: 9999px; padding: 4px 12px;">Let the numbers tell the story</span>
+            <span style="font-size: 12px; color: #c9d2e0;">Live</span>
+          </div>
+
+          <figure class="{{sceneClass}} fx-frame" style="margin: 0; background: #fdf9f3; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #efe6d2;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #0f2540;">{{fx.title}}</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #5b6576;"><span class="fx-dot" aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0f7a4c;"></span>Live</span></div>
+            <svg role="img" aria-label="{{scene.label}}" sc-camel-view-box="0 0 560 214" width="100%" style="display: block;">
+              <defs>
+                <clipPath id="shieldClip"><path d="M280,22 L352,48 L352,110 C352,156 322,182 280,200 C238,182 208,156 208,110 L208,48 Z"></path></clipPath>
+                <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9e6a"></stop><stop offset="1" stop-color="#0f7a4c"></stop></linearGradient>
+              </defs>
+              <rect x="0" y="206" width="560" height="24" fill="#efe6d2"></rect>
+              <g aria-hidden="true">
+                <text x="70" y="40" text-anchor="middle" font-family="Poppins, sans-serif" font-size="12" font-weight="600" fill="#0f4c35">ALREADY IN PLACE</text>
+                <text x="70" y="60" text-anchor="middle" font-family="Poppins, sans-serif" font-size="15" font-weight="700" fill="#0f2540">{{out.have}}</text>
+                <rect x="38" y="150" width="64" height="12" rx="6" fill="#e3a823"></rect>
+                <rect x="38" y="138" width="64" height="12" rx="6" fill="#fac748"></rect>
+                <rect x="38" y="126" width="64" height="12" rx="6" fill="#e3a823"></rect>
+                <rect x="38" y="114" width="64" height="12" rx="6" fill="#fac748"></rect>
+                <circle class="coin" cx="100" cy="108" r="8" fill="#fac748" stroke="#b5841a" stroke-width="2"></circle>
+                <circle class="coin d2" cx="100" cy="108" r="8" fill="#fac748" stroke="#b5841a" stroke-width="2"></circle>
+                <circle class="coin d3" cx="100" cy="108" r="8" fill="#fac748" stroke="#b5841a" stroke-width="2"></circle>
+              </g>
+              <path d="M280,22 L352,48 L352,110 C352,156 322,182 280,200 C238,182 208,156 208,110 L208,48 Z" fill="#e8edf4"></path>
+              <g clip-path="url(#shieldClip)" aria-hidden="true">
+                <g transform="translate(140, {{scene.level}})">
+                  <path class="wave2" d="{{scene.wave}}" fill="#8fd0ad" opacity="0.7"></path>
+                  <path class="wave1" d="{{scene.wave}}" fill="url(#goldFill)"></path>
+                </g>
+              </g>
+              <path d="M280,22 L352,48 L352,110 C352,156 322,182 280,200 C238,182 208,156 208,110 L208,48 Z" fill="none" stroke="#0f2540" stroke-width="4" stroke-linejoin="round"></path>
+              <g aria-hidden="true" fill="#0f2540">
+                <g class="fam"><circle cx="256" cy="118" r="10"></circle><path d="M241,158 C241,140 248,132 256,132 C264,132 271,140 271,158 Z"></path></g>
+                <g class="fam d2"><circle cx="304" cy="120" r="9"></circle><path d="M290,158 C290,141 297,134 304,134 C311,134 318,141 318,158 Z"></path></g>
+                <g class="fam d3"><circle cx="280" cy="140" r="7"></circle><path d="M270,166 C270,154 275,149 280,149 C285,149 290,154 290,166 Z"></path></g>
+              </g>
+              <text x="280" y="88" text-anchor="middle" font-family="Poppins, sans-serif" font-size="22" font-weight="700" fill="#0f2540">{{out.pct}}%</text>
+              <g aria-hidden="true">
+                <text x="490" y="40" text-anchor="middle" font-family="Poppins, sans-serif" font-size="12" font-weight="600" fill="#b23a3a">STILL UNPROTECTED</text>
+                <text x="490" y="60" text-anchor="middle" font-family="Poppins, sans-serif" font-size="15" font-weight="700" fill="#b23a3a">{{out.gap}}</text>
+                <rect class="gapblock" x="456" y="{{scene.gapY}}" width="68" height="{{scene.gapH}}" rx="8" fill="none" stroke="#b23a3a" stroke-width="2.5" stroke-dasharray="6 5"></rect>
+                <g class="bill"><rect x="400" y="150" width="34" height="22" rx="3" fill="#ffffff" stroke="#0f2540" stroke-width="2"></rect><path d="M406,158 h22 M406,164 h14" stroke="#0f2540" stroke-width="2"></path></g>
+                <g class="bill d2"><rect x="372" y="160" width="34" height="22" rx="3" fill="#ffffff" stroke="#0f2540" stroke-width="2"></rect><path d="M378,168 h22 M378,174 h14" stroke="#0f2540" stroke-width="2"></path></g>
+                <g class="bill d3"><rect x="414" y="168" width="34" height="22" rx="3" fill="#ffffff" stroke="#0f2540" stroke-width="2"></rect><path d="M420,176 h22 M420,182 h14" stroke="#0f2540" stroke-width="2"></path></g>
+                <circle class="spark" cx="214" cy="40" r="4" fill="#fac748"></circle>
+                <circle class="spark" cx="348" cy="30" r="3" fill="#fac748" style="animation-delay: .9s"></circle>
+              </g>
+            </svg>
+            <figcaption style="padding: 10px 14px 12px; border-top: 1px solid #efe6d2; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 600; line-height: 1.4; color: #0f2540; font-variant-numeric: tabular-nums;">{{fx.caption}}</span>
+              <ul class="fx-legend" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px;">
+                <sc-for list="{{fx.legend}}" as="lg" hint-placeholder-count="3"><li style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #3d4757;"><span aria-hidden="true" style="{{lg.sw}}"></span>{{lg.label}} <b style="color: #0f2540; font-variant-numeric: tabular-nums;">{{lg.value}}</b></li></sc-for>
+              </ul>
+            </figcaption>
+          </figure>
+
+          <section aria-label="Scenario flow" style="background: #16305a; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #fac748;">{{flow.heading}}</span><span aria-live="polite" style="font-size: 12px; color: #c9d2e0;">{{flow.pos}}</span></div>
+            <div sc-camel-on-pointer-down="{{flow.down}}" sc-camel-on-pointer-up="{{flow.up}}" style="overflow: hidden; border-radius: 12px; touch-action: pan-y; cursor: grab;">
+              <div style="{{flow.trackStyle}}">
+                <sc-for list="{{flow.slides}}" as="f" hint-placeholder-count="5">
+                  <div aria-hidden="{{f.hidden}}" style="flex: 0 0 100%; box-sizing: border-box; padding: 16px; background: #fdf9f3; color: #0f2540; display: flex; flex-direction: column; gap: 8px; min-height: 220px;">
+                    <span style="{{f.tagStyle}}">{{f.tag}}</span>
+                    <span style="font-size: 17px; font-weight: 800; line-height: 1.3;">{{f.title}}</span>
+                    <span style="{{f.valueStyle}}">{{f.value}}</span>
+                    <span style="font-size: 13px; line-height: 1.6; color: #3d4757;">{{f.desc}}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: auto;"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>{{f.meterLabel}}</span><span>{{f.meterText}}</span></div><div aria-hidden="true" style="height: 10px; background: #e8e1d2; border-radius: 9999px; overflow: hidden;"><div style="{{f.meterStyle}}"></div></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <label for="flow-range" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Scenario step</label>
+            <input id="flow-range" type="range" min="0" max="{{flow.max}}" step="1" value="{{flow.idx}}" sc-camel-on-change="{{flow.onRange}}" style="width: 100%; accent-color: #fac748;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" sc-camel-on-click="{{flow.prev}}" aria-label="Previous step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">‹</button>
+              <div style="flex: 1; display: flex; justify-content: center; flex-wrap: wrap;"><sc-for list="{{flow.dots}}" as="d" hint-placeholder-count="5"><button type="button" sc-camel-on-click="{{d.pick}}" aria-label="{{d.label}}" aria-current="{{d.cur}}" style="{{d.style}}"><span style="{{d.dotStyle}}"></span></button></sc-for></div>
+              <button type="button" sc-camel-on-click="{{flow.togglePlay}}" aria-pressed="{{flow.playing}}" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: #fac748; color: #0f2540; font-size: 13px; font-weight: 700; cursor: pointer;">{{flow.playLabel}}</button>
+              <button type="button" sc-camel-on-click="{{flow.next}}" aria-label="Next step" style="width: 44px; height: 44px; border: 1px solid #5b7299; border-radius: 10px; background: transparent; color: #fdf9f3; font-size: 18px; cursor: pointer;">›</button>
+            </div>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 15px; color: #e4e9f1;">Estimated additional protection gap</span>
+            <span style="font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 1.1; color: #fac748; letter-spacing: -0.02em;">{{out.gap}}</span>
+            <span style="font-size: 13px; color: #c9d2e0;">Need {{out.need}} minus {{out.have}} already in place.</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <svg role="img" aria-label="{{out.pct}} percent of need already available" width="96" height="96" sc-camel-view-box="0 0 96 96">
+              <circle cx="48" cy="48" r="34" fill="none" stroke="#24406a" stroke-width="10"></circle>
+              <circle cx="48" cy="48" r="34" fill="none" stroke="#fac748" stroke-width="10" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="{{out.ringOffset}}" transform="rotate(-90 48 48)"></circle>
+              <text x="48" y="48" text-anchor="middle" font-family="Poppins, sans-serif" font-size="17" font-weight="700" fill="#fdf9f3">{{out.pct}}%</text>
+              <text x="48" y="64" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" fill="#c9d2e0">available</text>
+            </svg>
+            <dl style="margin: 0; flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; background: #16305a; border-radius: 8px; padding: 8px 12px;"><dt style="font-size: 13px; color: #c9d2e0;">Need</dt><dd style="margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700;">{{out.need}}</dd></div>
+              <div style="display: flex; justify-content: space-between; background: #16305a; border-radius: 8px; padding: 8px 12px;"><dt style="font-size: 13px; color: #c9d2e0;">Have</dt><dd style="margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700;">{{out.have}}</dd></div>
+              <div style="display: flex; justify-content: space-between; background: #16305a; border-radius: 8px; padding: 8px 12px;"><dt style="font-size: 13px; color: #c9d2e0;">Gap</dt><dd style="margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; color: #ffb4a8;">{{out.gap}}</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Breakdown of need</span>
+          <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 9999px; overflow: hidden; background: #efe8da;">
+            <div style="{{out.barSupport}}; background: #1d4f91;"></div>
+            <div style="{{out.barDebt}}; background: #e3a823;"></div>
+            <div style="{{out.barOneoff}}; background: #0f7a4c;"></div>
+          </div>
+          <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+            <li style="display: flex; align-items: center; gap: 10px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #1d4f91;"></span><span style="flex: 1;">Family support</span><span style="font-variant-numeric: tabular-nums; font-weight: 700;">{{out.support}}</span></li>
+            <li style="display: flex; align-items: center; gap: 10px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #e3a823;"></span><span style="flex: 1;">Uncovered debts</span><span style="font-variant-numeric: tabular-nums; font-weight: 700;">{{out.debts}}</span></li>
+            <li style="display: flex; align-items: center; gap: 10px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #0f7a4c;"></span><span style="flex: 1;">One-off costs</span><span style="font-variant-numeric: tabular-nums; font-weight: 700;">{{out.oneoff}}</span></li>
+          </ul>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5b6576;">Family support each year</span>
+          <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 8px; height: 120px; border-bottom: 1px solid #e3dccd;">
+            <sc-for list="{{out.bars}}" as="b" hint-placeholder-count="5">
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%;">
+                <div style="{{b.style}}; width: 100%; max-width: 36px; background: #1d4f91; border-radius: 6px 6px 0 0;"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="display: flex; gap: 8px;">
+            <sc-for list="{{out.bars}}" as="b" hint-placeholder-count="5">
+              <span style="flex: 1; text-align: center; font-size: 12px; color: #5b6576;">{{b.label}}</span>
+            </sc-for>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #5b6576;">Year 1 {{out.y1}} · final year {{out.yN}}</p>
+        </div>
+
+        <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 16px; padding: 4px 18px;">
+          <summary style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; color: #0f2540; cursor: pointer;">How we calculate &amp; assumptions <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+          <ul style="margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #3d4757;">
+            <li>Monthly need = income × share replaced (or the itemised total) − other ongoing support.</li>
+            <li>Family support = monthly need × 12, grown each year by the cost-of-living rate, summed over the years chosen.</li>
+            <li>Debts count in full when cover is "not sure" or "not covered"; partly covered debts subtract the amount covered.</li>
+            <li>Have = usable savings + existing benefit for the chosen scenario.</li>
+            <li>Gap = need − have. An estimate for discussion, not a quotation.</li>
+          </ul>
+        </details>
+      </aside>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #e3dccd; padding-top: 18px;">
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: #1d4f91; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">Copy all for prospect's WhatsApp</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Preview text</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download image</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px solid #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Download PDF</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 1.5px dashed #1d4f91; border-radius: 10px; background: #ffffff; color: #1d4f91; font-size: 14px; font-weight: 600; cursor: pointer;">Combine all modules</button>
+      <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: #0f2540; color: #fdf9f3; font-size: 14px; font-weight: 600; cursor: pointer;">Save to lead</button>
+    </div>
+
+    <details style="background: #ffffff; border: 1px solid #e3dccd; border-radius: 12px; padding: 0 18px;">
+      <summary style="min-height: 52px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; color: #0f2540; cursor: pointer;">DISCLAIMER <span aria-hidden="true" style="color: #1d4f91;">+</span></summary>
+      <div style="padding-bottom: 14px; font-size: 13px; line-height: 1.7; color: #3d4757; display: flex; flex-direction: column; gap: 8px;">
+        <p style="margin: 0;">The Financial Storyboard is a discussion and planning aid for registered takaful agents. It is not an official document of any takaful operator.</p>
+        <p style="margin: 0;">All calculations, product examples, rates and figures are estimates and educational illustrations only. They are not a quotation, contract, guarantee of acceptance or claim, or financial, investment, tax, legal or medical advice.</p>
+        <p style="margin: 0;">Actual benefits, contributions and terms are subject to the Product Disclosure Sheet, official illustration, certificate and the operator's underwriting. Prospects must disclose health information fully and truthfully through official channels.</p>
+        <p style="margin: 0;">PDPA 2010: data saved here is stored against this lead in the CRM, visible to the assigned agent and upline only. Use nicknames; never enter IC numbers or detailed medical information.</p>
+      </div>
+    </details>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;animate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;section&quot;:&quot;Dashboard&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:2900}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      nick: 'Aiman', age: 34, scenario: 'death',
+      income: 6000, method: 'replace', replace: 80, other: 0, years: 5, inflation: 3,
+      eFood: 1500, eUtil: 400, eSchool: 800, eTrans: 600, eRent: 0, eOther: 500,
+      home: 320000, homeCov: 'unsure', homePart: 0, car: 60000, carCov: 'covered', carPart: 0, otherDebt: 12000,
+      edu: 60000, emergency: 15000, funeral: 8000,
+      savings: 25000, existing: 150000
+    };
+  }
+  componentDidMount() { this._flowTimer = setInterval(() => { if (this.state.flowPlay) { const n = this._flowN || 1; this.setState({ flowIdx: ((this.state.flowIdx || 0) + 1) % n }); } }, 3500); }
+  componentWillUnmount() { clearInterval(this._flowTimer); }
+  buildFlow(heading, data) {
+    const n = data.length; this._flowN = n;
+    const idx = Math.min(n - 1, this.state.flowIdx || 0);
+    const go = (i) => this.setState({ flowIdx: Math.max(0, Math.min(n - 1, i)), flowPlay: false });
+    const tones = { neutral: '#1d4f91', warn: '#a45d00', bad: '#b23a3a', good: '#0f7a4c' };
+    return {
+      heading: heading, idx: String(idx), max: String(n - 1), pos: 'Step ' + (idx + 1) + ' of ' + n,
+      trackStyle: 'display: flex; transition: transform .55s cubic-bezier(.16,1,.3,1); transform: translateX(-' + (idx * 100) + '%);',
+      slides: data.map((d, i) => { const c = tones[d.tone] || tones.neutral; const m = Math.max(0, Math.min(100, Math.round(d.meter || 0))); return {
+        tag: d.tag, title: d.title, value: d.value, desc: d.desc, meterLabel: d.meterLabel, meterText: d.meterText, hidden: i === idx ? 'false' : 'true',
+        tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #ffffff; background: ' + c + '; border-radius: 9999px; padding: 3px 10px;',
+        valueStyle: 'font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: ' + c + '; font-variant-numeric: tabular-nums;',
+        meterStyle: 'height: 100%; width: ' + m + '%; background: ' + (m > 60 ? '#0f7a4c' : m > 25 ? '#e3a823' : '#b23a3a') + '; border-radius: 9999px; transition: width .6s ease;' }; }),
+      dots: data.map((d, i) => ({ label: 'Go to step ' + (i + 1) + ': ' + d.tag, cur: i === idx ? 'step' : 'false', pick: () => go(i),
+        style: 'width: 32px; height: 44px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;',
+        dotStyle: 'display: block; height: 8px; border-radius: 9999px; transition: all .3s; width: ' + (i === idx ? 22 : 8) + 'px; background: ' + (i === idx ? '#fac748' : '#5b7299') + ';' })),
+      prev: () => go(idx - 1), next: () => go(idx + 1), onRange: (e) => go(Number(e.target.value) || 0),
+      playing: this.state.flowPlay ? 'true' : 'false', playLabel: this.state.flowPlay ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ flowPlay: !this.state.flowPlay }),
+      down: (e) => { this._fx = e.clientX; },
+      up: (e) => { if (this._fx == null) return; const dx = e.clientX - this._fx; this._fx = null; if (dx < -40) go(idx + 1); else if (dx > 40) go(idx - 1); }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const n = (k) => Number(s[k]) || 0;
+    const rm = (x) => 'RM' + Math.round(x).toLocaleString('en-MY');
+    const num = (x) => Math.round(x).toLocaleString('en-MY');
+    const setNum = (k) => (e) => {
+      const raw = String(e.target.value).replace(/[^0-9.]/g, '');
+      this.setState({ [k]: raw === '' ? 0 : Number(raw) });
+    };
+    const setStr = (k) => (e) => this.setState({ [k]: e.target.value });
+    const tpd = s.scenario === 'tpd';
+
+    const itemTotal = n('eFood') + n('eUtil') + n('eSchool') + n('eTrans') + n('eRent') + n('eOther');
+    const base = s.method === 'itemize' ? itemTotal : n('income') * n('replace') / 100;
+    const monthly = Math.max(0, base - n('other'));
+    const years = Math.max(1, Math.min(30, Math.round(n('years'))));
+    const inf = n('inflation') / 100;
+    const yearly = [];
+    let support = 0;
+    for (let t = 0; t < years; t++) {
+      const y = monthly * 12 * Math.pow(1 + inf, t);
+      yearly.push(y);
+      support += y;
+    }
+    const debtOf = (amt, st, part) => (st === 'covered' ? 0 : st === 'partial' ? Math.max(0, amt - part) : amt);
+    const debts = debtOf(n('home'), s.homeCov, n('homePart')) + debtOf(n('car'), s.carCov, n('carPart')) + n('otherDebt');
+    const oneoff = n('edu') + n('emergency') + n('funeral');
+    const need = support + debts + oneoff;
+    const have = n('savings') + n('existing');
+    const gap = Math.max(0, need - have);
+    const pct = need > 0 ? Math.min(100, Math.round((have / need) * 100)) : 100;
+
+    const maxY = Math.max(1, ...yearly);
+    const bars = yearly.slice(0, 10).map((y, i) => ({ label: 'Y' + (i + 1), style: 'height: ' + Math.max(4, Math.round((y / maxY) * 100)) + '%' }));
+    const w = (x) => 'width: ' + (need > 0 ? ((x / need) * 100).toFixed(2) : 0) + '%';
+    const level = 200 - 178 * (pct / 100) - 8;
+    const wave = 'M0,8 ' + 'q20,-8 40,0 t40,0 '.repeat(8) + 'L640,240 L0,240 Z';
+    const gapH = Math.max(14, Math.round(120 * (need > 0 ? gap / need : 0)));
+    const caption = pct >= 100 ? 'Shield full: what is in place meets the estimated need' : 'Shield ' + pct + '% filled · ' + rm(gap) + ' still to plan for';
+    const nick = String(s.nick || 'the prospect');
+
+    return {
+      v: {
+        nick: nick, age: String(n('age')), scenario: s.scenario, method: s.method,
+        income: num(n('income')), replace: num(n('replace')), other: num(n('other')), years: String(years), inflation: String(n('inflation')),
+        eFood: num(n('eFood')), eUtil: num(n('eUtil')), eSchool: num(n('eSchool')), eTrans: num(n('eTrans')), eRent: num(n('eRent')), eOther: num(n('eOther')),
+        home: num(n('home')), homeCov: s.homeCov, homePart: num(n('homePart')), car: num(n('car')), carCov: s.carCov, carPart: num(n('carPart')), otherDebt: num(n('otherDebt')),
+        edu: num(n('edu')), emergency: num(n('emergency')), funeral: num(n('funeral')),
+        savings: num(n('savings')), existing: num(n('existing'))
+      },
+      h: {
+        nick: setStr('nick'), age: setNum('age'), scenario: setStr('scenario'), method: setStr('method'),
+        income: setNum('income'), replace: setNum('replace'), other: setNum('other'), years: setNum('years'), inflation: setNum('inflation'),
+        eFood: setNum('eFood'), eUtil: setNum('eUtil'), eSchool: setNum('eSchool'), eTrans: setNum('eTrans'), eRent: setNum('eRent'), eOther: setNum('eOther'),
+        home: setNum('home'), homeCov: setStr('homeCov'), homePart: setNum('homePart'), car: setNum('car'), carCov: setStr('carCov'), carPart: setNum('carPart'), otherDebt: setNum('otherDebt'),
+        edu: setNum('edu'), emergency: setNum('emergency'), funeral: setNum('funeral'),
+        savings: setNum('savings'), existing: setNum('existing')
+      },
+      is: { replace: s.method !== 'itemize', itemize: s.method === 'itemize', homePartial: s.homeCov === 'partial', carPartial: s.carCov === 'partial' },
+      scenarioNote: tpd
+        ? 'TPD scenario: income stops but the insured still needs to be supported, often with extra care costs. Check whether the plan includes TPD and how it is defined.'
+        : 'Death scenario: calculates provision for the family. Conditional hibah nomination relates to the death benefit.',
+      monthlyNote: (s.method === 'itemize' ? 'Itemised family expenses: ' + rm(itemTotal) + '/month.' : 'Income replacement basis: ' + rm(base) + '/month.') + ' After other support, year-1 gap: ' + rm(monthly) + '/month.',
+      funeralLabel: tpd ? 'Home modification / care setup (RM)' : 'Funeral & admin costs (RM)',
+      existingLabel: tpd ? 'Existing TPD benefit (RM)' : 'Existing death benefit (RM)',
+      out: {
+        support: rm(support), debts: rm(debts), oneoff: rm(oneoff),
+        need: rm(need), have: rm(have), gap: rm(gap), pct: pct,
+        ringOffset: (213.6 * (1 - pct / 100)).toFixed(1),
+        barSupport: w(support), barDebt: w(debts), barOneoff: w(oneoff),
+        bars: bars, y1: rm(yearly[0] || 0), yN: rm(yearly[yearly.length - 1] || 0)
+      },
+      scene: {
+        level: level.toFixed(1), wave: wave, gapH: gapH, gapY: 196 - gapH, caption: caption,
+        label: 'Animated shield around a family, ' + pct + ' percent filled, ' + rm(have) + ' in place and ' + rm(gap) + ' unprotected'
+      },
+      saveLabel: this.state.savedAt ? 'Saved ✓ ' + this.state.savedAt : 'Save',
+      saveStyle: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 0; ' + (this.state.savedAt ? 'background: #0f7a4c; color: #ffffff;' : 'background: #0f2540; color: #fdf9f3;'),
+      save: () => { const d = new Date(); this.setState({ savedAt: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }); },
+      flow: (() => {
+        const remaining = Math.max(0, have - debts - oneoff);
+        const runway = monthly > 0 ? remaining / monthly : 0;
+        const needMonths = years * 12;
+        return this.buildFlow('IF ' + nick.toUpperCase() + '’S INCOME STOPPED TODAY', [
+          { tag: 'DAY 1', title: nick + '’s income stops', value: rm(monthly) + '/mo', desc: 'The family still needs this every month, for ' + years + ' years.', meterLabel: 'Need covered by what’s in place', meterText: pct + '%', meter: pct, tone: 'neutral' },
+          { tag: 'WEEK 1', title: 'Debts & one-off costs fall due', value: '− ' + rm(debts + oneoff), desc: 'Uncovered loans, education fund, funeral and admin costs come first.', meterLabel: 'Savings & cover left', meterText: rm(remaining), meter: have > 0 ? remaining / have * 100 : 0, tone: 'warn' },
+          { tag: 'MONTH ' + Math.max(1, Math.ceil(runway)), title: 'What’s left runs out', value: runway.toFixed(1) + ' months', desc: rm(remaining) + ' left covers about ' + runway.toFixed(1) + ' of the ' + needMonths + ' months needed.', meterLabel: 'Runway vs need', meterText: runway.toFixed(1) + ' / ' + needMonths + ' mo', meter: needMonths > 0 ? runway / needMonths * 100 : 0, tone: 'bad' },
+          { tag: 'SHORTFALL', title: 'The family must find the rest', value: rm(gap), desc: 'From EPF, selling the home, relatives or new debt.', meterLabel: 'Need covered', meterText: pct + '%', meter: pct, tone: 'bad' },
+          { tag: 'WITH HIBAH', title: 'A hibah of ' + rm(gap) + ' fills the gap', value: '100%', desc: 'Paid to the named beneficiary under a conditional hibah nomination, subject to certificate terms.', meterLabel: 'Need covered', meterText: '100%', meter: 100, tone: 'good' }
+        ]);
+      })(),
+      sceneClass: (this.props.animate ?? true) ? 'live' : 'still',
+      fx: { title: 'FAMILY SHIELD · HIBAH', caption: caption, legend: [['In place', rm(have), '#0f7a4c'], ['Still unprotected', rm(gap), '#b23a3a'], ['Total need', rm(need), '#0f2540']].map(([l, v, c]) => ({ label: l, value: v, sw: 'width: 10px; height: 10px; border-radius: 3px; flex: none; background: ' + c + ';' })) }
+    };
+  }
+}
+</script>
+
+
+</body></html>
