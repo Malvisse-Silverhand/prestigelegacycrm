@@ -27,13 +27,13 @@ import {
   isModule,
   isOutcome,
   isStep,
-  isUuid,
   mergeStored,
   OPERATOR_MSG,
   readStored,
   sanitizeNotes,
   sanitizePatch,
 } from "@/lib/storyboard/validate";
+import { resolveTarget, type StoryboardTarget } from "@/lib/storyboard/target";
 import type { StoryboardModule, StoryboardOutcome, StoryboardStep } from "@/lib/storyboard/types";
 
 type SaveResult = { error: string | null; savedAt: string | null };
@@ -60,7 +60,10 @@ async function actionLang(explicit: unknown): Promise<Lang> {
 }
 
 export async function saveStoryboard(input: {
-  leadId: string;
+  /** A lead's storyboard. Either this or `target` is given. */
+  leadId?: string;
+  /** A lead or a practice session. Wins over `leadId`. */
+  target?: StoryboardTarget;
   module: StoryboardModule;
   /** Which step is being saved. Defaults to Fill & Calculate. */
   step?: StoryboardStep;
@@ -74,7 +77,11 @@ export async function saveStoryboard(input: {
   const tr = (key: TKey) => t(key, lang);
   const profile = await getCurrentProfile();
   if (!profile) return { error: tr("err.notSignedIn"), savedAt: null };
-  if (!isUuid(input?.leadId)) return { error: tr("err.leadNotFound"), savedAt: null };
+  const resolved = resolveTarget(input);
+  if (!resolved.ok) {
+    return { error: tr(resolved.kind === "practice" ? "practice.err.notFound" : "err.leadNotFound"), savedAt: null };
+  }
+  const target = resolved.target;
   if (!isModule(input.module)) return { error: tr("err.unknownModule"), savedAt: null };
   if (!isBuiltModule(input.module)) return { error: tr("err.notYet"), savedAt: null };
   const mod = input.module;
@@ -85,22 +92,44 @@ export async function saveStoryboard(input: {
   if (!patch.ok) return { error: localizeValidation(patch.error, lang), savedAt: null };
 
   const supabase = await createClient();
-  const leadId = input.leadId;
 
-  // RLS decides whether this person can see the lead at all.
-  const { data: lead, error: leadError } = await supabase.from("leads").select("id").eq("id", leadId).maybeSingle();
-  if (leadError || !lead) return { error: tr("err.leadNotFound"), savedAt: null };
+  type Existing = { id: string; inputs: unknown; step_status: unknown; notes: string | null };
+  let existing: Existing | null;
+  if (target.kind === "lead") {
+    // RLS decides whether this person can see the lead at all.
+    const { data: lead, error: leadError } = await supabase.from("leads").select("id").eq("id", target.leadId).maybeSingle();
+    if (leadError || !lead) return { error: tr("err.leadNotFound"), savedAt: null };
 
-  const { data: existing, error: loadError } = await supabase
-    .from("storyboards")
-    .select("id, inputs, step_status, notes")
-    .eq("lead_id", leadId)
-    .eq("module", mod)
-    .maybeSingle<{ id: string; inputs: unknown; step_status: unknown; notes: string | null }>();
-  if (loadError) {
-    return { error: isMissingSchemaError(loadError) ? missingMessage(lang) : tr("err.saveFailed"), savedAt: null };
+    const { data, error: loadError } = await supabase
+      .from("storyboards")
+      .select("id, inputs, step_status, notes")
+      .eq("lead_id", target.leadId)
+      .eq("module", mod)
+      .maybeSingle<Existing>();
+    if (loadError) {
+      return { error: isMissingSchemaError(loadError) ? missingMessage(lang) : tr("err.saveFailed"), savedAt: null };
+    }
+    existing = data;
+    if (step !== "fill" && !existing) return { error: tr("err.saveStep1First"), savedAt: null };
+  } else {
+    // A practice session always has its row (created empty). Only its owner may
+    // write it: a leader who can read it gets the read-only message.
+    const { data, error: loadError } = await supabase
+      .from("storyboards")
+      .select("id, inputs, step_status, notes, module, owner_id")
+      .eq("id", target.id)
+      .is("lead_id", null)
+      .maybeSingle<Existing & { module: StoryboardModule; owner_id: string | null }>();
+    if (loadError) {
+      return { error: isMissingSchemaError(loadError) ? missingMessage(lang) : tr("err.saveFailed"), savedAt: null };
+    }
+    if (!data || data.module !== mod) return { error: tr("practice.err.notFound"), savedAt: null };
+    if (data.owner_id !== profile.id) return { error: tr("practice.err.readOnly"), savedAt: null };
+    existing = data;
+    if (step !== "fill" && readStepStatus(existing.step_status).fill !== "saved") {
+      return { error: tr("err.saveStep1First"), savedAt: null };
+    }
   }
-  if (step !== "fill" && !existing) return { error: tr("err.saveStep1First"), savedAt: null };
 
   // Step 1 sends the whole form; later steps patch what is stored.
   const base = existing ? readStored(mod, existing.inputs) : defaultStored(mod);
@@ -155,6 +184,25 @@ export async function saveStoryboard(input: {
   // ON CONFLICT DO UPDATE would trip over.
   let writeError: { code?: string } | null = null;
   let written = false;
+  if (target.kind === "practice") {
+    // The row exists (checked above); the lead_id filter keeps this from ever
+    // touching a row that was attached to a lead in the meantime.
+    const { data, error } = await supabase
+      .from("storyboards")
+      .update(row)
+      .eq("id", target.id)
+      .is("lead_id", null)
+      .select("id")
+      .maybeSingle();
+    if (error) {
+      return { error: isMissingSchemaError(error) ? missingMessage(lang) : tr("err.saveFailed"), savedAt: null };
+    }
+    if (!data) return { error: tr("practice.err.notFound"), savedAt: null };
+    // No activity log, webhook or stage change for a rehearsal.
+    revalidatePath("/storyboards", "layout");
+    return { error: null, savedAt };
+  }
+  const leadId = target.leadId;
   if (existing) {
     const { data, error } = await supabase.from("storyboards").update(row).eq("id", existing.id).select("id").maybeSingle();
     writeError = error;
@@ -202,7 +250,8 @@ export async function saveStoryboard(input: {
 }
 
 export async function setStoryboardOutcome(input: {
-  leadId: string;
+  leadId?: string;
+  target?: StoryboardTarget;
   module: StoryboardModule;
   outcome: StoryboardOutcome;
   followUpDate?: string | null;
@@ -213,13 +262,47 @@ export async function setStoryboardOutcome(input: {
   const tr = (key: TKey) => t(key, lang);
   const profile = await getCurrentProfile();
   if (!profile) return { error: tr("err.notSignedIn"), message: null };
-  if (!isUuid(input?.leadId)) return { error: tr("err.leadNotFound"), message: null };
+  const resolved = resolveTarget(input);
+  if (!resolved.ok) {
+    return { error: tr(resolved.kind === "practice" ? "practice.err.notFound" : "err.leadNotFound"), message: null };
+  }
+  const target = resolved.target;
   if (!isModule(input.module)) return { error: tr("err.unknownModule"), message: null };
   if (!isBuiltModule(input.module)) return { error: tr("err.notYet"), message: null };
   if (!isOutcome(input.outcome)) return { error: tr("err.unknownOutcome"), message: null };
 
   const supabase = await createClient();
-  const leadId = input.leadId;
+
+  if (target.kind === "practice") {
+    // A rehearsal: the outcome is recorded on the row and nothing else happens
+    // (no pipeline change, no activity log, no webhook).
+    const { data: prow, error: pError } = await supabase
+      .from("storyboards")
+      .select("id, step_status, module, owner_id")
+      .eq("id", target.id)
+      .is("lead_id", null)
+      .maybeSingle<{ id: string; step_status: unknown; module: StoryboardModule; owner_id: string | null }>();
+    if (pError) {
+      return { error: isMissingSchemaError(pError) ? missingMessage(lang) : tr("err.outcomeFailed"), message: null };
+    }
+    if (!prow || prow.module !== input.module) return { error: tr("practice.err.notFound"), message: null };
+    if (prow.owner_id !== profile.id) return { error: tr("practice.err.readOnly"), message: null };
+    if (readStepStatus(prow.step_status).fill !== "saved") return { error: tr("err.saveStep1Outcome"), message: null };
+    const { data: pUpdated, error: pUpdateError } = await supabase
+      .from("storyboards")
+      .update({ outcome: input.outcome, step_status: markStepSaved(readStepStatus(prow.step_status), "objections") })
+      .eq("id", prow.id)
+      .is("lead_id", null)
+      .select("id")
+      .maybeSingle();
+    if (pUpdateError || !pUpdated) return { error: tr("practice.err.notFound"), message: null };
+    revalidatePath("/storyboards", "layout");
+    return {
+      error: null,
+      message: t("outcome.recorded", lang, { label: outcomeLabel(input.outcome, lang), summary: t("practice.outcome.note", lang) }),
+    };
+  }
+  const leadId = target.leadId;
 
   const { data: lead } = await supabase
     .from("leads")
@@ -361,6 +444,7 @@ export async function saveStoryboardSettings(input: {
   if (error) return { error: isMissingSchemaError(error) ? missingMessage(lang) : tr("err.settingsSaveFailed") };
 
   revalidatePath("/leads", "layout");
+  revalidatePath("/storyboards", "layout");
   return { error: null };
 }
 

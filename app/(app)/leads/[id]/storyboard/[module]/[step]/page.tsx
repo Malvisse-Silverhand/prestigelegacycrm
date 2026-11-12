@@ -7,6 +7,7 @@ import { getLeadStoryboards, getStoryboardSettings, type SavedStoryboard } from 
 import { isBuiltModule, moduleName, moduleTitle } from "@/lib/storyboard/modules";
 import { resolveSettings } from "@/lib/storyboard/settings";
 import { isModule, isUuid } from "@/lib/storyboard/validate";
+import { leadTarget } from "@/lib/storyboard/target";
 import { missingMessage } from "@/lib/storyboard/schema-error";
 import { STORYBOARD_MODULES, STORYBOARD_STEPS, type StoryboardModule, type StoryboardStep } from "@/lib/storyboard/types";
 import { htmlLang, t } from "@/lib/storyboard/i18n";
@@ -89,7 +90,7 @@ export default async function StoryboardStepPage({
   } else {
     const resolved = resolveSettings(built, lang, settings?.ok ? settings.data.org : {}, settings?.ok ? settings.data.agent : {});
     const common: ScreenCommon = {
-      leadId: id,
+      target: leadTarget(id),
       notes: row?.notes ?? "",
       savedAt: row?.savedAt ?? null,
       hasRow: Boolean(row),

@@ -97,7 +97,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
     startOutcome(async () => {
       try {
         const res = await setStoryboardOutcome({
-          leadId: props.leadId,
+          target: props.target,
           module,
           outcome: choice,
           followUpDate: choice === "follow_up_later" ? date : null,
@@ -270,7 +270,7 @@ export function ObjectionsScreen<S extends TickedStored>(props: Props<S>) {
             type="button"
             className={BTN_PRIMARY}
             onClick={record}
-            disabled={!choice || outcomePending || !props.dbReady || !props.hasRow}
+            disabled={!choice || outcomePending || !props.dbReady || !props.hasRow || props.readOnly === true}
           >
             {outcomePending ? t("obj.recording") : t("obj.recordBtn")}
           </button>

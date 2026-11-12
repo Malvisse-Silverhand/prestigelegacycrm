@@ -1,9 +1,13 @@
 import type { ResolvedSettings } from "@/lib/storyboard/settings";
 import type { StoryboardOutcome } from "@/lib/storyboard/types";
+import type { StoryboardTarget } from "@/lib/storyboard/target";
 
 /** Everything a step screen needs from the server page, for any module. */
 export type ScreenProps<S> = {
-  leadId: string;
+  /** What the screen saves to: a lead's storyboard or a practice session. */
+  target: StoryboardTarget;
+  /** True when the viewer may look but not save (a leader opening a downline practice session). */
+  readOnly?: boolean;
   stored: S;
   notes: string;
   /** ISO time of the last save, from the database. */

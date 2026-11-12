@@ -42,10 +42,11 @@ export function HibahFill(props: HibahScreenProps) {
   const tpd = form.scenario === "tpd";
 
   function save() {
+    if (props.readOnly) return;
     setError(null);
     startTransition(async () => {
       try {
-        const res = await saveStoryboard({ leadId: props.leadId, module: "hibah", step: "fill", inputs, notes, lang });
+        const res = await saveStoryboard({ target: props.target, module: "hibah", step: "fill", inputs, notes, lang });
         if (res.error) {
           setError(res.error);
           return;
@@ -341,7 +342,7 @@ export function HibahFill(props: HibahScreenProps) {
       </div>
 
       <div className="flex flex-col gap-3 border-t border-sand pt-4">
-        <SaveButton savedAt={savedAt} pending={pending} onSave={save} error={error} disabled={!props.dbReady} />
+        <SaveButton savedAt={savedAt} pending={pending} onSave={save} error={error} disabled={!props.dbReady || props.readOnly === true} />
         <CopyToWa text={waText} label={t("common.copySummary")} />
       </div>
     </div>

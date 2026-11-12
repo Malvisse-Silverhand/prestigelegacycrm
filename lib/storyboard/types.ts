@@ -100,7 +100,12 @@ export type ClientSummaryBundle = {
 
 export type StoryboardRow = {
   id: string;
-  lead_id: string;
+  /** Null for a practice session (see owner_id). */
+  lead_id: string | null;
+  /** Owner of a practice session; null once attached to a lead. */
+  owner_id: string | null;
+  /** Optional label of a practice session. */
+  title: string | null;
   module: StoryboardModule;
   inputs: Record<string, unknown>;
   outputs: Record<string, unknown>;

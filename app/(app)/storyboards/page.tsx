@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import { listStoryboards } from "@/lib/storyboard/data";
+import { listMyPractice, listStoryboards, purgeMyExpiredPractice } from "@/lib/storyboard/data";
+import { LangProvider } from "@/components/storyboard/lang-context";
+import { PracticeSection } from "@/components/storyboard/practice/practice-section";
 import { STORYBOARD_MODULES, STORYBOARD_STEPS } from "@/lib/storyboard/types";
 import { outcomeLabel } from "@/lib/storyboard/outcome";
 import { moduleName } from "@/lib/storyboard/modules";
@@ -36,9 +38,13 @@ export default async function StoryboardsPage({
 
   // RLS: only storyboards of leads this person can see.
   const res = await listStoryboards({ q, module: moduleFilter });
+  // Housekeeping first (own rows, errors ignored), then the list.
+  await purgeMyExpiredPractice(profile.id);
+  const practice = await listMyPractice(profile.id);
   const filtered = Boolean(q || moduleFilter);
 
   return (
+    <LangProvider lang={lang}>
     <div lang={htmlLang(lang)}>
       <div className="sticky top-0 z-20 border-b border-sand bg-white/85 px-5 py-5 backdrop-blur-md lg:static lg:bg-white lg:px-[30px] lg:backdrop-blur-none">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -86,7 +92,12 @@ export default async function StoryboardsPage({
         </form>
       </div>
 
-      <div className="px-5 py-[22px] lg:px-[30px]">
+      <div className="flex flex-col gap-5 px-5 py-[22px] lg:px-[30px]">
+        <PracticeSection
+          lang={lang}
+          sessions={practice.ok ? practice.data : null}
+          notice={practice.ok ? null : practice.missing ? "missing" : "failed"}
+        />
         {!res.ok ? (
           <p
             role="alert"
@@ -162,5 +173,6 @@ export default async function StoryboardsPage({
         )}
       </div>
     </div>
+    </LangProvider>
   );
 }
