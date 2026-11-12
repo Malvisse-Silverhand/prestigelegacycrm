@@ -217,6 +217,7 @@ export async function getStatisticsData(profile: CurrentProfile) {
     supabase
       .from("leads")
       .select("id, agent_id, unit_id, pipeline_stage, created_at, updated_at, closed_on, lead_source, interest")
+      .is("deleted_at", null)
       .returns<MinimalLeadWithSource[]>(),
     supabase
       .from("quotations")

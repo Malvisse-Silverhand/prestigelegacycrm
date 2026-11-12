@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { pickState, pickLeadSource, pickInterest, pickStatus, pickGender, pickSmoker, pickOccupationClass, parseLeadExtras } from "@/lib/lead-field-validation";
 import { RELATIONSHIPS, type Relationship } from "@/lib/lead-constants";
@@ -168,7 +169,19 @@ export async function deleteLead(leadId: string) {
     .select("id")
     .maybeSingle();
 
-  if (error || !data) return { error: "Couldn't delete this lead. Please try again." };
+  if (error) return { error: "Couldn't delete this lead. Please try again." };
+  if (!data) {
+    // No active row matched. For a superadmin (whose select policy still sees
+    // deleted rows) that usually means it was already deleted -- say so rather
+    // than a generic failure, and refresh so the stale card disappears.
+    const { data: existing } = await supabase.from("leads").select("deleted_at").eq("id", leadId).maybeSingle();
+    if (existing?.deleted_at) {
+      revalidatePath("/leads");
+      revalidatePath("/pipeline");
+      return { error: "This lead was already deleted. Refresh the page." };
+    }
+    return { error: "Couldn't delete this lead. Please try again." };
+  }
 
   revalidatePath("/leads");
   revalidatePath(`/leads/${leadId}`);
@@ -209,13 +222,26 @@ export async function purgeLead(leadId: string) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+
+  // The lead's ID / bank card photos live in a private Storage bucket; the
+  // lead_documents rows cascade away with the lead but the files would not.
+  // Read the paths first (RLS-scoped), delete the lead, then remove the files.
+  const { data: docs } = await supabase.from("lead_documents").select("storage_path").eq("lead_id", leadId);
+
+  const { data: purged, error } = await supabase
     .from("leads")
     .delete()
     .eq("id", leadId)
-    .not("deleted_at", "is", null);
+    .not("deleted_at", "is", null)
+    .select("id");
 
   if (error) return { error: "Couldn't permanently delete this lead." };
+
+  const paths = (docs ?? []).map((d) => d.storage_path as string);
+  if (purged && purged.length > 0 && paths.length > 0) {
+    const { error: removeError } = await createAdminClient().storage.from("lead-documents").remove(paths);
+    if (removeError) console.error("purgeLead: couldn't remove stored documents", removeError);
+  }
 
   revalidatePath("/leads");
   return { error: null };

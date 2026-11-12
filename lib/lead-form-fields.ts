@@ -227,6 +227,41 @@ export function isFieldVisible(field: FormField, values: FormValues): boolean {
   return (values[field.showIf.key] ?? "") === field.showIf.equals;
 }
 
+// ---- Documents (Stage 2) -------------------------------------------------------
+
+export type DocumentKind = "ic_front" | "ic_back" | "bank_card";
+
+export const DOCUMENT_KINDS: DocumentKind[] = ["ic_front", "ic_back", "bank_card"];
+
+export const DOCUMENT_INFO: Record<DocumentKind, { label: string; short: string }> = {
+  ic_front: { label: "Gambar IC yang Jelas untuk Permohonan Takaful (Depan)", short: "IC (front)" },
+  ic_back: { label: "Gambar IC yang Jelas untuk Permohonan Takaful (Belakang)", short: "IC (back)" },
+  bank_card: { label: "Gambar depan kad bank (depan sahaja)", short: "Bank card (front)" },
+};
+
+export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
+export const DOCUMENT_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export function isDocumentKind(value: unknown): value is DocumentKind {
+  return typeof value === "string" && (DOCUMENT_KINDS as string[]).includes(value);
+}
+
+/** A stored document, with a short-lived signed URL to display it. */
+export type DocumentView = {
+  kind: DocumentKind;
+  /** Signed URL, valid for about an hour. Never persisted. */
+  url: string;
+  uploadedAt: string;
+};
+
+/** A field's stored string as a person reads it: option labels, "—" for blank. */
+export function formatFieldValue(field: FormField, raw: string): string {
+  const v = raw.trim();
+  if (!v) return "—";
+  const option = field.options?.find((o) => o.value === v);
+  return option ? option.label : v;
+}
+
 export type NomineeInput = {
   name: string;
   id_no: string;
@@ -414,6 +449,29 @@ export type PublicFormData = {
   nominees: NomineeInput[];
   /** True when a draft was loaded, so the page can say "welcome back". */
   resumed: boolean;
+  /** Stage 2 only. Documents already uploaded, with signed preview URLs. */
+  documents: DocumentView[];
+};
+
+/**
+ * What the agent's "View" button shows for one form link: the answers the
+ * prospect has entered so far. For a link still in progress that is the saved
+ * draft laid over the lead's current data; for a completed one it is the lead
+ * itself (the draft is cleared on submit).
+ */
+export type FormSnapshot = {
+  stage: FormStage;
+  status: FormLinkEffectiveStatus;
+  /** True while the answers are an unsubmitted draft. */
+  isDraft: boolean;
+  /** When the prospect last saved (draft) -- null once submitted. */
+  savedAt: string | null;
+  submittedAt: string | null;
+  sections: { title: string; rows: { label: string; value: string; filled: boolean }[] }[];
+  /** Stage 2 only. */
+  nominees: { name: string; id_no: string; relationship: string; phone: string; share_percent: string; date_of_birth: string }[];
+  documents: DocumentView[];
+  signature: LeadSignatureView | null;
 };
 
 export type PublicFormState =

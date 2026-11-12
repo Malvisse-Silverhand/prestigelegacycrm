@@ -42,6 +42,17 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/appointments", label: "Appointment", icon: CalendarIcon },
+  // What happens inside the appointment: the needs analysis presented with
+  // the prospect. Presenting one moves the lead into the Appointment stage.
+  {
+    href: "/storyboards",
+    label: "Financial Storyboard",
+    icon: StoryboardIcon,
+    children: [
+      { href: "/storyboards", label: "Storyboards" },
+      { href: "/storyboards/insights", label: "My Insights" },
+    ],
+  },
   // Both sit after Appointment because that is where they fall in the work: a
   // case is filed once the meetings are done, and serviced once it is
   // inforced. Two top-level items rather than a "My Sales" group -- each is
@@ -62,8 +73,6 @@ export const SIDEBAR_NAV: NavItem[] = [
     ],
   },
   { href: "/quotations", label: "Quotation", icon: QuotationIcon },
-  // Needs analysis per lead: every role that sees leads sees their storyboards (RLS scopes the rows).
-  { href: "/storyboards", label: "Financial Storyboard", icon: StoryboardIcon },
   {
     href: "/wa-flow",
     label: "WA Flow",

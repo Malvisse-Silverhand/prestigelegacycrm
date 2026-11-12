@@ -14,6 +14,10 @@ export async function getPipelineLeads(filters: { agent?: string; interest?: str
     .select(
       "id, lead_no, full_name, phone, email, date_of_birth, gender, is_smoker, lead_source, interest, budget_indicated, follow_up_date, pipeline_stage, status, agent_id, created_at, quotations(id, status, created_at, updated_at, is_customizer:raw_payload->>__customizer, quotation_plans(sort_order, monthly_contribution, annual_contribution)), lead_activity(created_at)",
     )
+    // A superadmin's RLS select policy still returns soft-deleted rows (so Leads
+    // Manager > Deleted can list them), so every board query must exclude them
+    // itself -- otherwise a deleted lead lingers here and can never be deleted again.
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (filters.agent) query = query.eq("agent_id", filters.agent);

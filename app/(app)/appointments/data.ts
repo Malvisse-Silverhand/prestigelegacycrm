@@ -61,6 +61,7 @@ export async function getLeadOptions(): Promise<LeadOption[]> {
   const { data } = await supabase
     .from("leads")
     .select("id, full_name, phone, pipeline_stage")
+    .is("deleted_at", null)
     .neq("pipeline_stage", "closed_lost")
     .order("full_name")
     .limit(1000);
@@ -74,7 +75,7 @@ export async function getLeadOptions(): Promise<LeadOption[]> {
 
 export async function getLeadBaseCount(): Promise<number> {
   const supabase = await createClient();
-  const { count } = await supabase.from("leads").select("id", { count: "exact", head: true });
+  const { count } = await supabase.from("leads").select("id", { count: "exact", head: true }).is("deleted_at", null);
   return count ?? 0;
 }
 
@@ -115,6 +116,7 @@ export async function getBirthdayPeople(): Promise<BirthdayRow[]> {
     .from("leads")
     .select("id, full_name, phone, date_of_birth, pipeline_stage")
     .not("date_of_birth", "is", null)
+    .is("deleted_at", null)
     .neq("pipeline_stage", "closed_lost")
     .order("full_name")
     .limit(2000);

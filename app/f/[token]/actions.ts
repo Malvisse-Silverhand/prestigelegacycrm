@@ -1,6 +1,14 @@
 "use server";
 
-import { saveFormDraft, submitLeadForm, verifyFormIdentity, type SubmitFormResult } from "@/lib/lead-forms";
+import {
+  confirmDocumentUpload,
+  removeDocument,
+  requestDocumentUpload,
+  saveFormDraft,
+  submitLeadForm,
+  verifyFormIdentity,
+  type SubmitFormResult,
+} from "@/lib/lead-forms";
 import type { FormValues, NomineeInput } from "@/lib/lead-form-fields";
 
 // The lead form's public actions. No CRM session: the token in the URL (plus,
@@ -16,6 +24,20 @@ export async function verifyIdentity(token: string, fullName: string, phone: str
 /** Save progress so the lead can come back to the same link later. */
 export async function saveDraft(token: string, data: { values: FormValues; nominees?: NomineeInput[] }) {
   return saveFormDraft(token, data);
+}
+
+/** Step 1 of a document upload: a one-shot signed URL for the browser to PUT the image to. */
+export async function requestUpload(token: string, kind: string, mimeType: string, size: number) {
+  return requestDocumentUpload(token, kind, mimeType, size);
+}
+
+/** Step 2: record the finished upload against the lead. Saved immediately, not on Submit. */
+export async function confirmUpload(token: string, kind: string, path: string) {
+  return confirmDocumentUpload(token, kind, path);
+}
+
+export async function removeUpload(token: string, kind: string) {
+  return removeDocument(token, kind);
 }
 
 /** Final submit. `signature` is a `data:image/png;base64,...` string (Stage 2). */

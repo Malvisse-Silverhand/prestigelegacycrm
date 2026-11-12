@@ -54,7 +54,7 @@ export default async function LeadDetailPage({
     ]);
 
   return (
-    <div className="mx-auto max-w-[900px] px-3 py-4 sm:px-5 sm:py-8">
+    <div className="w-full px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       <LeadDetailContent
         lead={lead}
         activity={activity}

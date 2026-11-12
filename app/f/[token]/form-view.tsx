@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import {
+  DOCUMENT_KINDS,
   EMPTY_NOMINEE,
   FORM_STAGES,
   MAX_NOMINEES,
@@ -17,6 +18,7 @@ import {
   type PublicFormData,
 } from "@/lib/lead-form-fields";
 import { saveDraft, submitForm } from "./actions";
+import { DocumentUpload } from "./document-upload";
 import { CHECK_ICON, FormCardPage, FormHeader, FormIcon } from "./form-header";
 import { SignaturePad } from "./signature-pad";
 
@@ -508,6 +510,20 @@ export function FormView({ token, form, today, expiresLabel }: { token: string; 
                   )}
                 </div>
                 <FieldError id="nominees-err" message={errors.nominees} />
+              </section>
+
+              <section aria-labelledby={`${uid}-docs`} className="rounded-[20px] border border-sand bg-white p-5 shadow-card">
+                <h2 id={`${uid}-docs`} className="text-[14px] font-bold tracking-[-0.01em] text-navy">
+                  Pengesahan
+                </h2>
+                <p className="mt-1 text-[11.5px] font-medium leading-relaxed text-taupe">
+                  Muat naik gambar IC dan kad bank anda. Setiap gambar disimpan sebaik sahaja dimuat naik.
+                </p>
+                <div className="mt-4 flex flex-col gap-4">
+                  {DOCUMENT_KINDS.map((kind) => (
+                    <DocumentUpload key={kind} token={token} kind={kind} initial={form.documents.find((d) => d.kind === kind) ?? null} />
+                  ))}
+                </div>
               </section>
 
               <section aria-labelledby={`${uid}-sign`} className="rounded-[20px] border border-sand bg-white p-5 shadow-card">
